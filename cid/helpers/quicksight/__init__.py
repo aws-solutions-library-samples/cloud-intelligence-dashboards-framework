@@ -261,7 +261,9 @@ class QuickSight(CidBase):
             return True
         except self.client.exceptions.AccessDeniedException as exc:
             logger.debug(f'Cannot tag {arn} (AccessDenied).')
-            return False
+        except self.client.exceptions.ClientError as exc:
+            logger.debug(f'Cannot tag {arn} ({exc}).')
+        return False
 
 
     def get_tags(self, arn):
