@@ -31,6 +31,7 @@ Metadata:
         Parameters:
           - AthenaWorkgroup
           - AthenaQueryResultsBucket
+          - AthenaQueryResultsMode
           - DatabaseName
           - GlueDataCatalog
           - Suffix
@@ -78,6 +79,8 @@ Metadata:
         default: "Athena Workgroup - Please do not change"
       AthenaQueryResultsBucket:
         default: "Athena Query Results Bucket - Please do not change"
+      AthenaQueryResultsMode:
+        default: "Athena Query Results Storage Mode"
       DatabaseName:
         default: "Database Name - Please do not change"
       CURTableName:
@@ -164,6 +167,11 @@ Parameters:
     Type: String
     Default: ''
     Description:  Leave Empty
+  AthenaQueryResultsMode:
+    Type: String
+    Default: 'customer-managed'
+    AllowedValues: ["managed", "customer-managed"]
+    Description: "Choose between Athena managed query results (no S3 bucket required, free, results stored for 24h) or customer managed (your own S3 bucket, full control). Athena managed query results is the new AWS feature that eliminates the need for S3 bucket management."
   DatabaseName:
     Type: String
     Description: Leave Empty
@@ -312,7 +320,10 @@ Conditions:
         - !Equals [ !Ref DeployCostIntelligenceDashboard, "yes" ]
         - !Equals [ !Ref DeployKPIDashboard, "yes" ]
   NeedAthenaWorkgroup:  !Equals [ !Ref AthenaWorkgroup, "" ]
-  NeedAthenaQueryResultsBucket:  !Equals [ !Ref AthenaQueryResultsBucket, "" ]
+  UseAthenaManaged: !Equals [ !Ref AthenaQueryResultsMode, "managed" ]
+  NeedAthenaQueryResultsBucket: !And
+    - !Equals [ !Ref AthenaQueryResultsBucket, "" ]
+    - !Equals [ !Ref AthenaQueryResultsMode, "customer-managed" ]
   NeedDatabase: !Equals [ !Ref DatabaseName, "" ]
   NeedCURTable:
     Fn::And:
@@ -607,11 +618,15 @@ Resources:
       RecursiveDeleteOption: true
       WorkGroupConfiguration:
         EnforceWorkGroupConfiguration: true
-        ResultConfiguration:
-          EncryptionConfiguration:
-            EncryptionOption: SSE_S3
-          ExpectedBucketOwner: !Ref AWS::AccountId
-          OutputLocation: !If [ NeedAthenaQueryResultsBucket, !Sub 's3://${MyAthenaQueryResultsBucket}/', !Sub 's3://${AthenaQueryResultsBucket}/' ]
+        ResultConfiguration: !If
+          - UseAthenaManaged
+          - EncryptionConfiguration:
+              EncryptionOption: !If [NeedDataBucketsKms, SSE_KMS, SSE_S3]
+              KmsKey: !If [NeedDataBucketsKms, !Select [0, !Split [',', !Ref DataBucketsKmsKeysArns]], !Ref 'AWS::NoValue']
+          - EncryptionConfiguration:
+              EncryptionOption: SSE_S3
+            ExpectedBucketOwner: !Ref AWS::AccountId
+            OutputLocation: !If [ NeedAthenaQueryResultsBucket, !Sub 's3://${MyAthenaQueryResultsBucket}/', !Sub 's3://${AthenaQueryResultsBucket}/' ]
 
   #Legacy version. Replaced by CustomResourceFunctionInit but we cannot remove it completely as it was removing workgroup on deletion of the custom resource.
   CustomRessourceFunctionInit:
@@ -1876,6 +1891,7 @@ Resources:
         Variables:
           AWS_DEPLOYMENT_TYPE: !Ref DeploymentType
           athena_workgroup: !If [ NeedAthenaWorkgroup, !Ref MyAthenaWorkGroup, !Ref AthenaWorkgroup ]
+          athena_query_results_mode: !Ref AthenaQueryResultsMode
           quicksight_datasource_id: !Select [ 1, !Split [ '/', !GetAtt CidAthenaDataSource.Arn]]
           quicksight_datasource_role_arn: !If [ NeedQuickSightDataSourceRole, !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${QuickSightDataSourceRole}", "" ]
           athena_database: !If [NeedDatabase, !Ref CidDatabase, !Ref DatabaseName ]

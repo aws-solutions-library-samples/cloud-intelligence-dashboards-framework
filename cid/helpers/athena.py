@@ -155,8 +155,14 @@ class Athena(CidBase):
             raise CidCritical(e)
         if _workgroup.get('State') == 'DISABLED':
             raise CidCritical(f'Athena Workgroup "{name}" is disabled.')
-        if not _workgroup.get('Configuration', {}).get('ResultConfiguration', {}).get('OutputLocation'):
+        
+        # Check if we're using managed query results
+        use_managed_results = get_parameters().get('athena-query-results-mode') == 'managed'
+        output_location = _workgroup.get('Configuration', {}).get('ResultConfiguration', {}).get('OutputLocation')
+        
+        if not use_managed_results and not output_location:
             raise CidCritical(f'Athena Workgroup "{name}" must have an output location s3 bucket configured in the region {self.region}. See https://{self.region}.console.aws.amazon.com/athena/home?#/workgroups .')
+        
         self._WorkGroup = name
         logger.info(f'Selected Athena WorkGroup: "{self._WorkGroup}"')
 
@@ -166,7 +172,10 @@ class Athena(CidBase):
 
 
     def _ensure_workgroup(self, name: str) -> str:
-        """Ensure a workgroup exists and configured with an S3 bucket"""
+        """Ensure a workgroup exists and configured appropriately for managed or customer-managed query results"""
+        # Check if we're using managed query results
+        use_managed_results = get_parameters().get('athena-query-results-mode') == 'managed'
+        
         s3 = S3(session=self.session)
         if name == 'primary': # QuickSight manages primary wg differently, relying exclusively on bucket with a predefined name
             bucket_name = f'{self.partition}-athena-query-results-{self.region}-{self.account_id}'
@@ -175,45 +184,36 @@ class Athena(CidBase):
 
         try:
             workgroup = self.client.get_work_group(WorkGroup=name)
-            if workgroup.get('WorkGroup', {}).get('Configuration', {}).get('ResultConfiguration', {}).get('OutputLocation', None):
-                return name # all good we have Output Bucket Configured.
+            existing_config = workgroup.get('WorkGroup', {}).get('Configuration', {})
+            output_location = existing_config.get('ResultConfiguration', {}).get('OutputLocation', None)
+            
+            if use_managed_results:
+                # For managed mode, we don't need OutputLocation
+                # If it already exists with OutputLocation, that's fine too (mixed mode support)
+                logger.info(f"Using Athena managed query results for workgroup '{name}'")
+                return name
+            else:
+                # Customer-managed mode - need OutputLocation configured
+                if output_location:
+                    return name # all good we have Output Bucket Configured.
 
-            # there no result bucket configured for this WG
-            buckets = s3.list_buckets(region_name=self.region)
-            if bucket_name not in buckets:
-                buckets.append(f'{bucket_name} (create new)')
-            bucket_name = get_parameter(
-                param_name='athena-result-bucket',
-                message=f"Select S3 bucket to use with Amazon Athena Workgroup [{name}]",
-                choices=[bucket for bucket in buckets]
-            )
-            if ' (create new)' in bucket_name:
-                bucket_name = bucket_name.replace(' (create new)', '')
-            s3.ensure_bucket(name=bucket_name)
-            self.client.update_work_group(
-                WorkGroup=name,
-                Description='string',
-                ConfigurationUpdates={
-                    'ResultConfigurationUpdates': {
-                        'OutputLocation': f's3://{bucket_name}',
-                        'EncryptionConfiguration': {
-                            'EncryptionOption': 'SSE_S3',
-                        },
-                        'AclConfiguration': {
-                            'S3AclOption': 'BUCKET_OWNER_FULL_CONTROL'
-                        }
-                    }
-                }
-            )
-            return name
-        except self.client.exceptions.InvalidRequestException as exc:
-            # Workgroup does not exist
-            if 'WorkGroup is not found' in exc.response.get('Error', {}).get('Message'):
+                # there no result bucket configured for this WG
+                buckets = s3.list_buckets(region_name=self.region)
+                if bucket_name not in buckets:
+                    buckets.append(f'{bucket_name} (create new)')
+                bucket_name = get_parameter(
+                    param_name='athena-result-bucket',
+                    message=f"Select S3 bucket to use with Amazon Athena Workgroup [{name}]",
+                    choices=[bucket for bucket in buckets]
+                )
+                if ' (create new)' in bucket_name:
+                    bucket_name = bucket_name.replace(' (create new)', '')
                 s3.ensure_bucket(name=bucket_name)
-                self.client.create_work_group(
-                    Name=name,
-                    Configuration={
-                        'ResultConfiguration': {
+                self.client.update_work_group(
+                    WorkGroup=name,
+                    Description='string',
+                    ConfigurationUpdates={
+                        'ResultConfigurationUpdates': {
                             'OutputLocation': f's3://{bucket_name}',
                             'EncryptionConfiguration': {
                                 'EncryptionOption': 'SSE_S3',
@@ -221,10 +221,45 @@ class Athena(CidBase):
                             'AclConfiguration': {
                                 'S3AclOption': 'BUCKET_OWNER_FULL_CONTROL'
                             }
-                        },
+                        }
                     }
                 )
                 return name
+        except self.client.exceptions.InvalidRequestException as exc:
+            # Workgroup does not exist
+            if 'WorkGroup is not found' in exc.response.get('Error', {}).get('Message'):
+                if use_managed_results: 
+                    # Create workgroup without OutputLocation for managed mode
+                    logger.info(f"Creating workgroup '{name}' with managed query results")
+                    self.client.create_work_group(
+                        Name=name,
+                        Configuration={
+                            'ResultConfiguration': {
+                                'EncryptionConfiguration': {
+                                    'EncryptionOption': 'SSE_S3',
+                                }
+                            }
+                        }
+                    )
+                    return name
+                else:
+                    # Customer-managed mode - create with S3 bucket
+                    s3.ensure_bucket(name=bucket_name)
+                    self.client.create_work_group(
+                        Name=name,
+                        Configuration={
+                            'ResultConfiguration': {
+                                'OutputLocation': f's3://{bucket_name}',
+                                'EncryptionConfiguration': {
+                                    'EncryptionOption': 'SSE_S3',
+                                },
+                                'AclConfiguration': {
+                                    'S3AclOption': 'BUCKET_OWNER_FULL_CONTROL'
+                                }
+                            },
+                        }
+                    )
+                    return name
             else:
                 raise
         except Exception as exc:
