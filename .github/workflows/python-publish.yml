@@ -39,7 +39,7 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
       - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-session-name: ${{ secrets.AWS_SESSION_NAME }}
