@@ -13,6 +13,7 @@ SELECT DISTINCT
 "timestamp",
 "accountname",
 "status",
+"aws config rule",
 "acl allows list",
 "bucket name",
 "acl allows upload/delete",
@@ -239,7 +240,21 @@ SELECT DISTINCT
 "total number of questions in cost optimization pillar",
 "number of questions answered for cost optimization",
 "number of identified hris for cost optimization",
-"cluster name"
+"cluster name",
+"recommendation id",
+"resource id", 
+"resource arn",
+"current resource type",
+"recommended resource type",
+"recommended action",
+"current resource summary",
+"recommended resource summary",
+"estimated monthly cost",
+"currency code",
+"implementation effort",
+"restart needed",
+"rollback possible",
+"last updated time"
 FROM
   "ta_organizational_view_reports"
 WHERE  

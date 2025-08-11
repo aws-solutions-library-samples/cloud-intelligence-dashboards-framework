@@ -58,6 +58,10 @@
                     "Type": "string"
                 },
                 {
+                    "Name": "aws config rule",
+                    "Type": "string"
+                },
+                {
                     "Name": "acl allows list",
                     "Type": "string"
                 },
@@ -965,6 +969,62 @@
                   {
                     "Name": "cluster name",
                     "Type": "string"
+                  },
+                  {
+                    "Name": "recommendation id",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "resource id",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "resource arn",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "current resource type",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "recommended resource type",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "recommended action",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "current resource summary",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "recommended resource summary",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "estimated monthly cost",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "currency code",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "implementation effort",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "restart needed",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "rollback possible",
+                    "Type": "string"
+                  },
+                  {
+                    "Name": "last updated time",
+                    "Type": "string"
                   }  
             ],
             "InputFormat": "org.apache.hadoop.mapred.TextInputFormat",
@@ -974,7 +1034,7 @@
             "SerdeInfo": {
                 "SerializationLibrary": "org.openx.data.jsonserde.JsonSerDe",
                 "Parameters": {
-                    "paths": "14-Day Average CPU Utilization,14-Day Average Network I/O,ACL Allows List,ACL Allows Upload/Delete,Access Key,AccountId,AccountName,AccountParentId,AccountParentName,Active Tunnels,Alias Target,Alternate Domain Name,Auto Scaling Group Name,Backup Retention Period,Bucket Name,Cache Behavior Path Pattern,Category,CheckId,CheckName,Cluster,Current Usage,Customer Gateway,DB Instance,DB Instance Name,Day 1,Day 10,Day 11,Day 12,Day 13,Day 14,Day 2,Day 3,Day 4,Day 5,Day 6,Day 7,Day 8,Day 9,Days Since Last Connection,Description,Distribution Domain Name,Distribution ID,Estimated Break Even (Months),Estimated Monthly Savings,Estimated Monthly Savings (On Demand),Estimated On-Demand Cost Post Recommended RI Purchase (Monthly),Estimated Savings with Recommendation (Monthly),Estimated average utilization,Estimated cost of RIs (Monthly),Estimated savings percentage,Expected Average RI Utilization,Group ID,Headers,Health Check,Hosted Zone ID,Hosted Zone Name,Hourly commitment to purchase,IAM User,IP Address,IP Range,Ignored Bucket Name,Instance Count,Instance ID,Instance Name,Instance Type,Instances in Zone a,Instances in Zone b,Instances in Zone c,Instances in Zone d,Instances in Zone e,Instances in Zone f,Key Last Rotated,Last Delivery Error,Launch Configuration Name,Launch Name,Launch Type,Limit Amount,Limit Name,Load Balancer Associated,Load Balancer Name,Logging Status,Lookback Period (Days),Lowercase,MFA Delete Enabled,Max Daily Median,Monthly Storage Cost,Multi-AZ,Non-alphanumeric,Number,Number of Days Low Utilization,Number of Days Over,Number of Days over 90% CPU Utilization,Number of Name Server Delegations Used,Origin,Password Policy,Payment option,Platform,Policy Allows Access,Port,Ports,Protocol,Reason,Recommended Number of RIs to Purchase,Region,Region API Parameter,Region Name,Region/AZ,Resource Name,Resource Record Set Identifier,Resource Record Set Name,Resource Record Set Type,Resource Type,ResourceId,Same Owner,Savings Plan type,Security Group ID,Security Group Name,Service,Snapshot Age,Snapshot ID,Snapshot Name,Status,Storage Provisioned (GB),Target Exists,Target Name,Term (Years),Timestamp,Total Inbound Rules,Total Outbound Rules,Trail Name,Upfront Cost of RIs,Upfront cost,Uppercase,VPC,VPC ID,VPN ID,Versioning,Virtual Private Gateway,Volume Attachment,Volume ID,Volume Name,Volume Size,Volume Type,Write Enabled,isSuppressed,# of Zones,Access Key ID,Case ID,Certificate Name,Connection Details,Connection ID for VIF,Connection ID,Current Monthly Cost,Data Transfer Out (GB),Database Edition,Database Engine,DB Instance or Cluster ID,Deadline,Deployment Option,EBS Optimized,Estimated cost of Reserved Instances (monthly),Estimated cost of Reserved Nodes (monthly),Estimated On-Demand Cost Post Recommended Reserved Instance Purchase (monthly),Estimated On-Demand Cost Post Recommended Reserved Nodes Purchase (monthly),Expected Average Reserved Instance Utilization,Expected Average Reserved Node Utilization,Expected Avergae Reserved Instance Utilization,Expected Avergae Reserved Node Utilization,Expiration Date,Family,Fraud Type,Gateway ID,Ingress Rule,Instance Class,Instance Size,License Model,Load Balancer Port,Location for VIF,Location,Node Type,Private DB Instances,Product Description,Public DB Instances,Ratio of Transfer to Storage,RDS Security Group Name,Recommended number of Reserved Instances to purchase,Recommended number of Reserved Nodes to purchase,Reserved Instance ID,Resource Record Set ID,S3 Storage (GB),Security Group IDs,Time Near Maximum,Time Updated,TTL,Upfront Cost of Reserved Instances,Upfront Cost of Reserved Nodes,Usage (USD per Day),User Name (IAM or Root),Zone,Function ARN,Max daily error rate,Date for max error rate,Average daily error rate,Lost daily compute cost,Current day invokes,Current day error rate,Average daily invokes,Last refresh time,Max daily timeout rate,Date of max daily timeout rate,Average daily timeout rate,Function timeout setting,Current day timeout rate,Runtime,Days to deprecation,Deprecation date,resource,Workload Type,Workload Last Modified Date,Workload Started Date,Number of questions answered for Performance,Number of HRIs resolved for Performance,Total number of questions in Performance pillar,Number of identified HRIs for Performance,Reviewer Name,Workload ARN,Workload Name,Number of HRIs resolved for Reliability,Total number of questions in Reliability pillar,Number of questions answered for Reliability,Number of identified HRIs for Reliability,Number of HRIs resolved for Security,Total number of questions in Security pillar,Number of questions answered for Security,Number of identified HRIs for Security, Number of HRIs resolved for Cost Optimization,Total number of questions in Cost Optimization pillar,Number of questions answered for Cost Optimization,Number of identified HRIs for Cost Optimization,Cluster Name"
+                    "paths": "14-Day Average CPU Utilization,14-Day Average Network I/O,ACL Allows List,ACL Allows Upload/Delete,Access Key,AccountId,AccountName,AccountParentId,AccountParentName,Active Tunnels,Alias Target,Alternate Domain Name,Auto Scaling Group Name,AWS Config Rule,Backup Retention Period,Bucket Name,Cache Behavior Path Pattern,Category,CheckId,CheckName,Cluster,Current Usage,Customer Gateway,DB Instance,DB Instance Name,Day 1,Day 10,Day 11,Day 12,Day 13,Day 14,Day 2,Day 3,Day 4,Day 5,Day 6,Day 7,Day 8,Day 9,Days Since Last Connection,Description,Distribution Domain Name,Distribution ID,Estimated Break Even (Months),Estimated Monthly Savings,Estimated Monthly Savings (On Demand),Estimated On-Demand Cost Post Recommended RI Purchase (Monthly),Estimated Savings with Recommendation (Monthly),Estimated average utilization,Estimated cost of RIs (Monthly),Estimated savings percentage,Expected Average RI Utilization,Group ID,Headers,Health Check,Hosted Zone ID,Hosted Zone Name,Hourly commitment to purchase,IAM User,IP Address,IP Range,Ignored Bucket Name,Instance Count,Instance ID,Instance Name,Instance Type,Instances in Zone a,Instances in Zone b,Instances in Zone c,Instances in Zone d,Instances in Zone e,Instances in Zone f,Key Last Rotated,Last Delivery Error,Launch Configuration Name,Launch Name,Launch Type,Limit Amount,Limit Name,Load Balancer Associated,Load Balancer Name,Logging Status,Lookback Period (Days),Lowercase,MFA Delete Enabled,Max Daily Median,Monthly Storage Cost,Multi-AZ,Non-alphanumeric,Number,Number of Days Low Utilization,Number of Days Over,Number of Days over 90% CPU Utilization,Number of Name Server Delegations Used,Origin,Password Policy,Payment option,Platform,Policy Allows Access,Port,Ports,Protocol,Reason,Recommended Number of RIs to Purchase,Region,Region API Parameter,Region Name,Region/AZ,Resource Name,Resource Record Set Identifier,Resource Record Set Name,Resource Record Set Type,Resource Type,ResourceId,Same Owner,Savings Plan type,Security Group ID,Security Group Name,Service,Snapshot Age,Snapshot ID,Snapshot Name,Status,Storage Provisioned (GB),Target Exists,Target Name,Term (Years),Timestamp,Total Inbound Rules,Total Outbound Rules,Trail Name,Upfront Cost of RIs,Upfront cost,Uppercase,VPC,VPC ID,VPN ID,Versioning,Virtual Private Gateway,Volume Attachment,Volume ID,Volume Name,Volume Size,Volume Type,Write Enabled,isSuppressed,# of Zones,Access Key ID,Case ID,Certificate Name,Connection Details,Connection ID for VIF,Connection ID,Current Monthly Cost,Data Transfer Out (GB),Database Edition,Database Engine,DB Instance or Cluster ID,Deadline,Deployment Option,EBS Optimized,Estimated cost of Reserved Instances (monthly),Estimated cost of Reserved Nodes (monthly),Estimated On-Demand Cost Post Recommended Reserved Instance Purchase (monthly),Estimated On-Demand Cost Post Recommended Reserved Nodes Purchase (monthly),Expected Average Reserved Instance Utilization,Expected Average Reserved Node Utilization,Expected Avergae Reserved Instance Utilization,Expected Avergae Reserved Node Utilization,Expiration Date,Family,Fraud Type,Gateway ID,Ingress Rule,Instance Class,Instance Size,License Model,Load Balancer Port,Location for VIF,Location,Node Type,Private DB Instances,Product Description,Public DB Instances,Ratio of Transfer to Storage,RDS Security Group Name,Recommended number of Reserved Instances to purchase,Recommended number of Reserved Nodes to purchase,Reserved Instance ID,Resource Record Set ID,S3 Storage (GB),Security Group IDs,Time Near Maximum,Time Updated,TTL,Upfront Cost of Reserved Instances,Upfront Cost of Reserved Nodes,Usage (USD per Day),User Name (IAM or Root),Zone,Function ARN,Max daily error rate,Date for max error rate,Average daily error rate,Lost daily compute cost,Current day invokes,Current day error rate,Average daily invokes,Last refresh time,Max daily timeout rate,Date of max daily timeout rate,Average daily timeout rate,Function timeout setting,Current day timeout rate,Runtime,Days to deprecation,Deprecation date,resource,Workload Type,Workload Last Modified Date,Workload Started Date,Number of questions answered for Performance,Number of HRIs resolved for Performance,Total number of questions in Performance pillar,Number of identified HRIs for Performance,Reviewer Name,Workload ARN,Workload Name,Number of HRIs resolved for Reliability,Total number of questions in Reliability pillar,Number of questions answered for Reliability,Number of identified HRIs for Reliability,Number of HRIs resolved for Security,Total number of questions in Security pillar,Number of questions answered for Security,Number of identified HRIs for Security, Number of HRIs resolved for Cost Optimization,Total number of questions in Cost Optimization pillar,Number of questions answered for Cost Optimization,Number of identified HRIs for Cost Optimization,Cluster Name,Recommendation ID,Resource ID,Resource ARN,Current Resource Type,Recommended Resource Type,Recommended Action,Current Resource Summary,Recommended Resource Summary,Estimated Monthly Cost,Currency Code,Implementation Effort,Restart Needed,Rollback Possible,Last Updated Time"
                 }
             }
         }
