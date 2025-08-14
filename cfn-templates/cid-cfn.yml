@@ -460,7 +460,7 @@ Resources:
       FunctionName:  !Sub 'CidSpiceRefreshLambda${Suffix}'
       Role: !GetAtt SpiceRefreshExecutionRole.Arn
       Description: 'Refresh QuickSight DataSets for CID'
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 128
       Timeout: 60
@@ -620,7 +620,7 @@ Resources:
       FunctionName: !Sub CidInitialSetup-DoNotRun${Suffix}
       Role: !GetAtt 'InitLambdaExecutionRole.Arn'
       Description: "CID legacy setup"
-      Runtime: python3.11
+      Runtime: python3.13
       Handler: 'index.lambda_handler'
       Code:
         ZipFile: |
@@ -643,7 +643,7 @@ Resources:
       FunctionName: !Sub "CidCustomResourceFunctionInit-DoNotRun${Suffix}"
       Role: !GetAtt 'InitLambdaExecutionRole.Arn'
       Description: "Do what CFN cannot: start crawler and delete bucket with objects"
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 128
       Timeout: 600
@@ -917,7 +917,7 @@ Resources:
       Role: !GetAtt 'ProcessPathLambdaExecutionRole.Arn'
       FunctionName: !Sub "CidCustomResourceProcessPath-DoNotRun${Suffix}"
       Description: "Do what CFN cannot: process string of path"
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 128
       Timeout: 60
@@ -1773,7 +1773,7 @@ Resources:
       FunctionName: !Sub 'CidCustomResourceDashboard${Suffix}'
       Description: 'A lambda that manage create delete update of Athena views, QuickSight Datasets and dashboards using CID-CMD tool'
       Role: !GetAtt CidExecRole.Arn
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 2688
       Timeout: 300 # Time of discovery depend on number of dashboards
@@ -1969,7 +1969,7 @@ Resources:
       FunctionName:  !Sub 'CidPullAssets${Suffix}'
       Handler: index.handler
       Role: !GetAtt PullAssetsLambdaRole.Arn
-      Runtime: python3.12
+      Runtime: python3.13
       Timeout: 300
       MemorySize: 256
       Code:
@@ -2095,7 +2095,7 @@ Resources:
         - python3.10
         - python3.11
         - python3.12
-
+        - python3.13
 
   CostIntelligenceDashboard:
     Type: Custom::CidDashboard
