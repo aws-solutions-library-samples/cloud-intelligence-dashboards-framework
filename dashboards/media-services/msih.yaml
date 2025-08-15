@@ -8,7 +8,7 @@ dashboards:
     dashboardId: msih
     category: Advanced
     theme: MIDNIGHT
-    version: v0.8.9
+    version: v0.9.0
     data: |-
       AnalysisDefaults:
         DefaultNewSheetConfiguration:
@@ -163,6 +163,9 @@ dashboards:
         Expression: replace(replace({product_code}, "AWS", ""), "Elemental", "")
         Name: Service
       - DataSetIdentifier: summary_view
+        Expression: '"Total"'
+        Name: Total
+      - DataSetIdentifier: summary_view
         Expression: ifelse({is_transcode_usage} = 1, Cost, 0)
         Name: Transcoding Cost
       - DataSetIdentifier: summary_view
@@ -214,19 +217,19 @@ dashboards:
           \ \"AWS-In\"), \"Data Transfer Cross Region In (GB)\",\n\t\t\tcontains({usage_type},\
           \ \"CloudFront\"), \"Data Transfer CloudFront (GB)\",\n\t\t\tcontains({usage_type},\
           \ \"ingest-bytes\"), \"Live Ingest (GB)\",\n\t\t\tcontains({usage_type}, \"origin-packaging\"\
-          ), \"Live Origination & Packaging\",\n\t\t\tcontains({usage_type}, \"vod-origin\"\
-          ), \"VOD Origination & Packaging\",\n\t\t\tconcat(\"EMP other: \", {product_family},\
+          ), \"Live Origination & Packaging (GB)\",\n\t\t\tcontains({usage_type}, \"vod-origin\"\
+          ), \"VOD Origination & Packaging (GB)\",\n\t\t\tconcat(\"EMP other: \", {product_family},\
           \ \":\", operation, \":\", {usage_type})\n\t\t),\n\tcontains({product_code}, \"\
           MediaTailor\"),\n\t\tifelse(\n\t\t\t{product_family} = \"Data Transfer\" or operation\
           \ = \"GetManifest\", \"Ad Delivery Out (GB)\",\n\t\t\t{product_family} = \"Fee\"\
-          \ and operation = \"VOD\", \"Video On Demand (Hrs)\",\n\t\t\t{product_family}\
-          \ = \"Fee\" or operation = \"runChannel\", \"Run Channel (Hrs)\",\n\t\t\tcontains({usage_type},\
-          \ \"AdInsertion\"), \"Ad Insertion (Count)\",\n\t\t\tcontains({usage_type}, \"\
-          Out-Bytes\"), \"Ad Delivery Out (GB)\",\n\t\t\tconcat(\"EMT other: \", {product_family},\
-          \ \":\", operation, \":\", {usage_type})\n\t\t),\n\tcontains({product_code}, \"\
-          MediaConnect\"),\n\t\tifelse(\n\t\t\toperation = \"RunningFlow\", \"Running Flow\
-          \ (Hrs)\",\n\t\t\tcontains({usage_type}, \"DataTransfer-In-Bytes\") or contains({usage_type},\
-          \ \"AWS-In-Bytes\"), \"Data Ingress (GB)\",\n\t\t\tcontains({usage_type}, \"DataTransfer-Out-Bytes\"\
+          \ and operation = \"VOD\", \"Video On Demand (Hrs)\",\n\t\t\toperation = \"runChannel\"\
+          , \"Run Channel (Hrs)\",\n\t\t\tcontains({usage_type}, \"AdInsertion\"), \"Ad\
+          \ Insertion (Count)\",\n\t\t\tcontains({usage_type}, \"Out-Bytes\"), \"Ad Delivery\
+          \ Out (GB)\",\n\t\t\tconcat(\"EMT other: \", {product_family}, \":\", operation,\
+          \ \":\", {usage_type})\n\t\t),\n\tcontains({product_code}, \"MediaConnect\"),\n\
+          \t\tifelse(\n\t\t\toperation = \"RunningFlow\", \"Running Flow (Hrs)\",\n\t\t\t\
+          contains({usage_type}, \"DataTransfer-In-Bytes\") or contains({usage_type}, \"\
+          AWS-In-Bytes\"), \"Data Ingress (GB)\",\n\t\t\tcontains({usage_type}, \"DataTransfer-Out-Bytes\"\
           ), \"Data Transfer Internet (GB)\",\n\t\t\tcontains({usage_type}, \"DataTransfer-Regional-Bytes\"\
           ), \"Data Transfer Intra-Region (GB)\",\n\t\t\tcontains({usage_type}, \"AWS-Out-Bytes\"\
           ), \"Data Transfer Cross Region (GB)\",\n\t\t\tconcat(\"EMX other: \", {product_family},\
@@ -2766,29 +2769,6 @@ dashboards:
               - ff303652-07f2-4d9c-8fc1-867d79b06403
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
-        FilterGroupId: 6754f81b-2a7f-4825-8bd5-aeccd63736e4
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: charge_type
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - Usage
-                - DiscountedUsage
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-            FilterId: 22cecba6-8ac5-4d7f-90ca-5c365990f8e1
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 5d5e6f78-8e5f-4802-9efb-d68394cf050c
-              VisualIds:
-              - 166f6582-7486-4cfb-a44d-f6905bdeda85
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
         FilterGroupId: 1aa8f0e9-7619-412e-b910-f27636314dd1
         Filters:
         - TimeRangeFilter:
@@ -3193,29 +3173,6 @@ dashboards:
               SheetId: 11996d63-6936-4bff-96f5-e5cd9895198b
               VisualIds:
               - 7bb50a9e-4b9b-4d74-b2d2-1a39d7461b41
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: 87e59177-2261-441e-aac0-e2f72e0f5090
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: charge_type
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - Usage
-                - DiscountedUsage
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-            FilterId: d4bbc9ce-bf37-4c41-a99d-335262e6a281
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 7c8d706f-e1f7-475a-9db0-1a95d2986049
-              VisualIds:
-              - 9cb57201-1e68-4b05-876a-72ef9d9dcc9e
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: d387efe7-3b04-4131-9e40-7cfb4b9e547c
@@ -13251,9 +13208,6 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: Usage Category
                       DataSetIdentifier: summary_view
-                    SelectedFields:
-                    - 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752696280006
-                    - 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752696280006
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisuals:
@@ -13294,7 +13248,7 @@ dashboards:
                   Colors:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: Usage Category
+                        ColumnName: Total
                         DataSetIdentifier: summary_view
                       FieldId: 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752696280006
                       HierarchyId: f0df3377-87b1-4916-945a-213f9a387fe4
@@ -13326,7 +13280,7 @@ dashboards:
                 Position: RIGHT
                 Title:
                   Visibility: VISIBLE
-                Width: 160px
+                Width: 192px
               Orientation: VERTICAL
               SortConfiguration:
                 CategoryItemsLimit:
@@ -13355,6 +13309,8 @@ dashboards:
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
+              ValueAxis:
+                AxisOffset: 72px
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -13381,6 +13337,8 @@ dashboards:
                 - ColumnName: Charge Type
                   DataSetIdentifier: summary_view
                 - ColumnName: Usage Type
+                  DataSetIdentifier: summary_view
+                - ColumnName: Total
                   DataSetIdentifier: summary_view
                 DrillDownFilters: []
                 HierarchyId: f0df3377-87b1-4916-945a-213f9a387fe4
@@ -25079,7 +25037,7 @@ dashboards:
               Legend:
                 Height: 86px
                 Position: RIGHT
-                Width: 204px
+                Width: 230px
               Orientation: VERTICAL
               SortConfiguration:
                 CategoryItemsLimit:
@@ -25108,8 +25066,6 @@ dashboards:
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
-              ValueAxis:
-                AxisOffset: 72px
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -25137,6 +25093,8 @@ dashboards:
                 - ColumnName: Charge Type
                   DataSetIdentifier: summary_view
                 - ColumnName: Usage Type
+                  DataSetIdentifier: summary_view
+                - ColumnName: Total
                   DataSetIdentifier: summary_view
                 DrillDownFilters: []
                 HierarchyId: a247def1-c783-4a5d-8080-b96342e8181b
@@ -25488,7 +25446,7 @@ dashboards:
           SheetTextBoxId: 8738ed95-db68-48f4-9115-f7a8dcb618cf
         - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"64px\"\
             >\n      <b>Media Services Insights Hub</b>\n    </inline>\n  </block>\n  <br/>\n\
-            \  <block align=\"center\">\n    <inline font-size=\"64px\">v0.8.9</inline>\n\
+            \  <block align=\"center\">\n    <inline font-size=\"64px\">v0.9.0</inline>\n\
             \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
             >\_</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
             \ align=\"center\">\n    <inline font-size=\"24px\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/media-services.html\
