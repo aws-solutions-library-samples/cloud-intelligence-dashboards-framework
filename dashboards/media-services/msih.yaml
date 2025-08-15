@@ -8,7 +8,7 @@ dashboards:
     dashboardId: msih
     category: Advanced
     theme: MIDNIGHT
-    version: v0.8.8
+    version: v0.8.9
     data: |-
       AnalysisDefaults:
         DefaultNewSheetConfiguration:
@@ -22,11 +22,19 @@ dashboards:
       - DataSetIdentifier: msoh_reservations
         Expression: |-
           ifelse(
-              ${AccountDisplayFormat} = "Name" AND strlen({account_name}) > 0, {account_name},
-              ${AccountDisplayFormat} = "Name (ID)", concat(ifelse(strlen({account_name}) > 0, {account_name}, {account_id}), " (", {account_id}, ")"),
-              {account_id}
+              ${AccountDisplayFormat} = "Name" AND strlen({linked_account_name}) > 0, {linked_account_name},
+              ${AccountDisplayFormat} = "Name (ID)", {linked_account_formatted},
+              {linked_account_id}
           )
-        Name: Account
+        Name: Linked Account
+      - DataSetIdentifier: msoh_reservations
+        Expression: |-
+          ifelse(
+              ${AccountDisplayFormat} = "Name" AND strlen({payer_account_name}) > 0, {payer_account_name},
+              ${AccountDisplayFormat} = "Name (ID)", {payer_account_formatted},
+              {payer_account_id}
+          )
+        Name: Payer Account
       - DataSetIdentifier: msoh_reservations
         Expression: |-
           concat(
@@ -66,14 +74,6 @@ dashboards:
           )
         Name: video_codec
       - DataSetIdentifier: summary_view
-        Expression: |-
-          ifelse(
-              ${AccountDisplayFormat} = "Name" AND strlen({account_name}) > 0, {account_name},
-              ${AccountDisplayFormat} = "Name (ID)", concat(ifelse(strlen({account_name}) > 0, {account_name}, {linked_account_id}), " (", {linked_account_id}, ")"),
-              {linked_account_id}
-          )
-        Name: Account
-      - DataSetIdentifier: summary_view
         Expression: Cost
         Name: Actual Cost with Reservations
       - DataSetIdentifier: summary_view
@@ -97,7 +97,6 @@ dashboards:
       - DataSetIdentifier: summary_view
         Expression: |-
           ifelse(
-              contains({charge_type}, "Discount"), "Discounts",
               ${EmlParameterFocus} = "Bitrate", {video_bit_rate},
               ${EmlParameterFocus} = "Codec", {video_codec},
               ${EmlParameterFocus} = "Framerate", {video_frame_rate},
@@ -123,6 +122,14 @@ dashboards:
       - DataSetIdentifier: summary_view
         Expression: ifelse({pricing_unit} = "Hrs", {usage_quantity}, 0)
         Name: Hours
+      - DataSetIdentifier: summary_view
+        Expression: |-
+          ifelse(
+              ${AccountDisplayFormat} = "Name" AND strlen({linked_account_name}) > 0, {linked_account_name},
+              ${AccountDisplayFormat} = "Name (ID)", concat(ifelse(strlen({linked_account_name}) > 0, {linked_account_name}, {linked_account_id}), " (", {linked_account_id}, ")"),
+              {linked_account_id}
+          )
+        Name: Linked Account
       - DataSetIdentifier: summary_view
         Expression: "sumOver(sum({Amortized Cost}), [{billing_period}])/sumOver(sum({usage_quantity}),\
           \ [{billing_period}])\r\n"
@@ -172,14 +179,15 @@ dashboards:
                   ),
               {product_code} = "AWSElementalMediaLive" and {is_transcode_usage} = 1,
                   concat(
-                      {eml_input_output},
+                      {video_flow_direction},
                       " : ", ifelse({video_pipeline}="Single","Single Pipe","Std. Pipe"),
                       " : ", region,
                       ifelse(strlen({video_codec}) > 0, concat(" : Codec = ", {video_codec}), ""),
                       ifelse(strlen({video_resolution}) > 0, concat(" : ", {video_resolution}), ""),
+                      ifelse(strlen({video_bit_rate}) > 0, concat(" : ", {video_bit_rate}), ""),
                       ifelse(strlen({video_frame_rate}) > 0, concat(" : ", {video_frame_rate}), ""),
-                      " : ", ifelse({video_quality}="Standard", "Std. Qlty.", "Non-Std. Qlty."),
-                      ifelse(strlen({video_bit_rate}) > 0, concat(" : ", {video_bit_rate}), "")),
+                      ifelse(strlen({video_quality}) > 0, concat(" : ", ifelse({video_quality}="Standard", "Std. Qlty.", "Non-Std. Qlty.")), "")
+                  ),
               ""
           )
         Name: Transcoding Profile
@@ -343,6 +351,12 @@ dashboards:
         Expression: ifelse(contains({usage_type}, "IDLE"),1,0)
         Name: eml_is_idle
       - DataSetIdentifier: summary_view
+        Expression: |-
+          ifelse(
+              {usage_date} >= addDateTime(-1 * ${EmlLookbackDays}, "DD", now()), 1, 0
+          )
+        Name: eml_lookback_scope
+      - DataSetIdentifier: summary_view
         Expression: sumOver(({eml_transcode_reserved_usage}), [{billing_period}], PRE_FILTER)/(sumOver(({eml_transcode_reserved_usage}),
           [{billing_period}], PRE_FILTER) + sumOver(({eml_transcode_ondemand_usage}), [
           {billing_period}], PRE_FILTER))
@@ -392,7 +406,7 @@ dashboards:
       - DataSetIdentifier: summary_view
         Expression: |-
           ifelse(
-              ${GroupBy} = "Account", Account,
+              ${GroupBy} = "Account", {Linked Account},
               ${GroupBy} = "Usage Category", {Usage Category},
               ${GroupBy} = "Purchase Option", {elemental_purchase_option},
               ${GroupBy} = "Usage Type", {usage_type},
@@ -489,102 +503,11 @@ dashboards:
         Expression: ({usage_quantity}/720)
         Name: usage_divided_by_720_hours
       DataSetIdentifierDeclarations:
-      - DataSetArn: arn:aws:quicksight:::dataset/0004a71e-5610-4975-a4d8-9596893cce1d
+      - DataSetArn: arn:aws:quicksight:::dataset/91be20ff-05ba-4164-abbd-07631715ce8e
         Identifier: summary_view
       - DataSetArn: arn:aws:quicksight:::dataset/be955d19-d339-4353-bdd1-ffff41639f51
         Identifier: msoh_reservations
       FilterGroups:
-      - CrossDataset: ALL_DATASETS
-        FilterGroupId: 19a82258-7a5b-41ea-90ef-fa2d741a65d7
-        Filters:
-        - NumericEqualityFilter:
-            Column:
-              ColumnName: is_elemental_service
-              DataSetIdentifier: summary_view
-            FilterId: 65e306d4-ecc7-47f9-8624-d4fcab32b8ec
-            MatchOperator: EQUALS
-            NullOption: ALL_VALUES
-            Value: 1.0
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: 11996d63-6936-4bff-96f5-e5cd9895198b
-            - Scope: ALL_VISUALS
-              SheetId: 774ccd0b-a7b6-4feb-af00-0532105eb8e2
-            - Scope: ALL_VISUALS
-              SheetId: 7c8d706f-e1f7-475a-9db0-1a95d2986049
-            - Scope: ALL_VISUALS
-              SheetId: 9af59b55-5605-4699-b3fe-21dbb76a6679
-            - Scope: ALL_VISUALS
-              SheetId: 5d5e6f78-8e5f-4802-9efb-d68394cf050c
-            - Scope: ALL_VISUALS
-              SheetId: 59007a2b-e1cd-4147-8467-b0cd12fe92f6
-            - Scope: ALL_VISUALS
-              SheetId: f62c7213-b9f2-497b-a82e-60b372612437
-        Status: ENABLED
-      - CrossDataset: ALL_DATASETS
-        FilterGroupId: b2a93f6a-6f17-44b9-9549-b17b6cc11e45
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: linked_account_id
-              DataSetIdentifier: summary_view
-            Configuration:
-              CustomFilterConfiguration:
-                MatchOperator: EQUALS
-                NullOption: NON_NULLS_ONLY
-                ParameterName: AccountID
-            FilterId: a8fb5a12-7b5a-457c-a298-5fa82ec86d99
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: 11996d63-6936-4bff-96f5-e5cd9895198b
-            - Scope: ALL_VISUALS
-              SheetId: f62c7213-b9f2-497b-a82e-60b372612437
-            - Scope: ALL_VISUALS
-              SheetId: 59007a2b-e1cd-4147-8467-b0cd12fe92f6
-            - Scope: ALL_VISUALS
-              SheetId: 774ccd0b-a7b6-4feb-af00-0532105eb8e2
-            - Scope: ALL_VISUALS
-              SheetId: 9af59b55-5605-4699-b3fe-21dbb76a6679
-            - Scope: ALL_VISUALS
-              SheetId: 7c8d706f-e1f7-475a-9db0-1a95d2986049
-            - Scope: ALL_VISUALS
-              SheetId: 5d5e6f78-8e5f-4802-9efb-d68394cf050c
-        Status: ENABLED
-      - CrossDataset: ALL_DATASETS
-        FilterGroupId: bf31e10b-7156-4cec-a0d8-23d4950c35f3
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: payer_account_id
-              DataSetIdentifier: summary_view
-            Configuration:
-              CustomFilterConfiguration:
-                MatchOperator: EQUALS
-                NullOption: NON_NULLS_ONLY
-                ParameterName: PayerID
-            FilterId: b8f300e0-ed5e-4bef-b0af-a6e96fba962d
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: 11996d63-6936-4bff-96f5-e5cd9895198b
-            - Scope: ALL_VISUALS
-              SheetId: f62c7213-b9f2-497b-a82e-60b372612437
-            - Scope: ALL_VISUALS
-              SheetId: 59007a2b-e1cd-4147-8467-b0cd12fe92f6
-            - Scope: ALL_VISUALS
-              SheetId: 774ccd0b-a7b6-4feb-af00-0532105eb8e2
-            - Scope: ALL_VISUALS
-              SheetId: 9af59b55-5605-4699-b3fe-21dbb76a6679
-            - Scope: ALL_VISUALS
-              SheetId: 7c8d706f-e1f7-475a-9db0-1a95d2986049
-            - Scope: ALL_VISUALS
-              SheetId: 5d5e6f78-8e5f-4802-9efb-d68394cf050c
-        Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: 0c1a1d55-3914-41f3-8497-7e244b3f89fc
         Filters:
@@ -635,43 +558,6 @@ dashboards:
               - 14c845df-39bf-4adc-8364-b0b9f8f51381
               - 2336f060-f09d-440d-8bcd-0920492c2116
               - a82f0927-56d1-4721-a047-dc4d98c47c97
-        Status: ENABLED
-      - CrossDataset: ALL_DATASETS
-        FilterGroupId: ad7292f8-5b2b-483c-96e5-032b4422b838
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: charge_type
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - DiscountedUsage
-                - Usage
-                - PrivateRateDiscount
-                - EdpDiscount
-                - Credit
-                - RIFee
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-            FilterId: 4d8d17ca-8e7d-44a0-b01d-12d0df5216fb
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: 11996d63-6936-4bff-96f5-e5cd9895198b
-            - Scope: ALL_VISUALS
-              SheetId: f62c7213-b9f2-497b-a82e-60b372612437
-            - Scope: ALL_VISUALS
-              SheetId: 59007a2b-e1cd-4147-8467-b0cd12fe92f6
-            - Scope: ALL_VISUALS
-              SheetId: 774ccd0b-a7b6-4feb-af00-0532105eb8e2
-            - Scope: ALL_VISUALS
-              SheetId: 9af59b55-5605-4699-b3fe-21dbb76a6679
-            - Scope: ALL_VISUALS
-              SheetId: 7c8d706f-e1f7-475a-9db0-1a95d2986049
-            - Scope: ALL_VISUALS
-              SheetId: 5d5e6f78-8e5f-4802-9efb-d68394cf050c
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 6d58f644-b64e-46c7-bc68-7bde1dd45009
@@ -800,9 +686,10 @@ dashboards:
               DataSetIdentifier: summary_view
             Configuration:
               FilterListConfiguration:
+                CategoryValues:
+                - AWSElementalMediaConvert
                 MatchOperator: CONTAINS
                 NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
             FilterId: ed870051-5b1b-4a4b-baa6-01957104d850
         ScopeConfiguration:
           SelectedSheets:
@@ -1425,28 +1312,6 @@ dashboards:
               SheetId: 5d5e6f78-8e5f-4802-9efb-d68394cf050c
               VisualIds:
               - 449c7cbc-d5d1-412b-989d-d7e9c9cb3d79
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: 4c64f6c2-bd21-498a-b242-1590b11fbf4c
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: charge_type
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - EdpDiscount
-                MatchOperator: DOES_NOT_CONTAIN
-                NullOption: NON_NULLS_ONLY
-            FilterId: 88c85fcf-5819-47f4-8758-3320e0463962
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 5d5e6f78-8e5f-4802-9efb-d68394cf050c
-              VisualIds:
-              - 902518a0-2901-4da3-a8c8-0721373c3a17
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 72300587-fc5b-4f0b-9035-e1a949e456ae
@@ -2081,8 +1946,8 @@ dashboards:
             FilterId: a23d8345-ee3f-4eca-af38-76f73f123fe5
             MinimumGranularity: DAY
             NullOption: NON_NULLS_ONLY
+            ParameterName: EmlLookbackDays
             RelativeDateType: LAST
-            RelativeDateValue: 31
             TimeGranularity: DAY
         ScopeConfiguration:
           SelectedSheets:
@@ -3535,25 +3400,6 @@ dashboards:
               - eced66e0-f968-4a5a-a8ac-d3a9a98142e6
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
-        FilterGroupId: f3198bdc-4ec9-4b49-a36a-d467dedf2bea
-        Filters:
-        - NumericEqualityFilter:
-            Column:
-              ColumnName: eml_is_idle
-              DataSetIdentifier: summary_view
-            FilterId: bf82eedd-f011-4463-8e36-1c2038917ab0
-            MatchOperator: EQUALS
-            NullOption: ALL_VALUES
-            Value: 0.0
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 774ccd0b-a7b6-4feb-af00-0532105eb8e2
-              VisualIds:
-              - 24eb3482-4d0f-404f-9e85-6304abec30d9
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
         FilterGroupId: 10537286-b7ae-470e-8be9-251be7e5ce50
         Filters:
         - NumericEqualityFilter:
@@ -3780,12 +3626,9 @@ dashboards:
               DataSetIdentifier: summary_view
             Configuration:
               CustomFilterListConfiguration:
-                CategoryValues:
-                - Multi-pass HQ
-                - Single pass HQ
-                - Standard
                 MatchOperator: CONTAINS
                 NullOption: NON_NULLS_ONLY
+                SelectAllOptions: FILTER_ALL_VALUES
             FilterId: a85c983d-88ad-4045-81e9-f269392aebad
         ScopeConfiguration:
           SelectedSheets:
@@ -3888,28 +3731,6 @@ dashboards:
               - 839b6b63-f2f9-4277-857c-de14563b23de
               - 0156afbd-7488-4f24-98c0-398b53fab149
               - fb189dba-f269-4fe8-835c-6acbbba515e4
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: 0b07113a-bfbc-4e1a-9089-0f5278c5d552
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: charge_type
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - EdpDiscount
-                MatchOperator: DOES_NOT_CONTAIN
-                NullOption: NON_NULLS_ONLY
-            FilterId: add041f4-f571-4969-96bc-0834a582cfb8
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 774ccd0b-a7b6-4feb-af00-0532105eb8e2
-              VisualIds:
-              - 14c845df-39bf-4adc-8364-b0b9f8f51381
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 9d83a7ce-ab68-4ccc-8b9f-1f3a28c851f1
@@ -4425,9 +4246,10 @@ dashboards:
               DataSetIdentifier: summary_view
             Configuration:
               FilterListConfiguration:
+                CategoryValues:
+                - Reserved Transcoding
                 MatchOperator: CONTAINS
                 NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
             FilterId: 6e007429-1ef1-48f4-a6b1-8439334c4ea7
         ScopeConfiguration:
           SelectedSheets:
@@ -5360,9 +5182,6 @@ dashboards:
               DataSetIdentifier: summary_view
             Configuration:
               FilterListConfiguration:
-                CategoryValues:
-                - Discounts
-                - NA
                 MatchOperator: DOES_NOT_CONTAIN
                 NullOption: ALL_VALUES
             FilterId: 88af0b9e-a22f-4708-8299-65a00369d159
@@ -5384,10 +5203,9 @@ dashboards:
               DataSetIdentifier: summary_view
             Configuration:
               FilterListConfiguration:
-                CategoryValues:
-                - EML1-USE1-OUT-AVC-SD-L10-30-S
                 MatchOperator: CONTAINS
                 NullOption: NON_NULLS_ONLY
+                SelectAllOptions: FILTER_ALL_VALUES
             FilterId: c61ef1c7-a207-43e9-94e3-c8d162cdd91c
         ScopeConfiguration:
           SelectedSheets:
@@ -5396,228 +5214,6 @@ dashboards:
               SheetId: d13a178b-bb38-49eb-96b3-7bb160084578
               VisualIds:
               - 9f6a1d2c-6612-4c1e-8d1b-0d025cc2af5d
-        Status: ENABLED
-      - CrossDataset: ALL_DATASETS
-        FilterGroupId: bdd550e1-5dc8-4ff9-a8da-d7ceb29ce019
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: product_code
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - AWSElementalMediaLive
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-            FilterId: a40deaea-80e4-4a94-a919-5580f8b1d1bd
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 634c449e-6cd8-4e64-b3f0-dfe24ab8f369
-              VisualIds:
-              - a0fcd899-58a3-4e63-be2b-1677cbb5777f
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: 142e64da-7f51-4454-a021-760ba5a176be
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: operation
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - INACTIVE_CHANNEL
-                - INACTIVE_INPUT
-                MatchOperator: DOES_NOT_CONTAIN
-                NullOption: NON_NULLS_ONLY
-            FilterId: 3c6ec55d-7cd5-4a19-996b-e6c939e84e8a
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 634c449e-6cd8-4e64-b3f0-dfe24ab8f369
-              VisualIds:
-              - a0fcd899-58a3-4e63-be2b-1677cbb5777f
-        Status: DISABLED
-      - CrossDataset: ALL_DATASETS
-        FilterGroupId: 5ce98b53-f043-492a-992e-c400ded14bc3
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: eml_reservation_type
-              DataSetIdentifier: msoh_reservations
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            FilterId: 72edf707-6412-4080-8242-47b2c2891351
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 634c449e-6cd8-4e64-b3f0-dfe24ab8f369
-              VisualIds:
-              - a0fcd899-58a3-4e63-be2b-1677cbb5777f
-        Status: DISABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: 3c1eb5db-539b-4728-ac79-ed7df3e0ea95
-        Filters:
-        - NumericEqualityFilter:
-            Column:
-              ColumnName: is_transcode_usage
-              DataSetIdentifier: summary_view
-            FilterId: dbbe3f7c-0950-429f-8548-52cc9640b133
-            MatchOperator: EQUALS
-            NullOption: ALL_VALUES
-            Value: 1.0
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 634c449e-6cd8-4e64-b3f0-dfe24ab8f369
-              VisualIds:
-              - a0fcd899-58a3-4e63-be2b-1677cbb5777f
-        Status: DISABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: 791c0c09-512e-4dee-8a59-2308398aa5b5
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: charge_type
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - EdpDiscount
-                MatchOperator: DOES_NOT_CONTAIN
-                NullOption: NON_NULLS_ONLY
-            FilterId: 49e9d018-ca71-446d-b2a0-e069ace2934f
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 634c449e-6cd8-4e64-b3f0-dfe24ab8f369
-              VisualIds:
-              - a0fcd899-58a3-4e63-be2b-1677cbb5777f
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: fe0bb8e2-d133-4d2e-80d5-e9a2db246b9d
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: elemental_purchase_option
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - On Demand
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-            FilterId: d02e103f-1321-463a-b8a9-45dc7771bb2e
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 634c449e-6cd8-4e64-b3f0-dfe24ab8f369
-              VisualIds:
-              - a0fcd899-58a3-4e63-be2b-1677cbb5777f
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: 50c64783-a463-4284-bdf0-c7e2a82fc04c
-        Filters:
-        - TimeEqualityFilter:
-            Column:
-              ColumnName: billing_period
-              DataSetIdentifier: summary_view
-            FilterId: 38d5cd09-7950-4f2e-8b60-1db3b110cc9f
-            TimeGranularity: DAY
-            Value: 2025-06-30 20:00:00-04:00
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 634c449e-6cd8-4e64-b3f0-dfe24ab8f369
-              VisualIds:
-              - a0fcd899-58a3-4e63-be2b-1677cbb5777f
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: a96660a2-219b-4d75-965e-258528df2eb3
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: usage_type
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - EML1-USE1-OUT-AVC-SD-L10-30-S
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-            FilterId: 7569d32b-90e6-49d3-99af-eefc83127b6d
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 634c449e-6cd8-4e64-b3f0-dfe24ab8f369
-              VisualIds:
-              - a0fcd899-58a3-4e63-be2b-1677cbb5777f
-        Status: ENABLED
-      - CrossDataset: ALL_DATASETS
-        FilterGroupId: 5d54bbc0-14ff-42e9-9a48-bfb8b685ffe2
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: account_name
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            FilterId: a6028f28-4bb9-4a6e-b9c7-b7f9c8115019
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: 11996d63-6936-4bff-96f5-e5cd9895198b
-            - Scope: ALL_VISUALS
-              SheetId: f62c7213-b9f2-497b-a82e-60b372612437
-            - Scope: ALL_VISUALS
-              SheetId: 59007a2b-e1cd-4147-8467-b0cd12fe92f6
-            - Scope: ALL_VISUALS
-              SheetId: 774ccd0b-a7b6-4feb-af00-0532105eb8e2
-            - Scope: ALL_VISUALS
-              SheetId: 9af59b55-5605-4699-b3fe-21dbb76a6679
-            - Scope: ALL_VISUALS
-              SheetId: 7c8d706f-e1f7-475a-9db0-1a95d2986049
-            - Scope: ALL_VISUALS
-              SheetId: 5d5e6f78-8e5f-4802-9efb-d68394cf050c
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: e09c3a6b-d42a-484d-9999-ce3bcad501e6
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: linked_account_id
-              DataSetIdentifier: summary_view
-            Configuration:
-              FilterListConfiguration:
-                CategoryValues:
-                - '397853141546'
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-            FilterId: f7b566d9-da8e-4429-b355-ad5ed29b9dc1
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 634c449e-6cd8-4e64-b3f0-dfe24ab8f369
-              VisualIds:
-              - a0fcd899-58a3-4e63-be2b-1677cbb5777f
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 80d1baa4-75ac-4864-a75d-98961df334f7
@@ -5664,6 +5260,171 @@ dashboards:
               - c8f4a78c-5e07-4f15-b0bc-26a2f1ea4ac4
               - cdd5b2e5-f9c7-4f6c-8b45-1ea1cc9a9c58
         Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 2f90fcdd-beef-43b5-96a0-859bacb510e0
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: video_resolution
+              DataSetIdentifier: summary_view
+            Configuration:
+              FilterListConfiguration:
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+                SelectAllOptions: FILTER_ALL_VALUES
+            FilterId: 6f9969c4-f2b8-40f7-aa62-5fa30d91858c
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: d13a178b-bb38-49eb-96b3-7bb160084578
+              VisualIds:
+              - 9f6a1d2c-6612-4c1e-8d1b-0d025cc2af5d
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 7d423e60-8aca-47a6-b4f1-80e313d07eb9
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: video_frame_rate
+              DataSetIdentifier: summary_view
+            Configuration:
+              FilterListConfiguration:
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+                SelectAllOptions: FILTER_ALL_VALUES
+            FilterId: 6b3fad41-762e-498e-a60b-e7d997cbd4a3
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: d13a178b-bb38-49eb-96b3-7bb160084578
+              VisualIds:
+              - 9f6a1d2c-6612-4c1e-8d1b-0d025cc2af5d
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 0ed119ea-910e-4cbd-b741-4dc6a2a48c6d
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: product_family
+              DataSetIdentifier: summary_view
+            Configuration:
+              FilterListConfiguration:
+                CategoryValues:
+                - Data Transfer
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+            FilterId: b654ce14-26ba-40ce-bbbf-12c06a3b2038
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: 7c8d706f-e1f7-475a-9db0-1a95d2986049
+              VisualIds:
+              - 32622616-2afb-4805-9137-ac451d6999d2
+              - b5640b6e-54fd-4d93-a5db-70e4e4d97996
+              - 1d484925-9ef4-4cee-896f-c13eaacb3613
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 8b7cbfb4-fe3c-44c8-8182-613570a13572
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: Usage Category
+              DataSetIdentifier: summary_view
+            Configuration:
+              FilterListConfiguration:
+                CategoryValues:
+                - Reserved Transcoding
+                MatchOperator: DOES_NOT_CONTAIN
+                NullOption: NON_NULLS_ONLY
+            FilterId: 2233c43d-50fc-47f0-a597-4f1c074eb4f8
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: 5d5e6f78-8e5f-4802-9efb-d68394cf050c
+              VisualIds:
+              - 902518a0-2901-4da3-a8c8-0721373c3a17
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: a1323cc7-8baf-4470-a6fd-0c3f008c970d
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: product_code
+              DataSetIdentifier: summary_view
+            Configuration:
+              FilterListConfiguration:
+                CategoryValues:
+                - AWSElementalMediaStore
+                MatchOperator: DOES_NOT_CONTAIN
+                NullOption: NON_NULLS_ONLY
+            FilterId: 24e49bb1-cc3d-4a32-b4b7-a44c62b9d254
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: 11996d63-6936-4bff-96f5-e5cd9895198b
+              VisualIds:
+              - 90020068-14ae-40fb-be88-879dc2a795e1
+        Status: ENABLED
+      - CrossDataset: ALL_DATASETS
+        FilterGroupId: 1aaa5c96-9dbb-4931-98c0-d61cebb6165a
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: linked_account_formatted
+              DataSetIdentifier: summary_view
+            Configuration:
+              CustomFilterConfiguration:
+                MatchOperator: EQUALS
+                NullOption: NON_NULLS_ONLY
+                ParameterName: LinkedAccount
+            FilterId: 520f4742-7556-4d1d-a3c8-48e0fd341640
+        ScopeConfiguration:
+          AllSheets: {}
+        Status: ENABLED
+      - CrossDataset: ALL_DATASETS
+        FilterGroupId: 423c2003-1a33-4823-bcfd-504365db9d65
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: payer_account_formatted
+              DataSetIdentifier: summary_view
+            Configuration:
+              CustomFilterConfiguration:
+                MatchOperator: EQUALS
+                NullOption: NON_NULLS_ONLY
+                ParameterName: PayerAccount
+            FilterId: 2c8a1d05-2593-4bbc-990b-50ed00dc6c38
+        ScopeConfiguration:
+          AllSheets: {}
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 573c142b-a1f9-4a8b-a9d7-f3bcc7cdd370
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: charge_type
+              DataSetIdentifier: summary_view
+            Configuration:
+              FilterListConfiguration:
+                CategoryValues:
+                - DiscountedUsage
+                - Usage
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+            FilterId: 9b753f49-e543-4de3-abf5-066ffa471471
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: 7c8d706f-e1f7-475a-9db0-1a95d2986049
+              VisualIds:
+              - 1d484925-9ef4-4cee-896f-c13eaacb3613
+        Status: ENABLED
       Options: {}
       ParameterDeclarations:
       - IntegerParameterDeclaration:
@@ -5690,6 +5451,14 @@ dashboards:
           ParameterValueType: SINGLE_VALUED
           ValueWhenUnset:
             ValueWhenUnsetOption: RECOMMENDED_VALUE
+      - IntegerParameterDeclaration:
+          DefaultValues:
+            StaticValues:
+            - 30
+          Name: EmlLookbackDays
+          ParameterValueType: SINGLE_VALUED
+          ValueWhenUnset:
+            ValueWhenUnsetOption: RECOMMENDED_VALUE
       - StringParameterDeclaration:
           DefaultValues: {}
           Name: PrimaryTag
@@ -5704,7 +5473,7 @@ dashboards:
             ValueWhenUnsetOption: RECOMMENDED_VALUE
       - StringParameterDeclaration:
           DefaultValues: {}
-          Name: AccountID
+          Name: LinkedAccount
           ParameterValueType: MULTI_VALUED
           ValueWhenUnset:
             ValueWhenUnsetOption: RECOMMENDED_VALUE
@@ -5716,7 +5485,7 @@ dashboards:
             ValueWhenUnsetOption: RECOMMENDED_VALUE
       - StringParameterDeclaration:
           DefaultValues: {}
-          Name: PayerID
+          Name: PayerAccount
           ParameterValueType: MULTI_VALUED
           ValueWhenUnset:
             ValueWhenUnsetOption: RECOMMENDED_VALUE
@@ -5763,7 +5532,7 @@ dashboards:
       - StringParameterDeclaration:
           DefaultValues:
             StaticValues:
-            - Quality
+            - Resolution
           Name: EmlParameterFocus
           ParameterValueType: SINGLE_VALUED
           ValueWhenUnset:
@@ -5867,16 +5636,16 @@ dashboards:
                 RowSpan: 10
               - ColumnIndex: 27
                 ColumnSpan: 9
-                ElementId: 90020068-14ae-40fb-be88-879dc2a795e1
-                ElementType: VISUAL
-                RowIndex: 0
-                RowSpan: 6
-              - ColumnIndex: 27
-                ColumnSpan: 9
                 ElementId: 73904ade-8e1a-47f4-b927-3ac0b5942c22
                 ElementType: VISUAL
-                RowIndex: 6
+                RowIndex: 0
                 RowSpan: 4
+              - ColumnIndex: 27
+                ColumnSpan: 9
+                ElementId: 90020068-14ae-40fb-be88-879dc2a795e1
+                ElementType: VISUAL
+                RowIndex: 4
+                RowSpan: 6
               - ColumnIndex: 0
                 ColumnSpan: 36
                 ElementId: 2f46fd36-2205-4382-ac22-04a2483e6ba2
@@ -6001,6 +5770,8 @@ dashboards:
         ParameterControls:
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -6011,30 +5782,15 @@ dashboards:
             ParameterControlId: 9edf10a2-db83-4ccf-a0b9-0172b33d4f4e
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: linked_account_id
+                ColumnName: linked_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: AccountID
-            Title: Account ID
+            SourceParameterName: LinkedAccount
+            Title: Linked Account
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
-              SelectAllOptions:
-                Visibility: VISIBLE
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            ParameterControlId: 38a765ed-f1e9-46b5-85bc-a514f84183bf
-            SelectableValues:
-              LinkToDataSetColumn:
-                ColumnName: account_name
-                DataSetIdentifier: summary_view
-            SourceParameterName: AccountName
-            Title: Account Name
-            Type: MULTI_SELECT
-        - Dropdown:
-            DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -6045,10 +5801,10 @@ dashboards:
             ParameterControlId: c0811187-1e86-4dd1-92dc-fda373427dbd
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: payer_account_id
+                ColumnName: payer_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: PayerID
-            Title: Payer ID
+            SourceParameterName: PayerAccount
+            Title: Payer Account
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
@@ -6107,20 +5863,14 @@ dashboards:
             GridLayout:
               Elements:
               - ColumnIndex: 0
-                ColumnSpan: 2
+                ColumnSpan: 3
                 ElementId: c0811187-1e86-4dd1-92dc-fda373427dbd
                 ElementType: PARAMETER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
-              - ColumnIndex: 2
-                ColumnSpan: 2
+              - ColumnIndex: 3
+                ColumnSpan: 3
                 ElementId: 9edf10a2-db83-4ccf-a0b9-0172b33d4f4e
-                ElementType: PARAMETER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 4
-                ColumnSpan: 2
-                ElementId: 38a765ed-f1e9-46b5-85bc-a514f84183bf
                 ElementType: PARAMETER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
@@ -7959,7 +7709,7 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: payer_account_id
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
@@ -8100,7 +7850,7 @@ dashboards:
                   DataSetIdentifier: summary_view
                 - ColumnName: payer_account_id
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -8750,122 +8500,142 @@ dashboards:
                 RowSpan: 2
               - ColumnIndex: 0
                 ColumnSpan: 12
-                ElementId: ac7e1750-ba4f-47a8-b0c3-b4d0fb339911
+                ElementId: 5c0a514b-53f1-4d5b-9797-e9593f667632
                 ElementType: VISUAL
                 RowIndex: 12
                 RowSpan: 9
               - ColumnIndex: 12
                 ColumnSpan: 12
-                ElementId: 5c0a514b-53f1-4d5b-9797-e9593f667632
+                ElementId: 85f29399-0e64-4147-af79-cde82873116c
                 ElementType: VISUAL
                 RowIndex: 12
                 RowSpan: 9
               - ColumnIndex: 24
                 ColumnSpan: 12
-                ElementId: 85f29399-0e64-4147-af79-cde82873116c
+                ElementId: ac7e1750-ba4f-47a8-b0c3-b4d0fb339911
                 ElementType: VISUAL
                 RowIndex: 12
                 RowSpan: 9
               - ColumnIndex: 0
-                ColumnSpan: 36
+                ColumnSpan: 2
+                ElementId: 397fd424-fa7e-4cba-8375-21e0bfe752ff
+                ElementType: PARAMETER_CONTROL
+                RowIndex: 21
+                RowSpan: 12
+              - ColumnIndex: 2
+                ColumnSpan: 17
+                ElementId: f7275634-1603-4f72-93af-4688800d6047
+                ElementType: VISUAL
+                RowIndex: 21
+                RowSpan: 12
+              - ColumnIndex: 19
+                ColumnSpan: 17
                 ElementId: be3dbcd4-8d57-4c60-9139-e985c93c95c1
                 ElementType: VISUAL
                 RowIndex: 21
-                RowSpan: 14
+                RowSpan: 12
               - ColumnIndex: 0
-                ColumnSpan: 36
-                ElementId: f7275634-1603-4f72-93af-4688800d6047
-                ElementType: VISUAL
-                RowIndex: 35
-                RowSpan: 13
-              - ColumnIndex: 0
-                ColumnSpan: 8
+                ColumnSpan: 30
                 ElementId: d51c35cd-d554-4639-82ec-713b929e75a6
                 ElementType: TEXT_BOX
-                RowIndex: 48
-                RowSpan: 3
-              - ColumnIndex: 8
-                ColumnSpan: 22
-                ElementId: 300c8767-7d3e-4298-8673-deaf041e30a3
-                ElementType: TEXT_BOX
-                RowIndex: 48
+                RowIndex: 33
                 RowSpan: 3
               - ColumnIndex: 30
                 ColumnSpan: 6
                 ElementId: 0a58170a-9870-4eab-84db-4497fb2c384b
                 ElementType: FILTER_CONTROL
-                RowIndex: 48
+                RowIndex: 33
                 RowSpan: 3
               - ColumnIndex: 0
                 ColumnSpan: 18
                 ElementId: f17807a4-f510-4beb-ab15-113c03faa43b
                 ElementType: VISUAL
-                RowIndex: 51
+                RowIndex: 36
                 RowSpan: 6
               - ColumnIndex: 18
                 ColumnSpan: 18
                 ElementId: 1b1ae284-2950-4598-a4b4-0924f0275b28
                 ElementType: VISUAL
-                RowIndex: 51
+                RowIndex: 36
                 RowSpan: 6
               - ColumnIndex: 0
                 ColumnSpan: 36
                 ElementId: c8f4a78c-5e07-4f15-b0bc-26a2f1ea4ac4
                 ElementType: VISUAL
-                RowIndex: 57
+                RowIndex: 42
                 RowSpan: 10
               - ColumnIndex: 0
                 ColumnSpan: 36
                 ElementId: 80946689-333b-48e5-b176-1f6087c5ce30
                 ElementType: VISUAL
-                RowIndex: 67
+                RowIndex: 52
                 RowSpan: 10
               - ColumnIndex: 0
                 ColumnSpan: 36
                 ElementId: 55f295f4-58c0-4a57-a5df-d133121faa35
                 ElementType: VISUAL
-                RowIndex: 77
+                RowIndex: 62
                 RowSpan: 9
               - ColumnIndex: 0
                 ColumnSpan: 36
                 ElementId: cdd5b2e5-f9c7-4f6c-8b45-1ea1cc9a9c58
                 ElementType: VISUAL
-                RowIndex: 86
+                RowIndex: 71
                 RowSpan: 6
               - ColumnIndex: 0
-                ColumnSpan: 10
+                ColumnSpan: 36
                 ElementId: 3f2bab35-3767-4932-b8ea-b11eec5dcdae
                 ElementType: TEXT_BOX
-                RowIndex: 92
-                RowSpan: 4
-              - ColumnIndex: 10
-                ColumnSpan: 26
-                ElementId: fd32d4ba-2d0e-458a-9a42-26cdc6af4f03
-                ElementType: TEXT_BOX
-                RowIndex: 92
+                RowIndex: 77
                 RowSpan: 4
               - ColumnIndex: 0
                 ColumnSpan: 18
                 ElementId: 6de62f13-31e6-44b6-a379-0504a1f65512
                 ElementType: VISUAL
-                RowIndex: 96
+                RowIndex: 81
                 RowSpan: 9
               - ColumnIndex: 18
                 ColumnSpan: 18
                 ElementId: da421e24-0c32-4824-a9fc-7b3f25a44329
                 ElementType: VISUAL
-                RowIndex: 96
+                RowIndex: 81
                 RowSpan: 9
               - ColumnIndex: 0
                 ColumnSpan: 36
                 ElementId: 3c752c08-c754-4420-abae-9146e14d6068
                 ElementType: VISUAL
-                RowIndex: 105
+                RowIndex: 90
                 RowSpan: 6
         Name: MediaLive Reservation & Savings
         ParameterControls:
+        - List:
+            DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
+              SearchOptions:
+                Visibility: HIDDEN
+              SelectAllOptions:
+                Visibility: HIDDEN
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            ParameterControlId: 397fd424-fa7e-4cba-8375-21e0bfe752ff
+            SelectableValues:
+              Values:
+              - '30'
+              - '60'
+              - '90'
+              - '180'
+              - '365'
+            SourceParameterName: EmlLookbackDays
+            Title: Days
+            Type: SINGLE_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -8876,13 +8646,15 @@ dashboards:
             ParameterControlId: c89d2be5-2c90-41b4-afb9-24e1c4e7f78e
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: linked_account_id
+                ColumnName: linked_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: AccountID
-            Title: Account ID
+            SourceParameterName: LinkedAccount
+            Title: Linked Account
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -8893,28 +8665,63 @@ dashboards:
             ParameterControlId: 816820f9-485a-42e1-8c45-9a51361ff46a
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: payer_account_id
+                ColumnName: payer_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: PayerID
-            Title: Payer ID
+            SourceParameterName: PayerAccount
+            Title: Payer Account
             Type: MULTI_SELECT
-        - Dropdown:
-            DisplayOptions:
-              SelectAllOptions:
-                Visibility: VISIBLE
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            ParameterControlId: 96f4f0c5-781c-4f50-8dba-5d37c1e9eb27
-            SelectableValues:
-              LinkToDataSetColumn:
-                ColumnName: account_name
-                DataSetIdentifier: summary_view
-            SourceParameterName: AccountName
-            Title: Account Name
-            Type: MULTI_SELECT
+        SheetControlLayouts:
+        - Configuration:
+            GridLayout:
+              Elements:
+              - ColumnIndex: 0
+                ColumnSpan: 3
+                ElementId: 816820f9-485a-42e1-8c45-9a51361ff46a
+                ElementType: PARAMETER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
+              - ColumnIndex: 3
+                ColumnSpan: 3
+                ElementId: c89d2be5-2c90-41b4-afb9-24e1c4e7f78e
+                ElementType: PARAMETER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
+              - ColumnIndex: 6
+                ColumnSpan: 3
+                ElementId: b7e883dd-55a1-470a-8e07-dbc5897898aa
+                ElementType: FILTER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
+              - ColumnIndex: 9
+                ColumnSpan: 3
+                ElementId: 83a89852-9ab4-483c-a820-12d4bf06c294
+                ElementType: FILTER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
+              - ColumnIndex: 0
+                ColumnSpan: 3
+                ElementId: 48950c30-205a-42ac-b827-159234f339d9
+                ElementType: FILTER_CONTROL
+                RowIndex: 1
+                RowSpan: 1
+              - ColumnIndex: 3
+                ColumnSpan: 3
+                ElementId: 7eceadb2-b2d4-4136-a22d-c98353660c89
+                ElementType: FILTER_CONTROL
+                RowIndex: 1
+                RowSpan: 1
+              - ColumnIndex: 6
+                ColumnSpan: 3
+                ElementId: 3aec2e39-8b21-4121-9815-b7823bb3840a
+                ElementType: FILTER_CONTROL
+                RowIndex: 1
+                RowSpan: 1
+              - ColumnIndex: 9
+                ColumnSpan: 3
+                ElementId: 90a1da51-6c5b-4089-9b71-20af95f3c79d
+                ElementType: FILTER_CONTROL
+                RowIndex: 1
+                RowSpan: 1
         SheetId: f62c7213-b9f2-497b-a82e-60b372612437
         TextBoxes:
         - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>Reservations\
@@ -8960,12 +8767,29 @@ dashboards:
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">A</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"30px\">DDITIONAL</inline>\n  <inline\
             \ color=\"#fec48c\" font-size=\"36px\">\_O</inline>\n  <inline color=\"#fec48c\"\
-            \ font-size=\"30px\">PPORTUNITY</inline>\n</text-box>"
+            \ font-size=\"30px\">PPORTUNITY</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li\
+            \ class=\"ql-indent-0\">\n      <inline color=\"#f2f3f3\" font-size=\"16px\"\
+            >\n        <i>Use these visuals to identify parameter combinations that could\
+            \ benefit from additional reservation coverage.</i>\n      </inline>\n    </li>\n\
+            \    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">\n       \
+            \ <i>See also:\_</i>\n      </inline>\n      <inline font-size=\"16px\">\n \
+            \       <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/input-output-reservations.html\"\
+            \ target=\"_blank\">\n          <b>\n            <i>\n              <u>How input\
+            \ and output reservations work</u>\n            </i>\n          </b>\n     \
+            \   </a>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n     \
+            \ <inline font-size=\"16px\">\n        <i>See also:\_</i>\n      </inline>\n\
+            \      <inline font-size=\"16px\">\n        <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/purchasing-reservations.html\"\
+            \ target=\"_blank\">\n          <b>\n            <i>\n              <u>Purchasing\
+            \ Elemental MediaLive reservations</u>\n            </i>\n          </b>\n \
+            \       </a>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
           SheetTextBoxId: 3f2bab35-3767-4932-b8ea-b11eec5dcdae
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">E</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"32px\">FFICIENCY</inline>\n  <inline\
             \ color=\"#fec48c\" font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\"\
-            \ font-size=\"32px\">RACKING</inline>\n</text-box>"
+            \ font-size=\"32px\">RACKING</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"\
+            ql-indent-0\">\n      <inline color=\"#f2f3f3\" font-size=\"16px\">\n      \
+            \  <i>Use these visuals to track overall coverage and utilization for your existing\
+            \ reservations.</i>\n      </inline>\n    </li>\n  </ul>\n  <br/>\n</text-box>"
           SheetTextBoxId: d51c35cd-d554-4639-82ec-713b929e75a6
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"24px\">A</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"20px\">BOUT\_</inline>\n  <inline color=\"\
@@ -8981,7 +8805,7 @@ dashboards:
             16px\">\n        <i>\_on inputs, outputs, and add-on features with a 12-month\
             \ commitment.\_</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
             >\n      <inline font-size=\"16px\">\n        <i>To explore reservations and\
-            \ how they can reduce your transcoding costs, visit:</i>\n      </inline>\n\
+            \ how they can reduce your transcoding costs, visit:\_</i>\n      </inline>\n\
             \      <inline font-size=\"16px\">\n        <b>\n          <i>\_</i>\n     \
             \   </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <a href=\"\
             https://docs.aws.amazon.com/medialive/latest/ug/reservations.html\" target=\"\
@@ -8989,38 +8813,6 @@ dashboards:
             \            </i>\n          </b>\n        </a>\n      </inline>\n    </li>\n\
             \  </ul>\n</text-box>"
           SheetTextBoxId: 33dbd267-4714-46a9-a8aa-6eff045e5b7f
-        - Content: |-
-            <text-box>
-              <inline color="#fec48c" font-size="24px">G</inline>
-              <inline color="#fec48c" font-size="20px">UIDANCE</inline>
-              <br/>
-              <br/>
-              <ul>
-                <li class="ql-indent-0">
-                  <inline color="#f2f3f3" font-size="16px">
-                    <i>Use these visuals to track overall coverage and utilization for your existing reservations.</i>
-                  </inline>
-                </li>
-              </ul>
-            </text-box>
-          SheetTextBoxId: 300c8767-7d3e-4298-8673-deaf041e30a3
-        - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"24px\">G</inline>\n\
-            \  <inline color=\"#fec48c\" font-size=\"20px\">UIDANCE</inline>\n  <br/>\n\
-            \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#f2f3f3\"\
-            \ font-size=\"16px\">\n        <i>Use these visuals to identify parameter combinations\
-            \ that could benefit from additional reservation coverage.</i>\n      </inline>\n\
-            \    </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\"\
-            >\n        <i>See also:\_</i>\n      </inline>\n      <inline font-size=\"16px\"\
-            >\n        <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/input-output-reservations.html\"\
-            \ target=\"_blank\">\n          <b>\n            <i>\n              <u>How input\
-            \ and output reservations work</u>\n            </i>\n          </b>\n     \
-            \   </a>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n     \
-            \ <inline font-size=\"16px\">\n        <i>See also:\_</i>\n      </inline>\n\
-            \      <inline font-size=\"16px\">\n        <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/purchasing-reservations.html\"\
-            \ target=\"_blank\">\n          <b>\n            <i>\n              <u>Purchasing\
-            \ Elemental MediaLive reservations</u>\n            </i>\n          </b>\n \
-            \       </a>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
-          SheetTextBoxId: fd32d4ba-2d0e-458a-9a42-26cdc6af4f03
         Visuals:
         - LineChartVisual:
             Actions:
@@ -9302,7 +9094,8 @@ dashboards:
                 SelectedFieldOptions:
                 - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.11.1754685170416
                   Width: 178px
-                - FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1747068105054
+                - CustomLabel: Linked Account
+                  FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1747068105054
                   Width: 212px
                 - CustomLabel: In/Out
                   FieldId: 24f8ff49-52e2-481a-ae0d-828f5f6e4adc.5.1747068201885
@@ -9344,7 +9137,7 @@ dashboards:
                       FieldId: c01482f3-3e86-4114-962a-121a16172e0b.11.1754685170416
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: Account
+                        ColumnName: Linked Account
                         DataSetIdentifier: summary_view
                       FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1747068105054
                   - CategoricalDimensionField:
@@ -10664,8 +10457,8 @@ dashboards:
                   Visibility: VISIBLE
                   VisibleRange:
                     PercentRange:
-                      From: 40.474631751227484
-                      To: 100.0
+                      From: 14.69559492403202
+                      To: 98.86685552407933
                 TickLabelOptions:
                   LabelOptions:
                     FontConfiguration:
@@ -10681,6 +10474,11 @@ dashboards:
                   CustomLabel: Profile
                 SortIconVisibility: HIDDEN
               DataLabels:
+                DataLabelTypes:
+                - DataPathLabelType:
+                    FieldId: 9d1eb7c6-9f1d-4087-bfa0-9e5848915e3c.2.1744078837311
+                    FieldValue: On Demand
+                    Visibility: VISIBLE
                 Overlap: DISABLE_OVERLAP
                 Visibility: VISIBLE
               FieldWells:
@@ -10688,7 +10486,7 @@ dashboards:
                   Category:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: usage_type
+                        ColumnName: Transcoding Profile
                         DataSetIdentifier: summary_view
                       FieldId: 199e42cb-2197-4926-bc39-0d09fd7f01c2.2.1745010839194
                       HierarchyId: 7e649821-1243-431f-8c2f-7fe6a090d9e6
@@ -10707,6 +10505,7 @@ dashboards:
                         DataSetIdentifier: summary_view
                       FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.usage_quantity.2.1744081387149
               Legend:
+                Position: BOTTOM
                 Title:
                   CustomLabel: Purchase Option
                 ValueFontConfiguration:
@@ -10742,7 +10541,7 @@ dashboards:
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
               ValueAxis:
-                AxisOffset: 651px
+                AxisOffset: 471px
                 TickLabelOptions:
                   LabelOptions:
                     FontConfiguration:
@@ -10773,8 +10572,10 @@ dashboards:
                 RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Transcoding\
                   \ profile hours by purchase option (top\_</b>\n  </inline>\n  <inline\
                   \ font-size=\"16px\">\n    <b>\n      <parameter>${TopN}</parameter>\n\
-                  \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>, last 30\
-                  \ days)</b>\n  </inline>\n</visual-title>"
+                  \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>, last\_\
+                  </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\n      <parameter>${EmlLookbackDays}</parameter>\n\
+                  \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_days)</b>\n\
+                  \  </inline>\n</visual-title>"
               Visibility: VISIBLE
             VisualId: f7275634-1603-4f72-93af-4688800d6047
         - TableVisual:
@@ -10795,7 +10596,7 @@ dashboards:
             ChartConfiguration:
               FieldOptions:
                 Order:
-                - faff24db-9601-4a15-85e1-4b264d4626c3.payer_id.13.1754683936536
+                - 81d9c459-6953-4e14-9724-eaa3db57ae5f.13.1755229160456
                 - 589bb05e-0681-4403-8f96-b4ef9b7435bf.13.1753196337358
                 - da1ac996-721b-4e6a-8887-2307299bbabb.14.1753196520720
                 - 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation id.0.1743083275013
@@ -10810,10 +10611,10 @@ dashboards:
                 - 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation_end_time.3.1743083436463
                 - 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.ri utilization (%).1.1743083276962
                 SelectedFieldOptions:
-                - CustomLabel: Payer
-                  FieldId: faff24db-9601-4a15-85e1-4b264d4626c3.payer_id.13.1754683936536
+                - FieldId: 81d9c459-6953-4e14-9724-eaa3db57ae5f.13.1755229160456
+                  Width: 152px
                 - FieldId: 589bb05e-0681-4403-8f96-b4ef9b7435bf.13.1753196337358
-                  Width: 198px
+                  Width: 190px
                 - CustomLabel: Type
                   FieldId: da1ac996-721b-4e6a-8887-2307299bbabb.14.1753196520720
                   Width: 87px
@@ -10854,12 +10655,12 @@ dashboards:
                   GroupBy:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: payer_id
+                        ColumnName: Payer Account
                         DataSetIdentifier: msoh_reservations
-                      FieldId: faff24db-9601-4a15-85e1-4b264d4626c3.payer_id.13.1754683936536
+                      FieldId: 81d9c459-6953-4e14-9724-eaa3db57ae5f.13.1755229160456
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: Account
+                        ColumnName: Linked Account
                         DataSetIdentifier: msoh_reservations
                       FieldId: 589bb05e-0681-4403-8f96-b4ef9b7435bf.13.1753196337358
                   - CategoricalDimensionField:
@@ -11024,6 +10825,13 @@ dashboards:
                 Width: 637px
               PrimaryYAxisDisplayOptions:
                 AxisOptions:
+                  AxisOffset: 62px
+                  DataOptions:
+                    NumericAxisOptions:
+                      Range:
+                        MinMax:
+                          Maximum: 1.0
+                          Minimum: 0.0
                   TickLabelOptions:
                     LabelOptions:
                       FontConfiguration:
@@ -11132,8 +10940,13 @@ dashboards:
                   CustomLabel: Profile
                 SortIconVisibility: HIDDEN
               DataLabels:
+                DataLabelTypes:
+                - DataPathLabelType:
+                    FieldId: 9d1eb7c6-9f1d-4087-bfa0-9e5848915e3c.2.1744078837311
+                    FieldValue: On Demand
+                    Visibility: VISIBLE
                 Overlap: DISABLE_OVERLAP
-                Visibility: HIDDEN
+                Visibility: VISIBLE
               FieldWells:
                 BarChartAggregatedFieldWells:
                   Category:
@@ -11173,6 +10986,7 @@ dashboards:
                                 Visibility: VISIBLE
                             Symbol: USD
               Legend:
+                Position: BOTTOM
                 Title:
                   CustomLabel: Purchase Option
                 Width: 142px
@@ -11205,7 +11019,7 @@ dashboards:
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
               ValueAxis:
-                AxisOffset: 646px
+                AxisOffset: 459px
                 TickLabelOptions:
                   LabelOptions:
                     FontConfiguration:
@@ -11241,8 +11055,10 @@ dashboards:
                 RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Cost for\
                   \ transcoding profile by purchase option (top\_</b>\n  </inline>\n  <inline\
                   \ font-size=\"16px\">\n    <b>\n      <parameter>${TopN}</parameter>\n\
-                  \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>, last 30\
-                  \ days)</b>\n  </inline>\n</visual-title>"
+                  \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>, last\_\
+                  </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\n      <parameter>${EmlLookbackDays}</parameter>\n\
+                  \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_days)</b>\n\
+                  \  </inline>\n</visual-title>"
               Visibility: VISIBLE
             VisualId: be3dbcd4-8d57-4c60-9139-e985c93c95c1
         - LineChartVisual:
@@ -11312,7 +11128,21 @@ dashboards:
               Legend:
                 Title:
                   CustomLabel: Profile
-                Width: 555px
+                Width: 636px
+              PrimaryYAxisDisplayOptions:
+                AxisOptions:
+                  AxisOffset: 70px
+                  DataOptions:
+                    NumericAxisOptions:
+                      Range:
+                        MinMax:
+                          Maximum: 1.0
+                          Minimum: 0.0
+                  TickLabelOptions:
+                    LabelOptions:
+                      FontConfiguration:
+                        FontSize:
+                          Relative: LARGE
               PrimaryYAxisLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -11556,7 +11386,7 @@ dashboards:
                 ElementId: 586a5610-4de3-4aa1-8673-603267630f23
                 ElementType: TEXT_BOX
                 RowIndex: 0
-                RowSpan: 10
+                RowSpan: 11
               - ColumnIndex: 18
                 ColumnSpan: 6
                 ElementId: 2900749f-8d14-4401-856b-765a271045e8
@@ -11580,192 +11410,180 @@ dashboards:
                 ElementId: 1b874468-079d-49cf-bba9-1b2017ff980b
                 ElementType: TEXT_BOX
                 RowIndex: 6
-                RowSpan: 4
+                RowSpan: 5
               - ColumnIndex: 0
                 ColumnSpan: 36
                 ElementId: 736e1f30-9ed1-4ee5-b815-b4764c9953f8
                 ElementType: TEXT_BOX
-                RowIndex: 10
+                RowIndex: 11
                 RowSpan: 2
               - ColumnIndex: 0
                 ColumnSpan: 5
                 ElementId: f023e71b-deb5-46bb-bf3c-f73bc2f5ed8d
                 ElementType: PARAMETER_CONTROL
-                RowIndex: 12
+                RowIndex: 13
                 RowSpan: 6
               - ColumnIndex: 5
                 ColumnSpan: 13
                 ElementId: 37a0ff92-6f0e-4264-ac62-20dfd7fd03d5
                 ElementType: VISUAL
-                RowIndex: 12
+                RowIndex: 13
                 RowSpan: 6
               - ColumnIndex: 18
                 ColumnSpan: 18
                 ElementId: f95a3397-ccbd-45af-8e26-14f81bffebee
                 ElementType: VISUAL
-                RowIndex: 12
+                RowIndex: 13
                 RowSpan: 6
               - ColumnIndex: 0
                 ColumnSpan: 18
                 ElementId: c8b9b46e-e362-4e14-976f-ca24abfb225b
                 ElementType: VISUAL
-                RowIndex: 18
+                RowIndex: 19
                 RowSpan: 9
               - ColumnIndex: 18
                 ColumnSpan: 18
                 ElementId: eaf0583c-d9e0-4af7-b8d0-5c7db05cd102
                 ElementType: VISUAL
-                RowIndex: 18
+                RowIndex: 19
                 RowSpan: 9
               - ColumnIndex: 0
                 ColumnSpan: 36
                 ElementId: d2467169-52ed-49cb-8481-e29aff270329
                 ElementType: TEXT_BOX
-                RowIndex: 27
+                RowIndex: 28
                 RowSpan: 2
               - ColumnIndex: 0
                 ColumnSpan: 5
                 ElementId: e18bb5e4-db57-41f7-852c-d92793bd1d8d
                 ElementType: PARAMETER_CONTROL
-                RowIndex: 29
+                RowIndex: 30
                 RowSpan: 6
               - ColumnIndex: 5
                 ColumnSpan: 13
                 ElementId: 166f6582-7486-4cfb-a44d-f6905bdeda85
                 ElementType: VISUAL
-                RowIndex: 29
+                RowIndex: 30
                 RowSpan: 6
               - ColumnIndex: 18
                 ColumnSpan: 18
                 ElementId: 09680255-330e-45f7-a948-f10ed5795f55
                 ElementType: VISUAL
-                RowIndex: 29
+                RowIndex: 30
                 RowSpan: 6
               - ColumnIndex: 0
                 ColumnSpan: 18
                 ElementId: 14d3b788-2114-42ab-b00a-eaa990459ddb
                 ElementType: VISUAL
-                RowIndex: 35
+                RowIndex: 36
                 RowSpan: 9
               - ColumnIndex: 18
                 ColumnSpan: 18
                 ElementId: 449c7cbc-d5d1-412b-989d-d7e9c9cb3d79
                 ElementType: VISUAL
-                RowIndex: 35
+                RowIndex: 36
                 RowSpan: 9
               - ColumnIndex: 0
-                ColumnSpan: 8
+                ColumnSpan: 24
                 ElementId: 5128925a-37fc-4e10-b0bb-da9aeb493ea0
                 ElementType: TEXT_BOX
-                RowIndex: 44
-                RowSpan: 3
-              - ColumnIndex: 8
-                ColumnSpan: 16
-                ElementId: 1bd82aa9-8494-4952-8595-188a15a1fed0
-                ElementType: TEXT_BOX
-                RowIndex: 44
+                RowIndex: 45
                 RowSpan: 3
               - ColumnIndex: 24
                 ColumnSpan: 12
                 ElementId: dfcdaf3c-9196-453d-a71d-0d7361e04fd3
                 ElementType: TEXT_BOX
-                RowIndex: 44
+                RowIndex: 45
                 RowSpan: 9
               - ColumnIndex: 0
                 ColumnSpan: 4
                 ElementId: 75f2db5f-836e-4415-a331-f0db76ccdc3f
                 ElementType: FILTER_CONTROL
-                RowIndex: 47
+                RowIndex: 48
                 RowSpan: 6
               - ColumnIndex: 4
                 ColumnSpan: 4
                 ElementId: b93893af-5753-4dfb-a82f-81d5a9a32ec6
                 ElementType: FILTER_CONTROL
-                RowIndex: 47
+                RowIndex: 48
                 RowSpan: 6
               - ColumnIndex: 8
                 ColumnSpan: 4
                 ElementId: 0b513d8a-3118-48ea-8a4e-66df4fe6709c
                 ElementType: FILTER_CONTROL
-                RowIndex: 47
+                RowIndex: 48
                 RowSpan: 6
               - ColumnIndex: 12
                 ColumnSpan: 4
                 ElementId: e45f3d92-a869-4a82-b474-c90cae6942f0
                 ElementType: FILTER_CONTROL
-                RowIndex: 47
+                RowIndex: 48
                 RowSpan: 6
               - ColumnIndex: 16
                 ColumnSpan: 4
                 ElementId: bf9a90c0-9d16-476e-86cb-21626aabec92
                 ElementType: FILTER_CONTROL
-                RowIndex: 47
+                RowIndex: 48
                 RowSpan: 6
               - ColumnIndex: 20
                 ColumnSpan: 4
                 ElementId: d8b0be39-7178-4ea6-be0a-f0d8b5436133
                 ElementType: FILTER_CONTROL
-                RowIndex: 47
+                RowIndex: 48
                 RowSpan: 6
               - ColumnIndex: 0
                 ColumnSpan: 18
                 ElementId: 0156afbd-7488-4f24-98c0-398b53fab149
                 ElementType: VISUAL
-                RowIndex: 53
+                RowIndex: 54
                 RowSpan: 11
               - ColumnIndex: 18
                 ColumnSpan: 18
                 ElementId: fb189dba-f269-4fe8-835c-6acbbba515e4
                 ElementType: VISUAL
-                RowIndex: 53
+                RowIndex: 54
                 RowSpan: 11
               - ColumnIndex: 0
-                ColumnSpan: 8
+                ColumnSpan: 36
                 ElementId: 40301eba-826a-462f-8a56-6ded11b11992
                 ElementType: TEXT_BOX
-                RowIndex: 64
-                RowSpan: 3
-              - ColumnIndex: 8
-                ColumnSpan: 28
-                ElementId: d8fbafbc-61e7-4846-bfb5-a797851e084a
-                ElementType: TEXT_BOX
-                RowIndex: 64
+                RowIndex: 65
                 RowSpan: 3
               - ColumnIndex: 0
                 ColumnSpan: 18
                 ElementId: 902518a0-2901-4da3-a8c8-0721373c3a17
                 ElementType: VISUAL
-                RowIndex: 67
+                RowIndex: 68
                 RowSpan: 16
               - ColumnIndex: 18
                 ColumnSpan: 18
                 ElementId: f37d56fe-3ece-4fc6-b26b-a4e7e7958110
                 ElementType: VISUAL
-                RowIndex: 67
+                RowIndex: 68
                 RowSpan: 16
               - ColumnIndex: 0
                 ColumnSpan: 36
                 ElementId: 839b6b63-f2f9-4277-857c-de14563b23de
                 ElementType: VISUAL
-                RowIndex: 83
+                RowIndex: 84
                 RowSpan: 11
               - ColumnIndex: 0
                 ColumnSpan: 1
                 ElementId: 203c707d-c067-4279-9aaa-168144345380
                 ElementType: FILTER_CONTROL
-                RowIndex: 94
+                RowIndex: 95
                 RowSpan: 1
               - ColumnIndex: 1
                 ColumnSpan: 1
                 ElementId: ec8b546c-0d9c-474c-af77-876e49da2724
                 ElementType: FILTER_CONTROL
-                RowIndex: 94
+                RowIndex: 95
                 RowSpan: 1
               - ColumnIndex: 2
                 ColumnSpan: 1
                 ElementId: 2afd46c6-52c1-4f77-9f9d-6a2152606e92
                 ElementType: FILTER_CONTROL
-                RowIndex: 94
+                RowIndex: 95
                 RowSpan: 1
         Name: MediaConvert
         ParameterControls:
@@ -11817,6 +11635,8 @@ dashboards:
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -11827,13 +11647,15 @@ dashboards:
             ParameterControlId: 66b12b5e-15f6-47bb-a4dc-1d0b4a137dab
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: linked_account_id
+                ColumnName: linked_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: AccountID
-            Title: Account ID
+            SourceParameterName: LinkedAccount
+            Title: Linked Account
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -11844,28 +11666,27 @@ dashboards:
             ParameterControlId: 77e91110-1b81-431c-8c4e-ead955ee660b
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: payer_account_id
+                ColumnName: payer_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: PayerID
-            Title: Payer ID
+            SourceParameterName: PayerAccount
+            Title: Payer Account
             Type: MULTI_SELECT
-        - Dropdown:
-            DisplayOptions:
-              SelectAllOptions:
-                Visibility: VISIBLE
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            ParameterControlId: d3b08e63-169a-4ae0-9021-96455de1a3fb
-            SelectableValues:
-              LinkToDataSetColumn:
-                ColumnName: account_name
-                DataSetIdentifier: summary_view
-            SourceParameterName: AccountName
-            Title: Account Name
-            Type: MULTI_SELECT
+        SheetControlLayouts:
+        - Configuration:
+            GridLayout:
+              Elements:
+              - ColumnIndex: 0
+                ColumnSpan: 3
+                ElementId: 77e91110-1b81-431c-8c4e-ead955ee660b
+                ElementType: PARAMETER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
+              - ColumnIndex: 3
+                ColumnSpan: 3
+                ElementId: 66b12b5e-15f6-47bb-a4dc-1d0b4a137dab
+                ElementType: PARAMETER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
         SheetId: 5d5e6f78-8e5f-4802-9efb-d68394cf050c
         TextBoxes:
         - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"36px\">\n    <b>AWS\
@@ -11912,6 +11733,16 @@ dashboards:
             <text-box>
               <inline color="#fec48c" font-size="36px">T</inline>
               <inline color="#fec48c" font-size="30px">RANSCODING</inline>
+              <br/>
+              <br/>
+              <ul>
+                <li class="ql-indent-0">
+                  <inline color="#efefe9" font-size="16px">
+                    <i>Select different parameter filter combinations to explore in more detail</i>
+                  </inline>
+                </li>
+              </ul>
+              <br/>
             </text-box>
           SheetTextBoxId: 5128925a-37fc-4e10-b0bb-da9aeb493ea0
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">J</inline>\n\
@@ -11924,12 +11755,11 @@ dashboards:
             \  </inline>\n  <inline color=\"#fec48c\" font-size=\"24px\">\n    <b>\_P</b>\n\
             \  </inline>\n  <inline color=\"#fec48c\" font-size=\"20px\">\n    <b>ROFILES</b>\n\
             \  </inline>\n  <br/>\n  <br/>\n  <inline font-size=\"16px\">\n    <i>AEMC transcoding\
-            \ Usage Type profiles represent a combination of multiple parameter options\
-            \ separated by dashes (\"-\"). The fields include:</i>\n  </inline>\n  <br/>\n\
-            \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
-            16px\">\n        <i>Region abreviation (e.g. IAD for us-east-1)</i>\n      </inline>\n\
-            \    </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\"\
-            >\n        <i>Tier (Basic or Professional)</i>\n      </inline>\n    </li>\n\
+            \ Usage Type profiles represent a combination of multiple parameter options.\
+            \ The fields include:</i>\n  </inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"\
+            ql-indent-0\">\n      <inline font-size=\"16px\">\n        <i>Region</i>\n \
+            \     </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
+            16px\">\n        <i>Tier (Basic or Professional)</i>\n      </inline>\n    </li>\n\
             \    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">\n       \
             \ <i>Codec</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
             \      <inline font-size=\"16px\">\n        <i>Resolution (e.g. Standard vs\
@@ -11937,9 +11767,7 @@ dashboards:
             >\n      <inline font-size=\"16px\">\n        <i>Quality (e.g Single vs Multi\
             \ pass)</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n  \
             \    <inline font-size=\"16px\">\n        <i>Frame Rate</i>\n      </inline>\n\
-            \    </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\"\
-            >\n        <i>Normalized Transcode Minute (NTM) pricing model flag</i>\n   \
-            \   </inline>\n    </li>\n  </ul>\n</text-box>"
+            \    </li>\n  </ul>\n</text-box>"
           SheetTextBoxId: dfcdaf3c-9196-453d-a71d-0d7361e04fd3
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
@@ -11952,23 +11780,6 @@ dashboards:
             #fec48c\" font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
             30px\">UMMARY</inline>\n</text-box>"
           SheetTextBoxId: d2467169-52ed-49cb-8481-e29aff270329
-        - Content: "<text-box>\_\_</text-box>"
-          SheetTextBoxId: d8fbafbc-61e7-4846-bfb5-a797851e084a
-        - Content: |-
-            <text-box>
-              <inline color="#fec48c" font-size="24px">G</inline>
-              <inline color="#fec48c" font-size="20px">UIDANCE</inline>
-              <br/>
-              <br/>
-              <ul>
-                <li class="ql-indent-0">
-                  <inline color="#efefe9" font-size="16px">
-                    <i>Select different parameter filter combinations to explore in more detail</i>
-                  </inline>
-                </li>
-              </ul>
-            </text-box>
-          SheetTextBoxId: 1bd82aa9-8494-4952-8595-188a15a1fed0
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">K</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"30px\">EY\_</inline>\n  <inline color=\"\
             #fec48c\" font-size=\"36px\">U</inline>\n  <inline color=\"#fec48c\" font-size=\"\
@@ -12049,6 +11860,9 @@ dashboards:
                 Title:
                   CustomLabel: Profile
                 Width: 426px
+              PrimaryYAxisDisplayOptions:
+                AxisOptions:
+                  AxisOffset: 59px
               PrimaryYAxisLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -12128,7 +11942,7 @@ dashboards:
                   Width: 233px
                 - DataPathList:
                   - FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.14.1752165478903
-                    FieldValue: Account
+                    FieldValue: Linked Account
                   Width: 154px
                 - DataPathList:
                   - FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.billing_period.13.1744991872398
@@ -12193,7 +12007,7 @@ dashboards:
                       FieldId: c01482f3-3e86-4114-962a-121a16172e0b.11.1754666897345
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: Account
+                        ColumnName: Linked Account
                         DataSetIdentifier: summary_view
                       FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.14.1752165478903
                   - CategoricalDimensionField:
@@ -12682,7 +12496,7 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: payer_account_id
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
@@ -12797,7 +12611,7 @@ dashboards:
                   DataSetIdentifier: summary_view
                 - ColumnName: payer_account_id
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -13414,7 +13228,7 @@ dashboards:
                   >\n    <b>T</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
                   16px\">\n    <b>RANSCODING\_</b>\n  </inline>\n  <inline color=\"#fec48c\"\
                   \ font-size=\"20px\">\n    <b>M</b>\n  </inline>\n  <inline color=\"#fec48c\"\
-                  \ font-size=\"16px\">\n    <b>INS</b>\n  </inline>\n</visual-title>"
+                  \ font-size=\"16px\">\n    <b>INUTES</b>\n  </inline>\n</visual-title>"
               Visibility: VISIBLE
             VisualId: de01cc24-5af1-4f11-bfe4-09e97a284115
         - BarChartVisual:
@@ -13427,7 +13241,7 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: Payer Account
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
@@ -13560,7 +13374,7 @@ dashboards:
                   DataSetIdentifier: summary_view
                 - ColumnName: Payer Account
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -14164,7 +13978,7 @@ dashboards:
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
               ValueAxis:
-                AxisOffset: 228px
+                AxisOffset: 325px
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -14179,7 +13993,9 @@ dashboards:
                 DrillDownFilters: []
                 HierarchyId: a23908ae-a37f-42ed-8eb6-f9874ef1e7cf
             Subtitle:
-              Visibility: HIDDEN
+              FormatText:
+                RichText: <visual-subtitle>Excluding reserved transcoding</visual-subtitle>
+              Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Jobs by\
@@ -14294,14 +14110,8 @@ dashboards:
                 RowIndex: 38
                 RowSpan: 9
               - ColumnIndex: 0
-                ColumnSpan: 8
+                ColumnSpan: 36
                 ElementId: 87a25807-e4fe-4c0f-9892-cc2390aa7177
-                ElementType: TEXT_BOX
-                RowIndex: 47
-                RowSpan: 4
-              - ColumnIndex: 8
-                ColumnSpan: 28
-                ElementId: d63c4ee9-5296-436e-8647-5ddc1852d03d
                 ElementType: TEXT_BOX
                 RowIndex: 47
                 RowSpan: 4
@@ -14393,6 +14203,8 @@ dashboards:
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -14403,13 +14215,15 @@ dashboards:
             ParameterControlId: 393548d9-e623-435b-8737-c77dc4f4fe6e
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: linked_account_id
+                ColumnName: linked_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: AccountID
-            Title: Account ID
+            SourceParameterName: LinkedAccount
+            Title: Linked Account
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -14420,47 +14234,24 @@ dashboards:
             ParameterControlId: 9c797614-ba49-48ff-99aa-d5d21cdfc547
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: payer_account_id
+                ColumnName: payer_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: PayerID
-            Title: Payer ID
-            Type: MULTI_SELECT
-        - Dropdown:
-            DisplayOptions:
-              SelectAllOptions:
-                Visibility: VISIBLE
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            ParameterControlId: 011c3e79-2b24-4c60-9734-1e1775c1a34b
-            SelectableValues:
-              LinkToDataSetColumn:
-                ColumnName: account_name
-                DataSetIdentifier: summary_view
-            SourceParameterName: AccountName
-            Title: Account Name
+            SourceParameterName: PayerAccount
+            Title: Payer Account
             Type: MULTI_SELECT
         SheetControlLayouts:
         - Configuration:
             GridLayout:
               Elements:
               - ColumnIndex: 0
-                ColumnSpan: 2
+                ColumnSpan: 3
                 ElementId: 9c797614-ba49-48ff-99aa-d5d21cdfc547
                 ElementType: PARAMETER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
-              - ColumnIndex: 2
-                ColumnSpan: 2
+              - ColumnIndex: 3
+                ColumnSpan: 3
                 ElementId: 393548d9-e623-435b-8737-c77dc4f4fe6e
-                ElementType: PARAMETER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 4
-                ColumnSpan: 2
-                ElementId: 011c3e79-2b24-4c60-9734-1e1775c1a34b
                 ElementType: PARAMETER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
@@ -14529,25 +14320,14 @@ dashboards:
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">D</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"30px\">ATA</inline>\n  <inline color=\"\
             #fec48c\" font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-            30px\">RANSFER</inline>\n</text-box>"
+            30px\">RANSFER</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
+            >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>The following\
+            \ charts break down data transfer usage and cost by source and destination and\
+            \ group by the data transfer category</i>\n      </inline>\n    </li>\n  </ul>\n\
+            \  <br/>\n</text-box>"
           SheetTextBoxId: 87a25807-e4fe-4c0f-9892-cc2390aa7177
         - Content: "<text-box>\_\_</text-box>"
           SheetTextBoxId: 0c5ff456-b937-4091-abcf-87caed4220e5
-        - Content: |-
-            <text-box>
-              <inline color="#fec48c" font-size="24px">G</inline>
-              <inline color="#fec48c" font-size="20px">UIDANCE</inline>
-              <br/>
-              <br/>
-              <ul>
-                <li class="ql-indent-0">
-                  <inline color="#efefe9" font-size="16px">
-                    <i>The following charts break down data transfer usage and cost by source and destination and group by the data transfer category</i>
-                  </inline>
-                </li>
-              </ul>
-            </text-box>
-          SheetTextBoxId: d63c4ee9-5296-436e-8647-5ddc1852d03d
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">K</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"30px\">EY\_</inline>\n  <inline color=\"\
             #fec48c\" font-size=\"36px\">U</inline>\n  <inline color=\"#fec48c\" font-size=\"\
@@ -15254,8 +15034,7 @@ dashboards:
                 - CustomLabel: Billing Period
                   FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.usage_date.2.1744076304567
                   Visibility: VISIBLE
-                - CustomLabel: Payer ID
-                  FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.payer_account_id.3.1752689151712
+                - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.9.1755232647089
                   Visibility: VISIBLE
                 - FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.4.1752689157081
                   Visibility: VISIBLE
@@ -15292,12 +15071,12 @@ dashboards:
                       FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.usage_date.2.1744076304567
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: payer_account_id
+                        ColumnName: Payer Account
                         DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.payer_account_id.3.1752689151712
+                      FieldId: c01482f3-3e86-4114-962a-121a16172e0b.9.1755232647089
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: Account
+                        ColumnName: Linked Account
                         DataSetIdentifier: summary_view
                       FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.4.1752689157081
                   - CategoricalDimensionField:
@@ -15664,7 +15443,7 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: Payer Account
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
@@ -15796,7 +15575,7 @@ dashboards:
                   DataSetIdentifier: summary_view
                 - ColumnName: Payer Account
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -15995,7 +15774,7 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: payer_account_id
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
@@ -16112,7 +15891,7 @@ dashboards:
                   DataSetIdentifier: summary_view
                 - ColumnName: payer_account_id
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -16576,14 +16355,8 @@ dashboards:
                 RowIndex: 39
                 RowSpan: 9
               - ColumnIndex: 0
-                ColumnSpan: 8
+                ColumnSpan: 25
                 ElementId: 143b2dcb-b6ac-4b19-a31d-3523842a0691
-                ElementType: TEXT_BOX
-                RowIndex: 48
-                RowSpan: 7
-              - ColumnIndex: 8
-                ColumnSpan: 17
-                ElementId: 4c3cb17a-3ae4-41cd-ba7d-de83136f1b0c
                 ElementType: TEXT_BOX
                 RowIndex: 48
                 RowSpan: 7
@@ -16660,14 +16433,8 @@ dashboards:
                 RowIndex: 92
                 RowSpan: 10
               - ColumnIndex: 0
-                ColumnSpan: 8
+                ColumnSpan: 36
                 ElementId: 325a9c8b-145f-4eff-a6cd-13d6d611ed94
-                ElementType: TEXT_BOX
-                RowIndex: 102
-                RowSpan: 3
-              - ColumnIndex: 8
-                ColumnSpan: 28
-                ElementId: 3ed3828f-b602-4add-be8c-caf57af4463f
                 ElementType: TEXT_BOX
                 RowIndex: 102
                 RowSpan: 3
@@ -16843,6 +16610,8 @@ dashboards:
             Type: SINGLE_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -16853,13 +16622,15 @@ dashboards:
             ParameterControlId: 79d4416c-a98b-4321-80bc-d37aad90f4ad
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: linked_account_id
+                ColumnName: linked_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: AccountID
-            Title: Account ID
+            SourceParameterName: LinkedAccount
+            Title: Linked Account
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -16870,70 +16641,24 @@ dashboards:
             ParameterControlId: a7ea02be-e22d-40a1-9a12-f82298b0780d
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: payer_account_id
+                ColumnName: payer_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: PayerID
-            Title: Payer ID
+            SourceParameterName: PayerAccount
+            Title: Payer Account
             Type: MULTI_SELECT
-        - Dropdown:
-            DisplayOptions:
-              SelectAllOptions:
-                Visibility: VISIBLE
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            ParameterControlId: 8fd41b18-310f-4a5a-8c6f-574bea901e2e
-            SelectableValues:
-              LinkToDataSetColumn:
-                ColumnName: account_name
-                DataSetIdentifier: summary_view
-            SourceParameterName: AccountName
-            Title: Account Name
-            Type: MULTI_SELECT
-        - Dropdown:
-            DisplayOptions:
-              SelectAllOptions:
-                Visibility: VISIBLE
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            ParameterControlId: 0df017dd-45c2-48e8-a354-72bf0d845f82
-            SelectableValues:
-              Values:
-              - Amortized
-              - Invoice
-            SourceParameterName: CostModel
-            Title: Cost Model
-            Type: SINGLE_SELECT
         SheetControlLayouts:
         - Configuration:
             GridLayout:
               Elements:
               - ColumnIndex: 0
-                ColumnSpan: 2
+                ColumnSpan: 3
                 ElementId: a7ea02be-e22d-40a1-9a12-f82298b0780d
                 ElementType: PARAMETER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
-              - ColumnIndex: 2
-                ColumnSpan: 2
+              - ColumnIndex: 3
+                ColumnSpan: 3
                 ElementId: 79d4416c-a98b-4321-80bc-d37aad90f4ad
-                ElementType: PARAMETER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 4
-                ColumnSpan: 2
-                ElementId: 8fd41b18-310f-4a5a-8c6f-574bea901e2e
-                ElementType: PARAMETER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 6
-                ColumnSpan: 2
-                ElementId: 0df017dd-45c2-48e8-a354-72bf0d845f82
                 ElementType: PARAMETER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
@@ -16996,6 +16721,40 @@ dashboards:
             <text-box>
               <inline color="#fec48c" font-size="36px">T</inline>
               <inline color="#fec48c" font-size="30px">RANSCODING</inline>
+              <br/>
+              <br/>
+              <ul>
+                <li class="ql-indent-0">
+                  <inline font-size="16px">
+                    <i>Transcoding metering is based on several parameters that form a profile, including: number of pipes, region, flow direction, codec, resolution, bitrate, framerate and quality</i>
+                  </inline>
+                </li>
+                <li class="ql-indent-0">
+                  <inline font-size="16px">
+                    <i>Charts in this section EXCLUDE idle resource time</i>
+                  </inline>
+                </li>
+                <li class="ql-indent-0">
+                  <inline font-size="16px">
+                    <i>Identify transcoding profiles that will have steady or increase traffic for the coming 12 months and proceed with the reservations to reduce their cost.</i>
+                  </inline>
+                </li>
+                <li class="ql-indent-0">
+                  <inline font-size="16px">
+                    <i>Identify expensive transcoding profiles and leverage reservations if usage is expected to be the same or greater for the next 12 months.</i>
+                  </inline>
+                </li>
+                <li class="ql-indent-0">
+                  <inline font-size="16px">
+                    <i>Review if high-resolution/frame-rate outputs align with viewer needs. Adjust the profiles if needed</i>
+                  </inline>
+                </li>
+                <li class="ql-indent-0">
+                  <inline font-size="16px">
+                    <i>Use the Parameter Type toggle to compare between options for a given parameter. For example, select Resolution to compare SD vs HD</i>
+                  </inline>
+                </li>
+              </ul>
             </text-box>
           SheetTextBoxId: 143b2dcb-b6ac-4b19-a31d-3523842a0691
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n\
@@ -17028,46 +16787,6 @@ dashboards:
               <br/>
               <ul>
                 <li class="ql-indent-0">
-                  <inline font-size="16px">
-                    <i>Transcoding metering is based on several parameters that form a profile, including: number of pipes, direction, region, codec, bitrate, framerate, resolution and quality</i>
-                  </inline>
-                </li>
-                <li class="ql-indent-0">
-                  <inline font-size="16px">
-                    <i>Use the Parameter Type toggle to compare usage and cost between options for a given parameter. For example, select Resolution to compare SD vs HD</i>
-                  </inline>
-                </li>
-                <li class="ql-indent-0">
-                  <inline font-size="16px">
-                    <i>Charts in this section EXCLUDE idle resource time</i>
-                  </inline>
-                </li>
-                <li class="ql-indent-0">
-                  <inline font-size="16px">
-                    <i>Identify the transcoding profiles that will have steady or increase traffic for the coming 12 months and proceed with the reservations to reduce their cost.</i>
-                  </inline>
-                </li>
-                <li class="ql-indent-0">
-                  <inline font-size="16px">
-                    <i>Identify most expensive transcoding profile and leverage the reservations for the usage that is expected to be the same or to increase for the next 12 months.</i>
-                  </inline>
-                </li>
-                <li class="ql-indent-0">
-                  <inline font-size="16px">
-                    <i>Review if high-resolution/frame-rate outputs align with viewer needs. Adjust the profiles if needed</i>
-                  </inline>
-                </li>
-              </ul>
-            </text-box>
-          SheetTextBoxId: 4c3cb17a-3ae4-41cd-ba7d-de83136f1b0c
-        - Content: |-
-            <text-box>
-              <inline color="#fec48c" font-size="24px">G</inline>
-              <inline color="#fec48c" font-size="20px">UIDANCE</inline>
-              <br/>
-              <br/>
-              <ul>
-                <li class="ql-indent-0">
                   <inline color="#efefe9" font-size="16px">
                     <i>Idle channels and inputs should be reviewed for potential cost inefficiencies because they are billed like active channels but at a lower rate.</i>
                   </inline>
@@ -17086,8 +16805,6 @@ dashboards:
               <br/>
             </text-box>
           SheetTextBoxId: 707620d9-8812-4621-8cce-74a8c94182fa
-        - Content: "<text-box>\_\_</text-box>"
-          SheetTextBoxId: 3ed3828f-b602-4add-be8c-caf57af4463f
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"24px\">T</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"20px\">RANSCODING</inline>\n  <inline\
             \ color=\"#fec48c\" font-size=\"24px\">\_P</inline>\n  <inline color=\"#fec48c\"\
@@ -17095,17 +16812,34 @@ dashboards:
             24px\">\_K</inline>\n  <inline color=\"#fec48c\" font-size=\"20px\">EY</inline>\n\
             \  <br/>\n  <br/>\n  <inline font-size=\"16px\">Transcoding profiles are combinations\
             \ of the following:</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
-            >\n      <inline font-size=\"16px\">Standard Pipeline (2 AZs) or a single pipeline</inline>\n\
-            \    </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\"\
-            >Region\_</inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline\
-            \ font-size=\"16px\">OUT/IN : Flow direction</inline>\n    </li>\n    <li class=\"\
-            ql-indent-0\">\n      <inline font-size=\"16px\">Codec</inline>\n    </li>\n\
-            \    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">Resolution,\
-            \ SD vs HD</inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline\
-            \ font-size=\"16px\">Bitrate in frames per second</inline>\n    </li>\n    <li\
-            \ class=\"ql-indent-0\">\n      <inline font-size=\"16px\">\_Framerate in frames-per-second\
-            \ (fps)</inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
-            16px\">Vdeo quality, standard vs. high</inline>\n    </li>\n  </ul>\n</text-box>"
+            >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
+            \    <i>Pipes:</i>\n        </b>\n      </inline>\n      <inline font-size=\"\
+            16px\">\n        <i>\_Standard Pipeline (2 AZs) or a single pipeline</i>\n \
+            \     </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+            #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Region:</i>\n     \
+            \   </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
+            AWS region for the channel</i>\n      </inline>\n    </li>\n    <li class=\"\
+            ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"16px\">\n      \
+            \  <b>\n          <i>Flow Direction:</i>\n        </b>\n      </inline>\n  \
+            \    <inline font-size=\"16px\">\n        <i>\_In or Out</i>\n      </inline>\n\
+            \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\"\
+            \ font-size=\"16px\">\n        <b>\n          <i>Codec:</i>\n        </b>\n\
+            \      </inline>\n      <inline font-size=\"16px\">\n        <i>\_Video codec\
+            \ or Audio</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
+            \      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n        \
+            \  <i>Resolution:</i>\n        </b>\n      </inline>\n      <inline font-size=\"\
+            16px\">\n        <i>\_SD, HD. UHD</i>\n      </inline>\n    </li>\n    <li class=\"\
+            ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"16px\">\n      \
+            \  <b>\n          <i>Bitrate:</i>\n        </b>\n      </inline>\n      <inline\
+            \ font-size=\"16px\">\n        <i>\_Measured in megabits per second</i>\n  \
+            \    </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+            #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Framerate:\_</i>\n\
+            \        </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>Frames-per-second\
+            \ (fps)</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n  \
+            \    <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n          <i>Video\
+            \ quality:</i>\n        </b>\n      </inline>\n      <inline font-size=\"16px\"\
+            >\n        <i>\_Standard vs. High</i>\n      </inline>\n    </li>\n  </ul>\n\
+            </text-box>"
           SheetTextBoxId: e77d2466-9c09-4144-be75-c202f7707ba6
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">K</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"30px\">EY\_</inline>\n  <inline color=\"\
@@ -17375,7 +17109,7 @@ dashboards:
                 Columns:
                 - ColumnName: Resource
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -17394,7 +17128,26 @@ dashboards:
               Visibility: VISIBLE
             VisualId: 2336f060-f09d-440d-8bcd-0920492c2116
         - ComboChartVisual:
-            Actions: []
+            Actions:
+            - ActionOperations:
+              - FilterOperation:
+                  SelectedFieldsConfiguration:
+                    SelectedFields:
+                    - b9252d2f-e787-4d75-9705-2d87574e87de.2.1752183250343
+                  TargetVisualsConfiguration:
+                    SameSheetTargetVisualConfiguration:
+                      TargetVisuals:
+                      - a82f0927-56d1-4721-a047-dc4d98c47c97
+                      - 24eb3482-4d0f-404f-9e85-6304abec30d9
+                      - 3747633a-f0f9-4ff2-aa0f-9d5396c43879
+                      - 34d06c70-14b0-4d1b-9ff2-f5874b452874
+                      - 3b27d1f7-4884-4234-a90f-a0abac983b07
+                      - eced66e0-f968-4a5a-a8ac-d3a9a98142e6
+                      - 59dda4b6-9b4a-47bb-ab0d-ca57c9784953
+              CustomActionId: 2d4f48e8-f2ff-444e-8829-60b0232c1039
+              Name: Action 1
+              Status: ENABLED
+              Trigger: DATA_POINT_CLICK
             ChartConfiguration:
               BarDataLabels:
                 Overlap: DISABLE_OVERLAP
@@ -17458,11 +17211,16 @@ dashboards:
                 Position: RIGHT
                 Title:
                   CustomLabel: "Type:\_ <<$EmlParameterFocus>>"
-                Width: 129px
+                Width: 134px
               LineDataLabels:
                 Overlap: DISABLE_OVERLAP
               PrimaryYAxisDisplayOptions:
-                AxisOffset: 69px
+                AxisOffset: 72px
+                TickLabelOptions:
+                  LabelOptions:
+                    FontConfiguration:
+                      FontSize:
+                        Relative: MEDIUM
               PrimaryYAxisLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -17519,7 +17277,7 @@ dashboards:
                 RichText: |-
                   <visual-title>
                     <inline font-size="16px">
-                      <b>Transcode usage by parameter option</b>
+                      <b>Transcode hours by parameter option</b>
                     </inline>
                   </visual-title>
               Visibility: VISIBLE
@@ -17601,7 +17359,7 @@ dashboards:
               LineDataLabels:
                 Overlap: DISABLE_OVERLAP
               PrimaryYAxisDisplayOptions:
-                AxisOffset: 76px
+                AxisOffset: 83px
               PrimaryYAxisLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -17695,7 +17453,7 @@ dashboards:
                   Width: 334px
                 - DataPathList:
                   - FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.4.1752179062717
-                    FieldValue: Account
+                    FieldValue: Linked Account
                   Width: 273px
                 - DataPathList:
                   - FieldId: 39128f9a-78d9-4009-8051-1d13c6fd3cea.6.1753919258363
@@ -17745,7 +17503,7 @@ dashboards:
                       FieldId: 39128f9a-78d9-4009-8051-1d13c6fd3cea.6.1753919258363
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: Account
+                        ColumnName: Linked Account
                         DataSetIdentifier: summary_view
                       FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.4.1752179062717
                   - CategoricalDimensionField:
@@ -18035,21 +17793,9 @@ dashboards:
                     FieldValue: billing_period
                   Width: 98px
                 - DataPathList:
-                  - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_input.13.1752594870596
-                    FieldValue: video_input
-                  Width: 94px
-                - DataPathList:
                   - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_resolution.13.1752190185082
                     FieldValue: video_resolution
                   Width: 89px
-                - DataPathList:
-                  - FieldId: 24f8ff49-52e2-481a-ae0d-828f5f6e4adc.15.1752624066490
-                    FieldValue: eml_input_output
-                  Width: 86px
-                - DataPathList:
-                  - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_output.14.1752594876340
-                    FieldValue: video_output
-                  Width: 78px
                 - DataPathList:
                   - FieldId: c92e964c-c9f2-4478-b50b-51efa3bd7b3f.12.1743801267975
                     FieldValue: Cost
@@ -18072,8 +17818,7 @@ dashboards:
                 - CustomLabel: Pipeline
                   FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_pipeline.13.1752190166267
                   Visibility: VISIBLE
-                - CustomLabel: In/Out
-                  FieldId: 24f8ff49-52e2-481a-ae0d-828f5f6e4adc.15.1752624066490
+                - FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.video_flow_direction.13.1755217682163
                   Visibility: VISIBLE
                 - CustomLabel: Bit Rate
                   FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_bit_rate.13.1752190129666
@@ -18087,11 +17832,7 @@ dashboards:
                 - CustomLabel: Resolution
                   FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_resolution.13.1752190185082
                   Visibility: VISIBLE
-                - CustomLabel: Input
-                  FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_input.13.1752594870596
-                  Visibility: VISIBLE
-                - CustomLabel: Output
-                  FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_output.14.1752594876340
+                - FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.video_codec.14.1755217778403
                   Visibility: VISIBLE
                 - CustomLabel: Hours
                   FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.usage_quantity.12.1742853595957
@@ -18115,7 +17856,7 @@ dashboards:
                       FieldId: 39128f9a-78d9-4009-8051-1d13c6fd3cea.16.1753919304994
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: Account
+                        ColumnName: Linked Account
                         DataSetIdentifier: summary_view
                       FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.14.1752165478903
                   - CategoricalDimensionField:
@@ -18130,39 +17871,39 @@ dashboards:
                       FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_pipeline.13.1752190166267
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: eml_input_output
+                        ColumnName: video_flow_direction
                         DataSetIdentifier: summary_view
-                      FieldId: 24f8ff49-52e2-481a-ae0d-828f5f6e4adc.15.1752624066490
+                      FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.video_flow_direction.13.1755217682163
                   - CategoricalDimensionField:
                       Column:
                         ColumnName: video_bit_rate
                         DataSetIdentifier: summary_view
                       FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_bit_rate.13.1752190129666
+                      FormatConfiguration: {}
                   - CategoricalDimensionField:
                       Column:
                         ColumnName: video_frame_rate
                         DataSetIdentifier: summary_view
                       FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_frame_rate.13.1752190147906
+                      FormatConfiguration: {}
                   - CategoricalDimensionField:
                       Column:
                         ColumnName: video_quality
                         DataSetIdentifier: summary_view
                       FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_quality.13.1752190175507
+                      FormatConfiguration: {}
                   - CategoricalDimensionField:
                       Column:
                         ColumnName: video_resolution
                         DataSetIdentifier: summary_view
                       FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_resolution.13.1752190185082
+                      FormatConfiguration: {}
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: video_input
+                        ColumnName: video_codec
                         DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_input.13.1752594870596
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: video_output
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_output.14.1752594876340
+                      FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.video_codec.14.1755217778403
+                      FormatConfiguration: {}
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
@@ -18971,12 +18712,6 @@ dashboards:
               Trigger: DATA_POINT_CLICK
             ChartConfiguration:
               BarsArrangement: CLUSTERED
-              CategoryAxis:
-                ScrollbarOptions:
-                  VisibleRange:
-                    PercentRange:
-                      From: 0.0
-                      To: 100.0
               CategoryLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -19051,7 +18786,7 @@ dashboards:
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
               ValueAxis:
-                AxisOffset: 323px
+                AxisOffset: 385px
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -19150,8 +18885,6 @@ dashboards:
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
-              ValueAxis:
-                AxisOffset: 214px
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -19263,8 +18996,6 @@ dashboards:
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
-              ValueAxis:
-                AxisOffset: 233px
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -19778,7 +19509,7 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: Payer Account
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
@@ -19913,7 +19644,7 @@ dashboards:
                   DataSetIdentifier: summary_view
                 - ColumnName: Payer Account
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -19994,9 +19725,6 @@ dashboards:
                 Title:
                   CustomLabel: Parameters
                 Width: 240px
-              PrimaryYAxisDisplayOptions:
-                AxisOptions:
-                  AxisOffset: 75px
               PrimaryYAxisLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -20201,7 +19929,11 @@ dashboards:
             ChartConfiguration:
               BarsArrangement: CLUSTERED
               CategoryAxis:
-                AxisOffset: 15px
+                ScrollbarOptions:
+                  VisibleRange:
+                    PercentRange:
+                      From: 50.0
+                      To: 100.0
               CategoryLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -20292,7 +20024,7 @@ dashboards:
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
               ValueAxis:
-                AxisOffset: 317px
+                AxisOffset: 400px
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -20344,8 +20076,8 @@ dashboards:
                 ScrollbarOptions:
                   VisibleRange:
                     PercentRange:
-                      From: 0.0
-                      To: 100.0
+                      From: 42.5
+                      To: 92.5
               CategoryLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -20435,7 +20167,7 @@ dashboards:
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
               ValueAxis:
-                AxisOffset: 352px
+                AxisOffset: 386px
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -20701,7 +20433,7 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: payer_account_id
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
@@ -20818,7 +20550,7 @@ dashboards:
                   DataSetIdentifier: summary_view
                 - ColumnName: payer_account_id
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -21514,14 +21246,8 @@ dashboards:
                 RowIndex: 37
                 RowSpan: 9
               - ColumnIndex: 0
-                ColumnSpan: 8
+                ColumnSpan: 36
                 ElementId: c3cd6f62-f128-4357-a261-e26b408e237d
-                ElementType: TEXT_BOX
-                RowIndex: 46
-                RowSpan: 3
-              - ColumnIndex: 8
-                ColumnSpan: 28
-                ElementId: 1857c1f3-f7a6-48cb-ad00-36e1e83251c3
                 ElementType: TEXT_BOX
                 RowIndex: 46
                 RowSpan: 3
@@ -21587,6 +21313,8 @@ dashboards:
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -21597,13 +21325,15 @@ dashboards:
             ParameterControlId: 330014d6-8851-4b73-8082-2cfc9cd92a17
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: linked_account_id
+                ColumnName: linked_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: AccountID
-            Title: Account ID
+            SourceParameterName: LinkedAccount
+            Title: Linked Account
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -21614,27 +21344,10 @@ dashboards:
             ParameterControlId: 35b24cc2-bb15-4921-966f-6bcf5b1b08b5
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: payer_account_id
+                ColumnName: payer_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: PayerID
-            Title: Payer ID
-            Type: MULTI_SELECT
-        - Dropdown:
-            DisplayOptions:
-              SelectAllOptions:
-                Visibility: VISIBLE
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            ParameterControlId: 21f3bed9-f7f5-45c0-a5fe-3fac74f53989
-            SelectableValues:
-              LinkToDataSetColumn:
-                ColumnName: account_name
-                DataSetIdentifier: summary_view
-            SourceParameterName: AccountName
-            Title: Account Name
+            SourceParameterName: PayerAccount
+            Title: Payer Account
             Type: MULTI_SELECT
         SheetControlLayouts:
         - Configuration:
@@ -21642,19 +21355,13 @@ dashboards:
               Elements:
               - ColumnIndex: 0
                 ColumnSpan: 3
-                ElementId: 330014d6-8851-4b73-8082-2cfc9cd92a17
+                ElementId: 35b24cc2-bb15-4921-966f-6bcf5b1b08b5
                 ElementType: PARAMETER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
               - ColumnIndex: 3
                 ColumnSpan: 3
-                ElementId: 35b24cc2-bb15-4921-966f-6bcf5b1b08b5
-                ElementType: PARAMETER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 6
-                ColumnSpan: 3
-                ElementId: 21f3bed9-f7f5-45c0-a5fe-3fac74f53989
+                ElementId: 330014d6-8851-4b73-8082-2cfc9cd92a17
                 ElementType: PARAMETER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
@@ -21707,8 +21414,6 @@ dashboards:
             #fec48c\" font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
             30px\">UMMARY</inline>\n</text-box>"
           SheetTextBoxId: bdbd15b0-4215-4ccd-817e-635f9655e337
-        - Content: "<text-box>\_\_</text-box>"
-          SheetTextBoxId: 1857c1f3-f7a6-48cb-ad00-36e1e83251c3
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">K</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"30px\">EY\_</inline>\n  <inline color=\"\
             #fec48c\" font-size=\"36px\">U</inline>\n  <inline color=\"#fec48c\" font-size=\"\
@@ -21949,7 +21654,7 @@ dashboards:
                   Width: 581px
                 - DataPathList:
                   - FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1752632832279
-                    FieldValue: Account
+                    FieldValue: Linked Account
                   Width: 216px
                 - DataPathList:
                   - FieldId: 50b2a3c6-8a80-41bd-890b-521da908785a.5.1752632894255
@@ -21962,6 +21667,8 @@ dashboards:
                 SelectedFieldOptions:
                 - CustomLabel: Billing Period
                   FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.billing_period.6.1752633266030
+                  Visibility: VISIBLE
+                - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.8.1755232718392
                   Visibility: VISIBLE
                 - FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1752632832279
                   Visibility: VISIBLE
@@ -21994,7 +21701,12 @@ dashboards:
                       FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.billing_period.6.1752633266030
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: Account
+                        ColumnName: Payer Account
+                        DataSetIdentifier: summary_view
+                      FieldId: c01482f3-3e86-4114-962a-121a16172e0b.8.1755232718392
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: Linked Account
                         DataSetIdentifier: summary_view
                       FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1752632832279
                   - CategoricalDimensionField:
@@ -22095,7 +21807,7 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: Payer Account
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
@@ -22228,7 +21940,7 @@ dashboards:
                   DataSetIdentifier: summary_view
                 - ColumnName: Payer Account
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -22735,13 +22447,13 @@ dashboards:
               - FilterOperation:
                   SelectedFieldsConfiguration:
                     SelectedColumns:
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: payer_account_id
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     SelectedFields:
                     - 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.2.1752637722065
@@ -22782,7 +22494,7 @@ dashboards:
                   Colors:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: Account
+                        ColumnName: Linked Account
                         DataSetIdentifier: summary_view
                       FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.2.1752637722065
                       HierarchyId: 2b9bd43f-c596-4b89-be87-62f12ecd9f88
@@ -22829,7 +22541,7 @@ dashboards:
             ColumnHierarchies:
             - ExplicitHierarchy:
                 Columns:
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: payer_account_id
                   DataSetIdentifier: summary_view
@@ -23647,14 +23359,8 @@ dashboards:
                 RowIndex: 39
                 RowSpan: 9
               - ColumnIndex: 0
-                ColumnSpan: 8
+                ColumnSpan: 36
                 ElementId: 607ebdca-5bc2-43ec-b167-e27b8aa54948
-                ElementType: TEXT_BOX
-                RowIndex: 48
-                RowSpan: 3
-              - ColumnIndex: 8
-                ColumnSpan: 28
-                ElementId: 851037d1-1808-443d-9d48-05b45ce74e70
                 ElementType: TEXT_BOX
                 RowIndex: 48
                 RowSpan: 3
@@ -23663,19 +23369,19 @@ dashboards:
                 ElementId: b5640b6e-54fd-4d93-a5db-70e4e4d97996
                 ElementType: VISUAL
                 RowIndex: 51
-                RowSpan: 11
+                RowSpan: 15
               - ColumnIndex: 18
                 ColumnSpan: 18
                 ElementId: 32622616-2afb-4805-9137-ac451d6999d2
                 ElementType: VISUAL
                 RowIndex: 51
-                RowSpan: 11
+                RowSpan: 15
               - ColumnIndex: 0
                 ColumnSpan: 36
-                ElementId: a7ec4ce8-19f6-43e8-abe6-e858565a7c7e
+                ElementId: 1d484925-9ef4-4cee-896f-c13eaacb3613
                 ElementType: VISUAL
-                RowIndex: 62
-                RowSpan: 9
+                RowIndex: 66
+                RowSpan: 15
         Name: MediaPackage
         ParameterControls:
         - List:
@@ -23732,6 +23438,8 @@ dashboards:
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -23742,13 +23450,15 @@ dashboards:
             ParameterControlId: f2ae6501-885d-4ab9-941f-5a8595017fb1
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: linked_account_id
+                ColumnName: linked_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: AccountID
-            Title: Account ID
+            SourceParameterName: LinkedAccount
+            Title: Linked Account
             Type: MULTI_SELECT
         - Dropdown:
             DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
               SelectAllOptions:
                 Visibility: VISIBLE
               TitleOptions:
@@ -23759,47 +23469,24 @@ dashboards:
             ParameterControlId: b85e951e-f3c4-4124-a2df-a657735b62a2
             SelectableValues:
               LinkToDataSetColumn:
-                ColumnName: payer_account_id
+                ColumnName: payer_account_formatted
                 DataSetIdentifier: summary_view
-            SourceParameterName: PayerID
-            Title: Payer ID
-            Type: MULTI_SELECT
-        - Dropdown:
-            DisplayOptions:
-              SelectAllOptions:
-                Visibility: VISIBLE
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            ParameterControlId: cfcc7500-a640-4994-9220-0ac575c65e03
-            SelectableValues:
-              LinkToDataSetColumn:
-                ColumnName: account_name
-                DataSetIdentifier: summary_view
-            SourceParameterName: AccountName
-            Title: Account Name
+            SourceParameterName: PayerAccount
+            Title: Payer Account
             Type: MULTI_SELECT
         SheetControlLayouts:
         - Configuration:
             GridLayout:
               Elements:
               - ColumnIndex: 0
-                ColumnSpan: 2
+                ColumnSpan: 3
                 ElementId: b85e951e-f3c4-4124-a2df-a657735b62a2
                 ElementType: PARAMETER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
-              - ColumnIndex: 2
-                ColumnSpan: 2
+              - ColumnIndex: 3
+                ColumnSpan: 3
                 ElementId: f2ae6501-885d-4ab9-941f-5a8595017fb1
-                ElementType: PARAMETER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 4
-                ColumnSpan: 2
-                ElementId: cfcc7500-a640-4994-9220-0ac575c65e03
                 ElementType: PARAMETER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
@@ -23854,8 +23541,6 @@ dashboards:
             #fec48c\" font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
             30px\">UMMARY</inline>\n</text-box>"
           SheetTextBoxId: 8dc4070d-7ad3-4e36-9fa4-77263127bae7
-        - Content: "<text-box>\_\_</text-box>"
-          SheetTextBoxId: 851037d1-1808-443d-9d48-05b45ce74e70
         - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">D</inline>\n\
             \  <inline color=\"#fec48c\" font-size=\"30px\">ATA</inline>\n  <inline color=\"\
             #fec48c\" font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\" font-size=\"\
@@ -23900,6 +23585,151 @@ dashboards:
             \    </li>\n  </ul>\n</text-box>"
           SheetTextBoxId: 7fbc9382-7fd7-49c1-8798-bbffab1be926
         Visuals:
+        - PivotTableVisual:
+            Actions: []
+            ChartConfiguration:
+              FieldOptions:
+                DataPathOptions:
+                - DataPathList:
+                  - FieldId: 99fc9147-8f65-4331-b626-c56a83f23e15.2.1753921351359
+                    FieldValue: dt_destination_type
+                  Width: 264px
+                - DataPathList:
+                  - FieldId: 500ea224-c00d-48a0-a75d-a355d39e2e54.5.1755232840142
+                    FieldValue: Linked Account
+                  Width: 228px
+                - DataPathList:
+                  - FieldId: 3e3119bc-141f-4eaa-8ca6-7dffef6be292.6.1755232880247
+                    FieldValue: Usage Category
+                  Width: 227px
+                - DataPathList:
+                  - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.product_from_location.1.1753921343791
+                    FieldValue: product_from_location
+                  Width: 212px
+                - DataPathList:
+                  - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.4.1755232834142
+                    FieldValue: Payer Account
+                  Width: 203px
+                SelectedFieldOptions:
+                - CustomLabel: Billing Period
+                  FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.billing_period.3.1755232821795
+                  Visibility: VISIBLE
+                - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.4.1755232834142
+                  Visibility: VISIBLE
+                - FieldId: 500ea224-c00d-48a0-a75d-a355d39e2e54.5.1755232840142
+                  Visibility: VISIBLE
+                - FieldId: 3e3119bc-141f-4eaa-8ca6-7dffef6be292.6.1755232880247
+                  Visibility: VISIBLE
+                - CustomLabel: Source
+                  FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.product_from_location.1.1753921343791
+                  Visibility: VISIBLE
+                - CustomLabel: Destination
+                  FieldId: 99fc9147-8f65-4331-b626-c56a83f23e15.2.1753921351359
+                  Visibility: VISIBLE
+                - FieldId: ba996001-a63d-4b29-8391-4908eba56f82.2.1753921365767
+                  Visibility: VISIBLE
+                - FieldId: 06eb7464-928f-41de-ab10-5217fba90195.7.1755233172039
+                  Visibility: VISIBLE
+              FieldWells:
+                PivotTableAggregatedFieldWells:
+                  Columns: []
+                  Rows:
+                  - DateDimensionField:
+                      Column:
+                        ColumnName: billing_period
+                        DataSetIdentifier: summary_view
+                      DateGranularity: MONTH
+                      FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.billing_period.3.1755232821795
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: Payer Account
+                        DataSetIdentifier: summary_view
+                      FieldId: c01482f3-3e86-4114-962a-121a16172e0b.4.1755232834142
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: Linked Account
+                        DataSetIdentifier: summary_view
+                      FieldId: 500ea224-c00d-48a0-a75d-a355d39e2e54.5.1755232840142
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: Usage Category
+                        DataSetIdentifier: summary_view
+                      FieldId: 3e3119bc-141f-4eaa-8ca6-7dffef6be292.6.1755232880247
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_from_location
+                        DataSetIdentifier: summary_view
+                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.product_from_location.1.1753921343791
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: dt_destination_type
+                        DataSetIdentifier: summary_view
+                      FieldId: 99fc9147-8f65-4331-b626-c56a83f23e15.2.1753921351359
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: Usage Quantity
+                        DataSetIdentifier: summary_view
+                      FieldId: ba996001-a63d-4b29-8391-4908eba56f82.2.1753921365767
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          NumberDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            NumberScale: AUTO
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: Cost
+                        DataSetIdentifier: summary_view
+                      FieldId: 06eb7464-928f-41de-ab10-5217fba90195.7.1755233172039
+              SortConfiguration:
+                FieldSortOptions:
+                - FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.billing_period.3.1755232821795
+                  SortBy:
+                    Field:
+                      Direction: DESC
+                      FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.billing_period.3.1755232821795
+              TableOptions:
+                CellStyle: {}
+                ColumnHeaderStyle:
+                  Height: 25
+                  TextWrap: WRAP
+                RowAlternateColorOptions:
+                  Status: DISABLED
+                  UsePrimaryBackgroundColor: ENABLED
+                RowFieldNamesStyle:
+                  Height: 25
+                  TextWrap: WRAP
+                RowsLayout: TABULAR
+              TotalOptions:
+                RowSubtotalOptions:
+                  CustomLabel: <<$aws:subtotalDimension>> Subtotal
+                  MetricHeaderCellStyle: {}
+                  StyleTargets:
+                  - CellType: VALUE
+                  - CellType: TOTAL
+                  - CellType: METRIC_HEADER
+                  TotalCellStyle: {}
+                  TotalsVisibility: HIDDEN
+                  ValueCellStyle: {}
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: |-
+                  <visual-title>
+                    <inline font-size="16px">
+                      <b>Data transfer detail</b>
+                    </inline>
+                  </visual-title>
+              Visibility: VISIBLE
+            VisualId: 1d484925-9ef4-4cee-896f-c13eaacb3613
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -24239,121 +24069,6 @@ dashboards:
                   </visual-title>
               Visibility: VISIBLE
             VisualId: b5640b6e-54fd-4d93-a5db-70e4e4d97996
-        - LineChartVisual:
-            Actions: []
-            ChartConfiguration:
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: HIDDEN
-              DefaultSeriesSettings:
-                AxisBinding: PRIMARY_YAXIS
-                LineStyleSettings:
-                  LineInterpolation: SMOOTH
-                  LineWidth: 3px
-              FieldWells:
-                LineChartAggregatedFieldWells:
-                  Category:
-                  - DateDimensionField:
-                      Column:
-                        ColumnName: billing_period
-                        DataSetIdentifier: summary_view
-                      DateGranularity: MONTH
-                      FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.0.1742821088563
-                      HierarchyId: 3b0a19a8-deb3-4d12-8bcf-61e66fdcae98
-                  Colors:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: region
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.region.2.1752267813981
-                  Values:
-                  - NumericalMeasureField:
-                      Column:
-                        ColumnName: unit_cost_by_region
-                        DataSetIdentifier: summary_view
-                      FieldId: 09926e1b-6481-4a09-8bda-0a047f1bf204.2.1752267825101
-                      FormatConfiguration:
-                        FormatConfiguration:
-                          CurrencyDisplayFormatConfiguration:
-                            DecimalPlacesConfiguration:
-                              DecimalPlaces: 5
-                            NegativeValueConfiguration:
-                              DisplayMode: POSITIVE
-                            NullValueFormatConfiguration:
-                              NullString: 'null'
-                            SeparatorConfiguration:
-                              DecimalSeparator: DOT
-                              ThousandsSeparator:
-                                Symbol: COMMA
-                                Visibility: VISIBLE
-                            Symbol: USD
-              Legend:
-                Height: 66px
-                Position: BOTTOM
-                Title:
-                  CustomLabel: <<$GroupBy>>
-                Width: 204px
-              PrimaryYAxisDisplayOptions:
-                AxisOptions:
-                  AxisOffset: 77px
-              PrimaryYAxisLabelOptions:
-                SortIconVisibility: HIDDEN
-                Visibility: HIDDEN
-              SortConfiguration:
-                CategoryItemsLimitConfiguration:
-                  OtherCategories: INCLUDE
-                CategorySort:
-                - FieldSort:
-                    Direction: DESC
-                    FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.0.1742821088563
-                ColorItemsLimitConfiguration:
-                  OtherCategories: INCLUDE
-                SmallMultiplesLimitConfiguration:
-                  OtherCategories: INCLUDE
-              Tooltip:
-                FieldBasedTooltip:
-                  AggregationVisibility: HIDDEN
-                  TooltipFields:
-                  - FieldTooltipItem:
-                      FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.0.1742821088563
-                      Visibility: VISIBLE
-                  - FieldTooltipItem:
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.region.2.1752267813981
-                      Visibility: VISIBLE
-                  - FieldTooltipItem:
-                      FieldId: 09926e1b-6481-4a09-8bda-0a047f1bf204.2.1752267825101
-                      Visibility: VISIBLE
-                  TooltipTitleType: PRIMARY_VALUE
-                SelectedTooltipType: DETAILED
-                TooltipVisibility: VISIBLE
-              Type: LINE
-              XAxisDisplayOptions:
-                ScrollbarOptions:
-                  Visibility: HIDDEN
-              XAxisLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: billing_period
-                      DataSetIdentifier: summary_view
-                    FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.0.1742821088563
-                  CustomLabel: Billing Period
-            ColumnHierarchies:
-            - DateTimeHierarchy:
-                DrillDownFilters: []
-                HierarchyId: 3b0a19a8-deb3-4d12-8bcf-61e66fdcae98
-            Subtitle:
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <inline font-size="16px">
-                      <b>Data transfer unit cost by region</b>
-                    </inline>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualId: a7ec4ce8-19f6-43e8-abe6-e858565a7c7e
         - InsightVisual:
             Actions: []
             DataSetIdentifier: summary_view
@@ -25140,7 +24855,7 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: payer_account_id
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
@@ -25252,7 +24967,7 @@ dashboards:
                   DataSetIdentifier: summary_view
                 - ColumnName: payer_account_id
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -25281,7 +24996,7 @@ dashboards:
                       DataSetIdentifier: summary_view
                     - ColumnName: Payer Account
                       DataSetIdentifier: summary_view
-                    - ColumnName: Account
+                    - ColumnName: Linked Account
                       DataSetIdentifier: summary_view
                     - ColumnName: region
                       DataSetIdentifier: summary_view
@@ -25393,6 +25108,8 @@ dashboards:
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
+              ValueAxis:
+                AxisOffset: 72px
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -25413,7 +25130,7 @@ dashboards:
                   DataSetIdentifier: summary_view
                 - ColumnName: Payer Account
                   DataSetIdentifier: summary_view
-                - ColumnName: Account
+                - ColumnName: Linked Account
                   DataSetIdentifier: summary_view
                 - ColumnName: region
                   DataSetIdentifier: summary_view
@@ -25703,6 +25420,8 @@ dashboards:
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
+              ValueAxis:
+                AxisOffset: 52px
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
@@ -25769,7 +25488,7 @@ dashboards:
           SheetTextBoxId: 8738ed95-db68-48f4-9115-f7a8dcb618cf
         - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"64px\"\
             >\n      <b>Media Services Insights Hub</b>\n    </inline>\n  </block>\n  <br/>\n\
-            \  <block align=\"center\">\n    <inline font-size=\"64px\">v0.8.8</inline>\n\
+            \  <block align=\"center\">\n    <inline font-size=\"64px\">v0.8.9</inline>\n\
             \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
             >\_</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
             \ align=\"center\">\n    <inline font-size=\"24px\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/media-services.html\
@@ -25896,6 +25615,22 @@ dashboards:
             SourceFilterId: 3c834f68-6441-406e-af9f-f047fa3eb32d
             Title: video_bit_rate equals
             Type: MULTI_SELECT
+        - Dropdown:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+            FilterControlId: 233d03cc-fa48-483e-bcd8-b077a3c114eb
+            SourceFilterId: 6f9969c4-f2b8-40f7-aa62-5fa30d91858c
+            Title: video_resolution equals
+            Type: MULTI_SELECT
+        - Dropdown:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+            FilterControlId: 1c251b7f-dc94-4366-9060-3852ab5a6a3a
+            SourceFilterId: 6b3fad41-762e-498e-a60b-e7d997cbd4a3
+            Title: video_frame_rate equals
+            Type: MULTI_SELECT
         Layouts:
         - Configuration:
             GridLayout:
@@ -25975,6 +25710,18 @@ dashboards:
                 ElementType: FILTER_CONTROL
                 RowIndex: 1
                 RowSpan: 1
+              - ColumnIndex: 5
+                ColumnSpan: 2
+                ElementId: 233d03cc-fa48-483e-bcd8-b077a3c114eb
+                ElementType: FILTER_CONTROL
+                RowIndex: 1
+                RowSpan: 1
+              - ColumnIndex: 7
+                ColumnSpan: 2
+                ElementId: 1c251b7f-dc94-4366-9060-3852ab5a6a3a
+                ElementType: FILTER_CONTROL
+                RowIndex: 1
+                RowSpan: 1
         SheetId: d13a178b-bb38-49eb-96b3-7bb160084578
         Visuals:
         - TableVisual:
@@ -25984,24 +25731,28 @@ dashboards:
                 SelectedFieldOptions:
                 - FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.product_code.6.1743513869132
                   Width: 194px
-                - FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.usage_type.12.1744082412645
-                  Width: 212px
-                - FieldId: 7ea4779a-76b0-4d52-8d75-91649fc5532f.14.1752697056400
-                  Width: 222px
                 - FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.product_family.13.1744082453692
-                  Width: 168px
+                  Width: 139px
                 - FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.operation.4.1743513828516
-                  Width: 180px
+                  Width: 154px
+                - FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.usage_type.12.1744082412645
+                  Width: 281px
                 - FieldId: bc5650b2-8709-4324-a573-9810ffc8e338.3.1743513821813
-                  Width: 327px
+                  Width: 208px
+                - FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.pricing_unit.2.1743513812838
+                  Width: 54px
+                - FieldId: cc359e80-1c96-418f-9e97-625bdf252e41.25.1754956951755
+                  Width: 483px
+                - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_tier.20.1754614515506
+                  Width: 98px
+                - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_pipeline.18.1754614500033
+                  Width: 107px
+                - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_frame_rate.14.1754597583686
+                  Width: 151px
+                - FieldId: a1d607b3-8e3d-4b81-8dd0-2f41d1334529.13.1753902393710
+                  Width: 129px
                 - FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.item_description.7.1743516254483
                   Width: 347px
-                - FieldId: a1d607b3-8e3d-4b81-8dd0-2f41d1334529.13.1753902393710
-                  Width: 197px
-                - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_input.16.1754614490329
-                  Width: 114px
-                - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_pipeline.18.1754614500033
-                  Width: 70px
               FieldWells:
                 TableAggregatedFieldWells:
                   GroupBy:
@@ -26027,16 +25778,6 @@ dashboards:
                       FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.product_code.6.1743513869132
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: usage_type
-                        DataSetIdentifier: summary_view
-                      FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.usage_type.12.1744082412645
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: emc_transcode_profile_friendly
-                        DataSetIdentifier: summary_view
-                      FieldId: 7ea4779a-76b0-4d52-8d75-91649fc5532f.14.1752697056400
-                  - CategoricalDimensionField:
-                      Column:
                         ColumnName: product_family
                         DataSetIdentifier: summary_view
                       FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.product_family.13.1744082453692
@@ -26045,6 +25786,11 @@ dashboards:
                         ColumnName: operation
                         DataSetIdentifier: summary_view
                       FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.operation.4.1743513828516
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: usage_type
+                        DataSetIdentifier: summary_view
+                      FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.usage_type.12.1744082412645
                   - CategoricalDimensionField:
                       Column:
                         ColumnName: Usage Category
@@ -26057,54 +25803,9 @@ dashboards:
                       FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.pricing_unit.2.1743513812838
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: item_description
-                        DataSetIdentifier: summary_view
-                      FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.item_description.7.1743516254483
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: Resource
-                        DataSetIdentifier: summary_view
-                      FieldId: a1d607b3-8e3d-4b81-8dd0-2f41d1334529.13.1753902393710
-                  - CategoricalDimensionField:
-                      Column:
                         ColumnName: Transcoding Profile
                         DataSetIdentifier: summary_view
                       FieldId: cc359e80-1c96-418f-9e97-625bdf252e41.25.1754956951755
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: video_frame_rate
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_frame_rate.14.1754597583686
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: video_bit_rate
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_bit_rate.15.1754614486498
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: video_input
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_input.16.1754614490329
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: video_output
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_output.22.1754614530620
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: video_quality
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_quality.17.1754614497314
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: video_pipeline
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_pipeline.18.1754614500033
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: video_resolution
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_resolution.19.1754614507649
                   - CategoricalDimensionField:
                       Column:
                         ColumnName: video_tier
@@ -26112,9 +25813,49 @@ dashboards:
                       FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_tier.20.1754614515506
                   - CategoricalDimensionField:
                       Column:
+                        ColumnName: video_pipeline
+                        DataSetIdentifier: summary_view
+                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_pipeline.18.1754614500033
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: video_flow_direction
+                        DataSetIdentifier: summary_view
+                      FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.video_flow_direction.23.1755220545064
+                  - CategoricalDimensionField:
+                      Column:
                         ColumnName: video_codec
                         DataSetIdentifier: summary_view
                       FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_codec.21.1754614520785
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: video_resolution
+                        DataSetIdentifier: summary_view
+                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_resolution.19.1754614507649
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: video_bit_rate
+                        DataSetIdentifier: summary_view
+                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_bit_rate.15.1754614486498
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: video_frame_rate
+                        DataSetIdentifier: summary_view
+                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_frame_rate.14.1754597583686
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: video_quality
+                        DataSetIdentifier: summary_view
+                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_quality.17.1754614497314
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: Resource
+                        DataSetIdentifier: summary_view
+                      FieldId: a1d607b3-8e3d-4b81-8dd0-2f41d1334529.13.1753902393710
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: item_description
+                        DataSetIdentifier: summary_view
+                      FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.item_description.7.1743516254483
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
@@ -27267,9 +27008,9 @@ dashboards:
                         ColumnName: pricing_term
                         DataSetIdentifier: summary_view
                       FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.pricing_term.15.1744145534099
-                  - CategoricalDimensionField:
+                  - NumericalDimensionField:
                       Column:
-                        ColumnName: product_group
+                        ColumnName: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.product_group
                         DataSetIdentifier: summary_view
                       FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.product_group.16.1744145539579
                   - CategoricalDimensionField:
@@ -27452,129 +27193,6 @@ dashboards:
                   </visual-title>
               Visibility: VISIBLE
             VisualId: 7c3b2a3d-acfb-4edb-8ff1-2fe10a1b662b
-      - ContentType: INTERACTIVE
-        FilterControls:
-        - Dropdown:
-            DisplayOptions:
-              SelectAllOptions:
-                Visibility: VISIBLE
-            FilterControlId: 736d49f9-139e-4751-a0df-7fb0a40639a2
-            SourceFilterId: f7b566d9-da8e-4429-b355-ad5ed29b9dc1
-            Title: linked_account_id equals
-            Type: MULTI_SELECT
-        Layouts:
-        - Configuration:
-            GridLayout:
-              CanvasSizeOptions:
-                ScreenCanvasSizeOptions:
-                  OptimizedViewPortWidth: 1600px
-                  ResizeOption: FIXED
-              Elements:
-              - ColumnIndex: 0
-                ColumnSpan: 34
-                ElementId: a0fcd899-58a3-4e63-be2b-1677cbb5777f
-                ElementType: VISUAL
-                RowIndex: 0
-                RowSpan: 20
-              - ColumnSpan: 6
-                ElementId: 736d49f9-139e-4751-a0df-7fb0a40639a2
-                ElementType: FILTER_CONTROL
-                RowSpan: 3
-        Name: Sheet 2
-        SheetId: 634c449e-6cd8-4e64-b3f0-dfe24ab8f369
-        Visuals:
-        - TableVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisuals:
-                      - 6de62f13-31e6-44b6-a379-0504a1f65512
-                      - f7275634-1603-4f72-93af-4688800d6047
-                      - 55f295f4-58c0-4a57-a5df-d133121faa35
-                      - c8f4a78c-5e07-4f15-b0bc-26a2f1ea4ac4
-                      - be3dbcd4-8d57-4c60-9139-e985c93c95c1
-                      - 80946689-333b-48e5-b176-1f6087c5ce30
-              CustomActionId: c5a6699c-3577-42dc-bc3a-cfb3b803d300
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              FieldOptions:
-                SelectedFieldOptions:
-                - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.usage_date.6.1754672124589
-                  Width: 195px
-                - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.linked_account_id.4.1754673788434
-                  Width: 194px
-                - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.usage_quantity.6.1754673218673
-                  Width: 150px
-                - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.usage_quantity.4.1754674757796
-                  Width: 194px
-              FieldWells:
-                TableAggregatedFieldWells:
-                  GroupBy:
-                  - DateDimensionField:
-                      Column:
-                        ColumnName: usage_date
-                        DataSetIdentifier: summary_view
-                      DateGranularity: HOUR
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.usage_date.6.1754672124589
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: linked_account_id
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.linked_account_id.4.1754673788434
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: usage_type
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.usage_type.3.1754670464852
-                  - NumericalDimensionField:
-                      Column:
-                        ColumnName: usage_quantity
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.usage_quantity.6.1754673218673
-                  Values:
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
-                      Column:
-                        ColumnName: usage_quantity
-                        DataSetIdentifier: summary_view
-                      FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.usage_quantity.4.1754674757796
-              SortConfiguration:
-                PaginationConfiguration:
-                  PageNumber: 1
-                  PageSize: 500
-                RowSort:
-                - FieldSort:
-                    Direction: DESC
-                    FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.usage_date.6.1754672124589
-              TableOptions:
-                HeaderStyle:
-                  Height: 25
-                  TextWrap: WRAP
-                RowAlternateColorOptions:
-                  Status: DISABLED
-                  UsePrimaryBackgroundColor: ENABLED
-              TotalOptions:
-                Placement: START
-                TotalsVisibility: VISIBLE
-            Subtitle:
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <inline font-size="16px">
-                      <b>Estimated potential savings with additional reservations</b>
-                    </inline>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualId: a0fcd899-58a3-4e63-be2b-1677cbb5777f
 datasets:
   msih_reservations:
     data:
@@ -27597,9 +27215,9 @@ datasets:
               Type: DATETIME
             - Name: reservation_end_time
               Type: DATETIME
-            - Name: account_id
+            - Name: linked_account_id
               Type: STRING
-            - Name: payer_id
+            - Name: payer_account_id
               Type: STRING
             - Name: line_item_line_item_description
               Type: STRING
@@ -27662,26 +27280,69 @@ datasets:
               Type: STRING
             - Name: account_name
               Type: STRING
+        fe517bcf-d790-49f8-b395-b744f079758f:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
       LogicalTableMap:
+        24baacd6-be68-44a1-ac29-318cfec3a2d9:
+          Alias: account_map_payer
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map_payer]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: payer_account_name
+          Source:
+            PhysicalTableId: fe517bcf-d790-49f8-b395-b744f079758f
         6bab26bf-161f-47a2-9dd7-c83e7d9a20ee:
           Alias: account_map
           DataTransforms:
           - RenameColumnOperation:
               ColumnName: account_id
               NewColumnName: account_id[account_map]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: linked_account_name
           Source:
             PhysicalTableId: 481b319c-c8f4-4e82-9ddf-fa705f6cf783
-        88d79acb-f645-4d57-bcc6-aea8447d6e2e:
-          Alias: Intermediate Table
+        b6eb3c98-ab92-471c-bbd1-eab4fe15514e:
+          Alias: Intermediate Table (2)
           DataTransforms:
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: payer_account_formatted
+                ColumnId: 7bbfe0d0-23b5-4597-9c47-53a253fd264a
+                Expression: |-
+                  ifelse(
+                      strlen({payer_account_name})=0 or {payer_account_name} = {payer_account_id}, {payer_account_id},
+                      concat({payer_account_name}, " (", {payer_account_id}, ")")
+                  )
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: linked_account_formatted
+                ColumnId: 2ae7d50b-a8b7-4360-8503-8bff79820039
+                Expression: |-
+                  ifelse(
+                      strlen({linked_account_name})=0 or {linked_account_name} = {linked_account_id}, {linked_account_id},
+                      concat({linked_account_name}, " (", {linked_account_id}, ")")
+                  )
           - ProjectOperation:
               ProjectedColumns:
               - reservation_id
               - reservation_count
               - reservation_start_time
               - reservation_end_time
-              - account_id
-              - payer_id
+              - linked_account_id
+              - payer_account_id
               - line_item_line_item_description
               - line_item_usage_type
               - video_pipeline
@@ -27703,13 +27364,24 @@ datasets:
               - effective_od_cost
               - effective_savings
               - effective_savings_rate
-              - account_name
+              - linked_account_name
+              - payer_account_name
+              - payer_account_formatted
+              - linked_account_formatted
+          Source:
+            JoinInstruction:
+              LeftOperand: c8019994-2912-4f5d-a1b2-dab70cd5757b
+              RightOperand: 24baacd6-be68-44a1-ac29-318cfec3a2d9
+              Type: LEFT
+              OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
+        c8019994-2912-4f5d-a1b2-dab70cd5757b:
+          Alias: Intermediate Table
           Source:
             JoinInstruction:
               LeftOperand: faff24db-9601-4a15-85e1-4b264d4626c3
               RightOperand: 6bab26bf-161f-47a2-9dd7-c83e7d9a20ee
               Type: LEFT
-              OnClause: '{account_id} = {account_id[account_map]}'
+              OnClause: '{linked_account_id} = {account_id[account_map]}'
         faff24db-9601-4a15-85e1-4b264d4626c3:
           Alias: msih_reservations
           Source:
@@ -27719,14 +27391,15 @@ datasets:
       views:
       - msih_reservations
       - account_map
+      - account_map
     schedules:
     - default
   msih_view:
     data:
-      DataSetId: 0004a71e-5610-4975-a4d8-9596893cce1d
+      DataSetId: 91be20ff-05ba-4164-abbd-07631715ce8e
       Name: msih_view
       PhysicalTableMap:
-        2fd43634-c6ee-49e5-8265-3ded79eb11f4:
+        51567fc4-f88a-433b-bd81-ab83cd68ca7c:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
@@ -27737,7 +27410,18 @@ datasets:
               Type: STRING
             - Name: account_name
               Type: STRING
-        cbea5483-901f-4b2b-abe5-b6df7d6226d6:
+        d21dcb44-c6f5-48eb-bf45-3dc6bf2582f7:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+        d7fcd736-d79d-4095-816d-076d71b5e3e0:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
@@ -27768,8 +27452,6 @@ datasets:
               Type: STRING
             - Name: product_name
               Type: STRING
-            - Name: service
-              Type: STRING
             - Name: product_family
               Type: STRING
             - Name: usage_type
@@ -27778,13 +27460,13 @@ datasets:
               Type: STRING
             - Name: item_description
               Type: STRING
-            - Name: availability_zone
-              Type: STRING
             - Name: region
               Type: STRING
-            - Name: product_group
+            - Name: availability_zone
               Type: STRING
             - Name: video_pipeline
+              Type: STRING
+            - Name: video_flow_direction
               Type: STRING
             - Name: video_input
               Type: STRING
@@ -27804,8 +27486,6 @@ datasets:
               Type: STRING
             - Name: video_resolution
               Type: STRING
-            - Name: video_emc_pricing_model
-              Type: STRING
             - Name: product_from_location
               Type: STRING
             - Name: product_to_location
@@ -27824,8 +27504,6 @@ datasets:
               Type: STRING
             - Name: last_refresh_date
               Type: DATETIME
-            - Name: resource_id_count
-              Type: INTEGER
             - Name: usage_quantity
               Type: DECIMAL
               SubType: FLOAT
@@ -27848,13 +27526,54 @@ datasets:
               Type: DECIMAL
               SubType: FLOAT
       LogicalTableMap:
-        716b8ec0-ae95-4168-88b1-83e0ff6ad473:
-          Alias: msih_view
-          Source:
-            PhysicalTableId: cbea5483-901f-4b2b-abe5-b6df7d6226d6
-        b7f71a2e-0184-4467-b5f9-51fc9785ad4b:
-          Alias: Intermediate Table
+        939a998c-8d31-43ca-bab3-86679fc7e94f:
+          Alias: account_map
           DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: linked_account_name
+          Source:
+            PhysicalTableId: d21dcb44-c6f5-48eb-bf45-3dc6bf2582f7
+        974f4304-9ba3-4aa2-b237-4ad04fd7d9d7:
+          Alias: Intermediate Table
+          Source:
+            JoinInstruction:
+              LeftOperand: fba80c0d-5335-473a-bccf-bea91b9913be
+              RightOperand: 939a998c-8d31-43ca-bab3-86679fc7e94f
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+        e8c39d09-4b7e-42c4-9234-e17abb23e694:
+          Alias: account_map_payer
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map_payer]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: payer_account_name
+          Source:
+            PhysicalTableId: 51567fc4-f88a-433b-bd81-ab83cd68ca7c
+        f8a3fb27-1dde-4315-88d9-f3b04ca08862:
+          Alias: Intermediate Table (2)
+          DataTransforms:
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: linked_account_formatted
+                ColumnId: 2e10c859-11b9-408b-b7e0-044eefed62a6
+                Expression: |-
+                  ifelse(
+                      strlen({linked_account_name})=0 or {linked_account_name} = {linked_account_id}, {linked_account_id},
+                      concat({linked_account_name}, " (", {linked_account_id}, ")")
+                  )
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: payer_account_formatted
+                ColumnId: 7a232ed9-e18c-4c86-b68f-07bae0349bc4
+                Expression: |-
+                  ifelse(
+                      strlen({payer_account_name})=0 or {payer_account_name}={payer_account_id}, {payer_account_id},
+                      concat({payer_account_name}, " (", {payer_account_id}, ")")
+                  )
           - ProjectOperation:
               ProjectedColumns:
               - year
@@ -27869,15 +27588,14 @@ datasets:
               - ri_sp_arn
               - product_code
               - product_name
-              - service
               - product_family
               - usage_type
               - operation
               - item_description
-              - availability_zone
               - region
-              - product_group
+              - availability_zone
               - video_pipeline
+              - video_flow_direction
               - video_input
               - video_output
               - video_bit_rate
@@ -27887,7 +27605,6 @@ datasets:
               - video_frame_rate
               - video_quality
               - video_resolution
-              - video_emc_pricing_model
               - product_from_location
               - product_to_location
               - billing_entity
@@ -27897,7 +27614,6 @@ datasets:
               - resource_id
               - reservation_id
               - last_refresh_date
-              - resource_id_count
               - usage_quantity
               - unblended_cost
               - amortized_cost
@@ -27905,20 +27621,24 @@ datasets:
               - ri_sp_trueup
               - ri_sp_upfront_fees
               - public_cost
-              - account_name
+              - linked_account_name
+              - payer_account_name
+              - linked_account_formatted
+              - payer_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: 716b8ec0-ae95-4168-88b1-83e0ff6ad473
-              RightOperand: f61eb8c4-c571-4632-bd84-a2d393c3f13d
+              LeftOperand: 974f4304-9ba3-4aa2-b237-4ad04fd7d9d7
+              RightOperand: e8c39d09-4b7e-42c4-9234-e17abb23e694
               Type: LEFT
-              OnClause: '{linked_account_id} = {account_id}'
-        f61eb8c4-c571-4632-bd84-a2d393c3f13d:
-          Alias: account_map
+              OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
+        fba80c0d-5335-473a-bccf-bea91b9913be:
+          Alias: msih_view
           Source:
-            PhysicalTableId: 2fd43634-c6ee-49e5-8265-3ded79eb11f4
+            PhysicalTableId: d7fcd736-d79d-4095-816d-076d71b5e3e0
       ImportMode: SPICE
     dependsOn:
       views:
+      - account_map
       - account_map
       - msih_view
     schedules:
@@ -27974,8 +27694,8 @@ views:
          , ROUND(("line_item_usage_amount" / DATE_DIFF('hour', date_trunc('hour', CAST("line_item_usage_start_date" AS timestamp)), date_trunc('hour', CAST("line_item_usage_end_date" AS timestamp))))) "reservation_count"
          , CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) "reservation_start_time"
          , CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) "reservation_end_time"
-         , "line_item_usage_account_id" "account_id"
-         , "bill_payer_account_id" "payer_id"
+         , "line_item_usage_account_id" "linked_account_id"
+         , "bill_payer_account_id" "payer_account_id"
          , "line_item_line_item_description"
          , "line_item_usage_type"
          , "product"['pipeline'] "video_pipeline"
@@ -28066,7 +27786,6 @@ views:
       - product
       - product_from_location
       - product_product_family
-      - product_servicecode
       - product_to_location
       - reservation_amortized_upfront_fee_for_billing_period
       - reservation_effective_cost
@@ -28105,25 +27824,23 @@ views:
       , (CASE WHEN ("reservation_reservation_a_r_n" <> '') THEN "reservation_reservation_a_r_n" ELSE CAST('' AS varchar) END) "ri_sp_arn"
       , "line_item_product_code" "product_code"
       , product['product_name'] "product_name"
-      , (CASE WHEN ("product_servicecode" = '') THEN "line_item_product_code" ELSE "product_servicecode" END) "service"
-      , "product_product_family" "product_family"
+      , (CASE WHEN ("line_item_operation" = 'CreateJob') THEN 'Transcode minute' WHEN ("line_item_operation" = 'reserve') THEN 'Reserved Transcoding' WHEN ("line_item_operation" = 'CHANNEL_BANDWIDTH') THEN 'Data Transfer' WHEN (("line_item_operation" LIKE 'CHANNEL_%PUT') OR ("line_item_operation" LIKE 'INACTIVE_%')) THEN 'Transcode minute' WHEN ("line_item_usage_type" LIKE '%-Out-Bytes') THEN 'Data Transfer' WHEN (("line_item_usage_type" LIKE '%-ingest-bytes') OR ("line_item_usage_type" LIKE '%-origin-packaging-bytes')) THEN 'Packaging Data Transfer' WHEN ("line_item_usage_type" LIKE '%-AdInsertion') THEN 'Fee' ELSE "product_product_family" END) "product_family"
       , "line_item_usage_type" "usage_type"
       , "line_item_operation" "operation"
       , "line_item_line_item_description" "item_description"
-      , "line_item_availability_zone" "availability_zone"
       , "product"['region'] "region"
-      , "product"['group'] "product_group"
-      , "product"['pipeline'] "video_pipeline"
-      , "product"['input'] "video_input"
-      , "product"['output'] "video_output"
-      , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (length("product"['bit_rate']) = 0)) THEN concat(replace(replace(regexp_extract(line_item_usage_type, '(.*?-){6}(.*?)-', 2), 'L10', '<10'), 'L20', '10-20'), 'mbps') WHEN (length("product"['bit_rate']) > 0) THEN "product"['bit_rate'] ELSE null END) "video_bit_rate"
-      , (CASE WHEN (NOT ("line_item_line_item_type" LIKE '%Usage')) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" <> 'Transcode minute')) THEN null WHEN ("line_item_product_code" = 'AWSElementalMediaConvert') THEN "product"['tier'] WHEN (length("product"['video_tier']) > 0) THEN "product"['video_tier'] ELSE null END) "video_tier"
+      , "line_item_availability_zone" "availability_zone"
+      , (CASE WHEN ("line_item_usage_type" LIKE 'EML1-%') THEN 'Single' WHEN ("line_item_usage_type" LIKE 'EML2-%') THEN 'Standard' ELSE null END) "video_pipeline"
+      , (CASE WHEN (("line_item_usage_type" LIKE '%-IN-%') OR ("line_item_operation" = 'INACTIVE_INPUT')) THEN 'In' WHEN (("line_item_usage_type" LIKE '%-OUT-%') OR ("line_item_operation" = 'INACTIVE_CHANNEL')) THEN 'Out' ELSE null END) "video_flow_direction"
+      , (CASE WHEN (("line_item_usage_type" LIKE '%-IN-%') OR ("line_item_operation" = 'INACTIVE_INPUT')) THEN regexp_extract(line_item_usage_type, '(.*?-){3}(.*?)(-|$)', 2) ELSE null END) "video_input"
+      , (CASE WHEN (("line_item_usage_type" LIKE '%-OUT-%') OR ("line_item_operation" = 'INACTIVE_CHANNEL')) THEN regexp_extract(replace(line_item_usage_type, 'AUDIO', 'Audio'), '(.*?-){3}(.*?)(-|$)', 2) ELSE null END) "video_output"
+      , (CASE WHEN ("line_item_operation" LIKE '_%PUT') THEN concat(regexp_extract(line_item_usage_type, '(.*?-){5}L(.*?)(-|$)', 2), ' mbps') ELSE null END) "video_bit_rate"
+      , (CASE WHEN ("line_item_operation" = 'CreateJob') THEN replace(replace(regexp_extract("line_item_usage_type", '(.*?-){1}(.*?)-', 2), 'B', 'Basic'), 'P', 'Professional') ELSE null END) "video_tier"
       , "product"['transcoding_result'] "video_transcoding_result"
-      , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_usage_type" LIKE '%-AUDIO')) THEN 'Audio' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_operation" LIKE '%INPUT') AND (length("product"['input']) = 0)) THEN regexp_extract(line_item_usage_type, '(.*?-){3}(.*?)-', 2) WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_operation" LIKE '%INPUT')) THEN "product"['input'] WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_operation" LIKE '%OUTPUT') AND (length("product"['output']) = 0)) THEN regexp_extract(line_item_usage_type, '(.*?-){3}(.*?)-', 2) WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_operation" LIKE '%OUTPUT')) THEN "product"['output'] WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("line_item_usage_type" LIKE '%-AUD-%')) THEN 'Audio' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("line_item_usage_type" LIKE '%-DTS-%')) THEN 'DTS' WHEN ("line_item_product_code" = 'AWSElementalMediaConvert') THEN regexp_extract(line_item_usage_type, '(.*?-){2}(.*?)-', 2) ELSE null END) "video_codec"
-      , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (length("product"['frame_rate']) = 0)) THEN concat(regexp_extract(line_item_usage_type, '(.*?-){6}(.*?)-', 2), ' fps') WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("product"['frame_rate'] = 'NA')) THEN null WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN replace("product"['frame_rate'], '0fps', '0 fps') WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("line_item_usage_type" LIKE '%-AUD-%')) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" = 'Transcode minute') AND (regexp_extract(line_item_usage_type, '(.*?-){5}(.*?)-', 2) = 'NA')) THEN null WHEN ("line_item_product_code" = 'AWSElementalMediaConvert') THEN replace("product"['video_frame_rate'], '0fps', '0 fps') ELSE null END) "video_frame_rate"
-      , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (length("product"['video_quality']) = 0)) THEN concat(regexp_extract(line_item_usage_type, '(.*?-){6}(.*?)-', 2), ' fps') WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN "product"['video_quality'] WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" <> 'Transcode minute')) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("line_item_usage_type" LIKE '%-AUD-%')) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" = 'Transcode minute') AND (regexp_extract(line_item_usage_type, '(.*?-){4}(.*?)-', 2) = 'SHQ')) THEN 'Single pass HQ' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" = 'Transcode minute') AND (regexp_extract(line_item_usage_type, '(.*?-){4}(.*?)-', 2) = 'MHQ')) THEN 'Multi-pass HQ' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" = 'Transcode minute') AND (regexp_extract(line_item_usage_type, '(.*?-){4}(.*?)-', 2) = 'S')) THEN 'Standard' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" = 'Transcode minute')) THEN regexp_extract(line_item_usage_type, '(.*?-){4}(.*?)-', 2) WHEN ("line_item_product_code" = 'AWSElementalMediaConvert') THEN "product"['video_quality_setting'] ELSE null END) "video_quality"
-      , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (length("product"['resolution']) = 0)) THEN concat(regexp_extract(line_item_usage_type, '(.*?-){6}(.*?)-', 2), ' fps') WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("product"['resolution'] = 'NA')) THEN null WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN "product"['resolution'] WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" <> 'Transcode minute')) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("line_item_usage_type" LIKE '%-AUD-%')) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" = 'Transcode minute')) THEN regexp_extract(line_item_usage_type, '(.*?-){3}(.*?)-', 2) WHEN ("line_item_product_code" = 'AWSElementalMediaConvert') THEN "product"['video_resolution'] ELSE null END) "video_resolution"
-      , CAST(null AS varchar) "video_emc_pricing_model"
+      , (CASE WHEN (("line_item_operation" LIKE '_%PUT') AND regexp_like("line_item_usage_type", '.*AUDIO$')) THEN 'Audio' WHEN ("line_item_operation" LIKE '_%PUT') THEN regexp_extract("line_item_usage_type", '(.*?-){3}(.*?)-', 2) WHEN (("line_item_operation" = 'CreateJob') AND ("line_item_usage_type" LIKE '%-AUD-%')) THEN 'Audio' WHEN (("line_item_operation" = 'CreateJob') AND (length(replace(regexp_extract("line_item_usage_type", '(.*?-){2}(.*?)-', 2), 'NA', '')) = 0)) THEN null WHEN ("line_item_operation" = 'CreateJob') THEN regexp_extract("line_item_usage_type", '(.*?-){2}(.*?)-', 2) ELSE null END) "video_codec"
+      , (CASE WHEN (("line_item_operation" = 'CreateJob') AND ("line_item_usage_type" LIKE '%-AUD-%')) THEN null WHEN ("line_item_operation" = 'CreateJob') THEN concat(regexp_extract("line_item_usage_type", '(.*?-){5}(.*?)(-|$)', 2), ' fps') WHEN (("line_item_operation" = 'CHANNEL_OUTPUT') AND (NOT regexp_like("line_item_usage_type", '.*-L[0-9]{2}'))) THEN concat(regexp_extract("line_item_usage_type", '(.*?-){5}(.*?)(-|$)', 2), ' fps') WHEN (("line_item_operation" = 'CHANNEL_OUTPUT') AND (NOT ("line_item_usage_type" LIKE '%AUDIO%'))) THEN concat(regexp_extract("line_item_usage_type", '(.*?-){6}(.*?)(-|$)', 2), ' fps') ELSE null END) "video_frame_rate"
+      , (CASE WHEN (("line_item_operation" = 'CreateJob') AND (regexp_extract(line_item_usage_type, '(.*?-){4}(.*?)-', 2) = 'S')) THEN 'Single-pass' WHEN (("line_item_operation" = 'CreateJob') AND (regexp_extract(line_item_usage_type, '(.*?-){4}(.*?)-', 2) = 'SHQ')) THEN 'Single-pass HQ' WHEN (("line_item_operation" = 'CreateJob') AND (regexp_extract(line_item_usage_type, '(.*?-){4}(.*?)-', 2) = 'M')) THEN 'Multi-pass' WHEN (("line_item_operation" = 'CreateJob') AND (regexp_extract(line_item_usage_type, '(.*?-){4}(.*?)-', 2) = 'MHQ')) THEN 'Multi-pass HQ' WHEN (("line_item_usage_type" = 'CHANNEL_OUTPUT') AND regexp_like(line_item_usage_type, '.*-S$')) THEN 'Standard' ELSE null END) "video_quality"
+      , (CASE WHEN (("line_item_operation" = 'CreateJob') AND ("line_item_usage_type" LIKE '%-AUD-%')) THEN null WHEN ("line_item_operation" = 'CreateJob') THEN regexp_extract(line_item_usage_type, '(.*?-){3}(.*?)-', 2) WHEN (("line_item_operation" LIKE 'CHANNEL_%PUT') AND (length(regexp_extract(line_item_usage_type, '(.*?-){4}(.*?)-', 2)) = 0)) THEN null WHEN ("line_item_operation" LIKE 'CHANNEL_%PUT') THEN regexp_extract(line_item_usage_type, '(.*?-){4}(.*?)-', 2) ELSE null END) "video_resolution"
       , "product_from_location" "product_from_location"
       , "product_to_location" "product_to_location"
       , "bill_billing_entity" "billing_entity"
@@ -28133,7 +27850,6 @@ views:
       , "line_item_resource_id" "resource_id"
       , SPLIT_PART(reservation_reservation_a_r_n, ':', 7) "reservation_id"
       , "last_refresh_date"
-      , approx_distinct("line_item_resource_id") "resource_id_count"
       , sum("line_item_usage_amount") "usage_quantity"
       , sum("line_item_unblended_cost") "unblended_cost"
       , sum((CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_effective_cost" WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee") WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0 ELSE "line_item_unblended_cost" END)) "amortized_cost"
@@ -28152,5 +27868,5 @@ views:
          WHERE ("line_item_usage_start_date" <= (date_trunc('day', current_timestamp) - INTERVAL  '0' DAY))
          GROUP BY 1
       )  ts ON ("bill_payer_account_id" = "payer_account_id"))
-      WHERE (("line_item_product_code" LIKE '%Media%') AND ("bill_billing_period_start_date" >= (date_trunc('month', current_timestamp) - INTERVAL  '18' MONTH)) AND (CAST(concat("billing_period", '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '18' MONTH)))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40
+      WHERE ((("line_item_product_code" LIKE '%Media%') AND ("bill_billing_period_start_date" >= (date_trunc('month', current_timestamp) - INTERVAL  '18' MONTH)) AND (CAST(concat("billing_period", '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '18' MONTH))) AND (NOT ("line_item_line_item_type" IN ('Tax'))))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38
