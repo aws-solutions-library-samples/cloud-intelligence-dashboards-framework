@@ -1698,9 +1698,9 @@ dashboards:
         - Content: "<text-box>\n  <inline font-size=\"36px\">FOCUS Dashboard</inline>\n\
             \  <br/>\n  <inline color=\"#b3b3b3\" font-size=\"16px\">An interactive and\
             \ customizable dashboard from the\_</inline>\n  <inline color=\"#61d1d6\" font-size=\"\
-            16px\">\n    <a href=\"https://catalog.workshops.aws/awscid/en-US\" target=\"\
+            16px\">\n    <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/\" target=\"\
             _blank\">Cloud Intelligence Dashboards Framework</a>\n  </inline>\n  <inline\
-            \ color=\"#b3b3b3\" font-size=\"16px\">\_to visualize your cost and usage data\
+            \ color=\"#b3b3b3\" font-size=\"16px\">\_to visualize your multicloud cost and usage data\
             \ based on\_</inline>\n  <inline color=\"#61d1d6\" font-size=\"16px\">\n   \
             \ <a href=\"https://focus.finops.org/\" target=\"_blank\">FOCUS specification</a>\n\
             \  </inline>\n  .\n</text-box>"
