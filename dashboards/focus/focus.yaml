@@ -41,6 +41,7 @@ dashboards:
           ${MoMGroupBy1} = 'Charge Category', ChargeCategory,
           ${MoMGroupBy1} = 'Service Category', ServiceCategory,
           ${MoMGroupBy1} = 'Service Name', ServiceName,
+          // Add ${MoMGroupBy1}
           null
           )
         Name: MoM Group By One
@@ -53,6 +54,7 @@ dashboards:
           ${MoMGroupByTwo} = 'Charge Category', ChargeCategory,
           ${MoMGroupByTwo} = 'Service Category', ServiceCategory,
           ${MoMGroupByTwo} = 'Service Name', ServiceName,
+          // Add ${MoMGroupByTwo}
           null
           )
         Name: MoM Group By Two
@@ -129,6 +131,7 @@ dashboards:
           ${MoMGroupBy1} = 'Charge Category', ChargeCategory,
           ${MoMGroupBy1} = 'Service Category', ServiceCategory,
           ${MoMGroupBy1} = 'Service Name', ServiceName,
+          // Add ${MoMGroupBy1}
           null
           )
         Name: MoM Group By One
@@ -141,6 +144,7 @@ dashboards:
           ${MoMGroupByTwo} = 'Charge Category', ChargeCategory,
           ${MoMGroupByTwo} = 'Service Category', ServiceCategory,
           ${MoMGroupByTwo} = 'Service Name', ServiceName,
+          // Add ${MoMGroupByTwo}
           null
           )
         Name: MoM Group By Two
@@ -155,6 +159,7 @@ dashboards:
           ${SummaryGroupBy} = 'Billing Account', {Billing Account},
           ${SummaryGroupBy} = 'Sub Account', {Sub Account},
           ${SummaryGroupBy} = 'Service Category', ServiceCategory,
+          // Add ${SummaryGroupBy}
           ProviderName
           )
         Name: Summary Group By
@@ -4903,7 +4908,7 @@ views:
             ) t
             CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
           default: []
-          description: "EnterTags"
+          description: "Enter Tags"
           global: True
   focus_summary_view:
     dependsOn:
@@ -4969,7 +4974,7 @@ views:
             ) t
             CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
           default: []
-          description: "EnterTags"
+          description: "Enter Tags"
           global: True
   focus_consolidation_view:
     data: |-
