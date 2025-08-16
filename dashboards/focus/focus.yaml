@@ -4497,16 +4497,16 @@ dashboards:
         - Content: "<text-box>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"\
             center\">\n    <inline font-size=\"40px\">\n      <b>FOCUS Dashboard</b>\n \
             \   </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n    <inline\
-            \ font-size=\"40px\">\n      <b>v0.2.0</b>\n    </inline>\n  </block>\n  <br/>\n\
+            \ font-size=\"40px\">\n      <b>v0.2.1</b>\n    </inline>\n  </block>\n  <br/>\n\
             \  <block align=\"center\">\n    <inline font-size=\"40px\">\n      <b>FinOps\
             \ Cost and Usage Specification Dashboard</b>\n    </inline>\n  </block>\n  <br/>\n\
             \  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n\
             \  <block align=\"right\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
             \  <block align=\"center\"/>\n  <br/>\n  <block align=\"right\">Built by: Yuriy\
             \ Prykhodko, Iakov Gan, Zach Erdman</block>\n  <br/>\n  <block align=\"right\"\
-            >\n    Learn more\n    <a href=\"https://wellarchitectedlabs.com/cost/200_labs/200_cloud_intelligence/\"\
+            >\n    Learn more\n    <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/\"\
             \ target=\"_blank\">\_</a>\n    about AWS Cloud Intelligence Dashboards (CID)\
-            \ in\n    <inline color=\"#61d1d6\">\n      <a href=\"https://wellarchitectedlabs.com/cost/200_labs/200_cloud_intelligence/\"\
+            \ in\n    <inline color=\"#61d1d6\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/\"\
             \ target=\"_blank\">\n        <u>AWS Well-Architected Labs</u>\n      </a>\n\
             \    </inline>\n    \_and\n    <inline color=\"#61d1d6\">\n      <a href=\"\
             https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\" target=\"_blank\"\
