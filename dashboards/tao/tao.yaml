@@ -4,9 +4,9 @@ dashboards:
       datasets:
       - ta-organizational-view
       - ta_priority_org_view
-    name: TAO
+    name: Trusted Advisor Organizational View
     dashboardId: ta-organizational-view
-    category: Custom
+    category: Advanced
     theme: MIDNIGHT
     version: v4.0.0
     file: ./tao-definition.yaml
@@ -1385,7 +1385,7 @@ views:
          , MAX(lastupdatedat) OVER (PARTITION BY recommendationarn, awsresourcedetails) max_lastupdatedat
          FROM
            "${data_collection_database_name}"."trusted_advisor_priority_data"
-         WHERE (CAST(concat(year, month) AS INTEGER) >= CAST(concat(CAST(YEAR(current_date) AS VARCHAR), LPAD(CAST((MONTH(current_date) - 2) AS VARCHAR), 2, '0')) AS INTEGER))
+          WHERE (date_parse(concat(year, '-', LPAD(month, 2, '0'), '-01'), '%Y-%m-%d') >= date_add('month', -3, current_date))
       )
       SELECT
         recommendationarn
