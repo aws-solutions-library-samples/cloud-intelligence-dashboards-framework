@@ -1364,9 +1364,10 @@ views:
          , name
          , description
          , awsservices
-         , date_format(from_iso8601_timestamp(createdat), '%Y-%m-%dT%H:%i:%s.%f+00:00') createdat
-         , date_format(from_iso8601_timestamp(resolvedat), '%Y-%m-%dT%H:%i:%s.%f+00:00') resolvedat
-         , date_format(from_iso8601_timestamp(lastupdatedat), '%Y-%m-%dT%H:%i:%s.%f+00:00') lastupdatedat
+         , date(from_iso8601_timestamp(createdat)) createdat
+         , date(from_iso8601_timestamp(resolvedat)) resolvedat
+         , date(from_iso8601_timestamp(lastupdatedat)) lastupdatedat
+         , lastupdatedat lastupdatedat_string
          , lifecyclestage
          , recommendationstatus
          , pillars
@@ -1407,7 +1408,7 @@ views:
       , payer_id
       , year
       , month
-      , (CASE WHEN (lastupdatedat = max_lastupdatedat) THEN 1 ELSE 0 END) is_latest_update
+      , (CASE WHEN (lastupdatedat_string = max_lastupdatedat) THEN 1 ELSE 0 END) is_latest_update
       FROM
         ranked_recommendations
       WHERE (row_num = 1)
