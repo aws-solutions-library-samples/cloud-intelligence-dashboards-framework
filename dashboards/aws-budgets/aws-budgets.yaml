@@ -2080,7 +2080,6 @@ views:
       SELECT budgetname
       , budgetlimit
       , costfilters
-      , costtypes
       , timeunit
       , timeperiod
       , calculatedspend
