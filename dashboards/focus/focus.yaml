@@ -20,63 +20,65 @@ dashboards:
           SheetContentType: INTERACTIVE
       CalculatedFields:
       - DataSetIdentifier: focus_resource_view
-        Expression: concat(billingaccountname,':',billingaccountid)
+        Expression: concat(BillingAccountName,':',BillingAccountId)
         Name: Billing Account
       - DataSetIdentifier: focus_resource_view
         Expression: |-
           ifelse(
-          ${Cost} = 'Billed Cost', billedcost,
-          ${Cost} = 'Contracted Cost', contractedcost,
-          ${Cost} = 'Effective Cost', effectivecost,
-          ${Cost} = 'List Cost', listcost,
-          effectivecost
+          ${Cost} = 'Billed Cost', BilledCost,
+          ${Cost} = 'Contracted Cost', ContractedCost,
+          ${Cost} = 'Effective Cost', EffectiveCost,
+          ${Cost} = 'List Cost', ListCost,
+          EffectiveCost
           )
         Name: Cost
       - DataSetIdentifier: focus_resource_view
         Expression: |-
           ifelse(
-          ${MoMGroupBy1} = 'Provider', providername,
+          ${MoMGroupBy1} = 'Provider', ProviderName,
           ${MoMGroupBy1} = 'Billing Account', {Billing Account},
           ${MoMGroupBy1} = 'Sub Account', {Sub Account},
-          ${MoMGroupBy1} = 'Charge Category', chargecategory,
-          ${MoMGroupBy1} = 'Service Category', servicecategory,
-          ${MoMGroupBy1} = 'Service Name', servicename,
+          ${MoMGroupBy1} = 'Charge Category', ChargeCategory,
+          ${MoMGroupBy1} = 'Service Category', ServiceCategory,
+          ${MoMGroupBy1} = 'Service Name', ServiceName,
+          // Add ${MoMGroupBy1}
           null
           )
         Name: MoM Group By One
       - DataSetIdentifier: focus_resource_view
         Expression: |-
           ifelse(
-          ${MoMGroupByTwo} = 'Provider', providername,
+          ${MoMGroupByTwo} = 'Provider', ProviderName,
           ${MoMGroupByTwo} = 'Billing Account', {Billing Account},
           ${MoMGroupByTwo} = 'Sub Account', {Sub Account},
-          ${MoMGroupByTwo} = 'Charge Category', chargecategory,
-          ${MoMGroupByTwo} = 'Service Category', servicecategory,
-          ${MoMGroupByTwo} = 'Service Name', servicename,
+          ${MoMGroupByTwo} = 'Charge Category', ChargeCategory,
+          ${MoMGroupByTwo} = 'Service Category', ServiceCategory,
+          ${MoMGroupByTwo} = 'Service Name', ServiceName,
+          // Add ${MoMGroupByTwo}
           null
           )
         Name: MoM Group By Two
       - DataSetIdentifier: focus_resource_view
-        Expression: concat(subaccountname,':', subaccountid)
+        Expression: concat(SubAccountName,':', SubAccountId)
         Name: Sub Account
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          chargecategory = 'Adjustment', effectivecost,
+          ChargeCategory = 'Adjustment', EffectiveCost,
           0
           )
         Name: Adjustments
       - DataSetIdentifier: focus_summary_view
-        Expression: concat(billingaccountname,':', billingaccountid)
+        Expression: concat(BillingAccountName,':', BillingAccountId)
         Name: Billing Account
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          ${Cost} = 'Billed Cost', billedcost,
-          ${Cost} = 'Contracted Cost', contractedcost,
-          ${Cost} = 'Effective Cost', effectivecost,
-          ${Cost} = 'List Cost', listcost,
-          effectivecost
+          ${Cost} = 'Billed Cost', BilledCost,
+          ${Cost} = 'Contracted Cost', ContractedCost,
+          ${Cost} = 'Effective Cost', EffectiveCost,
+          ${Cost} = 'List Cost', ListCost,
+          EffectiveCost
           )
         Name: Cost
       - DataSetIdentifier: focus_summary_view
@@ -85,84 +87,87 @@ dashboards:
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          chargecategory = 'Credit',
-          effectivecost,
+          ChargeCategory = 'Credit',
+          EffectiveCost,
           0
           )
         Name: Credits
       - DataSetIdentifier: focus_summary_view
-        Expression: effectivecost
+        Expression: EffectiveCost
         Name: Effective Cost
       - DataSetIdentifier: focus_summary_view
-        Expression: 1 - sum(effectivecost)/sum({List Cost amortized})
+        Expression: 1 - sum(EffectiveCost)/sum({List Cost amortized})
         Name: Effective Disocount Rate
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          in(chargecategory,  ['Usage','Tax']),
-          listcost,
+          in(ChargeCategory,  ['Usage','Tax']),
+          ListCost,
           0
           )
         Name: List Cost amortized
       - DataSetIdentifier: focus_summary_view
-        Expression: difference(sum(effectivecost),[billingperiodstart ASC],-1,[{MoM Group
+        Expression: difference(sum(EffectiveCost),[BillingPeriodStart ASC],-1,[{MoM Group
           By One}])
         Name: MoM $ Group By One
       - DataSetIdentifier: focus_summary_view
-        Expression: difference(sum(effectivecost),[billingperiodstart ASC],-1,[{MoM Group
+        Expression: difference(sum(EffectiveCost),[BillingPeriodStart ASC],-1,[{MoM Group
           By Two}])
         Name: MoM $ Group By Two
       - DataSetIdentifier: focus_summary_view
-        Expression: percentDifference(sum(effectivecost),[billingperiodstart ASC],-1,[{MoM
+        Expression: percentDifference(sum(EffectiveCost),[BillingPeriodStart ASC],-1,[{MoM
           Group By One}])
         Name: MoM % Group By One
       - DataSetIdentifier: focus_summary_view
-        Expression: percentDifference(sum(effectivecost),[billingperiodstart ASC],-1,[{MoM
+        Expression: percentDifference(sum(EffectiveCost),[BillingPeriodStart ASC],-1,[{MoM
           Group By Two}])
         Name: MoM % Group By Two
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          ${MoMGroupBy1} = 'Provider', providername,
+          ${MoMGroupBy1} = 'Provider', ProviderName,
           ${MoMGroupBy1} = 'Billing Account', {Billing Account},
           ${MoMGroupBy1} = 'Sub Account', {Sub Account},
-          ${MoMGroupBy1} = 'Charge Category', chargecategory,
-          ${MoMGroupBy1} = 'Service Category', servicecategory,
-          ${MoMGroupBy1} = 'Service Name', servicename,
+          ${MoMGroupBy1} = 'Charge Category', ChargeCategory,
+          ${MoMGroupBy1} = 'Service Category', ServiceCategory,
+          ${MoMGroupBy1} = 'Service Name', ServiceName,
+          // Add ${MoMGroupBy1}
           null
           )
         Name: MoM Group By One
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          ${MoMGroupByTwo} = 'Provider', providername,
+          ${MoMGroupByTwo} = 'Provider', ProviderName,
           ${MoMGroupByTwo} = 'Billing Account', {Billing Account},
           ${MoMGroupByTwo} = 'Sub Account', {Sub Account},
-          ${MoMGroupByTwo} = 'Charge Category', chargecategory,
-          ${MoMGroupByTwo} = 'Service Category', servicecategory,
-          ${MoMGroupByTwo} = 'Service Name', servicename,
+          ${MoMGroupByTwo} = 'Charge Category', ChargeCategory,
+          ${MoMGroupByTwo} = 'Service Category', ServiceCategory,
+          ${MoMGroupByTwo} = 'Service Name', ServiceName,
+          // Add ${MoMGroupByTwo}
           null
           )
         Name: MoM Group By Two
       - DataSetIdentifier: focus_summary_view
-        Expression: concat(subaccountname,':',subaccountid)
+        Expression: concat(SubAccountName,':',SubAccountId)
         Name: Sub Account
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          ${SummaryGroupBy} = 'Provider', providername,
-          ${SummaryGroupBy} = 'Charge Category', chargecategory,
+          ${SummaryGroupBy} = 'Provider', ProviderName,
+          ${SummaryGroupBy} = 'Charge Category', ChargeCategory,
           ${SummaryGroupBy} = 'Billing Account', {Billing Account},
           ${SummaryGroupBy} = 'Sub Account', {Sub Account},
-          ${SummaryGroupBy} = 'Service Category', servicecategory,
-          providername
+          ${SummaryGroupBy} = 'Service Category', ServiceCategory,
+          // Add ${SummaryGroupBy}
+          ProviderName
           )
         Name: Summary Group By
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          chargecategory = 'Purchase', 0,
-          effectivecost - listcost
+          ChargeCategory = 'Purchase', 0,
+          EffectiveCost - ListCost
           )
         Name: Total Discounts
       - DataSetIdentifier: focus_summary_view
@@ -180,7 +185,7 @@ dashboards:
                   NullString: 'null'
                 NumberScale: AUTO
       - Column:
-          ColumnName: consumedquantity
+          ColumnName: ConsumedQuantity
           DataSetIdentifier: focus_resource_view
         FormatConfiguration:
           NumberFormatConfiguration:
@@ -190,7 +195,7 @@ dashboards:
                   NullString: 'null'
                 NumberScale: AUTO
       - Column:
-          ColumnName: effectivecost
+          ColumnName: EffectiveCost
           DataSetIdentifier: focus_resource_view
         FormatConfiguration:
           NumberFormatConfiguration:
@@ -315,7 +320,7 @@ dashboards:
                   NullString: 'null'
                 NumberScale: AUTO
       - Column:
-          ColumnName: billedcost
+          ColumnName: BilledCost
           DataSetIdentifier: focus_summary_view
         FormatConfiguration:
           NumberFormatConfiguration:
@@ -334,7 +339,7 @@ dashboards:
                     Symbol: COMMA
                     Visibility: VISIBLE
       - Column:
-          ColumnName: contractedcost
+          ColumnName: ContractedCost
           DataSetIdentifier: focus_summary_view
         FormatConfiguration:
           NumberFormatConfiguration:
@@ -353,7 +358,7 @@ dashboards:
                     Symbol: COMMA
                     Visibility: VISIBLE
       - Column:
-          ColumnName: effectivecost
+          ColumnName: EffectiveCost
           DataSetIdentifier: focus_summary_view
         FormatConfiguration:
           NumberFormatConfiguration:
@@ -372,7 +377,7 @@ dashboards:
                     Symbol: COMMA
                     Visibility: VISIBLE
       - Column:
-          ColumnName: listcost
+          ColumnName: ListCost
           DataSetIdentifier: focus_summary_view
         FormatConfiguration:
           NumberFormatConfiguration:
@@ -401,7 +406,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -424,7 +429,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: billingperiodstart
+              ColumnName: BillingPeriodStart
               DataSetIdentifier: focus_summary_view
             ExcludePeriodConfiguration:
               Amount: 3
@@ -449,7 +454,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -472,7 +477,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: billingperiodstart
+              ColumnName: BillingPeriodStart
               DataSetIdentifier: focus_summary_view
             ExcludePeriodConfiguration:
               Amount: 2
@@ -497,7 +502,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -520,7 +525,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: billingperiodstart
+              ColumnName: BillingPeriodStart
               DataSetIdentifier: focus_summary_view
             ExcludePeriodConfiguration:
               Amount: 2
@@ -544,7 +549,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -565,7 +570,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -586,7 +591,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -607,7 +612,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -630,7 +635,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: chargeperiodstart
+              ColumnName: ChargePeriodStart
               DataSetIdentifier: focus_summary_view
             FilterId: 23878760-fe45-4d05-aa55-0f97632820a9
             MinimumGranularity: DAY
@@ -651,7 +656,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -672,7 +677,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -693,7 +698,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: chargecategory
+              ColumnName: ChargeCategory
               DataSetIdentifier: focus_summary_view
             Configuration:
               FilterListConfiguration:
@@ -724,7 +729,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: billingperiodstart
+              ColumnName: BillingPeriodStart
               DataSetIdentifier: focus_summary_view
             ExcludePeriodConfiguration:
               Amount: 1
@@ -751,7 +756,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: billingperiodstart
+              ColumnName: BillingPeriodStart
               DataSetIdentifier: focus_summary_view
             ExcludePeriodConfiguration:
               Amount: 2
@@ -782,7 +787,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -803,7 +808,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -826,7 +831,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: billingperiodstart
+              ColumnName: BillingPeriodStart
               DataSetIdentifier: focus_summary_view
             ExcludePeriodConfiguration:
               Amount: 1
@@ -853,7 +858,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: billingperiodstart
+              ColumnName: BillingPeriodStart
               DataSetIdentifier: focus_summary_view
             ExcludePeriodConfiguration:
               Amount: 1
@@ -880,7 +885,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: chargeperiodstart
+              ColumnName: ChargePeriodStart
               DataSetIdentifier: focus_resource_view
             ExcludePeriodConfiguration:
               Amount: 1
@@ -913,7 +918,7 @@ dashboards:
                 DataSetIdentifier: focus_resource_view
               SortDirection: DESC
             Column:
-              ColumnName: resourceid
+              ColumnName: ResourceId
               DataSetIdentifier: focus_resource_view
             FilterId: 8e7fc9ea-1ae1-474c-a8d9-4ea8fe5fe76c
             Limit: 15
@@ -930,7 +935,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: resourceid
+              ColumnName: ResourceId
               DataSetIdentifier: focus_resource_view
             Configuration:
               CustomFilterConfiguration:
@@ -953,7 +958,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: chargeperiodstart
+              ColumnName: ChargePeriodStart
               DataSetIdentifier: focus_resource_view
             ExcludePeriodConfiguration:
               Amount: 1
@@ -986,7 +991,7 @@ dashboards:
                 DataSetIdentifier: focus_resource_view
               SortDirection: DESC
             Column:
-              ColumnName: resourceid
+              ColumnName: ResourceId
               DataSetIdentifier: focus_resource_view
             FilterId: aef9bd7e-367c-4366-8cc1-af5bd38873e0
             Limit: 15
@@ -1003,7 +1008,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: resourceid
+              ColumnName: ResourceId
               DataSetIdentifier: focus_resource_view
             Configuration:
               CustomFilterConfiguration:
@@ -1024,7 +1029,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -1049,11 +1054,11 @@ dashboards:
                 NumericalAggregationFunction:
                   SimpleNumericalAggregation: SUM
               Column:
-                ColumnName: effectivecost
+                ColumnName: EffectiveCost
                 DataSetIdentifier: focus_summary_view
               SortDirection: DESC
             Column:
-              ColumnName: servicename
+              ColumnName: ServiceName
               DataSetIdentifier: focus_summary_view
             FilterId: 95e5814b-8ec3-490c-bfcf-1c11e7a4058e
             Limit: 10
@@ -1074,7 +1079,7 @@ dashboards:
                 NumericalAggregationFunction:
                   SimpleNumericalAggregation: SUM
               Column:
-                ColumnName: effectivecost
+                ColumnName: EffectiveCost
                 DataSetIdentifier: focus_summary_view
               SortDirection: DESC
             Column:
@@ -1099,7 +1104,7 @@ dashboards:
                 NumericalAggregationFunction:
                   SimpleNumericalAggregation: SUM
               Column:
-                ColumnName: effectivecost
+                ColumnName: EffectiveCost
                 DataSetIdentifier: focus_summary_view
               SortDirection: DESC
             Column:
@@ -1183,7 +1188,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: publishername
+              ColumnName: PublisherName
               DataSetIdentifier: focus_resource_view
             Configuration:
               FilterListConfiguration:
@@ -1219,7 +1224,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: providername
+              ColumnName: ProviderName
               DataSetIdentifier: focus_summary_view
             Configuration:
               FilterListConfiguration:
@@ -1248,7 +1253,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: chargecategory
+              ColumnName: ChargeCategory
               DataSetIdentifier: focus_summary_view
             Configuration:
               FilterListConfiguration:
@@ -1271,7 +1276,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -1292,7 +1297,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -1315,7 +1320,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: chargeperiodstart
+              ColumnName: ChargePeriodStart
               DataSetIdentifier: focus_summary_view
             FilterId: e4c92553-694b-4a42-9495-24beec8ef04e
             MinimumGranularity: DAY
@@ -1336,7 +1341,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: chargecategory
+              ColumnName: ChargeCategory
               DataSetIdentifier: focus_summary_view
             Configuration:
               FilterListConfiguration:
@@ -1359,7 +1364,7 @@ dashboards:
         Filters:
         - CategoryFilter:
             Column:
-              ColumnName: billingcurrency
+              ColumnName: BillingCurrency
               DataSetIdentifier: focus_summary_view
             Configuration:
               CustomFilterListConfiguration:
@@ -1382,7 +1387,7 @@ dashboards:
             AnchorDateConfiguration:
               AnchorOption: NOW
             Column:
-              ColumnName: billingperiodstart
+              ColumnName: BillingPeriodStart
               DataSetIdentifier: focus_summary_view
             FilterId: 5ac16ed5-5771-4df2-93e0-2308be7c7cb1
             MinimumGranularity: DAY
@@ -1695,7 +1700,7 @@ dashboards:
             \ customizable dashboard from the\_</inline>\n  <inline color=\"#61d1d6\" font-size=\"\
             16px\">\n    <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/\" target=\"\
             _blank\">Cloud Intelligence Dashboards Framework</a>\n  </inline>\n  <inline\
-            \ color=\"#b3b3b3\" font-size=\"16px\">\_to visualize your cost and usage data\
+            \ color=\"#b3b3b3\" font-size=\"16px\">\_to visualize your multicloud cost and usage data\
             \ based on\_</inline>\n  <inline color=\"#61d1d6\" font-size=\"16px\">\n   \
             \ <a href=\"https://focus.finops.org/\" target=\"_blank\">FOCUS specification</a>\n\
             \  </inline>\n  .\n</text-box>"
@@ -1778,9 +1783,9 @@ dashboards:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: chargeperiodstart
+                      ColumnName: ChargePeriodStart
                       DataSetIdentifier: focus_summary_view
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ChargePeriodStart.3.1718832307233
                   CustomLabel: Charge Period
                 SortIconVisibility: HIDDEN
                 Visibility: VISIBLE
@@ -1797,10 +1802,10 @@ dashboards:
                   Category:
                   - DateDimensionField:
                       Column:
-                        ColumnName: chargeperiodstart
+                        ColumnName: ChargePeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: DAY
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ChargePeriodStart.3.1718832307233
                       HierarchyId: 906395f0-080a-4cf0-aa31-87a360f9b63a
                   Colors:
                   - CategoricalDimensionField:
@@ -1836,7 +1841,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: ASC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ChargePeriodStart.3.1718832307233
                 ColorItemsLimit:
                   ItemsLimit: 20
                   OtherCategories: INCLUDE
@@ -1857,7 +1862,7 @@ dashboards:
                       TooltipTarget: LINE
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ChargePeriodStart.3.1718832307233
                       TooltipTarget: BOTH
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
@@ -2032,9 +2037,9 @@ dashboards:
                   Colors:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: servicecategory
+                        ColumnName: ServiceCategory
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1718949055814
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceCategory.2.1718949055814
                       HierarchyId: 98a31c5e-b91d-422e-83a7-0e4a073dae71
                   Values:
                   - NumericalMeasureField:
@@ -2071,7 +2076,7 @@ dashboards:
                       FieldId: 0fadc3f0-759a-4f83-bf09-29a0d543865d.2.1718617718388
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1718949055814
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceCategory.2.1718949055814
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
@@ -2081,9 +2086,9 @@ dashboards:
             ColumnHierarchies:
             - ExplicitHierarchy:
                 Columns:
-                - ColumnName: servicecategory
+                - ColumnName: ServiceCategory
                   DataSetIdentifier: focus_summary_view
-                - ColumnName: servicename
+                - ColumnName: ServiceName
                   DataSetIdentifier: focus_summary_view
                 DrillDownFilters: []
                 HierarchyId: 98a31c5e-b91d-422e-83a7-0e4a073dae71
@@ -2106,8 +2111,8 @@ dashboards:
               - FilterOperation:
                   SelectedFieldsConfiguration:
                     SelectedFields:
-                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.1.1717976155612
-                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1717976160344
+                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ProviderName.1.1717976155612
+                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceCategory.2.1717976160344
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisualOptions: ALL_VISUALS
@@ -2124,15 +2129,15 @@ dashboards:
                   Destination:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: servicecategory
+                        ColumnName: ServiceCategory
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1717976160344
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceCategory.2.1717976160344
                   Source:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: providername
+                        ColumnName: ProviderName
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.1.1717976155612
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ProviderName.1.1717976155612
                   Weight:
                   - NumericalMeasureField:
                       AggregationFunction:
@@ -2167,18 +2172,18 @@ dashboards:
                 TrendGroups:
                 - DateDimensionField:
                     Column:
-                      ColumnName: billingperiodstart
+                      ColumnName: BillingPeriodStart
                       DataSetIdentifier: focus_summary_view
                     DateGranularity: DAY
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                     HierarchyId: 8b31e5df-71b4-4ce8-9590-4f91e2d23def
                 Values:
                 - CategoricalMeasureField:
                     AggregationFunction: DISTINCT_COUNT
                     Column:
-                      ColumnName: providername
+                      ColumnName: ProviderName
                       DataSetIdentifier: focus_summary_view
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.1.1717807026286
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ProviderName.1.1717807026286
               KPIOptions:
                 Comparison:
                   ComparisonMethod: PERCENT_DIFFERENCE
@@ -2200,7 +2205,7 @@ dashboards:
                 TrendGroupSort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
@@ -2211,19 +2216,19 @@ dashboards:
                   TextColor:
                     Solid:
                       Color: '#2CAD00'
-                      Expression: percentDifference(DISTINCT_COUNT({providername}),[DISTINCT_COUNT({providername})
+                      Expression: percentDifference(DISTINCT_COUNT({ProviderName}),[DISTINCT_COUNT({ProviderName})
                         DESC],1,[]) > 0.0
               - ComparisonValue:
                   TextColor:
                     Solid:
                       Color: '#DE3B00'
-                      Expression: percentDifference(DISTINCT_COUNT({providername}),[DISTINCT_COUNT({providername})
+                      Expression: percentDifference(DISTINCT_COUNT({ProviderName}),[DISTINCT_COUNT({ProviderName})
                         DESC],1,[]) < 0.0
               - ComparisonValue:
                   Icon:
                     CustomCondition:
                       Color: '#2CAD00'
-                      Expression: percentDifference(DISTINCT_COUNT({providername}),[DISTINCT_COUNT({providername})
+                      Expression: percentDifference(DISTINCT_COUNT({ProviderName}),[DISTINCT_COUNT({ProviderName})
                         DESC],1,[]) > 0.0
                       IconOptions:
                         Icon: CARET_UP
@@ -2231,7 +2236,7 @@ dashboards:
                   Icon:
                     CustomCondition:
                       Color: '#DE3B00'
-                      Expression: percentDifference(DISTINCT_COUNT({providername}),[DISTINCT_COUNT({providername})
+                      Expression: percentDifference(DISTINCT_COUNT({ProviderName}),[DISTINCT_COUNT({ProviderName})
                         DESC],1,[]) < 0.0
                       IconOptions:
                         Icon: CARET_DOWN
@@ -2253,7 +2258,7 @@ dashboards:
               - FilterOperation:
                   SelectedFieldsConfiguration:
                     SelectedFields:
-                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.3.1717806692617
+                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceName.3.1717806692617
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisualOptions: ALL_VISUALS
@@ -2270,9 +2275,9 @@ dashboards:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: billingperiodstart
+                      ColumnName: BillingPeriodStart
                       DataSetIdentifier: focus_summary_view
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                   CustomLabel: Billing Period
                 SortIconVisibility: HIDDEN
                 Visibility: VISIBLE
@@ -2289,17 +2294,17 @@ dashboards:
                   Category:
                   - DateDimensionField:
                       Column:
-                        ColumnName: billingperiodstart
+                        ColumnName: BillingPeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: MONTH
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                       HierarchyId: 66aab224-8bfe-49cc-9acb-ab16a048b51f
                   Colors:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: servicename
+                        ColumnName: ServiceName
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.3.1717806692617
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceName.3.1717806692617
                   LineValues:
                   - NumericalMeasureField:
                       AggregationFunction:
@@ -2330,7 +2335,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: ASC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                 ColorItemsLimit:
                   ItemsLimit: 10
                   OtherCategories: INCLUDE
@@ -2339,11 +2344,11 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                       TooltipTarget: BOTH
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.3.1717806692617
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceName.3.1717806692617
                       TooltipTarget: BAR
                       Visibility: VISIBLE
                   - FieldTooltipItem:
@@ -2377,15 +2382,15 @@ dashboards:
               - FilterOperation:
                   SelectedFieldsConfiguration:
                     SelectedColumns:
-                    - ColumnName: regionname
+                    - ColumnName: RegionName
                       DataSetIdentifier: focus_summary_view
-                    - ColumnName: regionname
+                    - ColumnName: RegionName
                       DataSetIdentifier: focus_summary_view
-                    - ColumnName: providername
+                    - ColumnName: ProviderName
                       DataSetIdentifier: focus_summary_view
                     SelectedFields:
-                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.regionname.1.1717804447612
-                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.regionname.1.1717804447612
+                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.RegionName.1.1717804447612
+                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.RegionName.1.1717804447612
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisualOptions: ALL_VISUALS
@@ -2402,9 +2407,9 @@ dashboards:
                   GroupBy:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: regionname
+                        ColumnName: RegionName
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.regionname.1.1717804447612
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.RegionName.1.1717804447612
                       HierarchyId: 0f472310-4d12-48f1-91ac-eaa1ea7ba500
                   Size:
                   - NumericalMeasureField:
@@ -2427,9 +2432,9 @@ dashboards:
             ColumnHierarchies:
             - ExplicitHierarchy:
                 Columns:
-                - ColumnName: regionname
+                - ColumnName: RegionName
                   DataSetIdentifier: focus_summary_view
-                - ColumnName: providername
+                - ColumnName: ProviderName
                   DataSetIdentifier: focus_summary_view
                 DrillDownFilters: []
                 HierarchyId: 0f472310-4d12-48f1-91ac-eaa1ea7ba500
@@ -2453,18 +2458,18 @@ dashboards:
                 TrendGroups:
                 - DateDimensionField:
                     Column:
-                      ColumnName: billingperiodstart
+                      ColumnName: BillingPeriodStart
                       DataSetIdentifier: focus_summary_view
                     DateGranularity: DAY
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                     HierarchyId: 8d426e5c-0047-4ff0-a748-85a0109291b6
                 Values:
                 - CategoricalMeasureField:
                     AggregationFunction: DISTINCT_COUNT
                     Column:
-                      ColumnName: servicename
+                      ColumnName: ServiceName
                       DataSetIdentifier: focus_summary_view
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.1.1717803674623
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceName.1.1717803674623
               KPIOptions:
                 Comparison:
                   ComparisonMethod: PERCENT_DIFFERENCE
@@ -2486,7 +2491,7 @@ dashboards:
                 TrendGroupSort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
@@ -2497,19 +2502,19 @@ dashboards:
                   TextColor:
                     Solid:
                       Color: '#2CAD00'
-                      Expression: percentDifference(DISTINCT_COUNT({servicename}),[DISTINCT_COUNT({servicename})
+                      Expression: percentDifference(DISTINCT_COUNT({ServiceName}),[DISTINCT_COUNT({ServiceName})
                         DESC],1,[]) > 0.0
               - ComparisonValue:
                   TextColor:
                     Solid:
                       Color: '#DE3B00'
-                      Expression: percentDifference(DISTINCT_COUNT({servicename}),[DISTINCT_COUNT({servicename})
+                      Expression: percentDifference(DISTINCT_COUNT({ServiceName}),[DISTINCT_COUNT({ServiceName})
                         DESC],1,[]) < 0.0
               - ComparisonValue:
                   Icon:
                     CustomCondition:
                       Color: '#2CAD00'
-                      Expression: percentDifference(DISTINCT_COUNT({servicename}),[DISTINCT_COUNT({servicename})
+                      Expression: percentDifference(DISTINCT_COUNT({ServiceName}),[DISTINCT_COUNT({ServiceName})
                         DESC],1,[]) > 0.0
                       IconOptions:
                         Icon: CARET_UP
@@ -2517,7 +2522,7 @@ dashboards:
                   Icon:
                     CustomCondition:
                       Color: '#DE3B00'
-                      Expression: percentDifference(DISTINCT_COUNT({servicename}),[DISTINCT_COUNT({servicename})
+                      Expression: percentDifference(DISTINCT_COUNT({ServiceName}),[DISTINCT_COUNT({ServiceName})
                         DESC],1,[]) < 0.0
                       IconOptions:
                         Icon: CARET_DOWN
@@ -2541,18 +2546,18 @@ dashboards:
                 TrendGroups:
                 - DateDimensionField:
                     Column:
-                      ColumnName: billingperiodstart
+                      ColumnName: BillingPeriodStart
                       DataSetIdentifier: focus_summary_view
                     DateGranularity: MONTH
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                     HierarchyId: 78ad2719-2c69-414c-b4ef-baaf0def791d
                 Values:
                 - CategoricalMeasureField:
                     AggregationFunction: DISTINCT_COUNT
                     Column:
-                      ColumnName: subaccountid
+                      ColumnName: SubAccountId
                       DataSetIdentifier: focus_summary_view
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.subaccountid.1.1717803290501
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.SubAccountId.1.1717803290501
               KPIOptions:
                 Comparison:
                   ComparisonMethod: PERCENT_DIFFERENCE
@@ -2580,7 +2585,7 @@ dashboards:
                 TrendGroupSort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
@@ -2591,19 +2596,19 @@ dashboards:
                   TextColor:
                     Solid:
                       Color: '#2CAD00'
-                      Expression: percentDifference(DISTINCT_COUNT({subaccountid}),[DISTINCT_COUNT({subaccountid})
+                      Expression: percentDifference(DISTINCT_COUNT({SubAccountId}),[DISTINCT_COUNT({SubAccountId})
                         DESC],1,[]) > 0.0
               - ComparisonValue:
                   TextColor:
                     Solid:
                       Color: '#DE3B00'
-                      Expression: percentDifference(DISTINCT_COUNT({subaccountid}),[DISTINCT_COUNT({subaccountid})
+                      Expression: percentDifference(DISTINCT_COUNT({SubAccountId}),[DISTINCT_COUNT({SubAccountId})
                         DESC],1,[]) < 0.0
               - ComparisonValue:
                   Icon:
                     CustomCondition:
                       Color: '#2CAD00'
-                      Expression: percentDifference(DISTINCT_COUNT({subaccountid}),[DISTINCT_COUNT({subaccountid})
+                      Expression: percentDifference(DISTINCT_COUNT({SubAccountId}),[DISTINCT_COUNT({SubAccountId})
                         DESC],1,[]) > 0.0
                       IconOptions:
                         Icon: CARET_UP
@@ -2611,7 +2616,7 @@ dashboards:
                   Icon:
                     CustomCondition:
                       Color: '#DE3B00'
-                      Expression: percentDifference(DISTINCT_COUNT({subaccountid}),[DISTINCT_COUNT({subaccountid})
+                      Expression: percentDifference(DISTINCT_COUNT({SubAccountId}),[DISTINCT_COUNT({SubAccountId})
                         DESC],1,[]) < 0.0
                       IconOptions:
                         Icon: CARET_DOWN
@@ -2635,10 +2640,10 @@ dashboards:
                 TrendGroups:
                 - DateDimensionField:
                     Column:
-                      ColumnName: billingperiodstart
+                      ColumnName: BillingPeriodStart
                       DataSetIdentifier: focus_summary_view
                     DateGranularity: MONTH
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                     HierarchyId: 030e4d0e-5ce9-4453-a4c2-6048963d0364
                 Values:
                 - NumericalMeasureField:
@@ -2669,7 +2674,7 @@ dashboards:
                 TrendGroupSort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
@@ -2724,10 +2729,10 @@ dashboards:
                 TrendGroups:
                 - DateDimensionField:
                     Column:
-                      ColumnName: billingperiodstart
+                      ColumnName: BillingPeriodStart
                       DataSetIdentifier: focus_summary_view
                     DateGranularity: MONTH
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                     HierarchyId: 06226f25-89a2-4f74-98a4-44ae08483c12
                 Values:
                 - NumericalMeasureField:
@@ -2758,7 +2763,7 @@ dashboards:
                 TrendGroupSort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
@@ -2816,10 +2821,10 @@ dashboards:
                 TrendGroups:
                 - DateDimensionField:
                     Column:
-                      ColumnName: billingperiodstart
+                      ColumnName: BillingPeriodStart
                       DataSetIdentifier: focus_summary_view
                     DateGranularity: MONTH
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                     HierarchyId: df879119-a360-4006-80b7-78b9afaf7f7d
                 Values:
                 - NumericalMeasureField:
@@ -2850,7 +2855,7 @@ dashboards:
                 TrendGroupSort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
@@ -2923,9 +2928,9 @@ dashboards:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: billingperiodstart
+                      ColumnName: BillingPeriodStart
                       DataSetIdentifier: focus_summary_view
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                   CustomLabel: Billing Period
                 SortIconVisibility: HIDDEN
                 Visibility: VISIBLE
@@ -2942,10 +2947,10 @@ dashboards:
                   Category:
                   - DateDimensionField:
                       Column:
-                        ColumnName: billingperiodstart
+                        ColumnName: BillingPeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: MONTH
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                       HierarchyId: 9c700510-aa8f-4f03-be34-2d57a483e366
                   Colors:
                   - CategoricalDimensionField:
@@ -2980,7 +2985,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: ASC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
               Tooltip:
@@ -2988,7 +2993,7 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1717800713725
                       TooltipTarget: BOTH
                       Visibility: VISIBLE
                   - FieldTooltipItem:
@@ -3044,17 +3049,17 @@ dashboards:
                   Category:
                   - DateDimensionField:
                       Column:
-                        ColumnName: billingperiodstart
+                        ColumnName: BillingPeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: MONTH
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1718628967568
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1718628967568
                       HierarchyId: ec5d4dc5-f7f6-4022-a01c-1a0979676359
                   Colors:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: chargecategory
+                        ColumnName: ChargeCategory
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargecategory.3.1718629001537
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ChargeCategory.3.1718629001537
                       HierarchyId: a287475f-8a4f-4b50-acc4-fbad3b98ed8e
                   LineValues: []
               LineDataLabels:
@@ -3069,7 +3074,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: ASC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1718628967568
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1718628967568
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
               Tooltip:
@@ -3077,7 +3082,7 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1718628967568
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.0.1718628967568
                       TooltipTarget: BOTH
                       Visibility: VISIBLE
                   - FieldTooltipItem:
@@ -3085,7 +3090,7 @@ dashboards:
                       TooltipTarget: BAR
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargecategory.3.1718629001537
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ChargeCategory.3.1718629001537
                       TooltipTarget: BAR
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
@@ -3094,9 +3099,9 @@ dashboards:
             ColumnHierarchies:
             - ExplicitHierarchy:
                 Columns:
-                - ColumnName: chargecategory
+                - ColumnName: ChargeCategory
                   DataSetIdentifier: focus_summary_view
-                - ColumnName: chargedescription
+                - ColumnName: ChargeDescription
                   DataSetIdentifier: focus_summary_view
                 DrillDownFilters: []
                 HierarchyId: a287475f-8a4f-4b50-acc4-fbad3b98ed8e
@@ -3361,19 +3366,19 @@ dashboards:
                   Colors:
                   - DateDimensionField:
                       Column:
-                        ColumnName: billingperiodstart
+                        ColumnName: BillingPeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: MONTH
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                       HierarchyId: 0793c997-a808-47b8-8d15-4570a2928245
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: effectivecost
+                        ColumnName: EffectiveCost
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
               Legend:
                 Position: BOTTOM
               Orientation: VERTICAL
@@ -3383,7 +3388,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
                 SmallMultiplesLimitConfiguration:
@@ -3393,10 +3398,10 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
                       Visibility: VISIBLE
                   - FieldTooltipItem:
                       FieldId: 785dddf0-4c5d-4b89-815e-6f309317d2e7.2.1718613928582
@@ -3460,19 +3465,19 @@ dashboards:
                   Colors:
                   - DateDimensionField:
                       Column:
-                        ColumnName: billingperiodstart
+                        ColumnName: BillingPeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: MONTH
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                       HierarchyId: d9c89fe5-7b97-4530-98fa-7b8dca1a4974
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: effectivecost
+                        ColumnName: EffectiveCost
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
               Legend:
                 Position: BOTTOM
               Orientation: VERTICAL
@@ -3482,7 +3487,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
                 SmallMultiplesLimitConfiguration:
@@ -3492,10 +3497,10 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
                       Visibility: VISIBLE
                   - FieldTooltipItem:
                       FieldId: 0fadc3f0-759a-4f83-bf09-29a0d543865d.3.1718613761885
@@ -3527,7 +3532,7 @@ dashboards:
               - FilterOperation:
                   SelectedFieldsConfiguration:
                     SelectedFields:
-                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.3.1718613625682
+                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceName.3.1718613625682
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisualOptions: ALL_VISUALS
@@ -3551,25 +3556,25 @@ dashboards:
                   Category:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: servicename
+                        ColumnName: ServiceName
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.3.1718613625682
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceName.3.1718613625682
                   Colors:
                   - DateDimensionField:
                       Column:
-                        ColumnName: billingperiodstart
+                        ColumnName: BillingPeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: MONTH
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                       HierarchyId: ef55d794-b05b-47cc-a404-e1c5332b9016
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: effectivecost
+                        ColumnName: EffectiveCost
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
               Legend:
                 Position: BOTTOM
               Orientation: VERTICAL
@@ -3579,7 +3584,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
                 SmallMultiplesLimitConfiguration:
@@ -3589,13 +3594,13 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.3.1718613625682
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceName.3.1718613625682
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
@@ -3626,7 +3631,7 @@ dashboards:
               - FilterOperation:
                   SelectedFieldsConfiguration:
                     SelectedFields:
-                    - 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+                    - 8852150b-d200-4b78-bf01-5a906bcdfcf6.ResourceId.2.1718005800151
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisualOptions: ALL_VISUALS
@@ -3638,58 +3643,58 @@ dashboards:
               FieldOptions:
                 DataPathOptions:
                 - DataPathList:
-                  - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
-                    FieldValue: resourceid
+                  - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ResourceId.2.1718005800151
+                    FieldValue: ResourceId
                   Width: 345px
                 - DataPathList:
                   - FieldId: aea64b5f-f84b-4a36-89e5-15be6a358267.8.1718612887022
                     FieldValue: Sub Account
                   Width: 195px
                 - DataPathList:
-                  - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicename.6.1718005993776
-                    FieldValue: servicename
+                  - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ServiceName.6.1718005993776
+                    FieldValue: ServiceName
                   Width: 178px
                 - DataPathList:
-                  - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedquantity.7.1718006008283
-                    FieldValue: consumedquantity
+                  - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ConsumedQuantity.7.1718006008283
+                    FieldValue: ConsumedQuantity
                   Width: 169px
                 - DataPathList:
                   - FieldId: 287a33e3-8277-46c9-b15b-31242a253e5d.8.1718612851838
                     FieldValue: Billing Account
                   Width: 161px
                 - DataPathList:
-                  - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.providername.4.1718005987248
-                    FieldValue: providername
+                  - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ProviderName.4.1718005987248
+                    FieldValue: ProviderName
                   Width: 159px
                 - DataPathList:
-                  - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedunit.8.1718006014514
-                    FieldValue: consumedunit
+                  - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ConsumedUnit.8.1718006014514
+                    FieldValue: ConsumedUnit
                   Width: 122px
                 SelectedFieldOptions:
                 - CustomLabel: RersourceId
-                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ResourceId.2.1718005800151
                   Visibility: VISIBLE
                 - CustomLabel: Provider
-                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.providername.4.1718005987248
+                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ProviderName.4.1718005987248
                   Visibility: VISIBLE
                 - FieldId: 287a33e3-8277-46c9-b15b-31242a253e5d.8.1718612851838
                   Visibility: VISIBLE
                 - FieldId: aea64b5f-f84b-4a36-89e5-15be6a358267.8.1718612887022
                   Visibility: VISIBLE
                 - CustomLabel: Service Category
-                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicecategory.5.1718005992676
+                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ServiceCategory.5.1718005992676
                   Visibility: VISIBLE
                 - CustomLabel: Service Name
-                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicename.6.1718005993776
+                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ServiceName.6.1718005993776
                   Visibility: VISIBLE
                 - CustomLabel: Consumed Units
-                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedunit.8.1718006014514
+                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ConsumedUnit.8.1718006014514
                   Visibility: VISIBLE
                 - CustomLabel: Effetive Cost
-                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.effectivecost.8.1718612742423
+                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.EffectiveCost.8.1718612742423
                   Visibility: VISIBLE
                 - CustomLabel: Consumed Quantity
-                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedquantity.7.1718006008283
+                  FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ConsumedQuantity.7.1718006008283
                   Visibility: VISIBLE
               FieldWells:
                 PivotTableAggregatedFieldWells:
@@ -3697,14 +3702,14 @@ dashboards:
                   Rows:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: resourceid
+                        ColumnName: ResourceId
                         DataSetIdentifier: focus_resource_view
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ResourceId.2.1718005800151
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: providername
+                        ColumnName: ProviderName
                         DataSetIdentifier: focus_resource_view
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.providername.4.1718005987248
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ProviderName.4.1718005987248
                   - CategoricalDimensionField:
                       Column:
                         ColumnName: Billing Account
@@ -3717,34 +3722,34 @@ dashboards:
                       FieldId: aea64b5f-f84b-4a36-89e5-15be6a358267.8.1718612887022
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: servicecategory
+                        ColumnName: ServiceCategory
                         DataSetIdentifier: focus_resource_view
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicecategory.5.1718005992676
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ServiceCategory.5.1718005992676
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: servicename
+                        ColumnName: ServiceName
                         DataSetIdentifier: focus_resource_view
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicename.6.1718005993776
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ServiceName.6.1718005993776
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: consumedunit
+                        ColumnName: ConsumedUnit
                         DataSetIdentifier: focus_resource_view
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedunit.8.1718006014514
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ConsumedUnit.8.1718006014514
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: effectivecost
+                        ColumnName: EffectiveCost
                         DataSetIdentifier: focus_resource_view
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.effectivecost.8.1718612742423
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.EffectiveCost.8.1718612742423
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: consumedquantity
+                        ColumnName: ConsumedQuantity
                         DataSetIdentifier: focus_resource_view
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedquantity.7.1718006008283
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ConsumedQuantity.7.1718006008283
               SortConfiguration:
                 FieldSortOptions: []
               TableOptions:
@@ -3787,7 +3792,7 @@ dashboards:
               - FilterOperation:
                   SelectedFieldsConfiguration:
                     SelectedFields:
-                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.2.1717980676200
+                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ProviderName.2.1717980676200
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisualOptions: ALL_VISUALS
@@ -3811,25 +3816,25 @@ dashboards:
                   Category:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: providername
+                        ColumnName: ProviderName
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.2.1717980676200
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ProviderName.2.1717980676200
                   Colors:
                   - DateDimensionField:
                       Column:
-                        ColumnName: billingperiodstart
+                        ColumnName: BillingPeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: MONTH
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                       HierarchyId: ba63cbe0-443a-4e7d-ace0-c00bc6662a0c
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: effectivecost
+                        ColumnName: EffectiveCost
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
               Legend:
                 Height: 35px
                 Position: BOTTOM
@@ -3840,7 +3845,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
                 SmallMultiplesLimitConfiguration:
@@ -3850,13 +3855,13 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.2.1717980676200
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ProviderName.2.1717980676200
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612594063
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
@@ -3885,7 +3890,7 @@ dashboards:
               - FilterOperation:
                   SelectedFieldsConfiguration:
                     SelectedFields:
-                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1717980799361
+                    - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceCategory.2.1717980799361
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisualOptions: ALL_VISUALS
@@ -3916,25 +3921,25 @@ dashboards:
                   Category:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: servicecategory
+                        ColumnName: ServiceCategory
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1717980799361
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceCategory.2.1717980799361
                   Colors:
                   - DateDimensionField:
                       Column:
-                        ColumnName: billingperiodstart
+                        ColumnName: BillingPeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: MONTH
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                       HierarchyId: 66159618-6caf-49c2-a3a2-43c829363083
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: effectivecost
+                        ColumnName: EffectiveCost
                         DataSetIdentifier: focus_summary_view
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612413773
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612413773
               Legend:
                 Position: BOTTOM
               Orientation: VERTICAL
@@ -3944,7 +3949,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612413773
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612413773
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
                 SmallMultiplesLimitConfiguration:
@@ -3954,13 +3959,13 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1717980799361
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.ServiceCategory.2.1717980799361
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612413773
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.EffectiveCost.2.1718612413773
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
@@ -4006,7 +4011,7 @@ dashboards:
                   Width: 253px
                 - DataPathList:
                   - DataPathType: {}
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                     FieldValue: '2024-05-01 00:00:00.000'
                   - FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
                     FieldValue: Cost
@@ -4015,7 +4020,7 @@ dashboards:
                 - CustomLabel: Group By
                   FieldId: 0c16393f-2045-4576-a619-958620547ffe.4.1717980398769
                   Visibility: VISIBLE
-                - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                   Visibility: VISIBLE
                 - CustomLabel: MoM %
                   FieldId: 5cbb4814-4f5c-40ac-aa35-38b4f87bcad3.4.1717980387458
@@ -4031,10 +4036,10 @@ dashboards:
                   Columns:
                   - DateDimensionField:
                       Column:
-                        ColumnName: billingperiodstart
+                        ColumnName: BillingPeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: MONTH
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                   Rows:
                   - CategoricalDimensionField:
                       Column:
@@ -4066,11 +4071,11 @@ dashboards:
                     Field:
                       Direction: DESC
                       FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
-                - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                   SortBy:
                     Field:
                       Direction: DESC
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
               TableOptions:
                 CellStyle:
                   Height: 25
@@ -4172,14 +4177,14 @@ dashboards:
                   Width: 254px
                 - DataPathList:
                   - DataPathType: {}
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                     FieldValue: '2024-05-01 00:00:00.000'
                   - FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
                     FieldValue: Cost
                   Width: 107px
                 - DataPathList:
                   - DataPathType: {}
-                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                    FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                     FieldValue: '2024-04-01 00:00:00.000'
                   - FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
                     FieldValue: Cost
@@ -4188,7 +4193,7 @@ dashboards:
                 - CustomLabel: Group By
                   FieldId: e1bd28fa-1009-4e09-8ab4-6337bd32b92f.3.1717979519343
                   Visibility: VISIBLE
-                - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                   Visibility: VISIBLE
                 - CustomLabel: MoM %
                   FieldId: 6e1e14d6-12c4-4974-ba22-70c8a8a0dbd4.3.1717896772787
@@ -4204,10 +4209,10 @@ dashboards:
                   Columns:
                   - DateDimensionField:
                       Column:
-                        ColumnName: billingperiodstart
+                        ColumnName: BillingPeriodStart
                         DataSetIdentifier: focus_summary_view
                       DateGranularity: MONTH
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                   Rows:
                   - CategoricalDimensionField:
                       Column:
@@ -4252,11 +4257,11 @@ dashboards:
                     Field:
                       Direction: DESC
                       FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
-                - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
                   SortBy:
                     Field:
                       Direction: DESC
-                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                      FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.BillingPeriodStart.5.1717896811137
               TableOptions:
                 CellStyle:
                   Height: 25
@@ -4341,7 +4346,7 @@ dashboards:
               - FilterOperation:
                   SelectedFieldsConfiguration:
                     SelectedFields:
-                    - 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+                    - 8852150b-d200-4b78-bf01-5a906bcdfcf6.ResourceId.2.1718005800151
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisualOptions: ALL_VISUALS
@@ -4362,24 +4367,24 @@ dashboards:
                   Category:
                   - DateDimensionField:
                       Column:
-                        ColumnName: chargeperiodstart
+                        ColumnName: ChargePeriodStart
                         DataSetIdentifier: focus_resource_view
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.chargeperiodstart.1.1718005587763
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ChargePeriodStart.1.1718005587763
                       HierarchyId: f72d2286-00b1-4427-8f76-526a90316f4c
                   Colors:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: resourceid
+                        ColumnName: ResourceId
                         DataSetIdentifier: focus_resource_view
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ResourceId.2.1718005800151
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: effectivecost
+                        ColumnName: EffectiveCost
                         DataSetIdentifier: focus_resource_view
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.effectivecost.2.1718612728926
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.EffectiveCost.2.1718612728926
               Legend:
                 Width: 239px
               SortConfiguration:
@@ -4388,7 +4393,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.chargeperiodstart.1.1718005587763
+                    FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ChargePeriodStart.1.1718005587763
                 ColorItemsLimitConfiguration:
                   OtherCategories: INCLUDE
                 SmallMultiplesLimitConfiguration:
@@ -4398,13 +4403,13 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.chargeperiodstart.1.1718005587763
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ChargePeriodStart.1.1718005587763
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.ResourceId.2.1718005800151
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.effectivecost.2.1718612728926
+                      FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.EffectiveCost.2.1718612728926
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
@@ -4492,16 +4497,16 @@ dashboards:
         - Content: "<text-box>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"\
             center\">\n    <inline font-size=\"40px\">\n      <b>FOCUS Dashboard</b>\n \
             \   </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n    <inline\
-            \ font-size=\"40px\">\n      <b>v0.2.0</b>\n    </inline>\n  </block>\n  <br/>\n\
+            \ font-size=\"40px\">\n      <b>v0.2.1</b>\n    </inline>\n  </block>\n  <br/>\n\
             \  <block align=\"center\">\n    <inline font-size=\"40px\">\n      <b>FinOps\
             \ Cost and Usage Specification Dashboard</b>\n    </inline>\n  </block>\n  <br/>\n\
             \  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n\
             \  <block align=\"right\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
             \  <block align=\"center\"/>\n  <br/>\n  <block align=\"right\">Built by: Yuriy\
             \ Prykhodko, Iakov Gan, Zach Erdman</block>\n  <br/>\n  <block align=\"right\"\
-            >\n    Learn more\n    <a href=\"https://wellarchitectedlabs.com/cost/200_labs/200_cloud_intelligence/\"\
+            >\n    Learn more\n    <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/\"\
             \ target=\"_blank\">\_</a>\n    about AWS Cloud Intelligence Dashboards (CID)\
-            \ in\n    <inline color=\"#61d1d6\">\n      <a href=\"https://wellarchitectedlabs.com/cost/200_labs/200_cloud_intelligence/\"\
+            \ in\n    <inline color=\"#61d1d6\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/\"\
             \ target=\"_blank\">\n        <u>AWS Well-Architected Labs</u>\n      </a>\n\
             \    </inline>\n    \_and\n    <inline color=\"#61d1d6\">\n      <a href=\"\
             https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\" target=\"_blank\"\
@@ -4527,96 +4532,96 @@ datasets:
             Schema: ${athena_database_name}
             Name: focus_resource_view
             InputColumns:
-            - Name: availabilityzone
+            - Name: AvailabilityZone
               Type: STRING
-            - Name: billingaccountid
+            - Name: BillingAccountId
               Type: STRING
-            - Name: billingaccountname
+            - Name: BillingAccountName
               Type: STRING
-            - Name: billingcurrency
+            - Name: BillingCurrency
               Type: STRING
-            - Name: billingperiodstart
+            - Name: BillingPeriodStart
               Type: DATETIME
-            - Name: chargecategory
+            - Name: ChargeCategory
               Type: STRING
-            - Name: chargeclass
+            - Name: ChargeClass
               Type: STRING
-            - Name: chargedescription
+            - Name: ChargeDescription
               Type: STRING
-            - Name: chargefrequency
+            - Name: ChargeFrequency
               Type: STRING
-            - Name: chargeperiodstart
+            - Name: ChargePeriodStart
               Type: DATETIME
-            - Name: commitmentdiscountcategory
+            - Name: CommitmentDiscountCategory
               Type: STRING
-            - Name: commitmentdiscountid
+            - Name: CommitmentDiscountId
               Type: STRING
-            - Name: commitmentdiscountname
+            - Name: CommitmentDiscountName
               Type: STRING
-            - Name: commitmentdiscounttype
+            - Name: CommitmentDiscountType
               Type: STRING
-            - Name: commitmentdiscountstatus
+            - Name: CommitmentDiscountStatus
               Type: STRING
-            - Name: consumedunit
+            - Name: ConsumedUnit
               Type: STRING
-            - Name: contractedunitprice
+            - Name: ContractedUnitPrice
               Type: DECIMAL
               SubType: FLOAT
-            - Name: invoiceissuername
+            - Name: InvoiceIssuerName
               Type: STRING
-            - Name: listunitprice
+            - Name: ListUnitPrice
               Type: DECIMAL
               SubType: FLOAT
-            - Name: pricingcategory
+            - Name: PricingCategory
               Type: STRING
-            - Name: pricingunit
+            - Name: PricingUnit
               Type: STRING
-            - Name: providername
+            - Name: ProviderName
               Type: STRING
-            - Name: publishername
+            - Name: PublisherName
               Type: STRING
-            - Name: regionid
+            - Name: RegionId
               Type: STRING
-            - Name: regionname
+            - Name: RegionName
               Type: STRING
-            - Name: resourceid
+            - Name: ResourceId
               Type: STRING
-            - Name: resourcename
+            - Name: ResourceName
               Type: STRING
-            - Name: resourcetype
+            - Name: ResourceType
               Type: STRING
-            - Name: servicecategory
+            - Name: ServiceCategory
               Type: STRING
-            - Name: servicename
+            - Name: ServiceName
               Type: STRING
-            - Name: skuid
+            - Name: SkuId
               Type: STRING
-            - Name: skupriceid
+            - Name: SkuPriceId
               Type: STRING
-            - Name: subaccountid
+            - Name: SubAccountId
               Type: STRING
-            - Name: subaccountname
+            - Name: SubAccountName
               Type: STRING
             - Name: tags
               Type: STRING
             - Name: billing_period
               Type: STRING
-            - Name: billedcost
+            - Name: BilledCost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: contractedcost
+            - Name: ContractedCost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: effectivecost
+            - Name: EffectiveCost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: listcost
+            - Name: ListCost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: consumedquantity
+            - Name: ConsumedQuantity
               Type: DECIMAL
               SubType: FLOAT
-            - Name: pricingquantity
+            - Name: PricingQuantity
               Type: DECIMAL
               SubType: FLOAT
       LogicalTableMap:
@@ -4625,48 +4630,48 @@ datasets:
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
-              - availabilityzone
-              - billingaccountid
-              - billingaccountname
-              - billingcurrency
-              - billingperiodstart
-              - chargecategory
-              - chargeclass
-              - chargedescription
-              - chargefrequency
-              - chargeperiodstart
-              - commitmentdiscountcategory
-              - commitmentdiscountid
-              - commitmentdiscountname
-              - commitmentdiscounttype
-              - commitmentdiscountstatus
-              - consumedunit
-              - contractedunitprice
-              - invoiceissuername
-              - listunitprice
-              - pricingcategory
-              - pricingunit
-              - providername
-              - publishername
-              - regionid
-              - regionname
-              - resourceid
-              - resourcename
-              - resourcetype
-              - servicecategory
-              - servicename
-              - skuid
-              - skupriceid
-              - subaccountid
-              - subaccountname
+              - AvailabilityZone
+              - BillingAccountId
+              - BillingAccountName
+              - BillingCurrency
+              - BillingPeriodStart
+              - ChargeCategory
+              - ChargeClass
+              - ChargeDescription
+              - ChargeFrequency
+              - ChargePeriodStart
+              - CommitmentDiscountCategory
+              - CommitmentDiscountId
+              - CommitmentDiscountName
+              - CommitmentDiscountType
+              - CommitmentDiscountStatus
+              - ConsumedUnit
+              - ContractedUnitPrice
+              - InvoiceIssuerName
+              - ListUnitPrice
+              - PricingCategory
+              - PricingUnit
+              - ProviderName
+              - PublisherName
+              - RegionId
+              - RegionName
+              - ResourceId
+              - ResourceName
+              - ResourceType
+              - ServiceCategory
+              - ServiceName
+              - SkuId
+              - SkuPriceId
+              - SubAccountId
+              - SubAccountName
               - tags
               - billing_period
-              - billedcost
-              - contractedcost
-              - effectivecost
-              - listcost
-              - consumedquantity
-              - pricingquantity
+              - BilledCost
+              - ContractedCost
+              - EffectiveCost
+              - ListCost
+              - ConsumedQuantity
+              - PricingQuantity
           Source:
             PhysicalTableId: 0aacec67-d196-4af2-a2af-d20a8fb3d801
       ImportMode: SPICE
@@ -4687,90 +4692,90 @@ datasets:
             Schema: ${athena_database_name}
             Name: focus_summary_view
             InputColumns:
-            - Name: availabilityzone
+            - Name: AvailabilityZone
               Type: STRING
-            - Name: billingaccountid
+            - Name: BillingAccountId
               Type: STRING
-            - Name: billingaccountname
+            - Name: BillingAccountName
               Type: STRING
-            - Name: billingcurrency
+            - Name: BillingCurrency
               Type: STRING
-            - Name: billingperiodstart
+            - Name: BillingPeriodStart
               Type: DATETIME
-            - Name: chargecategory
+            - Name: ChargeCategory
               Type: STRING
-            - Name: chargeclass
+            - Name: ChargeClass
               Type: STRING
-            - Name: chargedescription
+            - Name: ChargeDescription
               Type: STRING
-            - Name: chargefrequency
+            - Name: ChargeFrequency
               Type: STRING
-            - Name: chargeperiodstart
+            - Name: ChargePeriodStart
               Type: DATETIME
-            - Name: commitmentdiscountcategory
+            - Name: CommitmentDiscountCategory
               Type: STRING
-            - Name: commitmentdiscountid
+            - Name: CommitmentDiscountId
               Type: STRING
-            - Name: commitmentdiscountname
+            - Name: CommitmentDiscountName
               Type: STRING
-            - Name: commitmentdiscounttype
+            - Name: CommitmentDiscountType
               Type: STRING
-            - Name: commitmentdiscountstatus
+            - Name: CommitmentDiscountStatus
               Type: STRING
-            - Name: consumedunit
+            - Name: ConsumedUnit
               Type: STRING
-            - Name: contractedunitprice
+            - Name: ContractedUnitPrice
               Type: DECIMAL
               SubType: FLOAT
-            - Name: invoiceissuername
+            - Name: InvoiceIssuerName
               Type: STRING
-            - Name: listunitprice
+            - Name: ListUnitPrice
               Type: DECIMAL
               SubType: FLOAT
-            - Name: pricingcategory
+            - Name: PricingCategory
               Type: STRING
-            - Name: pricingunit
+            - Name: PricingUnit
               Type: STRING
-            - Name: providername
+            - Name: ProviderName
               Type: STRING
-            - Name: publishername
+            - Name: PublisherName
               Type: STRING
-            - Name: regionid
+            - Name: RegionId
               Type: STRING
-            - Name: regionname
+            - Name: RegionName
               Type: STRING
-            - Name: servicecategory
+            - Name: ServiceCategory
               Type: STRING
-            - Name: servicename
+            - Name: ServiceName
               Type: STRING
-            - Name: skuid
+            - Name: SkuId
               Type: STRING
-            - Name: skupriceid
+            - Name: SkuPriceId
               Type: STRING
-            - Name: subaccountid
+            - Name: SubAccountId
               Type: STRING
-            - Name: subaccountname
+            - Name: SubAccountName
               Type: STRING
             - Name: tags
               Type: STRING
             - Name: billing_period
               Type: STRING
-            - Name: billedcost
+            - Name: BilledCost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: contractedcost
+            - Name: ContractedCost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: effectivecost
+            - Name: EffectiveCost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: listcost
+            - Name: ListCost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: consumedquantity
+            - Name: ConsumedQuantity
               Type: DECIMAL
               SubType: FLOAT
-            - Name: pricingquantity
+            - Name: PricingQuantity
               Type: DECIMAL
               SubType: FLOAT
       LogicalTableMap:
@@ -4779,45 +4784,45 @@ datasets:
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
-              - availabilityzone
-              - billingaccountid
-              - billingaccountname
-              - billingcurrency
-              - billingperiodstart
-              - chargecategory
-              - chargeclass
-              - chargedescription
-              - chargefrequency
-              - chargeperiodstart
-              - commitmentdiscountcategory
-              - commitmentdiscountid
-              - commitmentdiscountname
-              - commitmentdiscounttype
-              - commitmentdiscountstatus
-              - consumedunit
-              - contractedunitprice
-              - invoiceissuername
-              - listunitprice
-              - pricingcategory
-              - pricingunit
-              - providername
-              - publishername
-              - regionid
-              - regionname
-              - servicecategory
-              - servicename
-              - skuid
-              - skupriceid
-              - subaccountid
-              - subaccountname
+              - AvailabilityZone
+              - BillingAccountId
+              - BillingAccountName
+              - BillingCurrency
+              - BillingPeriodStart
+              - ChargeCategory
+              - ChargeClass
+              - ChargeDescription
+              - ChargeFrequency
+              - ChargePeriodStart
+              - CommitmentDiscountCategory
+              - CommitmentDiscountId
+              - CommitmentDiscountName
+              - CommitmentDiscountType
+              - CommitmentDiscountStatus
+              - ConsumedUnit
+              - ContractedUnitPrice
+              - InvoiceIssuerName
+              - ListUnitPrice
+              - PricingCategory
+              - PricingUnit
+              - ProviderName
+              - PublisherName
+              - RegionId
+              - RegionName
+              - ServiceCategory
+              - ServiceName
+              - SkuId
+              - SkuPriceId
+              - SubAccountId
+              - SubAccountName
               - tags
               - billing_period
-              - billedcost
-              - contractedcost
-              - effectivecost
-              - listcost
-              - consumedquantity
-              - pricingquantity
+              - BilledCost
+              - ContractedCost
+              - EffectiveCost
+              - ListCost
+              - ConsumedQuantity
+              - PricingQuantity
           Source:
             PhysicalTableId: 61ada434-e3b0-4cdf-ae98-609f1951a8ff
       ImportMode: SPICE
@@ -4844,7 +4849,15 @@ views:
       , ChargeClass
       , ChargeDescription
       , ChargeFrequency
-      , CAST((CASE WHEN ("date_trunc"('month', ChargePeriodStart) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '3' MONTH)) THEN "date_trunc"('day', ChargePeriodStart) ELSE "date_trunc"('month', ChargePeriodStart) END) AS date) "ChargePeriodStart"
+      , CAST(
+          (
+            CASE
+              WHEN ("date_trunc"('month', ChargePeriodStart) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '3' MONTH))
+              THEN "date_trunc"('day', ChargePeriodStart)
+              ELSE "date_trunc"('month', ChargePeriodStart)
+            END
+          ) AS date
+        ) "ChargePeriodStart"
       , CommitmentDiscountCategory
       , CommitmentDiscountId
       , CommitmentDiscountName
@@ -4867,7 +4880,7 @@ views:
       , SkuPriceId
       , SubAccountId
       , SubAccountName
-      , Tags
+      , ${resource_tags} tags_json
       , billing_period
       , sum(ContractedUnitPrice) ContractedUnitPrice
       , sum(ListUnitPrice) ListUnitPrice
@@ -4881,6 +4894,22 @@ views:
         focus_consolidation_view
       WHERE (((current_date - INTERVAL  '30' DAY) <= ChargePeriodStart) AND (ResourceId <> '') AND (CAST(concat(billing_period, '-01') AS date) >= "date_trunc"('month', (current_date - INTERVAL  '30' DAY))))
       GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34
+    parameters:
+        resource_tags:
+          type: tags_json
+          query: |
+            SELECT DISTINCT concat('Tags[''',key,''']')
+            FROM (
+                SELECT tags
+                FROM "focus_consolidation_view"
+                WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
+                AND cardinality(tags) > 0
+                LIMIT 10000
+            ) t
+            CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
+          default: []
+          description: "Enter Tags"
+          global: True
   focus_summary_view:
     dependsOn:
       views:
@@ -4917,7 +4946,7 @@ views:
       , SkuPriceId
       , SubAccountId
       , SubAccountName
-      , Tags
+      , ${resource_tags} tags_json
       , billing_period
       , sum(ContractedUnitPrice) ContractedUnitPrice
       , sum(ListUnitPrice) ListUnitPrice
@@ -4931,53 +4960,69 @@ views:
         focus_consolidation_view
       WHERE (("BillingPeriodStart" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(billing_period, '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH)))
       GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+    parameters:
+        resource_tags:
+          type: tags_json
+          query: |
+            SELECT DISTINCT concat('Tags[''',key,''']')
+            FROM (
+                SELECT tags
+                FROM "focus_consolidation_view"
+                WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
+                AND cardinality(tags) > 0
+                LIMIT 10000
+            ) t
+            CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
+          default: []
+          description: "Enter Tags"
+          global: True
   focus_consolidation_view:
     data: |-
       CREATE VIEW focus_consolidation_view AS
       SELECT
-        availabilityzone
-      , billedcost
-      , billingaccountid
-      , billingaccountname
-      , billingcurrency
+        AvailabilityZone
+      , BilledCost
+      , BillingAccountId
+      , BillingAccountName
+      , BillingCurrency
       , billingperiodend
-      , billingperiodstart
-      , chargecategory
-      , chargeclass
-      , chargedescription
-      , chargefrequency
+      , BillingPeriodStart
+      , ChargeCategory
+      , ChargeClass
+      , ChargeDescription
+      , ChargeFrequency
       , chargeperiodend
-      , chargeperiodstart
-      , commitmentdiscountcategory
-      , commitmentdiscountid
-      , commitmentdiscountname
-      , commitmentdiscounttype
-      , commitmentdiscountstatus
-      , consumedquantity
-      , consumedunit
-      , contractedcost
-      , contractedunitprice
-      , effectivecost
-      , invoiceissuername
-      , listcost
-      , listunitprice
-      , pricingcategory
-      , pricingquantity
-      , pricingunit
-      , providername
-      , publishername
-      , regionid
-      , regionname
-      , resourceid
-      , resourcename
-      , resourcetype
-      , servicecategory
-      , servicename
-      , skuid
-      , skupriceid
-      , subaccountid
-      , subaccountname
-      , tags
+      , ChargePeriodStart
+      , CommitmentDiscountCategory
+      , CommitmentDiscountId
+      , CommitmentDiscountName
+      , CommitmentDiscountType
+      , CommitmentDiscountStatus
+      , ConsumedQuantity
+      , ConsumedUnit
+      , ContractedCost
+      , ContractedUnitPrice
+      , EffectiveCost
+      , InvoiceIssuerName
+      , ListCost
+      , ListUnitPrice
+      , PricingCategory
+      , PricingQuantity
+      , PricingUnit
+      , ProviderName
+      , PublisherName
+      , RegionId
+      , RegionName
+      , ResourceId
+      , ResourceName
+      , ResourceType
+      , ServiceCategory
+      , ServiceName
+      , SkuId
+      , SkuPriceId
+      , SubAccountId
+      , SubAccountName
+      , Tags
       , billing_period
       FROM
         "${data_exports_database_name}"."focus"
