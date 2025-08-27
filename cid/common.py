@@ -1019,7 +1019,7 @@ class Cid():
                             message='Please enter the folder name to create'
                         )
                         folder_permissions_tpl = Template(
-                            (resources.files('cid.builtin.core') / f'data/permissions/folder_permissions.json').read_text()
+                            (resources.files('cid.builtin.core') / 'data/permissions/folder_permissions.json').read_text()
                         )
                         columns_tpl = {
                             'PrincipalArn': self.qs.get_principal_arn()
