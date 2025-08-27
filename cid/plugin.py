@@ -46,7 +46,7 @@ class Plugin():
                     for v in self.resources.values():
                         for item in v.values():
                             if item is not None:
-                                item.update({'providedBy': self.name})
+                                item['providedBy'] = self.name
                                 item.update({'source': str(resource_file)})
         logger.debug(f'Plugin {self.name} initialized')
     
