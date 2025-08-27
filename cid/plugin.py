@@ -34,9 +34,7 @@ class Plugin():
                     resource_kind = resource_file.name.rsplit('.', -1)[0]
                     supported_resource_kinds = ['dashboards', 'views', 'datasets']
                     if resource_kind in supported_resource_kinds:
-                        self.resources.update({
-                            resource_kind: content
-                        })
+                        self.resources[resource_kind] = content
                         logger.info(f'Loaded {resource_kind} from {resource_file.name}')
                     # If plugin has resources defined in one file,
                     # simply add it to resources dict
