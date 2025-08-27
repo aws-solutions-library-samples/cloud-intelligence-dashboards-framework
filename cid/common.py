@@ -1084,7 +1084,7 @@ class Cid():
                 logger.info(f'Sharing datasets/datasources with an account is not supported, skipping')
             else:
                 data_set_permissions_tpl = Template(
-                    (resources.files('cid.builtin.core') / f'data/permissions/data_set_permissions.json').read_text()
+                    (resources.files('cid.builtin.core') / 'data/permissions/data_set_permissions.json').read_text()
                 )
                 data_set_permissions = json.loads(data_set_permissions_tpl.safe_substitute(columns_tpl))
 
