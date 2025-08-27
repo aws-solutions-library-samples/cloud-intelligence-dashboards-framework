@@ -119,7 +119,7 @@ class AccountMap(CidBase):
         if view_definition.get('File'):
             view_file = view_definition.get('File')
             template = Template(
-                (resources.files(view_definition.get('providedBy')) / f'data/{view_file}').read_text().decode('utf-8')
+                (resources.files(view_definition.get('providedBy')) / f'data/{view_file}').read_text()
             )
         elif view_definition.get('data'):
             template = Template(str(view_definition.get('data')))
@@ -154,7 +154,7 @@ class AccountMap(CidBase):
         else:
             sql_file = 'data/queries/shared/account_map_dummy.sql'
         template = Template(
-            (resources.files('cid.builtin.core') / sql_file).read_text().decode('utf-8')
+            (resources.files('cid.builtin.core') / sql_file).read_text()
         )
         columns_tpl = {
             'athena_view_name': name,

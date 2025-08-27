@@ -1019,7 +1019,7 @@ class Cid():
                             message='Please enter the folder name to create'
                         )
                         folder_permissions_tpl = Template(
-                            (resources.files('cid.builtin.core') / f'data/permissions/folder_permissions.json').read_text().decode('utf-8')
+                            (resources.files('cid.builtin.core') / f'data/permissions/folder_permissions.json').read_text()
                         )
                         columns_tpl = {
                             'PrincipalArn': self.qs.get_principal_arn()
@@ -1057,7 +1057,7 @@ class Cid():
                 'PrincipalArn': principal_arn
             }
             dashboard_permissions_tpl = Template(
-                (resources.files('cid.builtin.core') / template_filename).read_text().decode('utf-8')
+                (resources.files('cid.builtin.core') / template_filename).read_text()
             )
             dashboard_permissions = json.loads(dashboard_permissions_tpl.safe_substitute(columns_tpl))
             dashboard_params = {
@@ -1084,7 +1084,7 @@ class Cid():
                 logger.info(f'Sharing datasets/datasources with an account is not supported, skipping')
             else:
                 data_set_permissions_tpl = Template(
-                    (resources.files('cid.builtin.core') / f'data/permissions/data_set_permissions.json').read_text().decode('utf-8')
+                    (resources.files('cid.builtin.core') / f'data/permissions/data_set_permissions.json').read_text()
                 )
                 data_set_permissions = json.loads(data_set_permissions_tpl.safe_substitute(columns_tpl))
 
@@ -1101,7 +1101,7 @@ class Cid():
                             _datasources.update({_datasource.id: _datasource})
 
                 data_source_permissions_tpl = Template(
-                    (resources.files('cid.builtin.core') / f'data/permissions/data_source_permissions.json').read_text().decode('utf-8')
+                    (resources.files('cid.builtin.core') / f'data/permissions/data_source_permissions.json').read_text()
                 )
                 data_source_permissions = json.loads(data_source_permissions_tpl.safe_substitute(columns_tpl))
                 for k, v in _datasources.items():
