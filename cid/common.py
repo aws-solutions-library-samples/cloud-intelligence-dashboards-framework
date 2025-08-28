@@ -6,7 +6,7 @@ import functools
 import webbrowser
 from string import Template
 from typing import Dict
-from pkg_resources import resource_string
+from importlib import resources
 from importlib.metadata import entry_points
 from functools import cached_property
 
@@ -1018,10 +1018,9 @@ class Cid():
                             param_name='folder-name',
                             message='Please enter the folder name to create'
                         )
-                        folder_permissions_tpl = Template(resource_string(
-                            package_or_requirement='cid.builtin.core',
-                            resource_name=f'data/permissions/folder_permissions.json',
-                        ).decode('utf-8'))
+                        folder_permissions_tpl = Template(
+                            (resources.files('cid.builtin.core') / 'data/permissions/folder_permissions.json').read_text()
+                        )
                         columns_tpl = {
                             'PrincipalArn': self.qs.get_principal_arn()
                         }
@@ -1057,10 +1056,9 @@ class Cid():
             columns_tpl = {
                 'PrincipalArn': principal_arn
             }
-            dashboard_permissions_tpl = Template(resource_string(
-                package_or_requirement='cid.builtin.core',
-                resource_name=template_filename,
-            ).decode('utf-8'))
+            dashboard_permissions_tpl = Template(
+                (resources.files('cid.builtin.core') / template_filename).read_text()
+            )
             dashboard_permissions = json.loads(dashboard_permissions_tpl.safe_substitute(columns_tpl))
             dashboard_params = {
                 "GrantPermissions": [
@@ -1085,10 +1083,9 @@ class Cid():
             if share_method == 'account':
                 logger.info(f'Sharing datasets/datasources with an account is not supported, skipping')
             else:
-                data_set_permissions_tpl = Template(resource_string(
-                    package_or_requirement='cid.builtin.core',
-                    resource_name=f'data/permissions/data_set_permissions.json',
-                ).decode('utf-8'))
+                data_set_permissions_tpl = Template(
+                    (resources.files('cid.builtin.core') / 'data/permissions/data_set_permissions.json').read_text()
+                )
                 data_set_permissions = json.loads(data_set_permissions_tpl.safe_substitute(columns_tpl))
 
                 _datasources: Dict[str, Datasource] = {}
@@ -1103,10 +1100,9 @@ class Cid():
                         if not _datasources.get(_datasource.id):
                             _datasources.update({_datasource.id: _datasource})
 
-                data_source_permissions_tpl = Template(resource_string(
-                    package_or_requirement='cid.builtin.core',
-                    resource_name=f'data/permissions/data_source_permissions.json',
-                ).decode('utf-8'))
+                data_source_permissions_tpl = Template(
+                    (resources.files('cid.builtin.core') / f'data/permissions/data_source_permissions.json').read_text()
+                )
                 data_source_permissions = json.loads(data_source_permissions_tpl.safe_substitute(columns_tpl))
                 for k, v in _datasources.items():
                     logger.info(f'Sharing data source "{v.name}" ({k})')
