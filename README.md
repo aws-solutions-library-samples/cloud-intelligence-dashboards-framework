@@ -19,7 +19,7 @@
 1. [Notices](#Notices)
 
 ## Overview
-The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.
+The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best practices for governance, and achieve operational excellence across all your organization.
 
 Cloud Intelligence Dashboards Framework provides AWS customers with [more then 20 Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html).
 * Foundational Dashboards - A set of main Dashboards that only require Cost and Usage Report(CUR)
@@ -53,7 +53,7 @@ This foundational architecture is recommended for starting and allows deployment
 5. User Teams (Executives, FinOps, Engineers) can access Cloud Intelligence Dashboards in [Amazon QuickSight](https://aws.amazon.com/quicksight/). Access is secured through [AWS IAM](https://aws.amazon.com/iam/), IIC ([AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/), formerly SSO), and optional [Row Level Security](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/row-level-security.html).
 6. Optionally, the Advanced data collection can be deployed to enable advanced dashboards based on [AWS Trusted Advisor](https://aws.amazon.com/premiumsupport/trustedadvisor/), [AWS Health](https://aws.amazon.com/premiumsupport/technology/aws-health-dashboard/) Events and other sources. Additional data is retrieved from [AWS Organizations](https://aws.amazon.com/organizations/) or Linked Accounts. In this case [Amazon EventBridge](https://aws.amazon.com/eventbridge/) rule triggers an [AWS Step Functions](https://aws.amazon.com/step-functions/) workflow for data collection modules on a configurable schedule.
 7. The "Account Collector" [AWS Lambda](https://aws.amazon.com/lambda/) in AWS Step Functions retrieves linked account details using AWS Organizations API.
-8. The "Data Collection" Lambda function in AWS Step Functions assumes role in each linked account to retrieve account-specific data via [AWS SDK](https://aws.amazon.com/developer/tools/).
+8. The "Data Collection" Lambda function in AWS Step Functions assumes a role in each linked account to retrieve account-specific data via [AWS SDK](https://aws.amazon.com/developer/tools/).
 9. Retrieved data is stored in a centralized Amazon S3 Bucket.
 10. [Advanced Cloud Intelligence Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html#advanced-dashboards) leverage Amazon Athena and Amazon QuickSight for comprehensive data analysis.
 
@@ -74,16 +74,16 @@ The following table provides a sample cost breakdown for deploying of Foundation
 | **Total Estimated Monthly Cost** |                              | **$100-$200**    |
 
 \* Costs are relative to the size of your Cost and Usage Report (CUR) data  
-\** Costs are relative to number of Users
+\** Costs are relative to the number of users
 
 **Additional Notes:**
 - Free trial available for 30 days for 4 QuickSight users
 - Actual costs may vary based on specific usage and data volume
 
-Pleas use AWS Pricing Calculator for precise estimation.
+Please use the AWS Pricing Calculator for precise estimation.
 
 ## Prerequisites
-You need access to AWS Accounts. We recommend deployment of the Dashboards in a dedicated Data Collection Account, other than your Management (Payer) Account. We provide provides a CloudFormation templates to copy CUR 2.0 data from your Management Account to a dedicated one. You can use it to aggregate data from multiple Management (Payer) Accounts or multiple Linked Accounts.
+You need access to AWS Accounts. We recommend deployment of the Dashboards in a dedicated Data Collection Account, other than your Management (Payer) Account. We provide CloudFormation templates to copy CUR 2.0 data from your Management Account to a dedicated one. You can use it to aggregate data from multiple Management (Payer) Accounts or multiple Linked Accounts.
 
 If you do not have access to the Management/Payer Account, you can still collect the data across multiple Linked accounts using the same approach.
 
@@ -91,7 +91,7 @@ The ownership of CID is usually with the FinOps team, who do not have administra
 
 
 ## Regions
-Make sure you are installing data collection in the same region where you are going to use the data to avoid cross region charges.
+Make sure you are installing data collection in the same region where you are going to use the data to avoid cross-region charges.
 CFN deployment is only available in a limited number of regions, while CLI deployment is region agnostic.
 
 | Region Name | Region Code | Support CLI  | Support CFN |
@@ -123,7 +123,7 @@ CFN deployment is only available in a limited number of regions, while CLI deplo
 
 ## Deployment Steps
 There are several ways we can deploy dashboards:
-1. Using cid-cmd tool from command line
+1. Using cid-cmd tool from the command line
 1. [CloudFormation Template](./cfn-templates/cid-cfn.yml) using cid-cmd tool in Amazon Lambda. (Recommended)
 
 Please refer to the deployment documentation [here](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html).
@@ -138,8 +138,8 @@ Please refer to the documentation [here](https://docs.aws.amazon.com/guidance/la
 Please refer to the documentation [here](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/faq.html).
 
 ## Changelogs
-For dashboards please check Change Logs [here](changes/)
-For CID deployment tool, including Cli and CFN please check [Releases](/releases)
+For dashboards please check change log [here](changes/)
+For CID deployment tool, including CLI and CFN please check [Releases](/releases)
 
 ## Feedback
 Please reference to [this page](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/feedback-support.html)
@@ -156,4 +156,4 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file.
 
 ## Notices
-Dashboards and their content: (a) are for informational purposes only, (b) represents current AWS product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS content, products or services are provided “as is” without warranties, representations, or conditions of any kind, whether express or implied. The responsibilities and liabilities of AWS to its customers are controlled by AWS agreements, and this document is not part of, nor does it modify, any agreement between AWS and its customers.
+Dashboards and their content: (a) are for informational purposes only, (b) represent current AWS product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS content, products or services are provided “as is” without warranties, representations, or conditions of any kind, whether express or implied. The responsibilities and liabilities of AWS to its customers are controlled by AWS agreements, and this document is not part of, nor does it modify, any agreement between AWS and its customers.
