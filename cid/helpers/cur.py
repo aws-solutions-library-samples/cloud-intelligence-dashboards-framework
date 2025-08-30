@@ -257,7 +257,7 @@ class CUR(AbstractCUR):
                 try:
                     metadata = self.athena.get_table_metadata(table_name, cur_database)
                 except self.athena.client.exceptions.MetadataException as exc:
-                    logger.debug(f'Provided cur-table-name "{table_name}" in database "{cur_database}" is not found.')
+                    logger.debug(f'Provided cur-table-name "{table_name}" in database "{cur_database}" is not found. ({exc})')
                 res, message = self.table_is_cur(table=metadata, return_reason=True)
                 if not res:
                     logger.warning(f'Table {table_name} does not look like CUR. {message}')
