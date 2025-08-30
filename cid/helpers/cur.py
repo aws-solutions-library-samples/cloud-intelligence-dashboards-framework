@@ -248,17 +248,22 @@ class CUR(AbstractCUR):
     def find_cur(self, database: str=None, table: str=None):
         """Choose CUR"""
         metadata = None
-        cur_database = database or get_parameters().get('cur-database')
+        cur_database = database or get_parameters().get('cur-database') or self.athena.DatabaseName
         if table or get_parameters().get('cur-table-name'):
-            table_name = table or get_parameters().get('cur-table-name')
-            try:
-                metadata = self.athena.get_table_metadata(table_name, cur_database)
-            except self.athena.client.exceptions.MetadataException as exc:
-                raise CidCritical(f'Provided cur-table-name "{table_name}" in database "{cur_database or self.athena.DatabaseName}" is not found. Please make sure the table exists. This could also indicate a LakeFormation permission issue, see our FAQ for help.') from exc
-            res, message = self.table_is_cur(table=metadata, return_reason=True)
-            if not res:
-                raise CidCritical(f'Table {table_name} does not look like CUR. {message}')
-            return cur_database or self.athena.DatabaseName, metadata
+            table_names = [table] or get_parameters().get('cur-table-name', '').split(',')
+            for table_name in table_names:
+                if not table_name:
+                    continue
+                try:
+                    metadata = self.athena.get_table_metadata(table_name, cur_database)
+                except self.athena.client.exceptions.MetadataException as exc:
+                    logger.debug(f'Provided cur-table-name "{table_name}" in database "{cur_database}" is not found.')
+                res, message = self.table_is_cur(table=metadata, return_reason=True)
+                if not res:
+                    logger.warning(f'Table {table_name} does not look like CUR. {message}')
+                return cur_database, metadata
+            else:
+                raise CidCritical(f'Provided cur-table-name "{table_names}" in database "{cur_database}" is not found. Please make sure the table exists. This could also indicate a LakeFormation permission issue, see our FAQ for help.')
 
         all_cur_tables = []
         if cur_database:
