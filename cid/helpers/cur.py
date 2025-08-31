@@ -249,7 +249,7 @@ class CUR(AbstractCUR):
         """Choose CUR"""
         metadata = None
         cur_database = database or get_parameters().get('cur-database') or self.athena.DatabaseName
-        if not table and get_parameters().get('cur-table-name') and ',' not in get_parameters().get('cur-table-name'):
+        if not table and get_parameters().get('cur-table-name') and ',' not in str(get_parameters().get('cur-table-name')):
             table = get_parameters().get('cur-table-name')
         if table: # Table sepcified explicity, so no need to scan. Just need to make sure the table exists
             try:
@@ -279,7 +279,8 @@ class CUR(AbstractCUR):
                 all_cur_tables += [
                     (database, table['Name'])
                     for table in tables
-                    if not filter_names or table['Name'] in filter_names
+                    if (not filter_names or table['Name'] in filter_names)
+                    and table['Name'] not in ('cur2_proxy', 'cur2_view')
                 ]
             except self.athena.client.exceptions.ClientError as exc:
                 if 'AccessDenied' in str(exc):
