@@ -253,13 +253,13 @@ class CUR(AbstractCUR):
             table = get_parameters().get('cur-table-name')
         if table: # Table sepcified explicity, so no need to scan. Just need to make sure the table exists
             try:
-                metadata = self.athena.get_table_metadata(table_name, cur_database)
+                metadata = self.athena.get_table_metadata(table, cur_database)
             except self.athena.client.exceptions.MetadataException as exc:
-                logger.debug(f'Provided cur-table-name "{table_name}" in database "{cur_database}" is not found. ({exc})')
-                raise CidCritical(f'Provided cur-table-name "{table_names}" in database "{cur_database}" is not found. Please make sure the table exists. This could also indicate a LakeFormation permission issue, see our FAQ for help.')
+                logger.debug(f'Provided cur-table-name "{table}" in database "{cur_database}" is not found. ({exc})')
+                raise CidCritical(f'Provided cur-table-name "{table}" in database "{cur_database}" is not found. Please make sure the table exists. This could also indicate a LakeFormation permission issue, see our FAQ for help.')
             res, message = self.table_is_cur(table=metadata, return_reason=True)
             if not res:
-                raise CidCritical(f'Provided cur-table-name "{table_names}" in database "{cur_database}" is not cur. {message}')
+                raise CidCritical(f'Provided cur-table-name "{table}" in database "{cur_database}" is not cur. {message}')
             return cur_database, metadata
 
         all_cur_tables = []
