@@ -2,13 +2,18 @@ dashboards:
   AWS MARKETPLACE SINGLE PANE OF GLASS (SPG):
     dependsOn:
       datasets:
-      - marketplace_view
+      - agreements
+      - agreements_data
       - marketplace_licenses_grants_view
+      - marketplace_view
+      - terms
     name: AWS Marketplace Single Pane of Glass (SPG)
     dashboardId: aws-marketplace
     category: Additional
-    templateId: aws-marketplace
+    templateId: aws-marketplace-spg
     theme: MIDNIGHT
+    sourceAccountId: '585567417489'
+    region: us-east-1
 datasets:
   marketplace_view:
     data:
@@ -79,7 +84,6 @@ datasets:
               Type: DECIMAL
             - Name: unblended_cost
               Type: DECIMAL
-
       LogicalTableMap:
         097d3f27-562a-4d8f-bcee-bad5d5e0bc7d:
           Alias: marketplace_view
@@ -287,64 +291,314 @@ datasets:
       - account_map
     schedules:
     - default
-views:
-  marketplace_view:
+  agreements:
+    data:
+      DataSetId: 25db4a28-e9f9-4c20-bcfd-784957097c64
+      Name: agreements
+      PhysicalTableMap:
+        46ae6d3a-5d24-4e0b-a0dc-efa4ff57d116:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: agreements
+            InputColumns:
+            - Name: acceptance_time
+              Type: STRING
+            - Name: acceptor_account_id
+              Type: STRING
+            - Name: agreement_id
+              Type: STRING
+            - Name: agreement_type
+              Type: STRING
+            - Name: agreement_value
+              Type: STRING
+            - Name: collection_timestamp
+              Type: STRING
+            - Name: currency_code
+              Type: STRING
+            - Name: end_time
+              Type: STRING
+            - Name: offer_id
+              Type: STRING
+            - Name: party_type
+              Type: STRING
+            - Name: product_deployedonaws
+              Type: STRING
+            - Name: product_id
+              Type: STRING
+            - Name: product_manufacturer_displayname
+              Type: STRING
+            - Name: product_productid
+              Type: STRING
+            - Name: product_productname
+              Type: STRING
+            - Name: product_shortdescription
+              Type: STRING
+            - Name: proposer_account_id
+              Type: STRING
+            - Name: source_account_id
+              Type: STRING
+            - Name: status
+              Type: STRING
+            - Name: eula_url
+              Type: STRING
+            - Name: partition_0
+              Type: STRING
+      LogicalTableMap:
+        f0a31859-e649-4fdb-b72c-1f8523bd997f:
+          Alias: agreements
+          Source:
+            PhysicalTableId: 46ae6d3a-5d24-4e0b-a0dc-efa4ff57d116
+      ImportMode: SPICE
     dependsOn:
-      cur2: true
+      views:
+      - agreements
+    schedules:
+    - default
+  agreements_data:
+    data:
+      DataSetId: d99843a3-72ad-43dc-b21c-91d6c0f86239
+      Name: agreements_data
+      PhysicalTableMap:
+        155430e8-11ee-491d-8a77-a26bdb63d7af:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: agreements_data
+            InputColumns:
+            - Name: acceptance_time
+              Type: STRING
+            - Name: acceptor_account_id
+              Type: STRING
+            - Name: agreement_id
+              Type: STRING
+            - Name: agreement_type
+              Type: STRING
+            - Name: agreement_value
+              Type: STRING
+            - Name: collection_timestamp
+              Type: STRING
+            - Name: currency_code
+              Type: STRING
+            - Name: end_time
+              Type: STRING
+            - Name: offer_id
+              Type: STRING
+            - Name: party_type
+              Type: STRING
+            - Name: product_deployedonaws
+              Type: STRING
+            - Name: product_id
+              Type: STRING
+            - Name: product_manufacturer_displayname
+              Type: STRING
+            - Name: product_productid
+              Type: STRING
+            - Name: product_productname
+              Type: STRING
+            - Name: product_shortdescription
+              Type: STRING
+            - Name: proposer_account_id
+              Type: STRING
+            - Name: source_account_id
+              Type: STRING
+            - Name: status
+              Type: STRING
+            - Name: eula_url
+              Type: STRING
+      LogicalTableMap:
+        88c68cce-1f54-4bdb-b72c-8cab058e5b89:
+          Alias: agreements_data
+          Source:
+            PhysicalTableId: 155430e8-11ee-491d-8a77-a26bdb63d7af
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - agreements_data
+    schedules:
+    - default
+  terms:
+    data:
+      DataSetId: cb047283-bb4e-48f1-8fba-cd1a4b441f93
+      Name: terms
+      PhysicalTableMap:
+        cca4b668-6e89-4734-b32d-44f853c796b9:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: terms
+            InputColumns:
+            - Name: agreement_id
+              Type: STRING
+            - Name: term_type
+              Type: STRING
+            - Name: documents_url
+              Type: STRING
+            - Name: documents_type
+              Type: STRING
+            - Name: currencycode
+              Type: STRING
+            - Name: chargeamount
+              Type: STRING
+            - Name: chargedate
+              Type: STRING
+            - Name: partition_0
+              Type: STRING
+      LogicalTableMap:
+        76d578fb-04ff-4206-b1b9-3ce0066e2c16:
+          Alias: terms
+          Source:
+            PhysicalTableId: cca4b668-6e89-4734-b32d-44f853c796b9
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - terms
+    schedules:
+    - default
+views:
+  agreements:
     data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".marketplace_view AS
-      SELECT
-        split_part("billing_period", '-', 1) AS year
-      , split_part("billing_period", '-', 2) AS month
-      , bill_billing_period_start_date AS billing_period
-      , date_trunc('day', line_item_usage_start_date) AS usage_date
-      , bill_payer_account_id AS payer_account_id
-      , line_item_usage_account_id AS linked_account_id
-      , bill_invoice_id AS invoice_id
-      , line_item_line_item_type AS charge_type
-      , (CASE WHEN (line_item_line_item_type = 'DiscountedUsage') THEN 'Running_Usage' WHEN (line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN 'Running_Usage' WHEN (line_item_line_item_type = 'Usage') THEN 'Running_Usage' ELSE 'non_usage' END) AS charge_category
-      , line_item_product_code AS product_code
-      , product['product_name'] AS product_name
-      , (CASE WHEN ((bill_billing_entity = 'AWS Marketplace') AND (NOT (line_item_line_item_type LIKE '%Discount%'))) THEN product['product_name'] WHEN (product_servicecode = '') THEN line_item_product_code ELSE product_servicecode END) AS service
-      , line_item_usage_type AS usage_type
-      , CAST(from_iso8601_timestamp(split_part(identity_time_interval, '/', 1)) AS timestamp) AS subscription_start_date
-      , CAST(from_iso8601_timestamp(split_part(identity_time_interval, '/', 2)) AS timestamp) AS subscription_end_date
-      , line_item_line_item_description AS item_description
-      , line_item_availability_zone AS availability_zone
-      , product['region'] AS region
-      , line_item_legal_entity AS legal_entity
-      , bill_billing_entity AS billing_entity
-      , pricing_unit AS pricing_unit
-      , sum((CASE WHEN (line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN line_item_usage_amount WHEN (line_item_line_item_type = 'DiscountedUsage') THEN line_item_usage_amount WHEN (line_item_line_item_type = 'Usage') THEN line_item_usage_amount ELSE 0 END)) AS usage_quantity
-      , sum(line_item_unblended_cost) AS unblended_cost
-      FROM "${cur2_database}"."${cur2_table_name}"
-      WHERE (((bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '36' MONTH))
-        AND (CAST(concat("billing_period", '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '36' MONTH)))
-        AND (bill_billing_entity = 'AWS Marketplace'))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
-  marketplace_licenses_grants_view:
+      CREATE EXTERNAL TABLE `agreements`(
+        `acceptance_time` string COMMENT 'from deserializer',
+        `acceptor_account_id` string COMMENT 'from deserializer',
+        `agreement_id` string COMMENT 'from deserializer',
+        `agreement_type` string COMMENT 'from deserializer',
+        `agreement_value` string COMMENT 'from deserializer',
+        `collection_timestamp` string COMMENT 'from deserializer',
+        `currency_code` string COMMENT 'from deserializer',
+        `end_time` string COMMENT 'from deserializer',
+        `offer_id` string COMMENT 'from deserializer',
+        `party_type` string COMMENT 'from deserializer',
+        `product_deployedonaws` string COMMENT 'from deserializer',
+        `product_id` string COMMENT 'from deserializer',
+        `product_manufacturer_displayname` string COMMENT 'from deserializer',
+        `product_productid` string COMMENT 'from deserializer',
+        `product_productname` string COMMENT 'from deserializer',
+        `product_shortdescription` string COMMENT 'from deserializer',
+        `proposer_account_id` string COMMENT 'from deserializer',
+        `source_account_id` string COMMENT 'from deserializer',
+        `status` string COMMENT 'from deserializer',
+        `eula_url` string COMMENT 'from deserializer')
+      PARTITIONED BY (
+        `partition_0` string)
+      ROW FORMAT SERDE
+        'org.openx.data.jsonserde.JsonSerDe'
+      WITH SERDEPROPERTIES (
+        'paths'='acceptance_time,acceptor_account_id,agreement_id,agreement_type,agreement_value,collection_timestamp,currency_code,end_time,eula_url,offer_id,party_type,product_deployedOnAws,product_id,product_manufacturer_displayName,product_productId,product_productName,product_shortDescription,proposer_account_id,source_account_id,status')
+      STORED AS INPUTFORMAT
+        'org.apache.hadoop.mapred.TextInputFormat'
+      OUTPUTFORMAT
+        'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+      LOCATION
+        '${s3path}'
+      TBLPROPERTIES (
+        'CRAWL_RUN_ID'='ad288439-9b4c-46b1-a710-3720e51e588e',
+        'CrawlerSchemaDeserializerVersion'='1.0',
+        'CrawlerSchemaSerializerVersion'='1.0',
+        'UPDATED_BY_CRAWLER'='CID-DC-marketplace-Crawler',
+        'averageRecordSize'='1162',
+        'classification'='json',
+        'compressionType'='none',
+        'objectCount'='4',
+        'partition_filtering.enabled'='true',
+        'recordCount'='60',
+        'sizeKey'='69825',
+        'typeOfData'='file')
+    parameters:
+      s3path:
+        default: s3://cid-data-{account_id}/marketplace/agreements/
+        description: S3 Path for agreements table
+  agreements_data:
     data: |-
-      CREATE VIEW marketplace_licenses_grants_view AS
-      SELECT
-          CAST(NULL AS varchar) AS management_account_id,
-          CAST(NULL AS varchar) AS subscribed_account_id,
-          CAST(NULL AS varchar) AS grantee_account_id,
-          CAST(NULL AS timestamp) AS license_create_time,
-          CAST(NULL AS varchar) AS license_id,
-          CAST(NULL AS varchar) AS productname,
-          CAST(NULL AS varchar) AS seller,
-          CAST(NULL AS varchar) AS agreement_id,
-          CAST(NULL AS varchar) AS license_status,
-          CAST(NULL AS timestamp) AS license_start_date,
-          CAST(NULL AS timestamp) AS license_end_date,
-          CAST(NULL AS varchar) AS productsku,
-          CAST(NULL AS varchar) AS license_issuer,
-          CAST(NULL AS varchar) AS homeregion,
-          CAST(NULL AS varchar) AS license_version,
-          CAST(NULL AS varchar) AS grant_name,
-          CAST(NULL AS varchar) AS grant_id,
-          CAST(NULL AS varchar) AS grant_status,
-          CAST(NULL AS varchar) AS grant_version,
-          CAST(NULL AS varchar) AS granted_operations,
-          CAST(NULL AS varchar) AS activation_override_behavior
-      WHERE 1 = 0
+      CREATE EXTERNAL TABLE `agreements_data`(
+        `acceptance_time` string COMMENT 'from deserializer',
+        `acceptor_account_id` string COMMENT 'from deserializer',
+        `agreement_id` string COMMENT 'from deserializer',
+        `agreement_type` string COMMENT 'from deserializer',
+        `agreement_value` string COMMENT 'from deserializer',
+        `collection_timestamp` string COMMENT 'from deserializer',
+        `currency_code` string COMMENT 'from deserializer',
+        `end_time` string COMMENT 'from deserializer',
+        `offer_id` string COMMENT 'from deserializer',
+        `party_type` string COMMENT 'from deserializer',
+        `product_deployedonaws` string COMMENT 'from deserializer',
+        `product_id` string COMMENT 'from deserializer',
+        `product_manufacturer_displayname` string COMMENT 'from deserializer',
+        `product_productid` string COMMENT 'from deserializer',
+        `product_productname` string COMMENT 'from deserializer',
+        `product_shortdescription` string COMMENT 'from deserializer',
+        `proposer_account_id` string COMMENT 'from deserializer',
+        `source_account_id` string COMMENT 'from deserializer',
+        `status` string COMMENT 'from deserializer',
+        `eula_url` string COMMENT 'from deserializer')
+      ROW FORMAT SERDE
+        'org.openx.data.jsonserde.JsonSerDe'
+      WITH SERDEPROPERTIES (
+        'paths'='acceptance_time,acceptor_account_id,agreement_id,agreement_type,agreement_value,collection_timestamp,currency_code,end_time,eula_url,offer_id,party_type,product_deployedOnAws,product_id,product_manufacturer_displayName,product_productId,product_productName,product_shortDescription,proposer_account_id,source_account_id,status')
+      STORED AS INPUTFORMAT
+        'org.apache.hadoop.mapred.TextInputFormat'
+      OUTPUTFORMAT
+        'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+      LOCATION
+        '${s3path}'
+      TBLPROPERTIES (
+        'CRAWL_RUN_ID'='94a8a965-5b37-43f1-a157-d4893989b180',
+        'CrawlerSchemaDeserializerVersion'='1.0',
+        'CrawlerSchemaSerializerVersion'='1.0',
+        'UPDATED_BY_CRAWLER'='CID-DC-agreements-crawler',
+        'averageRecordSize'='1291',
+        'classification'='json',
+        'compressionType'='none',
+        'objectCount'='4',
+        'recordCount'='30',
+        'sizeKey'='38789',
+        'typeOfData'='file')
+    parameters:
+      s3path:
+        default: s3://cid-data-{account_id}/agreements/agreements/data/
+        description: S3 Path for agreements_data table
+  terms:
+    data: |-
+      CREATE EXTERNAL TABLE `terms`(
+        `agreement_id` string COMMENT 'from deserializer',
+        `term_type` string COMMENT 'from deserializer',
+        `documents_url` string COMMENT 'from deserializer',
+        `documents_type` string COMMENT 'from deserializer',
+        `currencycode` string COMMENT 'from deserializer',
+        `chargeamount` string COMMENT 'from deserializer',
+        `chargedate` string COMMENT 'from deserializer')
+      PARTITIONED BY (
+        `partition_0` string)
+      ROW FORMAT SERDE
+        'org.openx.data.jsonserde.JsonSerDe'
+      WITH SERDEPROPERTIES (
+        'paths'='agreement_id,chargeAmount,chargeDate,currencyCode,documents_type,documents_url,term_type')
+      STORED AS INPUTFORMAT
+        'org.apache.hadoop.mapred.TextInputFormat'
+      OUTPUTFORMAT
+        'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+      LOCATION
+        '${s3path}'
+      TBLPROPERTIES (
+        'CRAWL_RUN_ID'='ad288439-9b4c-46b1-a710-3720e51e588e',
+        'CrawlerSchemaDeserializerVersion'='1.0',
+        'CrawlerSchemaSerializerVersion'='1.0',
+        'UPDATED_BY_CRAWLER'='CID-DC-marketplace-Crawler',
+        'averageRecordSize'='917',
+        'classification'='json',
+        'compressionType'='none',
+        'delimiter'=',',
+        'objectCount'='4',
+        'partition_filtering.enabled'='true',
+        'recordCount'='31',
+        'sizeKey'='28462',
+        'skip.header.line.count'='1',
+        'typeOfData'='file')
+    parameters:
+      s3path:
+        default: s3://cid-data-{account_id}/marketplace/terms/
+        description: S3 Path for terms table
+crawlers: {}
