@@ -10,10 +10,8 @@ dashboards:
     name: AWS Marketplace Single Pane of Glass (SPG)
     dashboardId: aws-marketplace
     category: Additional
-    templateId: aws-marketplace-spg
+    templateId: aws-marketplace
     theme: MIDNIGHT
-    sourceAccountId: '585567417489'
-    region: us-east-1
 datasets:
   marketplace_view:
     data:
@@ -459,6 +457,66 @@ datasets:
     schedules:
     - default
 views:
+  marketplace_view:
+    dependsOn:
+      cur2: true
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".marketplace_view AS
+      SELECT
+        split_part("billing_period", '-', 1) AS year
+      , split_part("billing_period", '-', 2) AS month
+      , bill_billing_period_start_date AS billing_period
+      , date_trunc('day', line_item_usage_start_date) AS usage_date
+      , bill_payer_account_id AS payer_account_id
+      , line_item_usage_account_id AS linked_account_id
+      , bill_invoice_id AS invoice_id
+      , line_item_line_item_type AS charge_type
+      , (CASE WHEN (line_item_line_item_type = 'DiscountedUsage') THEN 'Running_Usage' WHEN (line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN 'Running_Usage' WHEN (line_item_line_item_type = 'Usage') THEN 'Running_Usage' ELSE 'non_usage' END) AS charge_category
+      , line_item_product_code AS product_code
+      , product['product_name'] AS product_name
+      , (CASE WHEN ((bill_billing_entity = 'AWS Marketplace') AND (NOT (line_item_line_item_type LIKE '%Discount%'))) THEN product['product_name'] WHEN (product_servicecode = '') THEN line_item_product_code ELSE product_servicecode END) AS service
+      , line_item_usage_type AS usage_type
+      , CAST(from_iso8601_timestamp(split_part(identity_time_interval, '/', 1)) AS timestamp) AS subscription_start_date
+      , CAST(from_iso8601_timestamp(split_part(identity_time_interval, '/', 2)) AS timestamp) AS subscription_end_date
+      , line_item_line_item_description AS item_description
+      , line_item_availability_zone AS availability_zone
+      , product['region'] AS region
+      , line_item_legal_entity AS legal_entity
+      , bill_billing_entity AS billing_entity
+      , pricing_unit AS pricing_unit
+      , sum((CASE WHEN (line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN line_item_usage_amount WHEN (line_item_line_item_type = 'DiscountedUsage') THEN line_item_usage_amount WHEN (line_item_line_item_type = 'Usage') THEN line_item_usage_amount ELSE 0 END)) AS usage_quantity
+      , sum(line_item_unblended_cost) AS unblended_cost
+      FROM "${cur2_database}"."${cur2_table_name}"
+      WHERE (((bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '36' MONTH))
+        AND (CAST(concat("billing_period", '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '36' MONTH)))
+        AND (bill_billing_entity = 'AWS Marketplace'))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+  marketplace_licenses_grants_view:
+    data: |-
+      CREATE VIEW marketplace_licenses_grants_view AS
+      SELECT
+          CAST(NULL AS varchar) AS management_account_id,
+          CAST(NULL AS varchar) AS subscribed_account_id,
+          CAST(NULL AS varchar) AS grantee_account_id,
+          CAST(NULL AS timestamp) AS license_create_time,
+          CAST(NULL AS varchar) AS license_id,
+          CAST(NULL AS varchar) AS productname,
+          CAST(NULL AS varchar) AS seller,
+          CAST(NULL AS varchar) AS agreement_id,
+          CAST(NULL AS varchar) AS license_status,
+          CAST(NULL AS timestamp) AS license_start_date,
+          CAST(NULL AS timestamp) AS license_end_date,
+          CAST(NULL AS varchar) AS productsku,
+          CAST(NULL AS varchar) AS license_issuer,
+          CAST(NULL AS varchar) AS homeregion,
+          CAST(NULL AS varchar) AS license_version,
+          CAST(NULL AS varchar) AS grant_name,
+          CAST(NULL AS varchar) AS grant_id,
+          CAST(NULL AS varchar) AS grant_status,
+          CAST(NULL AS varchar) AS grant_version,
+          CAST(NULL AS varchar) AS granted_operations,
+          CAST(NULL AS varchar) AS activation_override_behavior
+      WHERE 1 = 0
   agreements:
     data: |-
       CREATE EXTERNAL TABLE `agreements`(
