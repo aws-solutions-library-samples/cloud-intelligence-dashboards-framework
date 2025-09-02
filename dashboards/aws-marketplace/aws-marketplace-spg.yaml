@@ -519,144 +519,66 @@ views:
       WHERE 1 = 0
   agreements:
     data: |-
-      CREATE EXTERNAL TABLE `agreements`(
-        `acceptance_time` string COMMENT 'from deserializer',
-        `acceptor_account_id` string COMMENT 'from deserializer',
-        `agreement_id` string COMMENT 'from deserializer',
-        `agreement_type` string COMMENT 'from deserializer',
-        `agreement_value` string COMMENT 'from deserializer',
-        `collection_timestamp` string COMMENT 'from deserializer',
-        `currency_code` string COMMENT 'from deserializer',
-        `end_time` string COMMENT 'from deserializer',
-        `offer_id` string COMMENT 'from deserializer',
-        `party_type` string COMMENT 'from deserializer',
-        `product_deployedonaws` string COMMENT 'from deserializer',
-        `product_id` string COMMENT 'from deserializer',
-        `product_manufacturer_displayname` string COMMENT 'from deserializer',
-        `product_productid` string COMMENT 'from deserializer',
-        `product_productname` string COMMENT 'from deserializer',
-        `product_shortdescription` string COMMENT 'from deserializer',
-        `proposer_account_id` string COMMENT 'from deserializer',
-        `source_account_id` string COMMENT 'from deserializer',
-        `status` string COMMENT 'from deserializer',
-        `eula_url` string COMMENT 'from deserializer')
-      PARTITIONED BY (
-        `partition_0` string)
-      ROW FORMAT SERDE
-        'org.openx.data.jsonserde.JsonSerDe'
-      WITH SERDEPROPERTIES (
-        'paths'='acceptance_time,acceptor_account_id,agreement_id,agreement_type,agreement_value,collection_timestamp,currency_code,end_time,eula_url,offer_id,party_type,product_deployedOnAws,product_id,product_manufacturer_displayName,product_productId,product_productName,product_shortDescription,proposer_account_id,source_account_id,status')
-      STORED AS INPUTFORMAT
-        'org.apache.hadoop.mapred.TextInputFormat'
-      OUTPUTFORMAT
-        'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-      LOCATION
-        '${s3path}'
-      TBLPROPERTIES (
-        'CRAWL_RUN_ID'='ad288439-9b4c-46b1-a710-3720e51e588e',
-        'CrawlerSchemaDeserializerVersion'='1.0',
-        'CrawlerSchemaSerializerVersion'='1.0',
-        'UPDATED_BY_CRAWLER'='CID-DC-marketplace-Crawler',
-        'averageRecordSize'='1162',
-        'classification'='json',
-        'compressionType'='none',
-        'objectCount'='4',
-        'partition_filtering.enabled'='true',
-        'recordCount'='60',
-        'sizeKey'='69825',
-        'typeOfData'='file')
-    parameters:
-      s3path:
-        default: s3://cid-data-{account_id}/marketplace/agreements/
-        description: S3 Path for agreements table
+      CREATE VIEW agreements AS
+      SELECT
+          CAST(NULL AS varchar) AS acceptance_time,
+          CAST(NULL AS varchar) AS acceptor_account_id,
+          CAST(NULL AS varchar) AS agreement_id,
+          CAST(NULL AS varchar) AS agreement_type,
+          CAST(NULL AS varchar) AS agreement_value,
+          CAST(NULL AS varchar) AS collection_timestamp,
+          CAST(NULL AS varchar) AS currency_code,
+          CAST(NULL AS varchar) AS end_time,
+          CAST(NULL AS varchar) AS offer_id,
+          CAST(NULL AS varchar) AS party_type,
+          CAST(NULL AS varchar) AS product_deployedonaws,
+          CAST(NULL AS varchar) AS product_id,
+          CAST(NULL AS varchar) AS product_manufacturer_displayname,
+          CAST(NULL AS varchar) AS product_productid,
+          CAST(NULL AS varchar) AS product_productname,
+          CAST(NULL AS varchar) AS product_shortdescription,
+          CAST(NULL AS varchar) AS proposer_account_id,
+          CAST(NULL AS varchar) AS source_account_id,
+          CAST(NULL AS varchar) AS status,
+          CAST(NULL AS varchar) AS eula_url,
+          CAST(NULL AS varchar) AS partition_0
+      WHERE 1 = 0
   agreements_data:
     data: |-
-      CREATE EXTERNAL TABLE `agreements_data`(
-        `acceptance_time` string COMMENT 'from deserializer',
-        `acceptor_account_id` string COMMENT 'from deserializer',
-        `agreement_id` string COMMENT 'from deserializer',
-        `agreement_type` string COMMENT 'from deserializer',
-        `agreement_value` string COMMENT 'from deserializer',
-        `collection_timestamp` string COMMENT 'from deserializer',
-        `currency_code` string COMMENT 'from deserializer',
-        `end_time` string COMMENT 'from deserializer',
-        `offer_id` string COMMENT 'from deserializer',
-        `party_type` string COMMENT 'from deserializer',
-        `product_deployedonaws` string COMMENT 'from deserializer',
-        `product_id` string COMMENT 'from deserializer',
-        `product_manufacturer_displayname` string COMMENT 'from deserializer',
-        `product_productid` string COMMENT 'from deserializer',
-        `product_productname` string COMMENT 'from deserializer',
-        `product_shortdescription` string COMMENT 'from deserializer',
-        `proposer_account_id` string COMMENT 'from deserializer',
-        `source_account_id` string COMMENT 'from deserializer',
-        `status` string COMMENT 'from deserializer',
-        `eula_url` string COMMENT 'from deserializer')
-      ROW FORMAT SERDE
-        'org.openx.data.jsonserde.JsonSerDe'
-      WITH SERDEPROPERTIES (
-        'paths'='acceptance_time,acceptor_account_id,agreement_id,agreement_type,agreement_value,collection_timestamp,currency_code,end_time,eula_url,offer_id,party_type,product_deployedOnAws,product_id,product_manufacturer_displayName,product_productId,product_productName,product_shortDescription,proposer_account_id,source_account_id,status')
-      STORED AS INPUTFORMAT
-        'org.apache.hadoop.mapred.TextInputFormat'
-      OUTPUTFORMAT
-        'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-      LOCATION
-        '${s3path}'
-      TBLPROPERTIES (
-        'CRAWL_RUN_ID'='94a8a965-5b37-43f1-a157-d4893989b180',
-        'CrawlerSchemaDeserializerVersion'='1.0',
-        'CrawlerSchemaSerializerVersion'='1.0',
-        'UPDATED_BY_CRAWLER'='CID-DC-agreements-crawler',
-        'averageRecordSize'='1291',
-        'classification'='json',
-        'compressionType'='none',
-        'objectCount'='4',
-        'recordCount'='30',
-        'sizeKey'='38789',
-        'typeOfData'='file')
-    parameters:
-      s3path:
-        default: s3://cid-data-{account_id}/agreements/agreements/data/
-        description: S3 Path for agreements_data table
+      CREATE VIEW agreements_data AS
+      SELECT
+          CAST(NULL AS varchar) AS acceptance_time,
+          CAST(NULL AS varchar) AS acceptor_account_id,
+          CAST(NULL AS varchar) AS agreement_id,
+          CAST(NULL AS varchar) AS agreement_type,
+          CAST(NULL AS varchar) AS agreement_value,
+          CAST(NULL AS varchar) AS collection_timestamp,
+          CAST(NULL AS varchar) AS currency_code,
+          CAST(NULL AS varchar) AS end_time,
+          CAST(NULL AS varchar) AS offer_id,
+          CAST(NULL AS varchar) AS party_type,
+          CAST(NULL AS varchar) AS product_deployedonaws,
+          CAST(NULL AS varchar) AS product_id,
+          CAST(NULL AS varchar) AS product_manufacturer_displayname,
+          CAST(NULL AS varchar) AS product_productid,
+          CAST(NULL AS varchar) AS product_productname,
+          CAST(NULL AS varchar) AS product_shortdescription,
+          CAST(NULL AS varchar) AS proposer_account_id,
+          CAST(NULL AS varchar) AS source_account_id,
+          CAST(NULL AS varchar) AS status,
+          CAST(NULL AS varchar) AS eula_url
+      WHERE 1 = 0
   terms:
     data: |-
-      CREATE EXTERNAL TABLE `terms`(
-        `agreement_id` string COMMENT 'from deserializer',
-        `term_type` string COMMENT 'from deserializer',
-        `documents_url` string COMMENT 'from deserializer',
-        `documents_type` string COMMENT 'from deserializer',
-        `currencycode` string COMMENT 'from deserializer',
-        `chargeamount` string COMMENT 'from deserializer',
-        `chargedate` string COMMENT 'from deserializer')
-      PARTITIONED BY (
-        `partition_0` string)
-      ROW FORMAT SERDE
-        'org.openx.data.jsonserde.JsonSerDe'
-      WITH SERDEPROPERTIES (
-        'paths'='agreement_id,chargeAmount,chargeDate,currencyCode,documents_type,documents_url,term_type')
-      STORED AS INPUTFORMAT
-        'org.apache.hadoop.mapred.TextInputFormat'
-      OUTPUTFORMAT
-        'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-      LOCATION
-        '${s3path}'
-      TBLPROPERTIES (
-        'CRAWL_RUN_ID'='ad288439-9b4c-46b1-a710-3720e51e588e',
-        'CrawlerSchemaDeserializerVersion'='1.0',
-        'CrawlerSchemaSerializerVersion'='1.0',
-        'UPDATED_BY_CRAWLER'='CID-DC-marketplace-Crawler',
-        'averageRecordSize'='917',
-        'classification'='json',
-        'compressionType'='none',
-        'delimiter'=',',
-        'objectCount'='4',
-        'partition_filtering.enabled'='true',
-        'recordCount'='31',
-        'sizeKey'='28462',
-        'skip.header.line.count'='1',
-        'typeOfData'='file')
-    parameters:
-      s3path:
-        default: s3://cid-data-{account_id}/marketplace/terms/
-        description: S3 Path for terms table
+      CREATE VIEW terms AS
+      SELECT
+          CAST(NULL AS varchar) AS agreement_id,
+          CAST(NULL AS varchar) AS term_type,
+          CAST(NULL AS varchar) AS documents_url,
+          CAST(NULL AS varchar) AS documents_type,
+          CAST(NULL AS varchar) AS currencycode,
+          CAST(NULL AS varchar) AS chargeamount,
+          CAST(NULL AS varchar) AS chargedate,
+          CAST(NULL AS varchar) AS partition_0
+      WHERE 1 = 0
 crawlers: {}
