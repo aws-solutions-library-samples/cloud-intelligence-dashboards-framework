@@ -2,8 +2,11 @@ dashboards:
   AWS MARKETPLACE SINGLE PANE OF GLASS (SPG):
     dependsOn:
       datasets:
-      - marketplace_view
+      - agreements
+      - agreements_data
       - marketplace_licenses_grants_view
+      - marketplace_view
+      - terms
     name: AWS Marketplace Single Pane of Glass (SPG)
     dashboardId: aws-marketplace
     category: Additional
@@ -79,7 +82,6 @@ datasets:
               Type: DECIMAL
             - Name: unblended_cost
               Type: DECIMAL
-
       LogicalTableMap:
         097d3f27-562a-4d8f-bcee-bad5d5e0bc7d:
           Alias: marketplace_view
@@ -287,6 +289,173 @@ datasets:
       - account_map
     schedules:
     - default
+  agreements:
+    data:
+      DataSetId: 25db4a28-e9f9-4c20-bcfd-784957097c64
+      Name: agreements
+      PhysicalTableMap:
+        46ae6d3a-5d24-4e0b-a0dc-efa4ff57d116:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: agreements
+            InputColumns:
+            - Name: acceptance_time
+              Type: STRING
+            - Name: acceptor_account_id
+              Type: STRING
+            - Name: agreement_id
+              Type: STRING
+            - Name: agreement_type
+              Type: STRING
+            - Name: agreement_value
+              Type: STRING
+            - Name: collection_timestamp
+              Type: STRING
+            - Name: currency_code
+              Type: STRING
+            - Name: end_time
+              Type: STRING
+            - Name: offer_id
+              Type: STRING
+            - Name: party_type
+              Type: STRING
+            - Name: product_deployedonaws
+              Type: STRING
+            - Name: product_id
+              Type: STRING
+            - Name: product_manufacturer_displayname
+              Type: STRING
+            - Name: product_productid
+              Type: STRING
+            - Name: product_productname
+              Type: STRING
+            - Name: product_shortdescription
+              Type: STRING
+            - Name: proposer_account_id
+              Type: STRING
+            - Name: source_account_id
+              Type: STRING
+            - Name: status
+              Type: STRING
+            - Name: eula_url
+              Type: STRING
+            - Name: partition_0
+              Type: STRING
+      LogicalTableMap:
+        f0a31859-e649-4fdb-b72c-1f8523bd997f:
+          Alias: agreements
+          Source:
+            PhysicalTableId: 46ae6d3a-5d24-4e0b-a0dc-efa4ff57d116
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - agreements
+    schedules:
+    - default
+  agreements_data:
+    data:
+      DataSetId: d99843a3-72ad-43dc-b21c-91d6c0f86239
+      Name: agreements_data
+      PhysicalTableMap:
+        155430e8-11ee-491d-8a77-a26bdb63d7af:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: agreements_data
+            InputColumns:
+            - Name: acceptance_time
+              Type: STRING
+            - Name: acceptor_account_id
+              Type: STRING
+            - Name: agreement_id
+              Type: STRING
+            - Name: agreement_type
+              Type: STRING
+            - Name: agreement_value
+              Type: STRING
+            - Name: collection_timestamp
+              Type: STRING
+            - Name: currency_code
+              Type: STRING
+            - Name: end_time
+              Type: STRING
+            - Name: offer_id
+              Type: STRING
+            - Name: party_type
+              Type: STRING
+            - Name: product_deployedonaws
+              Type: STRING
+            - Name: product_id
+              Type: STRING
+            - Name: product_manufacturer_displayname
+              Type: STRING
+            - Name: product_productid
+              Type: STRING
+            - Name: product_productname
+              Type: STRING
+            - Name: product_shortdescription
+              Type: STRING
+            - Name: proposer_account_id
+              Type: STRING
+            - Name: source_account_id
+              Type: STRING
+            - Name: status
+              Type: STRING
+            - Name: eula_url
+              Type: STRING
+      LogicalTableMap:
+        88c68cce-1f54-4bdb-b72c-8cab058e5b89:
+          Alias: agreements_data
+          Source:
+            PhysicalTableId: 155430e8-11ee-491d-8a77-a26bdb63d7af
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - agreements_data
+    schedules:
+    - default
+  terms:
+    data:
+      DataSetId: cb047283-bb4e-48f1-8fba-cd1a4b441f93
+      Name: terms
+      PhysicalTableMap:
+        cca4b668-6e89-4734-b32d-44f853c796b9:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: terms
+            InputColumns:
+            - Name: agreement_id
+              Type: STRING
+            - Name: term_type
+              Type: STRING
+            - Name: documents_url
+              Type: STRING
+            - Name: documents_type
+              Type: STRING
+            - Name: currencycode
+              Type: STRING
+            - Name: chargeamount
+              Type: STRING
+            - Name: chargedate
+              Type: STRING
+            - Name: partition_0
+              Type: STRING
+      LogicalTableMap:
+        76d578fb-04ff-4206-b1b9-3ce0066e2c16:
+          Alias: terms
+          Source:
+            PhysicalTableId: cca4b668-6e89-4734-b32d-44f853c796b9
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - terms
+    schedules:
+    - default
 views:
   marketplace_view:
     dependsOn:
@@ -348,3 +517,68 @@ views:
           CAST(NULL AS varchar) AS granted_operations,
           CAST(NULL AS varchar) AS activation_override_behavior
       WHERE 1 = 0
+  agreements:
+    data: |-
+      CREATE VIEW agreements AS
+      SELECT
+          CAST(NULL AS varchar) AS acceptance_time,
+          CAST(NULL AS varchar) AS acceptor_account_id,
+          CAST(NULL AS varchar) AS agreement_id,
+          CAST(NULL AS varchar) AS agreement_type,
+          CAST(NULL AS varchar) AS agreement_value,
+          CAST(NULL AS varchar) AS collection_timestamp,
+          CAST(NULL AS varchar) AS currency_code,
+          CAST(NULL AS varchar) AS end_time,
+          CAST(NULL AS varchar) AS offer_id,
+          CAST(NULL AS varchar) AS party_type,
+          CAST(NULL AS varchar) AS product_deployedonaws,
+          CAST(NULL AS varchar) AS product_id,
+          CAST(NULL AS varchar) AS product_manufacturer_displayname,
+          CAST(NULL AS varchar) AS product_productid,
+          CAST(NULL AS varchar) AS product_productname,
+          CAST(NULL AS varchar) AS product_shortdescription,
+          CAST(NULL AS varchar) AS proposer_account_id,
+          CAST(NULL AS varchar) AS source_account_id,
+          CAST(NULL AS varchar) AS status,
+          CAST(NULL AS varchar) AS eula_url,
+          CAST(NULL AS varchar) AS partition_0
+      WHERE 1 = 0
+  agreements_data:
+    data: |-
+      CREATE VIEW agreements_data AS
+      SELECT
+          CAST(NULL AS varchar) AS acceptance_time,
+          CAST(NULL AS varchar) AS acceptor_account_id,
+          CAST(NULL AS varchar) AS agreement_id,
+          CAST(NULL AS varchar) AS agreement_type,
+          CAST(NULL AS varchar) AS agreement_value,
+          CAST(NULL AS varchar) AS collection_timestamp,
+          CAST(NULL AS varchar) AS currency_code,
+          CAST(NULL AS varchar) AS end_time,
+          CAST(NULL AS varchar) AS offer_id,
+          CAST(NULL AS varchar) AS party_type,
+          CAST(NULL AS varchar) AS product_deployedonaws,
+          CAST(NULL AS varchar) AS product_id,
+          CAST(NULL AS varchar) AS product_manufacturer_displayname,
+          CAST(NULL AS varchar) AS product_productid,
+          CAST(NULL AS varchar) AS product_productname,
+          CAST(NULL AS varchar) AS product_shortdescription,
+          CAST(NULL AS varchar) AS proposer_account_id,
+          CAST(NULL AS varchar) AS source_account_id,
+          CAST(NULL AS varchar) AS status,
+          CAST(NULL AS varchar) AS eula_url
+      WHERE 1 = 0
+  terms:
+    data: |-
+      CREATE VIEW terms AS
+      SELECT
+          CAST(NULL AS varchar) AS agreement_id,
+          CAST(NULL AS varchar) AS term_type,
+          CAST(NULL AS varchar) AS documents_url,
+          CAST(NULL AS varchar) AS documents_type,
+          CAST(NULL AS varchar) AS currencycode,
+          CAST(NULL AS varchar) AS chargeamount,
+          CAST(NULL AS varchar) AS chargedate,
+          CAST(NULL AS varchar) AS partition_0
+      WHERE 1 = 0
+crawlers: {}
