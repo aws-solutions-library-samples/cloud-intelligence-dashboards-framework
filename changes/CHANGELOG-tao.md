@@ -1,5 +1,22 @@
 # What's new in TAO Dashboard
 
+## TAO Dashboard v4.0.0:
+**Important:** Update to this version requires [CID Data Collection](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html) v3.13.0 or above. Manual data collection is no longer supported. Before updating TAO dashboard to v4 make sure you [deployed](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection-deployment.html) or [updated](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection-update.html) Data Collection stacks. Once Data Collection is deployed you can update TAO dashboard to v4 by running these commands in your CloudShell (recommended) or other terminal:
+
+```
+python3 -m ensurepip --upgrade
+pip3 install --upgrade cid-cmd
+cid-cmd update --dashboard-id ta-organizational-view --recursive
+```
+
+**New tab TA Explorer** Trusted Advisor Explorer section which allows to interactively explore all flagged resources across all checks and accounts in a single place moved to separate tab
+
+**New tab TA Priority** New visuals which show recommendations created by your account team via [Trusted Advisor Priority](https://docs.aws.amazon.com/awssupport/latest/user/trusted-advisor-priority.html)
+
+**Cost Optimization tab:** Native Trusted Advisor checks Low Utilization Amazon EC2 Instances, Underutilized Amazon EBS Volumes, Amazon RDS Idle DB Instances, AWS Lambda over-provisioned functions for memory size replaced by respective more accurate checks from Cost Optimization Hub. Read more details in the [blog post](https://aws.amazon.com/blogs/aws-cloud-financial-management/optimize-your-aws-spend-with-new-cost-savings-features-in-aws-trusted-advisor/)
+
+**Security tab:** AWS CloudTrail Logging check is replaced by AWS CloudTrail Management Event Logging check with improved accuracy
+
 ## TAO Dashboard v3.1.1:
 **All tabs:** bugfix to exclude flagged resources which don't appear in latest report per account, e.g. exclude fixed resources
 

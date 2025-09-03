@@ -3807,10 +3807,6 @@ FilterGroups:
       - Scope: ALL_VISUALS
         SheetId: 730eee03-37f2-47a4-8b95-f487db0dce46
   Status: ENABLED
-Options:
-  CustomActionDefaults:
-    highlightOperation:
-      Trigger: DATA_POINT_CLICK
 ParameterDeclarations:
 - StringParameterDeclaration:
     DefaultValues: {}
@@ -6690,7 +6686,7 @@ Sheets:
         CustomNarrative:
           Narrative: |-
             <narrative>
-              <inline font-size="54.88px">AWS Cloudtrail logging</inline>
+              <inline font-size="54.88px">AWS CloudTrail Management Event Logging</inline>
               <br/>
               <br/>
               Checks for your use of AWS CloudTrail. CloudTrail provides increased visibility into activity in your AWS account by recording information about AWS API calls made on the account. You can use these logs to determine, for example, what actions a particular user has taken during a specified time period or which users have taken actions on a particular resource during a specified time period. Because CloudTrail delivers log files to an Amazon Simple Storage Service (Amazon S3) bucket, CloudTrail must have write permissions for the bucket.

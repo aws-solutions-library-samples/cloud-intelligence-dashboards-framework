@@ -8,6 +8,36 @@
     <lastBuildDate>Mon, 2 Jun 2025 09:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] TAO v4.0.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-tao.md
+      </link>
+      <pubDate>Fri, 5 Sep 2025 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">f5c65276-4c8f-4c93-af22-646eaf0653d9</guid>
+      <description>TAO Dashboard v4.0.0</description>
+      <content:encoded><![CDATA[
+    <div>
+<h2>TAO Dashboard v4.0.0:</h2>
+        
+        <p><strong>Important:</strong> Update to this version requires <a href="https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html">CID Data Collection</a> v3.13.0 or above. Manual data collection is no longer supported. Before updating TAO dashboard to v4 make sure you <a href="https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection-deployment.html">deployed</a> or <a href="https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection-update.html">updated</a> Data Collection stacks. Once Data Collection is deployed you can update TAO dashboard to v4 by running these commands in your CloudShell (recommended) or other terminal:</p>
+
+        <pre><code>
+python3 -m ensurepip --upgrade
+pip3 install --upgrade cid-cmd
+cid-cmd update --dashboard-id ta-organizational-view --recursive
+        </code></pre>
+
+        <p><strong>New tab TA Explorer:</strong> Trusted Advisor Explorer section which allows to interactively explore all flagged resources across all checks and accounts in a single place moved to separate tab</p>
+
+        <p><strong>New tab TA Priority:</strong> New visuals which show recommendations created by your account team via <a href="https://docs.aws.amazon.com/awssupport/latest/user/trusted-advisor-priority.html">Trusted Advisor Priority</a></p>
+
+        <p><strong>Cost Optimization tab:</strong> Native Trusted Advisor checks Low Utilization Amazon EC2 Instances, Underutilized Amazon EBS Volumes, Amazon RDS Idle DB Instances, AWS Lambda over-provisioned functions for memory size replaced by respective more accurate checks from Cost Optimization Hub. Read more details in the <a href="https://aws.amazon.com/blogs/aws-cloud-financial-management/optimize-your-aws-spend-with-new-cost-savings-features-in-aws-trusted-advisor/">blog post</a></p>
+
+        <p><strong>Security tab:</strong> AWS CloudTrail Logging check is replaced by AWS CloudTrail Management Event Logging check with improved accuracy</p>
+    </div>
+    ]]></content:encoded>
+    <item>
       <title>[New Dashboard] ResilienceVue Dashboard v1.0.0</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/add-resilience-hub/changes/CHANGELOG-resiliencevue.md
@@ -33,6 +63,8 @@
         <li><strong>Categorization of Effort:</strong> Categorizes recommendations based on Availability Architecture and Optimization Type.</li>
       </ul>
     </div>
+    ]]></content:encoded>
+     </item>  
       <title>[Update] CUDOS Dashboard v5.6.1</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-cudos.md#cudos---561
