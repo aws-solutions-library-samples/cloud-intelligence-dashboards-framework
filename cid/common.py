@@ -624,7 +624,16 @@ class Cid():
                 dataset = self.qs.describe_dataset(id=dashboard_datasets.get(dataset_name), no_cache=True)
 
             if not isinstance(dataset, Dataset):
-                # Second chance:  try to find the dataset with the id that is the name
+                # Second chance:  try to find the dataset with the id from resources
+                try:
+                    _ds_id = self.resources['datasets'].get(dataset_name, {}).get('data', {}).get('DataSetId')
+                    if _ds_id:
+                        dataset = self.qs.describe_dataset(id=_ds_id, no_cache=True)
+                except Exception as exc:
+                    logger.debug(f'Failed to describe_dataset {dataset_name} {exc}')
+
+            if not isinstance(dataset, Dataset):
+                # Third chance:  try to find the dataset with the id that is the name
                 try:
                     dataset = self.qs.describe_dataset(id=dataset_name, no_cache=True)
                 except Exception as exc:
@@ -662,14 +671,18 @@ class Cid():
 
                 if not matching_datasets:
                     reco = ''
-                    logger.warning(f'Dataset {dataset_name} is not found.')
-                    if utils.exec_env()['shell'] == 'lambda':
-                        # We are in lambda
-                        reco = 'You can try deleting existing dataset and re-run.'
-                    else:
-                        # We are in command line mode
-                        reco = 'Please retry with --update "yes" --force --recursive flags.'
-                    raise CidCritical(f'Failed to find a Dataset "{dataset_name}" with required fields. ' + reco)
+                    new_datasets = self.create_datasets([dataset_name], known_datasets=dashboard_datasets, recursive=recursive, update=update)
+                    if not new_datasets:
+                        logger.warning(f'Dataset {dataset_name} is not found.')
+                        if utils.exec_env()['shell'] == 'lambda':
+                            # We are in lambda
+                            reco = 'You can try deleting existing dataset and re-run.'
+                        else:
+                            # We are in command line mode
+                            reco = 'Please retry with --update "yes" --force --recursive flags.'
+                        raise CidCritical(f'Failed to find a Dataset "{dataset_name}" with required fields. ' + reco)
+                    _ds_id = self.resources['datasets'].get(dataset_name, {}).get('data', {}).get('DataSetId')
+                    dashboard_definition['datasets'][dataset_name] = f'arn:{self.base.partition}:quicksight:{self.base.region}:{self.base.account_id}:dataset/{_ds_id}'
                 elif len(matching_datasets) >= 1:
                     if len(matching_datasets) > 1:
                         # FIXME: propose a choice?
