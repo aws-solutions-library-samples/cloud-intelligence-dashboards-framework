@@ -2,7 +2,7 @@
 
 ## SCAD Containers Cost Allocation Dashboard - v3.0.1
 
-* Fixed an issue with GPU cost showing 0
+* Fixed an issue with CPU and GPU cost showing 0
 * Added node_gpu column
 
 ## SCAD Containers Cost Allocation Dashboard - v3.0.0
