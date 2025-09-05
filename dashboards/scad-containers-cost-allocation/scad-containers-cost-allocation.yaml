@@ -361,7 +361,6 @@ views:
       - line_item_net_unblended_cost
       - product_instance_family
       - savings_plan_net_savings_plan_effective_cost
-      - data
       - billing_period
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".scad_cca_summary_view AS
