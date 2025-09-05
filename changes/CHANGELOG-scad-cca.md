@@ -1,5 +1,10 @@
 # What's new in SCAD Containers Cost Allocation Dashboard
 
+## SCAD Containers Cost Allocation Dashboard - v3.0.1
+
+* Fixed an issue with GPU cost showing 0
+* Added node_gpu column
+
 ## SCAD Containers Cost Allocation Dashboard - v3.0.0
 * New features:
   * GPU cost support (Amazon EKS only), reflected as follows:
