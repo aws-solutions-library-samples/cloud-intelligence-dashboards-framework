@@ -4,7 +4,6 @@
 **Important:** Update to this version requires [CID Data Collection](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html) v3.13.0 or above. Manual data collection is no longer supported. Before updating TAO dashboard to v4 make sure you [deployed](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection-deployment.html) or [updated](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection-update.html) Data Collection stacks. Once Data Collection is deployed you can update TAO dashboard to v4 by running these commands in your CloudShell (recommended) or other terminal:
 
 ```
-python3 -m ensurepip --upgrade
 pip3 install --upgrade cid-cmd
 cid-cmd update --dashboard-id ta-organizational-view --recursive
 ```
