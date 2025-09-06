@@ -167,6 +167,7 @@ def export(ctx, **kwargs):
                (definition|template) A method (definition=pull json definition of Analysis OR template=create QuickSight Template)
         --export-known-datasets
             (no|yes)                 If 'yes' the export will include DataSets that are already in resources file. Default = no
+        --export-tables (no|yes).    If 'yes' the export will include Tables. Default: no = only Views
         --category TEXT              The dashboards category. Default = Custom
         --output                     A filename (.yaml) If provided an existing file it will be analyzed for default values and overridden 
     """
