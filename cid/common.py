@@ -433,12 +433,21 @@ class Cid():
                     except (self.athena.client.exceptions.ClientError, CidError, CidCritical) as exc:
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: {exc}.') from exc
                     if not res_list:
-                        raise CidCritical(f'Failed fetching parameter {prefix}{key}, {value}. Athena returns empty results. {value.get("error")}')
-                    elif len(res_list) == 1:
-                        params[key] = '-'.join(res_list[0])
+                        raise CidCritical(f'Failed fetching parameter {prefix}{key}, {value}. Athena returns empty results. {value.get("error", "")}')
+                    options = ['-'.join(res) for res in res_list]
+                    default = value.get('default', '{default not provided}')
+                    if len(options) == 1:
+                        # silently taking the 1st available option
+                        params[key] = options[0]
+                    elif not utils.isatty():
+                        if default in options:
+                            # silently taking the default option if we cannot ask user
+                            params[key] = default
+                        else:
+                            # silently taking the first option
+                            params[key] = sorted(options)[0]
                     else:
-                        options = ['-'.join(res) for res in res_list]
-                        default = value.get('default')
+                        # asking user
                         params[key] = get_parameter(
                             param_name=prefix + key,
                             message=f"Required parameter: {key} ({value.get('description')})",
