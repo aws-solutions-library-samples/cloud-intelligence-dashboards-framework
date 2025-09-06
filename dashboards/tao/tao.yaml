@@ -51,6 +51,10 @@ datasets:
               Type: STRING
             - Name: awsresourcedetails
               Type: STRING
+            - Name: recommresourceid
+              Type: STRING
+            - Name: recommresourcearn
+              Type: STRING
             - Name: exclusionstatus
               Type: STRING
             - Name: regioncode
@@ -104,7 +108,7 @@ datasets:
               Columns:
               - ColumnName: ResourceID
                 ColumnId: ce979b5f-4ca1-43cb-9c3c-f483261328c3
-                Expression: concat({recommendationarn},"-",{awsresourcedetails})
+                Expression: concat({recommendationarn},"-",{recommresourceid})
           - CreateColumnsOperation:
               Columns:
               - ColumnName: DateMon
@@ -190,6 +194,8 @@ datasets:
               - accountid
               - accountname
               - awsresourcedetails
+              - recommresourceid
+              - recommresourcearn
               - exclusionstatus
               - regioncode
               - resourcestatus
@@ -1375,14 +1381,16 @@ views:
          , accountid
          , accountname
          , regexp_replace(regexp_replace(regexp_replace(awsresourcedetails, ',\s*', concat(',', chr(10))), '\s*[{}]\s*', ''), '":"', '": "') awsresourcedetails
+         , recommresourceid
+         , recommresourcearn
          , exclusionstatus
          , regioncode
          , resourcestatus
          , payer_id
          , year
          , month
-         , ROW_NUMBER() OVER (PARTITION BY recommendationarn, awsresourcedetails, year, month ORDER BY lastupdatedat DESC) row_num
-         , MAX(lastupdatedat) OVER (PARTITION BY recommendationarn, awsresourcedetails) max_lastupdatedat
+         , ROW_NUMBER() OVER (PARTITION BY recommendationarn, recommresourceid, year, month ORDER BY lastupdatedat DESC) row_num
+         , MAX(lastupdatedat) OVER (PARTITION BY recommendationarn, recommresourceid) max_lastupdatedat
          FROM
            "${data_collection_database_name}"."trusted_advisor_priority_data"
           WHERE (date_parse(concat(year, '-', LPAD(month, 2, '0'), '-01'), '%Y-%m-%d') >= date_add('month', -3, current_date))
@@ -1402,6 +1410,8 @@ views:
       , accountid
       , accountname
       , awsresourcedetails
+      , recommresourceid
+      , recommresourcearn
       , exclusionstatus
       , regioncode
       , resourcestatus
