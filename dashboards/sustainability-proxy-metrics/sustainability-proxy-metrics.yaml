@@ -5140,6 +5140,7 @@ views:
         data_exports_database_name:
           type: athena
           query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'carbon'
+          error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
           default: cid_data_export
           description: Database of cid data exports
           global: True
