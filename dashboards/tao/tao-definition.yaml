@@ -299,7 +299,7 @@ CalculatedFields:
   Expression: parseDate({workload started date})
   Name: Workload Started Date
 - DataSetIdentifier: ta_priority_org_view
-  Expression: parseDate(concat(year,'-',month,'-01'), 'yyyy-MM-dd')
+  Expression: parseDate(concat(year,'-',month,'-01 00:00:01'), 'yyyy-MM-dd HH:mm:ss')
   Name: DateMonth
 - DataSetIdentifier: ta_priority_org_view
   Expression: lastupdatedat
@@ -16514,6 +16514,11 @@ Sheets:
               Field:
                 Direction: DESC
                 FieldId: ce979b5f-4ca1-43cb-9c3c-f483261328c3.3.1750244290575
+          - FieldId: cf6658c7-ae80-4dee-87d9-0fadb43235f4.4.1757162532998
+            SortBy:
+              Field:
+                Direction: ASC
+                FieldId: cf6658c7-ae80-4dee-87d9-0fadb43235f4.4.1757162532998
         TableOptions:
           CellStyle:
             Height: 25
@@ -16608,6 +16613,11 @@ Sheets:
               Field:
                 Direction: DESC
                 FieldId: ce979b5f-4ca1-43cb-9c3c-f483261328c3.3.1750244290575
+          - FieldId: cf6658c7-ae80-4dee-87d9-0fadb43235f4.2.1757162568811
+            SortBy:
+              Field:
+                Direction: ASC
+                FieldId: cf6658c7-ae80-4dee-87d9-0fadb43235f4.2.1757162568811
         TableOptions:
           CellStyle:
             Height: 25
