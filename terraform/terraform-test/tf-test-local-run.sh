@@ -97,6 +97,16 @@ fi
 
 echo "Found QuickSight user: $quicksight_user"
 
+# Debug region consistency
+echo ""
+echo "=== Region Debug Info ==="
+echo "Current AWS CLI region: $(aws configure get region)"
+echo "AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-not set}"
+echo "AWS_REGION: ${AWS_REGION:-not set}"
+echo "S3_REGION: $S3_REGION"
+echo "Account ID: $(aws sts get-caller-identity --query Account --output text)"
+echo ""
+
 # Always regenerate terraform.tfvars to ensure it matches current configuration
 TFVARS_FILE="$PROJECT_ROOT/terraform/cicd-deployment/terraform.tfvars"
 if [ -f "$TFVARS_FILE" ]; then
@@ -129,69 +139,19 @@ global_values = {
   environment            = \"dev\"
 }
 
-# Data Exports Destination Configuration
-cid_dataexports_destination = {
-  resource_prefix  = \"${RESOURCE_PREFIX}\"
-  manage_cur2      = \"yes\"
-  manage_focus     = \"no\"
-  manage_coh       = \"no\"
-  enable_scad      = \"yes\"
-  role_path        = \"/\"
-  time_granularity = \"HOURLY\"
-}
-
-# Data Exports Source Configuration
-cid_dataexports_source = {
-  source_resource_prefix  = \"${RESOURCE_PREFIX}\"
-  source_manage_cur2      = \"yes\"
-  source_manage_focus     = \"no\"
-  source_manage_coh       = \"no\"
-  source_enable_scad      = \"yes\"
-  source_role_path        = \"/\"
-  source_time_granularity = \"HOURLY\"
-}
-
 # Dashboard Configuration - Extracted from variables.tf
 dashboards = {
   # Foundational Dashboards
   cudos_v5                    = \"${CUDOS_V5}\"   # CUDOS v5 Dashboard
-  cost_intelligence_dashboard = \"${COST_INTEL}\"   # Cost Intelligence Dashboard  
-  kpi_dashboard              = \"${KPI_DASH}\"   # KPI Dashboard
+  cost_intelligence_dashboard = \"${COST_INTEL}\" # Cost Intelligence Dashboard  
+  kpi_dashboard               = \"${KPI_DASH}\"   # KPI Dashboard
   
   # Additional Dashboards
-  trends_dashboard           = \"${TRENDS_DASH}\"   # Trends Dashboard
+  trends_dashboard           = \"${TRENDS_DASH}\"     # Trends Dashboard
   datatransfer_dashboard     = \"${DATATRANS_DASH}\"  # Data Transfer Cost Analysis Dashboard
-  marketplace_dashboard      = \"${MARKET_DASH}\"  # AWS Marketplace Dashboard
-  connect_dashboard          = \"${CONNECT_DASH}\"  # Amazon Connect Cost Insight Dashboard
-  scad_containers_dashboard  = \"${SCAD_DASH}\"  # SCAD Containers Cost Allocation Dashboard
-}
-
-# Dashboard Configuration (technical parameters)
-cloud_intelligence_dashboards = {
-  prerequisites_quicksight             = \"yes\"
-  prerequisites_quicksight_permissions = \"yes\"
-  lake_formation_enabled               = \"no\"
-  cur_version                          = \"2.0\"
-  optimization_data_collection_bucket_path = \"s3://${RESOURCE_PREFIX}-${ACCOUNT_ID}-optimization/\"
-  primary_tag_name                     = \"owner\"
-  secondary_tag_name                   = \"environment\"
-  athena_workgroup                     = \"\"
-  athena_query_results_bucket          = \"\"
-  database_name                        = \"\"
-  glue_data_catalog                    = \"AwsDataCatalog\"
-  suffix                               = \"\"
-  quicksight_data_source_role_name     = \"CidQuickSightDataSourceRole\"
-  quicksight_data_set_refresh_schedule = \"\"
-  lambda_layer_bucket_prefix           = \"${LOCAL_ASSETS_BUCKET_PREFIX}\"
-  deploy_cudos_dashboard               = \"no\"
-  data_buckets_kms_keys_arns           = \"\"
-  deployment_type                      = \"Terraform\"
-  share_dashboard                      = \"yes\"
-  keep_legacy_cur_table                = \"no\"
-  cur_bucket_path                      = \"s3://${RESOURCE_PREFIX}-${ACCOUNT_ID}-shared/cur/\"
-  cur_table_name                       = \"\"
-  permissions_boundary                 = \"\"
-  role_path                            = \"/\"
+  marketplace_dashboard      = \"${MARKET_DASH}\"     # AWS Marketplace Dashboard
+  connect_dashboard          = \"${CONNECT_DASH}\"    # Amazon Connect Cost Insight Dashboard
+  scad_containers_dashboard  = \"${SCAD_DASH}\"       # SCAD Containers Cost Allocation Dashboard
 }
 " | tee $PROJECT_ROOT/terraform/cicd-deployment/terraform.tfvars
 

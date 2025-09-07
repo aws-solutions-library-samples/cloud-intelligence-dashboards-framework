@@ -72,12 +72,12 @@ jobs:
           dashboards = {
             cudos_v5                    = "$CUDOS_V5"
             cost_intelligence_dashboard = "$COST_INTEL"
-            kpi_dashboard              = "$KPI_DASH"
-            trends_dashboard           = "$TRENDS_DASH"
-            datatransfer_dashboard     = "$DATATRANS_DASH"
-            marketplace_dashboard      = "$MARKET_DASH"
-            connect_dashboard          = "$CONNECT_DASH"
-            scad_containers_dashboard  = "$SCAD_DASH"
+            kpi_dashboard               = "$KPI_DASH"
+            trends_dashboard            = "$TRENDS_DASH"
+            datatransfer_dashboard      = "$DATATRANS_DASH"
+            marketplace_dashboard       = "$MARKET_DASH"
+            connect_dashboard           = "$CONNECT_DASH"
+            scad_containers_dashboard   = "$SCAD_DASH"
           }
           EOF
 
@@ -246,12 +246,12 @@ jobs:
           dashboards = {
             cudos_v5                    = "$CUDOS_V5"
             cost_intelligence_dashboard = "$COST_INTEL"
-            kpi_dashboard              = "$KPI_DASH"
-            trends_dashboard           = "$TRENDS_DASH"
-            datatransfer_dashboard     = "$DATATRANS_DASH"
-            marketplace_dashboard      = "$MARKET_DASH"
-            connect_dashboard          = "$CONNECT_DASH"
-            scad_containers_dashboard  = "$SCAD_DASH"
+            kpi_dashboard               = "$KPI_DASH"
+            trends_dashboard            = "$TRENDS_DASH"
+            datatransfer_dashboard      = "$DATATRANS_DASH"
+            marketplace_dashboard       = "$MARKET_DASH"
+            connect_dashboard           = "$CONNECT_DASH"
+            scad_containers_dashboard   = "$SCAD_DASH"
           }
           EOF
       

@@ -79,8 +79,8 @@ echo "- scad_containers_dashboard: $deploy_scad_containers_dashboard"
 
 cd "$PROJECT_ROOT"
 
-# Set database name - prioritize cid_cur as it's where views are typically found
-export database_name="${DATABASE_NAME:-cid_cur}"
+# Set database name - use environment variable or default to cid_data_export
+export database_name="${DATABASE_NAME:-cid_data_export}"
 echo "Using database name: $database_name"
 
 # Check if any dashboards are enabled

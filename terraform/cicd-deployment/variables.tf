@@ -167,7 +167,7 @@ variable "cloud_intelligence_dashboards" {
     cur_version = "2.0"
 
     # Optimization Parameters
-    optimization_data_collection_bucket_path = "s3://cid-data-optimization/"
+    optimization_data_collection_bucket_path = "s3://cid-data-{account_id}"
     primary_tag_name                         = "owner"
     secondary_tag_name                       = "environment"
 
@@ -187,7 +187,7 @@ variable "cloud_intelligence_dashboards" {
 
     # Legacy Parameters
     keep_legacy_cur_table = "no"
-    cur_bucket_path       = "s3://cid-data-shared/cur/"
+    cur_bucket_path       = "s3://cid-{account_id}-shared/cur/"
     cur_table_name        = ""
     permissions_boundary  = ""
     role_path             = "/"
@@ -262,16 +262,16 @@ variable "dashboards" {
 
   default = {
     # Foundational Dashboards (at least one must be yes for additional dashboards)
-    cudos_v5                    = "no" # CUDOS v5 Dashboard
+    cudos_v5                    = "yes"  # CUDOS v5 Dashboard
     cost_intelligence_dashboard = "yes" # Cost Intelligence Dashboard  
-    kpi_dashboard               = "no" # KPI Dashboard
+    kpi_dashboard               = "yes"  # KPI Dashboard
 
     # Additional Dashboards (require at least one foundational dashboard)
-    trends_dashboard          = "no" # Trends Dashboard
-    datatransfer_dashboard    = "no"  # Data Transfer Cost Analysis Dashboard
-    marketplace_dashboard     = "no"  # AWS Marketplace Dashboard
+    trends_dashboard          = "yes"  # Trends Dashboard
+    datatransfer_dashboard    = "yes"  # Data Transfer Cost Analysis Dashboard
+    marketplace_dashboard     = "yes"  # AWS Marketplace Dashboard
     connect_dashboard         = "yes" # Amazon Connect Cost Insight Dashboard
-    scad_containers_dashboard = "no"  # SCAD Containers Cost Allocation Dashboard
+    scad_containers_dashboard = "yes"  # SCAD Containers Cost Allocation Dashboard
   }
 
   validation {

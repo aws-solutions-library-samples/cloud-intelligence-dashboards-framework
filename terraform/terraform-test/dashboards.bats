@@ -4,13 +4,13 @@ account_id=$(aws sts get-caller-identity --query "Account" --output text)
 # Only check the two most likely databases based on CID deployment patterns
 # Deduplicate in case both values are the same
 db1="cid_cur"
-db2="${database_name:-cid_tf_data_export}"
+db2="${database_name:-cid_data_export}"
 if [ "$db1" = "$db2" ]; then
   possible_databases=("$db1")
 else
   possible_databases=("$db1" "$db2")
 fi
-database_name="${possible_databases[0]}"
+database_name="${database_name:-cid_data_export}"
 tmp_dir="/tmp/cudos_test"
 log_file="$tmp_dir/test_output.log"
 
