@@ -83,14 +83,14 @@ resource "aws_cloudformation_stack" "cloud_intelligence_dashboards" {
 
     # CUR Parameters
     CURVersion                      = var.cloud_intelligence_dashboards.cur_version
-    DeployCUDOSv5                   = var.cloud_intelligence_dashboards.deploy_cudos_v5
-    DeployCostIntelligenceDashboard = var.cloud_intelligence_dashboards.deploy_cost_intelligence_dashboard
-    DeployKPIDashboard              = var.cloud_intelligence_dashboards.deploy_kpi_dashboard
+    DeployCUDOSv5                   = local.all_dashboards.foundational.cudos_v5
+    DeployCostIntelligenceDashboard = local.all_dashboards.foundational.cost_intelligence_dashboard
+    DeployKPIDashboard              = local.all_dashboards.foundational.kpi_dashboard
 
     # Optimization Parameters
     OptimizationDataCollectionBucketPath = var.cloud_intelligence_dashboards.optimization_data_collection_bucket_path
-    DeployTAODashboard                   = var.cloud_intelligence_dashboards.deploy_tao_dashboard
-    DeployComputeOptimizerDashboard      = var.cloud_intelligence_dashboards.deploy_compute_optimizer_dashboard
+    DeployTAODashboard                   = "no" # Not yet supported in Terraform
+    DeployComputeOptimizerDashboard      = "no" # Not yet supported in Terraform
     PrimaryTagName                       = var.cloud_intelligence_dashboards.primary_tag_name
     SecondaryTagName                     = var.cloud_intelligence_dashboards.secondary_tag_name
 
@@ -128,5 +128,33 @@ resource "aws_cloudformation_stack" "cloud_intelligence_dashboards" {
       # Ignore changes to tags
       tags
     ]
+  }
+}
+
+# Additional Dashboards Resource
+# Only deploy if foundational dashboards are enabled
+resource "aws_cloudformation_stack" "additional_dashboards" {
+  for_each = local.deploy_additional ? local.enabled_additional_dashboards : {}
+
+  # checkov:skip=CKV_AWS_124:SNS topic not required for this use case
+  name         = each.value.stack_name
+  provider     = aws.destination_account
+  template_url = local.template_urls.plugin
+  capabilities = local.common_capabilities
+
+  parameters = each.value.parameters
+
+  depends_on = [
+    aws_cloudformation_stack.cloud_intelligence_dashboards
+  ]
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }

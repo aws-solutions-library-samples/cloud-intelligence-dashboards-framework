@@ -1,9 +1,35 @@
 #!/bin/bats
 
 account_id=$(aws sts get-caller-identity --query "Account" --output text)
-database_name="cid_cur" # If variable not set or null, use default
+# Only check the two most likely databases based on CID deployment patterns
+# Deduplicate in case both values are the same
+db1="cid_cur"
+db2="${database_name:-cid_tf_data_export}"
+if [ "$db1" = "$db2" ]; then
+  possible_databases=("$db1")
+else
+  possible_databases=("$db1" "$db2")
+fi
+database_name="${possible_databases[0]}"
 tmp_dir="/tmp/cudos_test"
 log_file="$tmp_dir/test_output.log"
+
+# Helper function to test if a view exists in any of the possible databases
+test_view_in_databases() {
+  local view_name="$1"
+  for db in "${possible_databases[@]}"; do
+    run aws athena get-table-metadata \
+      --catalog-name 'AwsDataCatalog' \
+      --database-name "$db" \
+      --table-name "$view_name" 2>/dev/null
+    if [ "$status" -eq 0 ]; then
+      echo "✓ $view_name found in database: $db" | tee -a "$log_file"
+      return 0
+    fi
+  done
+  echo "✗ $view_name not found in any database" | tee -a "$log_file"
+  return 1
+}
 
 setup_file() {
   # Create temp directory for sharing data between tests
@@ -21,7 +47,7 @@ setup_file() {
     echo "Enabled dashboard: deploy_cudos_v5 -> cudos-v5" | tee -a "$log_file"
   fi
   
-  # Check for other dashboards with underscores
+  # Check for other foundational dashboards with underscores
   for dashboard in cost_intelligence_dashboard kpi_dashboard; do
     var_name="deploy_${dashboard}"
     if [ "${!var_name:-no}" = "yes" ]; then
@@ -30,10 +56,36 @@ setup_file() {
     fi
   done
   
-  # If no dashboards are enabled, use default
+  # Check additional dashboards
+  if [ "${deploy_trends_dashboard:-no}" = "yes" ]; then
+    echo "trends-dashboard" >> "$tmp_dir/dashboard_ids"
+    echo "Enabled dashboard: deploy_trends_dashboard -> trends-dashboard" | tee -a "$log_file"
+  fi
+  
+  if [ "${deploy_datatransfer_dashboard:-no}" = "yes" ]; then
+    echo "datatransfer-cost-analysis-dashboard" >> "$tmp_dir/dashboard_ids"
+    echo "Enabled dashboard: deploy_datatransfer_dashboard -> datatransfer-cost-analysis-dashboard" | tee -a "$log_file"
+  fi
+  
+  if [ "${deploy_marketplace_dashboard:-no}" = "yes" ]; then
+    echo "aws-marketplace" >> "$tmp_dir/dashboard_ids"
+    echo "Enabled dashboard: deploy_marketplace_dashboard -> aws-marketplace" | tee -a "$log_file"
+  fi
+  
+  if [ "${deploy_connect_dashboard:-no}" = "yes" ]; then
+    echo "amazon-connect-cost-insight-dashboard" >> "$tmp_dir/dashboard_ids"
+    echo "Enabled dashboard: deploy_connect_dashboard -> amazon-connect-cost-insight-dashboard" | tee -a "$log_file"
+  fi
+  
+  if [ "${deploy_scad_containers_dashboard:-no}" = "yes" ]; then
+    echo "scad-containers-cost-allocation" >> "$tmp_dir/dashboard_ids"
+    echo "Enabled dashboard: deploy_scad_containers_dashboard -> scad-containers-cost-allocation" | tee -a "$log_file"
+  fi
+  
+  # If no dashboards are enabled, create empty marker
   if [ ! -s "$tmp_dir/dashboard_ids" ]; then
-    echo "cudos-v5" > "$tmp_dir/dashboard_ids"
-    echo "No dashboards specified, using default: cudos-v5" | tee -a "$log_file"
+    touch "$tmp_dir/no_dashboards"
+    echo "No dashboards enabled, skipping dashboard tests" | tee -a "$log_file"
   fi
 }
 
@@ -86,7 +138,7 @@ teardown_file() {
   dataset_count=$(wc -l < "$tmp_dir/dataset_ids")
   [ "$dataset_count" -gt 0 ] || skip "No datasets found in dashboards"
   
-  echo "Found dataset IDs: $(cat "$tmp_dir/dataset_ids" | tr '\n' ' ')" | tee -a "$log_file"
+  echo "Found dataset IDs: $(cat "$tmp_dir/dataset_ids" | tr '\n' ' ')" >> "$log_file"
   
   # List datasources and find one with "cost" in the name
   run aws quicksight list-data-sources --aws-account-id $account_id
@@ -115,57 +167,33 @@ teardown_file() {
   [ -f "$tmp_dir/dataset_ids" ] || skip "Dashboard test didn't run or failed"
   
   # Check each dataset
+  dataset_success=0
+  dataset_total=0
+  
   while read -r dataset_id; do
     [ -n "$dataset_id" ] || continue
+    dataset_total=$((dataset_total + 1))
     
-    echo "Checking dataset: $dataset_id" | tee -a "$log_file"
+    echo "Checking dataset: $dataset_id" >> "$log_file"
     run aws quicksight describe-data-set \
       --aws-account-id $account_id \
       --data-set-id $dataset_id
 
-    if [ "$status" -ne 0 ]; then
-      echo "Failed to describe dataset $dataset_id: $output" | tee -a "$log_file"
-      continue
-    fi
-
-    # Only process if we got valid output
-    if echo "$output" | jq . >/dev/null 2>&1; then
-      echo "$output" > "$tmp_dir/dataset_${dataset_id}.json"
-      # ... rest of processing
+    if [ "$status" -eq 0 ]; then
+      echo "✓ Dataset $dataset_id exists and is accessible" >> "$log_file"
+      dataset_success=$((dataset_success + 1))
+      
+      # Save output for inspection
+      if echo "$output" | jq . >/dev/null 2>&1; then
+        echo "$output" > "$tmp_dir/dataset_${dataset_id}.json"
+      fi
     else
-      echo "Invalid JSON response for dataset $dataset_id" | tee -a "$log_file"
+      echo "✗ Failed to describe dataset $dataset_id" >> "$log_file"
     fi
 
-    
-    # Extract physical table names from dataset and save for view tests
-    if echo "$output" | jq . >/dev/null 2>&1; then
-      echo "$output" | jq -r '.DataSet.PhysicalTableMap | .[] | 
-        if .CustomSql then .CustomSql.DataSourceArn 
-        elif .RelationalTable then .RelationalTable.DataSourceArn 
-        else empty end' 2>/dev/null | grep -v "null" | sort -u | while read -r arn; do
-        # Extract table name from ARN if it's an Athena source
-        if [[ "$arn" == *"athena"* ]]; then
-          # Get the dataset SQL to find view names
-          sql=$(echo "$output" | jq -r '.DataSet.PhysicalTableMap | .[] | 
-            if .CustomSql then .CustomSql.SqlQuery else empty end' 2>/dev/null | grep -v "null")
-          
-          # Extract table/view names from SQL using regex
-          echo "$sql" | grep -o -E 'FROM\s+[a-zA-Z0-9_]+\.' | sed 's/FROM\s\+//g' | sed 's/\.//g' | sort -u >> "$tmp_dir/view_names" 2>/dev/null || true
-          echo "$sql" | grep -o -E 'JOIN\s+[a-zA-Z0-9_]+\.' | sed 's/JOIN\s\+//g' | sed 's/\.//g' | sort -u >> "$tmp_dir/view_names" 2>/dev/null || true
-        fi
-      done
-    fi
   done < "$tmp_dir/dataset_ids"
   
-  # Get unique view names
-  if [ -f "$tmp_dir/view_names" ]; then
-    sort -u "$tmp_dir/view_names" > "$tmp_dir/unique_views"
-    echo "Found views: $(cat "$tmp_dir/unique_views" | tr '\n' ' ')" | tee -a "$log_file"
-  else
-    # If we couldn't extract views from SQL, use some common ones
-    echo -e "summary_view\ns3_view\nec2_running_cost" > "$tmp_dir/unique_views"
-    echo "Using default views for testing" | tee -a "$log_file"
-  fi
+  echo "✓ Dataset validation summary: $dataset_success/$dataset_total datasets accessible" | tee -a "$log_file"
 }
 
 @test "Datasource exists" {
@@ -186,16 +214,14 @@ teardown_file() {
 @test "Views exist" {
   # Initialize success counter
   success_count=0
+  total_views=0
   echo "=== Testing views for enabled dashboards ===" | tee -a "$log_file"
+  echo "Using database: $database_name" | tee -a "$log_file"
   
   # Test common view for all dashboards
   echo "Testing common view: summary_view" | tee -a "$log_file"
-  run aws athena get-table-metadata \
-    --catalog-name 'AwsDataCatalog' \
-    --database-name $database_name \
-    --table-name "summary_view"
-  if [ "$status" -eq 0 ]; then
-    echo "summary_view exists" | tee -a "$log_file"
+  total_views=$((total_views + 1))
+  if test_view_in_databases "summary_view"; then
     success_count=$((success_count + 1))
   fi
   
@@ -203,12 +229,8 @@ teardown_file() {
   if grep -q "cudos-v5" "$tmp_dir/dashboard_ids"; then
     echo "Testing CUDOS views..." | tee -a "$log_file"
     for view in "hourly_view" "resource_view"; do
-      run aws athena get-table-metadata \
-        --catalog-name 'AwsDataCatalog' \
-        --database-name $database_name \
-        --table-name "$view"
-      if [ "$status" -eq 0 ]; then
-        echo "$view exists" | tee -a "$log_file"
+      total_views=$((total_views + 1))
+      if test_view_in_databases "$view"; then
         success_count=$((success_count + 1))
       fi
     done
@@ -218,12 +240,8 @@ teardown_file() {
   if grep -q "cost_intelligence_dashboard" "$tmp_dir/dashboard_ids"; then
     echo "Testing Cost Intelligence views..." | tee -a "$log_file"
     for view in "s3_view" "ec2_running_cost"; do
-      run aws athena get-table-metadata \
-        --catalog-name 'AwsDataCatalog' \
-        --database-name $database_name \
-        --table-name "$view"
-      if [ "$status" -eq 0 ]; then
-        echo "$view exists" | tee -a "$log_file"
+      total_views=$((total_views + 1))
+      if test_view_in_databases "$view"; then
         success_count=$((success_count + 1))
       fi
     done
@@ -233,19 +251,65 @@ teardown_file() {
   if grep -q "kpi_dashboard" "$tmp_dir/dashboard_ids"; then
     echo "Testing KPI views..." | tee -a "$log_file"
     for view in "kpi_s3_storage_all" "kpi_instance_all"; do
-      run aws athena get-table-metadata \
-        --catalog-name 'AwsDataCatalog' \
-        --database-name $database_name \
-        --table-name "$view"
-      if [ "$status" -eq 0 ]; then
-        echo "$view exists" | tee -a "$log_file"
+      total_views=$((total_views + 1))
+      if test_view_in_databases "$view"; then
         success_count=$((success_count + 1))
       fi
     done
   fi
   
+  # Test Additional Dashboard datasets
+  echo "Testing additional dashboard datasets..." | tee -a "$log_file"
+  
+  # Trends Dashboard - daily-anomaly-detection
+  if [ "${deploy_trends_dashboard:-no}" = "yes" ]; then
+    echo "Testing Trends Dashboard dataset: daily-anomaly-detection" | tee -a "$log_file"
+    total_views=$((total_views + 1))
+    if test_view_in_databases "daily_anomaly_detection"; then
+      success_count=$((success_count + 1))
+    fi
+  fi
+  
+  # Data Transfer Dashboard - data_transfer_view
+  if [ "${deploy_datatransfer_dashboard:-no}" = "yes" ]; then
+    echo "Testing Data Transfer Dashboard dataset: data_transfer_view" | tee -a "$log_file"
+    total_views=$((total_views + 1))
+    if test_view_in_databases "data_transfer_view"; then
+      success_count=$((success_count + 1))
+    fi
+  fi
+  
+  # Marketplace Dashboard - marketplace_view
+  if [ "${deploy_marketplace_dashboard:-no}" = "yes" ]; then
+    echo "Testing Marketplace Dashboard dataset: marketplace_view" | tee -a "$log_file"
+    total_views=$((total_views + 1))
+    if test_view_in_databases "marketplace_view"; then
+      success_count=$((success_count + 1))
+    fi
+  fi
+  
+  # Connect Dashboard - resource_connect_view
+  if [ "${deploy_connect_dashboard:-no}" = "yes" ]; then
+    echo "Testing Connect Dashboard dataset: resource_connect_view" | tee -a "$log_file"
+    total_views=$((total_views + 1))
+    if test_view_in_databases "resource_connect_view"; then
+      success_count=$((success_count + 1))
+    fi
+  fi
+  
+  # SCAD Containers Dashboard - scad_cca_summary_view
+  if [ "${deploy_scad_containers_dashboard:-no}" = "yes" ]; then
+    echo "Testing SCAD Containers Dashboard dataset: scad_cca_summary_view" | tee -a "$log_file"
+    total_views=$((total_views + 1))
+    if test_view_in_databases "scad_cca_summary_view"; then
+      success_count=$((success_count + 1))
+    fi
+  fi
+  
   echo "=== View testing complete ===" | tee -a "$log_file"
+  echo "Searched databases: ${possible_databases[*]}" | tee -a "$log_file"
+  echo "View validation summary: $success_count/$total_views views found" | tee -a "$log_file"
   
   # Test passes if at least one view exists
-  [ $success_count -gt 0 ] || skip "No views were found"
+  [ $success_count -gt 0 ]
 }

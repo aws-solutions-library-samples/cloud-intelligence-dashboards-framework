@@ -81,7 +81,7 @@ variable "cid_dataexports_source" {
 
   default = {
     source_resource_prefix  = "cid"
-    source_manage_cur2      = "yes" #
+    source_manage_cur2      = "yes"
     source_manage_focus     = "no"
     source_manage_coh       = "no"
     source_enable_scad      = "yes"
@@ -128,15 +128,10 @@ variable "cloud_intelligence_dashboards" {
     lake_formation_enabled               = string
 
     # CUR Parameters
-    cur_version                        = string
-    deploy_cudos_v5                    = string
-    deploy_cost_intelligence_dashboard = string
-    deploy_kpi_dashboard               = string
+    cur_version = string
 
     # Optimization Parameters
     optimization_data_collection_bucket_path = string
-    deploy_tao_dashboard                     = string
-    deploy_compute_optimizer_dashboard       = string
     primary_tag_name                         = string
     secondary_tag_name                       = string
 
@@ -166,19 +161,13 @@ variable "cloud_intelligence_dashboards" {
     # Prerequisites Variables
     prerequisites_quicksight             = "yes"
     prerequisites_quicksight_permissions = "yes"
-    quicksight_user                      = null
     lake_formation_enabled               = "no"
 
     # CUR Parameters
-    cur_version                        = "2.0"
-    deploy_cudos_v5                    = "yes"
-    deploy_cost_intelligence_dashboard = "yes"
-    deploy_kpi_dashboard               = "yes"
+    cur_version = "2.0"
 
     # Optimization Parameters
-    optimization_data_collection_bucket_path = "s3://cid-data-{account_id}"
-    deploy_tao_dashboard                     = "no"
-    deploy_compute_optimizer_dashboard       = "no"
+    optimization_data_collection_bucket_path = "s3://cid-data-optimization/"
     primary_tag_name                         = "owner"
     secondary_tag_name                       = "environment"
 
@@ -198,7 +187,7 @@ variable "cloud_intelligence_dashboards" {
 
     # Legacy Parameters
     keep_legacy_cur_table = "no"
-    cur_bucket_path       = "s3://cid-{account_id}-shared/cur/"
+    cur_bucket_path       = "s3://cid-data-shared/cur/"
     cur_table_name        = ""
     permissions_boundary  = ""
     role_path             = "/"
@@ -263,6 +252,48 @@ variable "global_values" {
   validation {
     condition     = contains(["dev", "staging", "prod"], var.global_values.environment)
     error_message = "Environment must be one of: dev, staging, prod"
+  }
+}
+
+# Dashboard Configuration Map
+variable "dashboards" {
+  description = "Configuration for all available dashboards - set to yes/no to enable/disable each dashboard"
+  type        = map(string)
+
+  default = {
+    # Foundational Dashboards (at least one must be yes for additional dashboards)
+    cudos_v5                    = "no" # CUDOS v5 Dashboard
+    cost_intelligence_dashboard = "yes" # Cost Intelligence Dashboard  
+    kpi_dashboard               = "no" # KPI Dashboard
+
+    # Additional Dashboards (require at least one foundational dashboard)
+    trends_dashboard          = "no" # Trends Dashboard
+    datatransfer_dashboard    = "no"  # Data Transfer Cost Analysis Dashboard
+    marketplace_dashboard     = "no"  # AWS Marketplace Dashboard
+    connect_dashboard         = "yes" # Amazon Connect Cost Insight Dashboard
+    scad_containers_dashboard = "no"  # SCAD Containers Cost Allocation Dashboard
+  }
+
+  validation {
+    condition = (
+      var.dashboards.trends_dashboard != "yes" &&
+      var.dashboards.datatransfer_dashboard != "yes" &&
+      var.dashboards.marketplace_dashboard != "yes" &&
+      var.dashboards.connect_dashboard != "yes" &&
+      var.dashboards.scad_containers_dashboard != "yes"
+      ) || (
+      var.dashboards.cudos_v5 == "yes" ||
+      var.dashboards.cost_intelligence_dashboard == "yes" ||
+      var.dashboards.kpi_dashboard == "yes"
+    )
+    error_message = "At least one foundational dashboard (cudos_v5, cost_intelligence_dashboard, or kpi_dashboard) must be enabled when deploying additional dashboards."
+  }
+
+  validation {
+    condition = alltrue([
+      for k, v in var.dashboards : contains(["yes", "no"], v)
+    ])
+    error_message = "All dashboard values must be either 'yes' or 'no'."
   }
 }
 

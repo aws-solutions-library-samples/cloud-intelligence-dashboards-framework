@@ -47,6 +47,17 @@ jobs:
 
       - name: Create terraform.tfvars file
         run: |
+          # Extract dashboard values from variables.tf
+          VARS_FILE="./terraform/cicd-deployment/variables.tf"
+          CUDOS_V5=$(awk '/variable "dashboards"/,/^}/ { if (/cudos_v5.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          COST_INTEL=$(awk '/variable "dashboards"/,/^}/ { if (/cost_intelligence_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          KPI_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/kpi_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          TRENDS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/trends_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          DATATRANS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/datatransfer_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          MARKET_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/marketplace_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          CONNECT_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/connect_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          SCAD_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/scad_containers_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          
           cat > ./terraform/cicd-deployment/terraform.tfvars << EOF
           global_values = {
             destination_account_id = "${{ secrets.AWS_ACCOUNT_ID }}"
@@ -56,6 +67,17 @@ jobs:
             cid_cfn_version        = "${{ steps.versions.outputs.cid_cfn_version }}"
             data_export_version    = "${{ steps.versions.outputs.data_export_version }}"
             environment            = "dev"
+          }
+          
+          dashboards = {
+            cudos_v5                    = "$CUDOS_V5"
+            cost_intelligence_dashboard = "$COST_INTEL"
+            kpi_dashboard              = "$KPI_DASH"
+            trends_dashboard           = "$TRENDS_DASH"
+            datatransfer_dashboard     = "$DATATRANS_DASH"
+            marketplace_dashboard      = "$MARKET_DASH"
+            connect_dashboard          = "$CONNECT_DASH"
+            scad_containers_dashboard  = "$SCAD_DASH"
           }
           EOF
 
@@ -199,6 +221,17 @@ jobs:
 
       - name: Create terraform.tfvars file
         run: |
+          # Extract dashboard values from variables.tf
+          VARS_FILE="./terraform/cicd-deployment/variables.tf"
+          CUDOS_V5=$(awk '/variable "dashboards"/,/^}/ { if (/cudos_v5.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          COST_INTEL=$(awk '/variable "dashboards"/,/^}/ { if (/cost_intelligence_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          KPI_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/kpi_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          TRENDS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/trends_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          DATATRANS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/datatransfer_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          MARKET_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/marketplace_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          CONNECT_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/connect_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          SCAD_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/scad_containers_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+          
           cat > ./terraform/cicd-deployment/terraform.tfvars << EOF
           global_values = {
             destination_account_id = "${{ secrets.AWS_ACCOUNT_ID }}"
@@ -208,6 +241,17 @@ jobs:
             cid_cfn_version        = "${{ steps.versions.outputs.cid_cfn_version }}"
             data_export_version    = "${{ steps.versions.outputs.data_export_version }}"
             environment            = "dev"
+          }
+          
+          dashboards = {
+            cudos_v5                    = "$CUDOS_V5"
+            cost_intelligence_dashboard = "$COST_INTEL"
+            kpi_dashboard              = "$KPI_DASH"
+            trends_dashboard           = "$TRENDS_DASH"
+            datatransfer_dashboard     = "$DATATRANS_DASH"
+            marketplace_dashboard      = "$MARKET_DASH"
+            connect_dashboard          = "$CONNECT_DASH"
+            scad_containers_dashboard  = "$SCAD_DASH"
           }
           EOF
       

@@ -24,7 +24,13 @@ export LOCAL_ASSETS_BUCKET_PREFIX="${LOCAL_ASSETS_BUCKET_PREFIX:-cid-${ACCOUNT_I
 export LAYER_PREFIX="${LAYER_PREFIX:-cid-resource-lambda-layer}"
 export TEMPLATE_PREFIX="${TEMPLATE_PREFIX:-cid-testing/templates}"
 export FULL_BUCKET_NAME="$LOCAL_ASSETS_BUCKET_PREFIX-$S3_REGION"
-export CID_VERSION=$(python3 -c "from cid import _version;print(_version.__version__)")
+# Detect CID version with fallback
+if ! CID_VERSION=$(python3 -c "from cid import _version;print(_version.__version__)" 2>/dev/null); then
+    echo "Warning: Could not detect CID version, using default"
+    CID_VERSION="4.3.1"
+fi
+export CID_VERSION
+echo "Using CID version: $CID_VERSION"
 
 
 # Function to ensure S3 bucket exists, create if not
@@ -70,28 +76,46 @@ echo "- Local Assets Bucket: $FULL_BUCKET_NAME"
 echo "- Layer Prefix: $LAYER_PREFIX"
 echo "- Template Prefix: $TEMPLATE_PREFIX"
 
-# Debug region consistency
-echo ""
-echo "=== Region Debug Info ==="
-echo "Current AWS CLI region: $(aws configure get region)"
-echo "AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-not set}"
-echo "AWS_REGION: ${AWS_REGION:-not set}"
-echo "S3_REGION: $S3_REGION"
-echo "Account ID: $(aws sts get-caller-identity --query Account --output text)"
 
-
-export quicksight_user=$(aws quicksight list-users \
+# Detect QuickSight user with better error handling
+echo "Detecting QuickSight user..."
+if ! quicksight_user=$(aws quicksight list-users \
         --aws-account-id $ACCOUNT_ID \
         --region $S3_REGION \
         --namespace default \
         --query "UserList[0].UserName" \
-        --output text
-)
-
-if [ -z "$quicksight_user" ]; then
-    echo "Cannot find QS user in ${ACCOUNT_ID} $S3_REGION"
+        --output text 2>/dev/null); then
+    echo "Error: Failed to list QuickSight users. Ensure QuickSight is enabled in region $S3_REGION"
     exit 1
 fi
+
+if [ -z "$quicksight_user" ] || [ "$quicksight_user" = "None" ]; then
+    echo "Error: No QuickSight users found in account ${ACCOUNT_ID} region $S3_REGION"
+    echo "Please ensure QuickSight is set up and has at least one user"
+    exit 1
+fi
+
+echo "Found QuickSight user: $quicksight_user"
+
+# Always regenerate terraform.tfvars to ensure it matches current configuration
+TFVARS_FILE="$PROJECT_ROOT/terraform/cicd-deployment/terraform.tfvars"
+if [ -f "$TFVARS_FILE" ]; then
+  echo "Removing existing terraform.tfvars to regenerate with current settings..."
+  rm -f "$TFVARS_FILE"
+fi
+
+echo "Generating terraform.tfvars..."
+
+# Extract dashboard values from variables.tf
+VARS_FILE="$PROJECT_ROOT/terraform/cicd-deployment/variables.tf"
+CUDOS_V5=$(awk '/variable "dashboards"/,/^}/ { if (/cudos_v5.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+COST_INTEL=$(awk '/variable "dashboards"/,/^}/ { if (/cost_intelligence_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+KPI_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/kpi_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+TRENDS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/trends_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+DATATRANS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/datatransfer_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+MARKET_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/marketplace_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+CONNECT_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/connect_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+SCAD_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/scad_containers_dashboard.*=/) { gsub(/.*= *"|".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
 
 echo "
 # Configuration for one account deployment (not recommended for production)
@@ -100,9 +124,74 @@ global_values = {
   source_account_ids     = \"${ACCOUNT_ID}\"        # Same account ID for local testing
   aws_region             = \"${S3_REGION}\"         # Your preferred region
   quicksight_user        = \"${quicksight_user}\"   # Your QuickSight username
-  cid_cfn_version        = \"${CID_VERSION}\"       # CID CloudFormation version # Will it be local that is used?
+  cid_cfn_version        = \"${CID_VERSION}\"       # CID CloudFormation version
   data_export_version    = \"0.5.0\"                # Data Export version
   environment            = \"dev\"
+}
+
+# Data Exports Destination Configuration
+cid_dataexports_destination = {
+  resource_prefix  = \"${RESOURCE_PREFIX}\"
+  manage_cur2      = \"yes\"
+  manage_focus     = \"no\"
+  manage_coh       = \"no\"
+  enable_scad      = \"yes\"
+  role_path        = \"/\"
+  time_granularity = \"HOURLY\"
+}
+
+# Data Exports Source Configuration
+cid_dataexports_source = {
+  source_resource_prefix  = \"${RESOURCE_PREFIX}\"
+  source_manage_cur2      = \"yes\"
+  source_manage_focus     = \"no\"
+  source_manage_coh       = \"no\"
+  source_enable_scad      = \"yes\"
+  source_role_path        = \"/\"
+  source_time_granularity = \"HOURLY\"
+}
+
+# Dashboard Configuration - Extracted from variables.tf
+dashboards = {
+  # Foundational Dashboards
+  cudos_v5                    = \"${CUDOS_V5}\"   # CUDOS v5 Dashboard
+  cost_intelligence_dashboard = \"${COST_INTEL}\"   # Cost Intelligence Dashboard  
+  kpi_dashboard              = \"${KPI_DASH}\"   # KPI Dashboard
+  
+  # Additional Dashboards
+  trends_dashboard           = \"${TRENDS_DASH}\"   # Trends Dashboard
+  datatransfer_dashboard     = \"${DATATRANS_DASH}\"  # Data Transfer Cost Analysis Dashboard
+  marketplace_dashboard      = \"${MARKET_DASH}\"  # AWS Marketplace Dashboard
+  connect_dashboard          = \"${CONNECT_DASH}\"  # Amazon Connect Cost Insight Dashboard
+  scad_containers_dashboard  = \"${SCAD_DASH}\"  # SCAD Containers Cost Allocation Dashboard
+}
+
+# Dashboard Configuration (technical parameters)
+cloud_intelligence_dashboards = {
+  prerequisites_quicksight             = \"yes\"
+  prerequisites_quicksight_permissions = \"yes\"
+  lake_formation_enabled               = \"no\"
+  cur_version                          = \"2.0\"
+  optimization_data_collection_bucket_path = \"s3://${RESOURCE_PREFIX}-${ACCOUNT_ID}-optimization/\"
+  primary_tag_name                     = \"owner\"
+  secondary_tag_name                   = \"environment\"
+  athena_workgroup                     = \"\"
+  athena_query_results_bucket          = \"\"
+  database_name                        = \"\"
+  glue_data_catalog                    = \"AwsDataCatalog\"
+  suffix                               = \"\"
+  quicksight_data_source_role_name     = \"CidQuickSightDataSourceRole\"
+  quicksight_data_set_refresh_schedule = \"\"
+  lambda_layer_bucket_prefix           = \"${LOCAL_ASSETS_BUCKET_PREFIX}\"
+  deploy_cudos_dashboard               = \"no\"
+  data_buckets_kms_keys_arns           = \"\"
+  deployment_type                      = \"Terraform\"
+  share_dashboard                      = \"yes\"
+  keep_legacy_cur_table                = \"no\"
+  cur_bucket_path                      = \"s3://${RESOURCE_PREFIX}-${ACCOUNT_ID}-shared/cur/\"
+  cur_table_name                       = \"\"
+  permissions_boundary                 = \"\"
+  role_path                            = \"/\"
 }
 " | tee $PROJECT_ROOT/terraform/cicd-deployment/terraform.tfvars
 

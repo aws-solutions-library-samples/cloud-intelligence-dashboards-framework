@@ -24,3 +24,33 @@ output "cloud_intelligence_dashboards_outputs" {
     outputs  = aws_cloudformation_stack.cloud_intelligence_dashboards.outputs
   }
 }
+
+# Additional Dashboards outputs
+output "additional_dashboards_outputs" {
+  description = "Outputs from additional dashboards stacks"
+  value = {
+    for k, v in aws_cloudformation_stack.additional_dashboards : k => {
+      stack_id = v.id
+      outputs  = v.outputs
+    }
+  }
+}
+
+# Summary of deployed dashboards
+output "deployed_dashboards" {
+  description = "Summary of all deployed dashboards"
+  value = {
+    foundational = {
+      cudos_v5                    = var.dashboards.cudos_v5
+      cost_intelligence_dashboard = var.dashboards.cost_intelligence_dashboard
+      kpi_dashboard               = var.dashboards.kpi_dashboard
+    }
+    additional = {
+      trends_dashboard          = var.dashboards.trends_dashboard
+      datatransfer_dashboard    = var.dashboards.datatransfer_dashboard
+      marketplace_dashboard     = var.dashboards.marketplace_dashboard
+      connect_dashboard         = var.dashboards.connect_dashboard
+      scad_containers_dashboard = var.dashboards.scad_containers_dashboard
+    }
+  }
+}
