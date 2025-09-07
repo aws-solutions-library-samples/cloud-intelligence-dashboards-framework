@@ -12,7 +12,7 @@ locals {
   template_urls = {
     data_exports = "${local.common_template_url_base}/data-exports/${var.global_values.data_export_version}/data-exports-aggregation.yaml"
     cudos        = "${local.common_template_url_base}/${var.global_values.cid_cfn_version}/cid-cfn.yml"
-    plugin       = "${local.common_template_url_base}/cid-plugin.yml"
+    plugin       = "${local.common_template_url_base}/${var.global_values.cid_cfn_version}/cid-plugin.yml"
   }
 
   # Common tags for all resources
