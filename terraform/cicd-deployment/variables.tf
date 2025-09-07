@@ -268,10 +268,10 @@ variable "dashboards" {
 
     # Additional Dashboards (require at least one foundational dashboard)
     trends_dashboard          = "yes" # Trends Dashboard
-    datatransfer_dashboard    = "yes" # Data Transfer Cost Analysis Dashboard
+    datatransfer_dashboard    = "yes" # Data Transfer Cost Analysis Dashboard - DISABLED: Missing line_item_unblended_rate in CUR
     marketplace_dashboard     = "yes" # AWS Marketplace Dashboard
     connect_dashboard         = "yes" # Amazon Connect Cost Insight Dashboard
-    scad_containers_dashboard = "yes" # SCAD Containers Cost Allocation Dashboard
+    scad_containers_dashboard = "no"  # SCAD Containers Cost Allocation Dashboard - DISABLED: Complex SQL view creation failing
   }
 
   validation {
