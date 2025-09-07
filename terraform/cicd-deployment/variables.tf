@@ -262,16 +262,16 @@ variable "dashboards" {
 
   default = {
     # Foundational Dashboards (at least one must be yes for additional dashboards)
-    cudos_v5                    = "yes"  # CUDOS v5 Dashboard
+    cudos_v5                    = "yes" # CUDOS v5 Dashboard
     cost_intelligence_dashboard = "yes" # Cost Intelligence Dashboard  
-    kpi_dashboard               = "yes"  # KPI Dashboard
+    kpi_dashboard               = "yes" # KPI Dashboard
 
     # Additional Dashboards (require at least one foundational dashboard)
-    trends_dashboard          = "yes"  # Trends Dashboard
-    datatransfer_dashboard    = "yes"  # Data Transfer Cost Analysis Dashboard
-    marketplace_dashboard     = "yes"  # AWS Marketplace Dashboard
+    trends_dashboard          = "yes" # Trends Dashboard
+    datatransfer_dashboard    = "yes" # Data Transfer Cost Analysis Dashboard
+    marketplace_dashboard     = "yes" # AWS Marketplace Dashboard
     connect_dashboard         = "yes" # Amazon Connect Cost Insight Dashboard
-    scad_containers_dashboard = "yes"  # SCAD Containers Cost Allocation Dashboard
+    scad_containers_dashboard = "yes" # SCAD Containers Cost Allocation Dashboard
   }
 
   validation {
