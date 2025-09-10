@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 
@@ -34,7 +35,16 @@ class AthenaStore():
     def _to_sql_str(self, val):
         if val is None:
             return "''"
-        return "'" + str(val).replace("'", "''") + "'"
+        return "'" + str(json.dumps(val)).replace("'", "''") + "'"
+
+    def _from_sql_str(self, string):
+        if string.endswith(']') and string.startswith('[') and string.count("'") >=2:
+            # this is an old style parameters so transform it to json readable form from __repr__
+            string = string.replace("'",'"')
+        try:
+            return json.loads(string)
+        except json.JSONDecodeError:
+            return string
 
     def _generate_view_query(self, data, name):
         all_keys = {key for dictionary in data for key in dictionary.keys()}
@@ -56,9 +66,10 @@ class ParametersController(AthenaStore):
         any_parameters = {}
         # get any context and then override with specific context
         for line in sorted(data, key=lambda x: x.get('date', '')): # latest should override
-            any_parameters[line.get('parameter')] = line.get('value')
+            val = self._from_sql_str(line.get('value'))
+            any_parameters[line.get('parameter')] = val
             if line.get('context') == str(context):
-                context_parameters[line.get('parameter')] = line.get('value')
+                context_parameters[line.get('parameter')] = val
         return any_parameters | context_parameters
 
     def dump_parameters(self, params, context=None):
