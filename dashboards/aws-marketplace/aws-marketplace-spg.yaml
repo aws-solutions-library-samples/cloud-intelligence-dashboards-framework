@@ -3,7 +3,6 @@ dashboards:
     dependsOn:
       datasets:
       - agreements
-      - agreements_data
       - marketplace_licenses_grants_view
       - marketplace_view
       - terms
