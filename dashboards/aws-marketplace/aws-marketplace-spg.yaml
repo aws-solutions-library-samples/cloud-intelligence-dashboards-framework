@@ -354,69 +354,6 @@ datasets:
       - agreements
     schedules:
     - default
-  agreements_data:
-    data:
-      DataSetId: d99843a3-72ad-43dc-b21c-91d6c0f86239
-      Name: agreements_data
-      PhysicalTableMap:
-        155430e8-11ee-491d-8a77-a26bdb63d7af:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: ${athena_database_name}
-            Name: agreements_data
-            InputColumns:
-            - Name: acceptance_time
-              Type: STRING
-            - Name: acceptor_account_id
-              Type: STRING
-            - Name: agreement_id
-              Type: STRING
-            - Name: agreement_type
-              Type: STRING
-            - Name: agreement_value
-              Type: STRING
-            - Name: collection_timestamp
-              Type: STRING
-            - Name: currency_code
-              Type: STRING
-            - Name: end_time
-              Type: STRING
-            - Name: offer_id
-              Type: STRING
-            - Name: party_type
-              Type: STRING
-            - Name: product_deployedonaws
-              Type: STRING
-            - Name: product_id
-              Type: STRING
-            - Name: product_manufacturer_displayname
-              Type: STRING
-            - Name: product_productid
-              Type: STRING
-            - Name: product_productname
-              Type: STRING
-            - Name: product_shortdescription
-              Type: STRING
-            - Name: proposer_account_id
-              Type: STRING
-            - Name: source_account_id
-              Type: STRING
-            - Name: status
-              Type: STRING
-            - Name: eula_url
-              Type: STRING
-      LogicalTableMap:
-        88c68cce-1f54-4bdb-b72c-8cab058e5b89:
-          Alias: agreements_data
-          Source:
-            PhysicalTableId: 155430e8-11ee-491d-8a77-a26bdb63d7af
-      ImportMode: SPICE
-    dependsOn:
-      views:
-      - agreements_data
-    schedules:
-    - default
   terms:
     data:
       DataSetId: cb047283-bb4e-48f1-8fba-cd1a4b441f93
@@ -542,31 +479,6 @@ views:
           CAST(NULL AS varchar) AS status,
           CAST(NULL AS varchar) AS eula_url,
           CAST(NULL AS varchar) AS partition_0
-      WHERE 1 = 0
-  agreements_data:
-    data: |-
-      CREATE VIEW agreements_data AS
-      SELECT
-          CAST(NULL AS varchar) AS acceptance_time,
-          CAST(NULL AS varchar) AS acceptor_account_id,
-          CAST(NULL AS varchar) AS agreement_id,
-          CAST(NULL AS varchar) AS agreement_type,
-          CAST(NULL AS varchar) AS agreement_value,
-          CAST(NULL AS varchar) AS collection_timestamp,
-          CAST(NULL AS varchar) AS currency_code,
-          CAST(NULL AS varchar) AS end_time,
-          CAST(NULL AS varchar) AS offer_id,
-          CAST(NULL AS varchar) AS party_type,
-          CAST(NULL AS varchar) AS product_deployedonaws,
-          CAST(NULL AS varchar) AS product_id,
-          CAST(NULL AS varchar) AS product_manufacturer_displayname,
-          CAST(NULL AS varchar) AS product_productid,
-          CAST(NULL AS varchar) AS product_productname,
-          CAST(NULL AS varchar) AS product_shortdescription,
-          CAST(NULL AS varchar) AS proposer_account_id,
-          CAST(NULL AS varchar) AS source_account_id,
-          CAST(NULL AS varchar) AS status,
-          CAST(NULL AS varchar) AS eula_url
       WHERE 1 = 0
   terms:
     data: |-
