@@ -263,15 +263,22 @@ def export_analysis(qs, athena, glue):
                 fields = []
                 for field in cur_helper.fields:
                     if field in view_data['data']:
+                        if field == 'data':
+                            # 'data' is a partition of cur2 and a frequent word, so skip it to avoid false positives
+                            continue
                         fields.append(field)
                 view_data['dependsOn'][f'cur{cur_helper.version}'] = fields or True
                 cur_tables.append(dep_view_name)
             else:
+                dep_view_data = all_views_data.get(dep_view_name, {}).get('data', '')
+                if 'CREATE EXTERNAL TABLE' in dep_view_data and not get_parameters().get('export-tables') == 'yes':
+                    cid_print(f'{key} is a Glue table. Skipping. To export table definitions use `--export-tables yes`. Please manage this dependency by adding parameter')
+                    # TODO: add parameter with schema query
+                    continue
                 logger.debug(f'{dep_view_name} is not cur')
                 if dep_view_name not in all_views_data:
                     logger.debug(f'{dep_view_name} skipping as not in the views list')
-                if dep_view_name in ['account_map']:
-                    logger.debug(f'{dep_view_name} is a special. skip.')
+                    continue
                 non_cur_dep_views.append(dep_view_name)
         if deps.get('views'):
             deps['views'] = non_cur_dep_views
