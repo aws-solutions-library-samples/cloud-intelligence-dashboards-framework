@@ -8,7 +8,7 @@ dashboards:
     dashboardId: media-services-insights
     category: Advanced
     theme: MIDNIGHT
-    version: v0.9.7
+    version: v1.0.0
     data: |-
       AnalysisDefaults:
         DefaultNewSheetConfiguration:
@@ -26625,7 +26625,7 @@ dashboards:
           SheetTextBoxId: 8738ed95-db68-48f4-9115-f7a8dcb618cf
         - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"64px\"\
             >\n      <b>Media Services Insights Hub</b>\n    </inline>\n  </block>\n  <br/>\n\
-            \  <block align=\"center\">\n    <inline font-size=\"64px\">v0.9.7</inline>\n\
+            \  <block align=\"center\">\n    <inline font-size=\"64px\">v1.0.0</inline>\n\
             \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
             >\_</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
             \ align=\"center\">\n    <inline font-size=\"24px\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/media-services-insights.html\"\
