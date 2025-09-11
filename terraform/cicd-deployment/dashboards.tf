@@ -83,9 +83,9 @@ resource "aws_cloudformation_stack" "cloud_intelligence_dashboards" {
 
     # CUR Parameters
     CURVersion                      = var.cloud_intelligence_dashboards.cur_version
-    DeployCUDOSv5                   = var.cloud_intelligence_dashboards.deploy_cudos_v5
-    DeployCostIntelligenceDashboard = var.cloud_intelligence_dashboards.deploy_cost_intelligence_dashboard
-    DeployKPIDashboard              = var.cloud_intelligence_dashboards.deploy_kpi_dashboard
+    DeployCUDOSv5                   = var.dashboards.cudos_v5
+    DeployCostIntelligenceDashboard = var.dashboards.cost_intelligence
+    DeployKPIDashboard              = var.dashboards.kpi
 
     # Optimization Parameters
     OptimizationDataCollectionBucketPath = var.cloud_intelligence_dashboards.optimization_data_collection_bucket_path
@@ -129,4 +129,180 @@ resource "aws_cloudformation_stack" "cloud_intelligence_dashboards" {
       tags
     ]
   }
+
+  tags = merge(local.common_tags, {
+    DashboardType = "Foundational"
+    DashboardId   = "cloud-intelligence-dashboards"
+  })
+}
+
+# Additional CUR-based dashboards - Sequential deployment
+resource "aws_cloudformation_stack" "trends_dashboard" {
+  count = var.dashboards.trends == "yes" ? 1 : 0
+
+  name         = "Trends-Dashboard"
+  provider     = aws.destination_account
+  template_url = local.template_urls.cid_plugin
+  capabilities = local.common_capabilities
+
+  depends_on = [
+    aws_cloudformation_stack.cloud_intelligence_dashboards
+  ]
+
+  parameters = {
+    DashboardId = "trends-dashboard"
+  }
+
+  timeouts {
+    create = lookup(local.default_timeouts, "create", "30m")
+    update = lookup(local.default_timeouts, "update", "30m")
+    delete = lookup(local.default_timeouts, "delete", "30m")
+  }
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes        = [tags]
+  }
+
+  tags = merge(local.common_tags, {
+    DashboardType = "Additional"
+    DashboardId   = "trends-dashboard"
+  })
+}
+
+resource "aws_cloudformation_stack" "datatransfer_dashboard" {
+  count = var.dashboards.datatransfer == "yes" ? 1 : 0
+
+  name         = "DataTransfer-Cost-Analysis-Dashboard"
+  provider     = aws.destination_account
+  template_url = local.template_urls.cid_plugin
+  capabilities = local.common_capabilities
+
+  depends_on = [
+    aws_cloudformation_stack.cloud_intelligence_dashboards,
+    aws_cloudformation_stack.trends_dashboard
+  ]
+
+  parameters = {
+    DashboardId = "datatransfer-cost-analysis-dashboard"
+  }
+
+  timeouts {
+    create = lookup(local.default_timeouts, "create", "30m")
+    update = lookup(local.default_timeouts, "update", "30m")
+    delete = lookup(local.default_timeouts, "delete", "30m")
+  }
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes        = [tags]
+  }
+
+  tags = merge(local.common_tags, {
+    DashboardType = "Additional"
+    DashboardId   = "datatransfer-cost-analysis-dashboard"
+  })
+}
+
+resource "aws_cloudformation_stack" "marketplace_dashboard" {
+  count = var.dashboards.marketplace == "yes" ? 1 : 0
+
+  name         = "AWS-Marketplace-SPG-Dashboard"
+  provider     = aws.destination_account
+  template_url = local.template_urls.cid_plugin
+  capabilities = local.common_capabilities
+
+  depends_on = [
+    aws_cloudformation_stack.cloud_intelligence_dashboards,
+    aws_cloudformation_stack.datatransfer_dashboard
+  ]
+
+  parameters = {
+    DashboardId            = "aws-marketplace"
+    RequiresDataCollection = "no"
+  }
+
+  timeouts {
+    create = lookup(local.default_timeouts, "create", "30m")
+    update = lookup(local.default_timeouts, "update", "30m")
+    delete = lookup(local.default_timeouts, "delete", "30m")
+  }
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes        = [tags]
+  }
+
+  tags = merge(local.common_tags, {
+    DashboardType = "Additional"
+    DashboardId   = "aws-marketplace"
+  })
+}
+
+resource "aws_cloudformation_stack" "connect_dashboard" {
+  count = var.dashboards.connect == "yes" ? 1 : 0
+
+  name         = "Amazon-Connect-Cost-Insight-Dashboard"
+  provider     = aws.destination_account
+  template_url = local.template_urls.cid_plugin
+  capabilities = local.common_capabilities
+
+  depends_on = [
+    aws_cloudformation_stack.cloud_intelligence_dashboards,
+    aws_cloudformation_stack.marketplace_dashboard
+  ]
+
+  parameters = {
+    DashboardId = "amazon-connect-cost-insight-dashboard"
+  }
+
+  timeouts {
+    create = lookup(local.default_timeouts, "create", "30m")
+    update = lookup(local.default_timeouts, "update", "30m")
+    delete = lookup(local.default_timeouts, "delete", "30m")
+  }
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes        = [tags]
+  }
+
+  tags = merge(local.common_tags, {
+    DashboardType = "Additional"
+    DashboardId   = "amazon-connect-cost-insight-dashboard"
+  })
+}
+
+resource "aws_cloudformation_stack" "containers_dashboard" {
+  count = var.dashboards.containers == "yes" ? 1 : 0
+
+  name         = "SCAD-Containers-Dashboard"
+  provider     = aws.destination_account
+  template_url = local.template_urls.cid_plugin
+  capabilities = local.common_capabilities
+
+  depends_on = [
+    aws_cloudformation_stack.cloud_intelligence_dashboards,
+    aws_cloudformation_stack.connect_dashboard
+  ]
+
+  parameters = {
+    DashboardId = "scad-containers-cost-allocation"
+  }
+
+  timeouts {
+    create = lookup(local.default_timeouts, "create", "30m")
+    update = lookup(local.default_timeouts, "update", "30m")
+    delete = lookup(local.default_timeouts, "delete", "30m")
+  }
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes        = [tags]
+  }
+
+  tags = merge(local.common_tags, {
+    DashboardType = "Additional"
+    DashboardId   = "scad-containers-cost-allocation"
+  })
 }

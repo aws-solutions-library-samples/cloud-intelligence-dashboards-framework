@@ -23,39 +23,75 @@ if [ ! -d "$TEMP_DIR" ]; then
   exit 1
 fi
 
-# Extract dashboard variables directly from variables.tf file
+# Extract dashboard variables from terraform.tfvars
 cd "$TEMP_DIR"
 echo "Extracting dashboard settings from Terraform configuration..."
 
-# Extract values using grep and sed - improved patterns to better match the structure
-deploy_cudos_v5=$(grep -A30 'cudos_dashboard' variables.tf | grep 'deploy_cudos_v5' | grep -o '"yes"' | tr -d '"' || echo "no")
-deploy_cost_intelligence_dashboard=$(grep -A30 'cudos_dashboard' variables.tf | grep 'deploy_cost_intelligence_dashboard' | grep -o '"yes"' | tr -d '"' || echo "no")
-deploy_kpi_dashboard=$(grep -A30 'cudos_dashboard' variables.tf | grep 'deploy_kpi_dashboard' | grep -o '"yes"' | tr -d '"' || echo "no")
+# Initialize defaults
+deploy_cudos_v5="no"
+deploy_cost_intelligence_dashboard="no"
+deploy_kpi_dashboard="no"
+trends="no"
+datatransfer="no"
+marketplace="no"
+connect="no"
+containers="no"
 
-# Check if there's a terraform.tfvars file that might override the defaults
+# Check terraform.tfvars for dashboard settings
 if [ -f "terraform.tfvars" ]; then
-  echo "Found terraform.tfvars, checking for overrides..."
-  if grep -q "deploy_cudos_v5" terraform.tfvars; then
-    deploy_cudos_v5=$(grep "deploy_cudos_v5" terraform.tfvars | cut -d'=' -f2 | tr -d ' "' || echo "$deploy_cudos_v5")
+  echo "Found terraform.tfvars, extracting dashboard settings..."
+  
+  # Extract foundational dashboards
+  if grep -q "cudos_v5" terraform.tfvars; then
+    deploy_cudos_v5=$(grep "cudos_v5" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
-  if grep -q "deploy_cost_intelligence_dashboard" terraform.tfvars; then
-    deploy_cost_intelligence_dashboard=$(grep "deploy_cost_intelligence_dashboard" terraform.tfvars | cut -d'=' -f2 | tr -d ' "' || echo "$deploy_cost_intelligence_dashboard")
+  if grep -q "cost_intelligence" terraform.tfvars; then
+    deploy_cost_intelligence_dashboard=$(grep "cost_intelligence" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
-  if grep -q "deploy_kpi_dashboard" terraform.tfvars; then
-    deploy_kpi_dashboard=$(grep "deploy_kpi_dashboard" terraform.tfvars | cut -d'=' -f2 | tr -d ' "' || echo "$deploy_kpi_dashboard")
+  if grep -q "kpi" terraform.tfvars; then
+    deploy_kpi_dashboard=$(grep "kpi" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  
+  # Extract additional dashboards
+  if grep -q "trends" terraform.tfvars; then
+    trends=$(grep "trends" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  if grep -q "datatransfer" terraform.tfvars; then
+    datatransfer=$(grep "datatransfer" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  if grep -q "marketplace" terraform.tfvars; then
+    marketplace=$(grep "marketplace" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  if grep -q "connect" terraform.tfvars; then
+    connect=$(grep "connect" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  if grep -q "containers" terraform.tfvars; then
+    containers=$(grep "containers" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
 fi
 
-# Export the variables
+# Export all variables
 export deploy_cudos_v5
 export deploy_cost_intelligence_dashboard
 export deploy_kpi_dashboard
+export trends
+export datatransfer
+export marketplace
+export connect
+export containers
 
 # Echo the dashboard settings
 echo "Dashboard settings from Terraform configuration:"
-echo "- cudos-v5: $deploy_cudos_v5"
-echo "- cost_intelligence_dashboard: $deploy_cost_intelligence_dashboard"
-echo "- kpi_dashboard: $deploy_kpi_dashboard"
+echo "Foundational:"
+echo "- cudos_v5: $deploy_cudos_v5"
+echo "- cost_intelligence: $deploy_cost_intelligence_dashboard"
+echo "- kpi: $deploy_kpi_dashboard"
+echo "Additional:"
+echo "- trends: $trends"
+echo "- datatransfer: $datatransfer"
+echo "- marketplace: $marketplace"
+echo "- connect: $connect"
+echo "- containers: $containers"
 
 cd "$PROJECT_ROOT"
 

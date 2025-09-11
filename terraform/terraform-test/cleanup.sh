@@ -5,16 +5,12 @@ set -e
 BACKEND_TYPE=${BACKEND_TYPE:-"local"}  # Can be "local" or "s3"
 S3_BUCKET=${S3_BUCKET:-""}
 S3_KEY=${S3_KEY:-"terraform/cid-test/terraform.tfstate"}
-S3_REGION=${S3_REGION:-"eu-west-2"}  # Default to eu-west-2
+S3_REGION=${S3_REGION:-$(aws configure get region)}  # Use configured region as default
 BACKEND_REGION=${BACKEND_REGION:-"us-east-1"}  # Backend bucket region
 
 # Set AWS region for AWS CLI commands
 export AWS_DEFAULT_REGION="${S3_REGION}"
 export AWS_REGION="${S3_REGION}"  # Some AWS tools use this variable instead
-
-# Debug region settings
-echo "Using AWS region: ${S3_REGION}"
-echo "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
 
 # Verify account access
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)

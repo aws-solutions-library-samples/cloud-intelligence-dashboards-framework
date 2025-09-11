@@ -70,15 +70,6 @@ echo "- Local Assets Bucket: $FULL_BUCKET_NAME"
 echo "- Layer Prefix: $LAYER_PREFIX"
 echo "- Template Prefix: $TEMPLATE_PREFIX"
 
-# Debug region consistency
-echo ""
-echo "=== Region Debug Info ==="
-echo "Current AWS CLI region: $(aws configure get region)"
-echo "AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-not set}"
-echo "AWS_REGION: ${AWS_REGION:-not set}"
-echo "S3_REGION: $S3_REGION"
-echo "Account ID: $(aws sts get-caller-identity --query Account --output text)"
-
 
 export quicksight_user=$(aws quicksight list-users \
         --aws-account-id $ACCOUNT_ID \
@@ -93,6 +84,27 @@ if [ -z "$quicksight_user" ]; then
     exit 1
 fi
 
+echo "Generating terraform.tfvars..."
+
+# Extract dashboard values from variables.tf
+VARS_FILE="$PROJECT_ROOT/terraform/cicd-deployment/variables.tf"
+CUDOS_V5=$(awk '/default = {/,/^  }/ { if (/cudos_v5.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+COST_INTEL=$(awk '/default = {/,/^  }/ { if (/cost_intelligence.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+KPI_DASH=$(awk '/default = {/,/^  }/ { if (/kpi.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+TRENDS_DASH=$(awk '/default = {/,/^  }/ { if (/trends.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+DATATRANS_DASH=$(awk '/default = {/,/^  }/ { if (/datatransfer.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+MARKET_DASH=$(awk '/default = {/,/^  }/ { if (/marketplace.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+CONNECT_DASH=$(awk '/default = {/,/^  }/ { if (/connect.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+CONTAINERS_DASH=$(awk '/default = {/,/^  }/ { if (/containers.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+
+# Extract CID CFN version from local cid-cfn.yml file
+CID_CFN_VERSION=$(sed -n '3p' "$PROJECT_ROOT/cfn-templates/cid-cfn.yml" | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/v//' || echo "${CID_VERSION}")
+
+# Get latest data export version from external repo
+echo "Fetching latest data export version..."
+DATA_EXPORT_VER=$(curl -s https://raw.githubusercontent.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/main/data-exports/deploy/data-exports-aggregation.yaml | grep Description | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1 || echo "0.5.0")
+ENVIRONMENT="dev"
+
 echo "
 # Configuration for one account deployment (not recommended for production)
 global_values = {
@@ -100,9 +112,24 @@ global_values = {
   source_account_ids     = \"${ACCOUNT_ID}\"        # Same account ID for local testing
   aws_region             = \"${S3_REGION}\"         # Your preferred region
   quicksight_user        = \"${quicksight_user}\"   # Your QuickSight username
-  cid_cfn_version        = \"${CID_VERSION}\"       # CID CloudFormation version # Will it be local that is used?
-  data_export_version    = \"0.5.0\"                # Data Export version
-  environment            = \"dev\"
+  cid_cfn_version        = \"${CID_CFN_VERSION}\"   # CID CloudFormation version (from local file)
+  data_export_version    = \"${DATA_EXPORT_VER}\"   # Data Export version
+  environment            = \"${ENVIRONMENT}\"
+}
+
+# Dashboard configuration (extracted from variables.tf defaults)
+dashboards = {
+  # Foundational
+  cudos_v5          = \"${CUDOS_V5}\"
+  cost_intelligence = \"${COST_INTEL}\"
+  kpi               = \"${KPI_DASH}\"
+  
+  # Additional
+  trends       = \"${TRENDS_DASH}\"
+  datatransfer = \"${DATATRANS_DASH}\"
+  marketplace  = \"${MARKET_DASH}\"
+  connect      = \"${CONNECT_DASH}\"
+  containers   = \"${CONTAINERS_DASH}\"
 }
 " | tee $PROJECT_ROOT/terraform/cicd-deployment/terraform.tfvars
 
@@ -229,13 +256,15 @@ echo ""
 echo "=== Step 2: Running Deployment ==="
 bash "$SCRIPT_DIR/deploy.sh"
 
-# Step 3: Run dashboard checks
+# Step 3: Dashboard Validation
 echo ""
 echo "=== Step 3: Dashboard Validation ==="
+
+# Run foundational dashboard tests
 if [ -f "$SCRIPT_DIR/.temp_dir" ]; then
   TEMP_DIR=$(cat "$SCRIPT_DIR/.temp_dir")
   if [ -d "$TEMP_DIR" ]; then
-    echo "Running dashboard checks..."
+    echo "Running foundational dashboard checks..."
     bash "$SCRIPT_DIR/check_dashboards.sh" "$TEMP_DIR"
   else
     echo "Error: Temp directory not found, cannot run dashboard checks"
@@ -245,6 +274,43 @@ else
   echo "Error: No temp directory reference found, cannot run dashboard checks"
   exit 1
 fi
+
+# Run additional dashboard validation
+echo ""
+echo "=== Additional Dashboards Validation ==="
+echo "Checking for additional dashboards..."
+
+# Check each additional dashboard
+for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-marketplace amazon-connect-cost-insight-dashboard scad-containers-cost-allocation; do
+  case $dashboard_id in
+    trends-dashboard) view_name="daily_anomaly_detection" ;;
+    datatransfer-cost-analysis-dashboard) view_name="data_transfer_view" ;;
+    aws-marketplace) view_name="marketplace_view" ;;
+    amazon-connect-cost-insight-dashboard) view_name="resource_connect_view" ;;
+    scad-containers-cost-allocation) view_name="scad_cca_summary_view" ;;
+  esac
+  
+  echo "Checking dashboard: $dashboard_id"
+  if aws quicksight describe-dashboard \
+      --aws-account-id "$ACCOUNT_ID" \
+      --dashboard-id "$dashboard_id" \
+      --output json > /dev/null 2>&1; then
+    echo "✓ Dashboard $dashboard_id exists"
+    
+    # Check associated view
+    if aws athena get-table-metadata \
+        --catalog-name 'AwsDataCatalog' \
+        --database-name 'cid_cur' \
+        --table-name "$view_name" \
+        --output json > /dev/null 2>&1; then
+      echo "✓ View $view_name exists"
+    else
+      echo "⚠ View $view_name not found (may not be created yet)"
+    fi
+  else
+    echo "- Dashboard $dashboard_id not deployed"
+  fi
+done
 
 # Step 4: Cleanup
 echo ""
@@ -265,5 +331,15 @@ else
     echo "To clean up later, run: bash $SCRIPT_DIR/cleanup.sh"
 fi
 
-echo ""
-echo "=== Test Workflow Completed Successfully ==="
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "=== Test Workflow Completed Successfully ==="
+    echo "Summary:"
+    echo "- Foundational dashboards: Validated"
+    echo "- Additional dashboards: Checked"
+    echo "- Resources remain deployed for further testing"
+else
+    echo ""
+    echo "=== Cleanup Completed Successfully ==="
+    echo "All CID resources have been removed from your account."
+fi

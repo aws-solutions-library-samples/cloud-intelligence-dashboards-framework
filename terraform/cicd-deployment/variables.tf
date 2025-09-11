@@ -128,10 +128,7 @@ variable "cloud_intelligence_dashboards" {
     lake_formation_enabled               = string
 
     # CUR Parameters
-    cur_version                        = string
-    deploy_cudos_v5                    = string
-    deploy_cost_intelligence_dashboard = string
-    deploy_kpi_dashboard               = string
+    cur_version = string
 
     # Optimization Parameters
     optimization_data_collection_bucket_path = string
@@ -166,14 +163,10 @@ variable "cloud_intelligence_dashboards" {
     # Prerequisites Variables
     prerequisites_quicksight             = "yes"
     prerequisites_quicksight_permissions = "yes"
-    quicksight_user                      = null
     lake_formation_enabled               = "no"
 
     # CUR Parameters
-    cur_version                        = "2.0"
-    deploy_cudos_v5                    = "yes"
-    deploy_cost_intelligence_dashboard = "yes"
-    deploy_kpi_dashboard               = "yes"
+    cur_version = "2.0"
 
     # Optimization Parameters
     optimization_data_collection_bucket_path = "s3://cid-data-{account_id}"
@@ -203,71 +196,4 @@ variable "cloud_intelligence_dashboards" {
     permissions_boundary  = ""
     role_path             = "/"
   }
-}
-
-variable "global_values" {
-  type = object({
-    # AWS Account Id where DataExport will be replicated to
-    destination_account_id = string
-    # Comma separated list of source account IDs
-    source_account_ids = string
-    # AWS region where the dashboard will be deployed
-    aws_region = string
-    # Quicksight user to share the dashboard with
-    quicksight_user = string
-    # CloudFormation template using for the deployment, see description to get the semantic version number (e.g. 4.1.5) https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/cfn-templates/cid-cfn.yml
-    cid_cfn_version = string
-    # CloudFormation template using for the deployment, see description to get the semantic version number (e.g. 0.5.0) https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/blob/main/data-exports/deploy/data-exports-aggregation.yaml
-    data_export_version = string
-    # Environment name (e.g., dev, staging, prod)
-    environment = string
-  })
-
-  description = "Global configuration values for AWS environment"
-
-  default = {
-    destination_account_id = null
-    source_account_ids     = ""
-    aws_region             = ""
-    quicksight_user        = null
-    cid_cfn_version        = ""
-    data_export_version    = ""
-    environment            = ""
-  }
-
-  validation {
-    condition     = can(regex("^\\d{12}$", var.global_values.destination_account_id))
-    error_message = "DestinationAccountId must be 12 digits"
-  }
-
-  validation {
-    condition     = can(regex("^((\\d{12})\\,?)*$", var.global_values.source_account_ids))
-    error_message = "SourceAccountIds must be comma-separated 12-digit account IDs"
-  }
-
-  validation {
-    condition     = var.global_values.quicksight_user != null
-    error_message = "The quicksight_user value must be provided."
-  }
-
-  validation {
-    condition     = var.global_values.cid_cfn_version == "" || can(regex("^\\d+\\.\\d+\\.\\d+$", var.global_values.cid_cfn_version))
-    error_message = "The cid_cfn_version must be in the format X.Y.Z where X, Y, and Z are digits (e.g., 0.5.0)"
-  }
-
-  validation {
-    condition     = var.global_values.data_export_version == "" || can(regex("^\\d+\\.\\d+\\.\\d+$", var.global_values.data_export_version))
-    error_message = "The data_export_version must be in the format X.Y.Z where X, Y, and Z are digits (e.g., 4.1.5)"
-  }
-
-  validation {
-    condition     = contains(["dev", "staging", "prod"], var.global_values.environment)
-    error_message = "Environment must be one of: dev, staging, prod"
-  }
-}
-
-variable "destination_role_arn" {
-  description = "ARN of the role to assume in the destination account"
-  type        = string
-  default     = null
 }

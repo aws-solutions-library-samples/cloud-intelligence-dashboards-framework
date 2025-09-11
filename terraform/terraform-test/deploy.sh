@@ -9,7 +9,7 @@ echo "Account ID: $ACCOUNT_ID"
 BACKEND_TYPE=${BACKEND_TYPE:-"local"}  # Can be "local" or "s3"
 S3_BUCKET=${S3_BUCKET:-""}
 S3_KEY=${S3_KEY:-"terraform/cid-test/terraform.tfstate"}
-S3_REGION=${S3_REGION:-"eu-west-2"}  # Default to eu-west-2
+S3_REGION=${S3_REGION:-$(aws configure get region)}  # Use configured region as default
 BACKEND_REGION=${BACKEND_REGION:-"us-east-1"}  # Backend bucket region
 TEMPLATE_PREFIX="${TEMPLATE_PREFIX:-cid-testing/templates}"
 LOCAL_ASSETS_BUCKET_PREFIX="${LOCAL_ASSETS_BUCKET_PREFIX:-cid-${ACCOUNT_ID}-test}"
@@ -107,39 +107,37 @@ terraform {
 }
 EOF
 
-# Debug region settings
-echo "Using AWS region: ${S3_REGION}"
-echo "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
+
 
 # First check if the file exists and what it contains
-echo "Examining main.tf file..."
-if [ -f "$TEMP_DIR/main.tf" ]; then
+echo "Examining dashboards.tf file..."
+if [ -f "$TEMP_DIR/dashboards.tf" ]; then
   # Create a backup of the original file
-  cp "$TEMP_DIR/main.tf" "$TEMP_DIR/main.tf.original"
+  cp "$TEMP_DIR/dashboards.tf" "$TEMP_DIR/dashboards.tf.original"
   
   # Use grep to find the resource and then use awk to comment it out
-  grep -n "resource \"aws_cloudformation_stack\" \"cid_dataexports_source\"" "$TEMP_DIR/main.tf" | while read -r line; do
+  grep -n "resource \"aws_cloudformation_stack\" \"cid_dataexports_source\"" "$TEMP_DIR/dashboards.tf" | while read -r line; do
     line_num=$(echo "$line" | cut -d: -f1)
     echo "Found cid_dataexports_source at line $line_num"
     
     # Use awk to comment out the resource block
-    awk -v line="$line_num" 'NR==line {print "# SKIPPED FOR LOCAL TESTING\n# " $0; next} {print}' "$TEMP_DIR/main.tf.original" > "$TEMP_DIR/main.tf.tmp"
-    mv "$TEMP_DIR/main.tf.tmp" "$TEMP_DIR/main.tf"
+    awk -v line="$line_num" 'NR==line {print "# SKIPPED FOR LOCAL TESTING\n# " $0; next} {print}' "$TEMP_DIR/dashboards.tf.original" > "$TEMP_DIR/dashboards.tf.tmp"
+    mv "$TEMP_DIR/dashboards.tf.tmp" "$TEMP_DIR/dashboards.tf"
     
     # Find the closing brace of the resource block
-    end_line=$(tail -n +$line_num "$TEMP_DIR/main.tf" | grep -n "^}" | head -1 | cut -d: -f1)
+    end_line=$(tail -n +$line_num "$TEMP_DIR/dashboards.tf" | grep -n "^}" | head -1 | cut -d: -f1)
     end_line=$((line_num + end_line - 1))
     echo "Resource block ends at line $end_line"
     
     # Comment out all lines in the resource block
-    awk -v start="$line_num" -v end="$end_line" 'NR>start && NR<=end {print "# " $0; next} {print}' "$TEMP_DIR/main.tf" > "$TEMP_DIR/main.tf.tmp"
-    mv "$TEMP_DIR/main.tf.tmp" "$TEMP_DIR/main.tf"
+    awk -v start="$line_num" -v end="$end_line" 'NR>start && NR<=end {print "# " $0; next} {print}' "$TEMP_DIR/dashboards.tf" > "$TEMP_DIR/dashboards.tf.tmp"
+    mv "$TEMP_DIR/dashboards.tf.tmp" "$TEMP_DIR/dashboards.tf"
   done
   
   # Update dependencies
-  sed -i.bak 's/aws_cloudformation_stack.cid_dataexports_source,/# aws_cloudformation_stack.cid_dataexports_source,/g' "$TEMP_DIR/main.tf"
+  sed -i.bak 's/aws_cloudformation_stack.cid_dataexports_source,/# aws_cloudformation_stack.cid_dataexports_source,/g' "$TEMP_DIR/dashboards.tf"
 else
-  echo "Error: main.tf not found in $TEMP_DIR"
+  echo "Error: dashboards.tf not found in $TEMP_DIR"
   exit 1
 fi
 
