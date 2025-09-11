@@ -17,6 +17,65 @@ locals {
   template_urls = {
     data_exports = "${local.common_template_url_base}/data-exports/${var.global_values.data_export_version}/data-exports-aggregation.yaml"
     cudos        = "${local.common_template_url_base}/${var.global_values.cid_cfn_version}/cid-cfn.yml"
+    cid_plugin   = "${local.common_template_url_base}/${var.global_values.cid_cfn_version}/cid-plugin.yml"
+  }
+
+  # Dashboard configurations
+  foundational_dashboards = {
+    cudos_v5 = {
+      parameter_name = "DeployCUDOSv5"
+      enabled        = var.dashboards.cudos_v5
+    }
+    cost_intelligence = {
+      parameter_name = "DeployCostIntelligenceDashboard"
+      enabled        = var.dashboards.cost_intelligence
+    }
+    kpi = {
+      parameter_name = "DeployKPIDashboard"
+      enabled        = var.dashboards.kpi
+    }
+  }
+
+  additional_dashboards = {
+    trends = {
+      stack_name   = "Trends-Dashboard"
+      dashboard_id = "trends-dashboard"
+      dataset_name = "daily-anomaly-detection"
+      parameters   = {}
+      enabled      = var.dashboards.trends
+    }
+    datatransfer = {
+      stack_name   = "DataTransfer-Cost-Analysis-Dashboard"
+      dashboard_id = "datatransfer-cost-analysis-dashboard"
+      dataset_name = "data_transfer_view"
+      parameters   = {}
+      enabled      = var.dashboards.datatransfer
+    }
+    marketplace = {
+      stack_name   = "AWS-Marketplace-SPG-Dashboard"
+      dashboard_id = "aws-marketplace"
+      dataset_name = "marketplace_view"
+      parameters   = { RequiresDataCollection = "no" }
+      enabled      = var.dashboards.marketplace
+    }
+    connect = {
+      stack_name   = "Amazon-Connect-Cost-Insight-Dashboard"
+      dashboard_id = "amazon-connect-cost-insight-dashboard"
+      dataset_name = "resource_connect_view"
+      parameters   = {}
+      enabled      = var.dashboards.connect
+    }
+    containers = {
+      stack_name   = "SCAD-Containers-Dashboard"
+      dashboard_id = "scad-containers-cost-allocation"
+      dataset_name = "scad_cca_summary_view"
+      parameters   = {}
+      enabled      = var.dashboards.containers
+    }
+  }
+
+  enabled_additional_dashboards = {
+    for k, v in local.additional_dashboards : k => v if v.enabled == "yes"
   }
 
   # Common tags for all resources
@@ -34,4 +93,6 @@ locals {
     update = "30m"
     delete = "30m"
   }
+
+
 }
