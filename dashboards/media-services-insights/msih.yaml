@@ -1,11 +1,11 @@
 dashboards:
-  MEDIA SERVICES INSIGHTS HUB:
+  MSIH:
     dependsOn:
       datasets:
       - msih_reservations
       - msih_view
-    name: Media Services Insights Hub
-    dashboardId: media-services-insights
+    name: MSIH
+    dashboardId: msih
     category: Advanced
     theme: MIDNIGHT
     version: v1.0.0
@@ -539,9 +539,9 @@ dashboards:
         Expression: ({usage_quantity}/720)
         Name: usage_divided_by_720_hours
       DataSetIdentifierDeclarations:
-      - DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-reservations
+      - DataSetArn: arn:aws:quicksight:::dataset/be955d19-d339-4353-bdd1-ffff41639f51
         Identifier: msih_reservations
-      - DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-main
+      - DataSetArn: arn:aws:quicksight:::dataset/86c35106-153a-4f36-845f-e8c24fdd1f1f
         Identifier: summary_view
       FilterGroups:
       - CrossDataset: ALL_DATASETS
@@ -26625,7 +26625,7 @@ dashboards:
           SheetTextBoxId: 8738ed95-db68-48f4-9115-f7a8dcb618cf
         - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"64px\"\
             >\n      <b>Media Services Insights Hub</b>\n    </inline>\n  </block>\n  <br/>\n\
-            \  <block align=\"center\">\n    <inline font-size=\"64px\">v1.0.0</inline>\n\
+            \  <block align=\"center\">\n    <inline font-size=\"64px\">v0.9.7</inline>\n\
             \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
             >\_</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
             \ align=\"center\">\n    <inline font-size=\"24px\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/media-services-insights.html\"\
@@ -26653,6 +26653,7 @@ dashboards:
             \  <br/>\n  <block align=\"right\"/>\n</text-box>"
           SheetTextBoxId: a970dddd-1b1b-47d0-84c9-dceda61bb464
         Visuals: []
+    file: ./msih-definition.yaml
 datasets:
   msih_reservations:
     data:
@@ -26961,6 +26962,11 @@ datasets:
             - Name: public_cost
               Type: DECIMAL
               SubType: FLOAT
+            - Name: earliest_data_date
+              Type: DATETIME
+            - Name: net_unblended_cost
+              Type: DECIMAL
+              SubType: FIXED
         ca2f9216-c240-4505-9a10-3d7794d2633a:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
@@ -27070,6 +27076,8 @@ datasets:
               - payer_account_name
               - linked_account_formatted
               - payer_account_formatted
+              - net_unblended_cost
+              - earliest_data_date
           Source:
             JoinInstruction:
               LeftOperand: fa4f543b-7694-4948-bfde-0fa8dccac811
