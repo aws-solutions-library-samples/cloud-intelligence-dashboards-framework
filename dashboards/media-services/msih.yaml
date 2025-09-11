@@ -1,11 +1,11 @@
 dashboards:
-  MSIH:
+  MEDIA SERVICES INSIGHTS HUB:
     dependsOn:
       datasets:
       - msih_reservations
       - msih_view
-    name: MSIH
-    dashboardId: msih
+    name: Media Services Insights Hub
+    dashboardId: media-services-insights
     category: Advanced
     theme: MIDNIGHT
     version: v0.9.7
