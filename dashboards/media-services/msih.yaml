@@ -539,9 +539,9 @@ dashboards:
         Expression: ({usage_quantity}/720)
         Name: usage_divided_by_720_hours
       DataSetIdentifierDeclarations:
-      - DataSetArn: arn:aws:quicksight:::dataset/be955d19-d339-4353-bdd1-ffff41639f51
+      - DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-reservations
         Identifier: msih_reservations
-      - DataSetArn: arn:aws:quicksight:::dataset/86c35106-153a-4f36-845f-e8c24fdd1f1f
+      - DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-main
         Identifier: summary_view
       FilterGroups:
       - CrossDataset: ALL_DATASETS
@@ -26656,7 +26656,7 @@ dashboards:
 datasets:
   msih_reservations:
     data:
-      DataSetId: be955d19-d339-4353-bdd1-ffff41639f51
+      DataSetId: media-services-insights-reservations
       Name: msih_reservations
       PhysicalTableMap:
         09e670d1-8b16-4a2f-9e17-2d9ef290ec84:
@@ -26856,7 +26856,7 @@ datasets:
     - default
   msih_view:
     data:
-      DataSetId: 86c35106-153a-4f36-845f-e8c24fdd1f1f
+      DataSetId: media-services-insights-main
       Name: msih_view
       PhysicalTableMap:
         17740ffc-0df9-4dc9-8780-a77c9dadae18:
