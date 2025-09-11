@@ -7367,7 +7367,7 @@ Sheets:
               Solid:
                 Color: '#219FD7'
                 Expression: percentDifference(SUM({usage_quantity}),[SUM({usage_quantity})
-                  DESC],1,[]) < 0.0
+                  DESC],1,[]) <= 0.0
         - ComparisonValue:
             Icon:
               CustomCondition:
@@ -7381,7 +7381,7 @@ Sheets:
               CustomCondition:
                 Color: '#219FD7'
                 Expression: percentDifference(SUM({usage_quantity}),[SUM({usage_quantity})
-                  DESC],1,[]) < 0.0
+                  DESC],1,[]) <= 0.0
                 IconOptions:
                   Icon: CARET_DOWN
       Subtitle:
