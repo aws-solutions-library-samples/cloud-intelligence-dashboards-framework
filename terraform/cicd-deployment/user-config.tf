@@ -86,15 +86,15 @@ variable "dashboards" {
   default = {
     # Foundational
     cudos_v5          = "yes"
-    cost_intelligence = "no"
-    kpi               = "no"
+    cost_intelligence = "yes"
+    kpi               = "yes"
 
     # Additional
-    trends       = "no"
-    datatransfer = "no"
+    trends       = "yes"
+    datatransfer = "yes"
     marketplace  = "no"
-    connect      = "no"
-    containers   = "no"
+    connect      = "yes"
+    containers   = "yes"
   }
 
   validation {

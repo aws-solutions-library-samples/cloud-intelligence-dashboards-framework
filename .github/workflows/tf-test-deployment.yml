@@ -116,8 +116,15 @@ jobs:
           export S3_REGION="${{ secrets.AWS_REGION_TF }}"
           export BACKEND_REGION="${{ secrets.AWS_REGION }}"
           
-          # Check for existing CloudFormation stacks (single-account deployment)
-          STACKS_TO_CHECK=("CID-DataExports-Destination" "Cloud-Intelligence-Dashboards")
+          # Check for existing CloudFormation stacks
+          # Foundational stacks
+          FOUNDATIONAL_STACKS=("CID-DataExports-Destination" "Cloud-Intelligence-Dashboards")
+          # Additional CUR-based dashboard stacks
+          ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Cost-Allocation-Dashboard")
+          # Other optional stacks
+          OTHER_STACKS=("CID-DataExports-Source" "CID-DataCollection" "CID-OptimizationDataCollection")
+          # All stacks to check
+          STACKS_TO_CHECK=("${FOUNDATIONAL_STACKS[@]}" "${ADDITIONAL_STACKS[@]}" "${OTHER_STACKS[@]}")
           GOOD_STATES=("CREATE_COMPLETE" "UPDATE_COMPLETE")
           FAILED_STATES=("CREATE_FAILED" "ROLLBACK_COMPLETE" "ROLLBACK_FAILED" "DELETE_FAILED" "UPDATE_ROLLBACK_COMPLETE" "UPDATE_ROLLBACK_FAILED" "IMPORT_ROLLBACK_COMPLETE" "IMPORT_ROLLBACK_FAILED")
           IN_PROGRESS_STATES=("CREATE_IN_PROGRESS" "DELETE_IN_PROGRESS" "UPDATE_IN_PROGRESS" "UPDATE_ROLLBACK_IN_PROGRESS" "REVIEW_IN_PROGRESS" "IMPORT_IN_PROGRESS" "IMPORT_ROLLBACK_IN_PROGRESS")
@@ -160,19 +167,12 @@ jobs:
               echo "Running cleanup..."
               bash ./terraform/terraform-test/cleanup.sh
               echo "Cleanup completed. Proceeding with fresh deployment..."
-            # Auto-cleanup if partial deployment (not all stacks in good state)
-            elif [ ${#GOOD_STACKS[@]} -gt 0 ] && [ ${#GOOD_STACKS[@]} -lt ${#STACKS_TO_CHECK[@]} ]; then
-              echo "Found partial deployment (only ${#GOOD_STACKS[@]} of ${#STACKS_TO_CHECK[@]} stacks in good state)."
-              echo "Auto-cleaning up for fresh deployment..."
-              bash ./terraform/terraform-test/cleanup.sh
-              echo "Cleanup completed. Proceeding with fresh deployment..."
-            # Auto-cleanup if all stacks are in good state (CI/CD should always start fresh)
-            elif [ ${#GOOD_STACKS[@]} -eq ${#STACKS_TO_CHECK[@]} ]; then
-              echo "Found complete deployment with all stacks in good state:"
+            # Auto-cleanup for any existing stacks (CI/CD should always start fresh)
+            else
+              echo "Found existing stacks (${#GOOD_STACKS[@]} total). Auto-cleaning up for fresh CI/CD deployment:"
               for stack in "${GOOD_STACKS[@]}"; do
                 echo "  - $stack"
               done
-              echo "Auto-cleaning up for fresh CI/CD deployment..."
               bash ./terraform/terraform-test/cleanup.sh
               echo "Cleanup completed. Proceeding with fresh deployment..."
             fi
