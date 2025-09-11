@@ -195,7 +195,7 @@ SELECT
 , null ResourceId
 , null ResourceName
 , null ResourceType
-, array_join(ServiceCategory, ',') ServiceCategory
+, element_at(ServiceCategory, 2) ServiceCategory
 , ServiceName
 , SkuId
 , SkuPriceId

@@ -20,4 +20,5 @@ Resources:
   - Url: cost-intelligence/cost-intelligence.yaml
   - Url: resilience-vue/resilience-vue.yaml
   - Url: data-collection-monitor/data-collection-monitor.yaml
+  - Url: tao/tao.yaml
   - Url: media-services/msih.yaml

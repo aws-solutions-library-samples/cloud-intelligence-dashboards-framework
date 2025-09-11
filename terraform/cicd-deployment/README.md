@@ -315,6 +315,76 @@ This is the recommended approach for testing and development environments when y
 
 </details>
 
+<details>
+<summary><b>How do I deploy resources manually to specific accounts?</b></summary>
+
+For users who need granular control over deployment or want to deploy resources manually to specific accounts, you can split the Terraform module into individual components:
+
+### Manual Deployment Steps:
+
+1. **Split the main.tf file** into separate files for each stack:
+   ```
+   data-exports-destination.tf  # For Data Collection account
+   data-exports-source.tf       # For Payer account  
+   dashboards.tf               # For Data Collection account
+   ```
+
+2. **Create separate variable files** for each component:
+   ```
+   variables-destination.tf
+   variables-source.tf
+   variables-dashboards.tf
+   ```
+
+3. **Split outputs.tf** into component-specific output files:
+   ```
+   outputs-destination.tf
+   outputs-source.tf
+   outputs-dashboards.tf
+   ```
+
+4. **Configure separate provider configurations** for each account:
+   ```hcl
+   # For Payer account deployment
+   provider "aws" {
+     region = "us-east-1"
+     # Payer account credentials
+   }
+   
+   # For Data Collection account deployment
+   provider "aws" {
+     region = "us-east-1"
+     # Data Collection account credentials
+   }
+   ```
+
+5. **Deploy in sequence**:
+   ```bash
+   # Step 1: Deploy Data Exports Destination (Data Collection account)
+   terraform init
+   terraform apply -target=aws_cloudformation_stack.cid_dataexports_destination
+   
+   # Step 2: Deploy Data Exports Source (Payer account)
+   # Switch to Payer account credentials
+   terraform apply -target=aws_cloudformation_stack.cid_dataexports_source
+   
+   # Step 3: Deploy Dashboards (Data Collection account)
+   # Switch back to Data Collection account credentials
+   terraform apply -target=aws_cloudformation_stack.cloud_intelligence_dashboards
+   ```
+
+### Important Considerations:
+
+- **Dependencies**: Ensure proper dependency order (Destination → Source → Dashboards)
+- **Cross-account references**: You'll need to manually manage cross-account resource references
+- **State management**: Consider using separate state files for each account
+- **Credentials**: Manually switch AWS credentials/profiles between deployments
+- **Complexity**: This approach requires advanced Terraform knowledge and careful coordination
+
+**Note**: Manual deployment is significantly more complex than the automated cross-account approach provided by this module. We recommend using the standard module unless you have specific requirements that necessitate manual control.
+
+</details>
+
 ## Additional Resources
 
 * [AWS Cloud Intelligence Dashboards Documentation](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/)

@@ -144,10 +144,10 @@ def export_analysis(qs, athena, glue):
 
         cid_print(f'    Found DataSet <BOLD>{dataset_name}<END>.')
         if dataset_name in athena._resources.get('datasets'):
-            resources_datasets.append(dataset_name)
-            if not get_parameters().get('export-known-datasets'):
+            resources_datasets.append(dataset_name) # used later in dependencies
+            if not get_parameters().get('export-known-datasets') == 'yes':
                 cid_print(f'    DataSet <BOLD>{dataset_name}<END> is in resources. Skipping.')
-                continue
+                continue # prevent export dataset
 
         dataset_data = {
             "DataSetId": dataset.raw['DataSetId'],
@@ -270,6 +270,8 @@ def export_analysis(qs, athena, glue):
                 logger.debug(f'{dep_view_name} is not cur')
                 if dep_view_name not in all_views_data:
                     logger.debug(f'{dep_view_name} skipping as not in the views list')
+                if dep_view_name in ['account_map']:
+                    logger.debug(f'{dep_view_name} is a special. skip.')
                 non_cur_dep_views.append(dep_view_name)
         if deps.get('views'):
             deps['views'] = non_cur_dep_views
@@ -282,7 +284,13 @@ def export_analysis(qs, athena, glue):
         if key in cur_tables or cur_helper.table_is_cur(name=key):
             logger.debug(f'Skipping {key} views - it is a CUR')
             continue
+        if key in ['account_map']:
+            cid_print(f'{key} is a special data. Processed separately. Skipping.')
+            continue
         if isinstance(view_data.get('data'), str):
+            if 'CREATE EXTERNAL TABLE' in view_data.get('data') and not get_parameters().get('export-tables') == 'yes':
+                cid_print(f'{key} is a Glue table. Skipping. To export table definitions use `--export-tables yes`')
+                continue
             #check if there is dependency on crawler
             crawler_names = re.findall(r"UPDATED_BY_CRAWLER\W+?'(.+?)''", view_data.get('data'))
             if crawler_names:

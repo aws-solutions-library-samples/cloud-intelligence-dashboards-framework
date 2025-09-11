@@ -31,7 +31,11 @@ def format_field_name(field_name: str, ignore_prefix: bool=False) -> str:
         assert format_field_name('a_c_r_o_n_y_m') == 'ACRONYM'
         assert format_field_name('tag_a_c_r_o_n_y_m') == 'Tag ACRONYM'
         assert format_field_name('tag_service') == 'Tag Service'
+        assert format_field_name('ServiceCode') == 'Service Code'
     """
+    # First, handle camelCase by inserting underscores before uppercase letters
+    field_name = re.sub(r'([a-z])([A-Z])', r'\1_\2', field_name) # This converts "ServiceCode" to "Service_Code"
+    field_name = field_name.lower()
     parts = field_name.split('_')
     result = []
     i = 0

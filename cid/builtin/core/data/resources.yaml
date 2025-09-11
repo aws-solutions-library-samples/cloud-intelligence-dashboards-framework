@@ -75,18 +75,6 @@ dashboards:
         'item_description', 'pricing_unit', 'region', 'pricing_term', 'linked_account_id', 'savings_plan_a_r_n', 'tags_json'
     ]
 
-  TAO:
-    category: 'Advanced'
-    name: Trusted Advisor Organizational View
-    templateId: ta-organizational-view
-    dashboardId: ta-organizational-view
-    dependsOn:
-      datasets:
-        - ta-organizational-view
-    versions:
-      minTemplateVersion: 13
-      minTemplateDescription: "v1.4.0"
-
   Trends:
     category: 'Additional'
     name: Trends Dashboard

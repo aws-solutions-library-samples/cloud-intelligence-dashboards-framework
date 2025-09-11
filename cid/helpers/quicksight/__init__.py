@@ -6,7 +6,7 @@ import logging
 from uuid import uuid4
 from string import Template
 from typing import Dict, List, Union
-from pkg_resources import resource_string
+from importlib import resources
 
 from tqdm import tqdm
 
@@ -352,10 +352,9 @@ class QuickSight(CidBase):
         columns_tpl = {
             'PrincipalArn': self.get_principal_arn()
         }
-        data_source_permissions_tpl = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name='data/permissions/data_source_permissions.json',
-        ).decode('utf-8'))
+        data_source_permissions_tpl = Template(
+            (resources.files('cid.builtin.core') / 'data/permissions/data_source_permissions.json').read_text()
+        )
         data_source_permissions = json.loads(data_source_permissions_tpl.safe_substitute(columns_tpl))
         datasource_name = datasource_id or "CID Athena"
         datasource_id = datasource_id or str(uuid4())
@@ -1050,10 +1049,9 @@ class QuickSight(CidBase):
         columns_tpl = {
             'PrincipalArn': self.get_principal_arn()
         }
-        data_set_permissions_tpl = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name='data/permissions/data_set_permissions.json',
-        ).decode('utf-8'))
+        data_set_permissions_tpl = Template(
+            (resources.files('cid.builtin.core') / 'data/permissions/data_set_permissions.json').read_text()
+        )
         data_set_permissions = json.loads(data_set_permissions_tpl.safe_substitute(columns_tpl))
         definition.update({
             'AwsAccountId': self.account_id,
@@ -1265,10 +1263,9 @@ class QuickSight(CidBase):
 
         create_parameters = self._build_params_for_create_update_dash(definition)
 
-        dashboard_permissions_tpl = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name='data/permissions/dashboard_permissions.json',
-        ).decode('utf-8'))
+        dashboard_permissions_tpl = Template(
+            (resources.files('cid.builtin.core') / 'data/permissions/dashboard_permissions.json').read_text()
+        )
         columns_tpl = {
             'PrincipalArn': self.get_principal_arn()
         }

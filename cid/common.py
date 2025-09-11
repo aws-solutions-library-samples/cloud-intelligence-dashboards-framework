@@ -6,7 +6,7 @@ import functools
 import webbrowser
 from string import Template
 from typing import Dict
-from pkg_resources import resource_string
+from importlib import resources
 from importlib.metadata import entry_points
 from functools import cached_property
 
@@ -391,6 +391,7 @@ class Cid():
     def get_template_parameters(self, parameters: dict, param_prefix: str='', others: dict=None):
         """ Get template parameters. """
         params = get_parameters()
+        others = others or {}
         for key, value in parameters.items():
             logger.debug(f'reading template parameter: {key} / {value}')
             prefix = '' if value.get('global') else param_prefix
@@ -432,12 +433,21 @@ class Cid():
                     except (self.athena.client.exceptions.ClientError, CidError, CidCritical) as exc:
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: {exc}.') from exc
                     if not res_list:
-                        raise CidCritical(f'Failed fetching parameter {prefix}{key}, {value}. Athena returns empty results. {value.get("error")}')
-                    elif len(res_list) == 1:
-                        params[key] = '-'.join(res_list[0])
+                        raise CidCritical(f'Failed fetching parameter {prefix}{key}, {value}. Athena returns empty results. {value.get("error", "")}')
+                    options = ['-'.join(res) for res in res_list]
+                    default = value.get('default', '{default not provided}')
+                    if len(options) == 1:
+                        # silently taking the 1st available option
+                        params[key] = options[0]
+                    elif not utils.isatty():
+                        if default in options:
+                            # silently taking the default option if we cannot ask user
+                            params[key] = default
+                        else:
+                            # silently taking the first option
+                            params[key] = sorted(options)[0]
                     else:
-                        options = ['-'.join(res) for res in res_list]
-                        default = value.get('default')
+                        # asking user
                         params[key] = get_parameter(
                             param_name=prefix + key,
                             message=f"Required parameter: {key} ({value.get('description')})",
@@ -623,7 +633,16 @@ class Cid():
                 dataset = self.qs.describe_dataset(id=dashboard_datasets.get(dataset_name), no_cache=True)
 
             if not isinstance(dataset, Dataset):
-                # Second chance:  try to find the dataset with the id that is the name
+                # Second chance:  try to find the dataset with the id from resources
+                try:
+                    _ds_id = self.resources['datasets'].get(dataset_name, {}).get('data', {}).get('DataSetId')
+                    if _ds_id:
+                        dataset = self.qs.describe_dataset(id=_ds_id, no_cache=True)
+                except Exception as exc:
+                    logger.debug(f'Failed to describe_dataset {dataset_name} {exc}')
+
+            if not isinstance(dataset, Dataset):
+                # Third chance:  try to find the dataset with the id that is the name
                 try:
                     dataset = self.qs.describe_dataset(id=dataset_name, no_cache=True)
                 except Exception as exc:
@@ -661,14 +680,18 @@ class Cid():
 
                 if not matching_datasets:
                     reco = ''
-                    logger.warning(f'Dataset {dataset_name} is not found.')
-                    if utils.exec_env()['shell'] == 'lambda':
-                        # We are in lambda
-                        reco = 'You can try deleting existing dataset and re-run.'
-                    else:
-                        # We are in command line mode
-                        reco = 'Please retry with --update "yes" --force --recursive flags.'
-                    raise CidCritical(f'Failed to find a Dataset "{dataset_name}" with required fields. ' + reco)
+                    new_datasets = self.create_datasets([dataset_name], known_datasets=dashboard_datasets, recursive=recursive, update=update)
+                    if not new_datasets:
+                        logger.warning(f'Dataset {dataset_name} is not found.')
+                        if utils.exec_env()['shell'] == 'lambda':
+                            # We are in lambda
+                            reco = 'You can try deleting existing dataset and re-run.'
+                        else:
+                            # We are in command line mode
+                            reco = 'Please retry with --update "yes" --force --recursive flags.'
+                        raise CidCritical(f'Failed to find a Dataset "{dataset_name}" with required fields. ' + reco)
+                    _ds_id = self.resources['datasets'].get(dataset_name, {}).get('data', {}).get('DataSetId')
+                    dashboard_definition['datasets'][dataset_name] = f'arn:{self.base.partition}:quicksight:{self.base.region}:{self.base.account_id}:dataset/{_ds_id}'
                 elif len(matching_datasets) >= 1:
                     if len(matching_datasets) > 1:
                         # FIXME: propose a choice?
@@ -1017,10 +1040,9 @@ class Cid():
                             param_name='folder-name',
                             message='Please enter the folder name to create'
                         )
-                        folder_permissions_tpl = Template(resource_string(
-                            package_or_requirement='cid.builtin.core',
-                            resource_name=f'data/permissions/folder_permissions.json',
-                        ).decode('utf-8'))
+                        folder_permissions_tpl = Template(
+                            (resources.files('cid.builtin.core') / 'data/permissions/folder_permissions.json').read_text()
+                        )
                         columns_tpl = {
                             'PrincipalArn': self.qs.get_principal_arn()
                         }
@@ -1056,10 +1078,9 @@ class Cid():
             columns_tpl = {
                 'PrincipalArn': principal_arn
             }
-            dashboard_permissions_tpl = Template(resource_string(
-                package_or_requirement='cid.builtin.core',
-                resource_name=template_filename,
-            ).decode('utf-8'))
+            dashboard_permissions_tpl = Template(
+                (resources.files('cid.builtin.core') / template_filename).read_text()
+            )
             dashboard_permissions = json.loads(dashboard_permissions_tpl.safe_substitute(columns_tpl))
             dashboard_params = {
                 "GrantPermissions": [
@@ -1084,10 +1105,9 @@ class Cid():
             if share_method == 'account':
                 logger.info(f'Sharing datasets/datasources with an account is not supported, skipping')
             else:
-                data_set_permissions_tpl = Template(resource_string(
-                    package_or_requirement='cid.builtin.core',
-                    resource_name=f'data/permissions/data_set_permissions.json',
-                ).decode('utf-8'))
+                data_set_permissions_tpl = Template(
+                    (resources.files('cid.builtin.core') / 'data/permissions/data_set_permissions.json').read_text()
+                )
                 data_set_permissions = json.loads(data_set_permissions_tpl.safe_substitute(columns_tpl))
 
                 _datasources: Dict[str, Datasource] = {}
@@ -1102,10 +1122,9 @@ class Cid():
                         if not _datasources.get(_datasource.id):
                             _datasources.update({_datasource.id: _datasource})
 
-                data_source_permissions_tpl = Template(resource_string(
-                    package_or_requirement='cid.builtin.core',
-                    resource_name=f'data/permissions/data_source_permissions.json',
-                ).decode('utf-8'))
+                data_source_permissions_tpl = Template(
+                    (resources.files('cid.builtin.core') / f'data/permissions/data_source_permissions.json').read_text()
+                )
                 data_source_permissions = json.loads(data_source_permissions_tpl.safe_substitute(columns_tpl))
                 for k, v in _datasources.items():
                     logger.info(f'Sharing data source "{v.name}" ({k})')
@@ -1295,7 +1314,7 @@ class Cid():
 
             # get rls status of existing datasets
             found_dataset_objects = [self.qs.describe_dataset(ds_id) for ds_id in found_datasets]
-            rls_dataset_arns = [ds.rls_arn for ds in found_dataset_objects if ds.rls_arn]
+            rls_dataset_arns = [ds.rls_arn for ds in found_dataset_objects if ds and ds.rls_arn]
             if rls_dataset_arns:
                 rls_dataset_arn = max(set(rls_dataset_arns), key=rls_dataset_arns.count) #get the most frequent
                 if not get_parameters().get('rls-dataset-id') and not get_parameters().get('rls'):
@@ -1624,7 +1643,7 @@ class Cid():
             except (KeyError, TypeError, AttributeError):
                 tags_type = None
             try:
-                param_res_tag =  self.resources['views'][dep_view_name]['parameters']['resource-tags']
+                param_res_tag =  self.resources['views'][dep_view_name]['parameters']['resource_tags']
             except (KeyError, TypeError, AttributeError):
                 param_res_tag = None
             if tags_type == 'json' or param_res_tag:
