@@ -86,16 +86,16 @@ fi
 
 echo "Generating terraform.tfvars..."
 
-# Extract dashboard values from variables.tf
-VARS_FILE="$PROJECT_ROOT/terraform/cicd-deployment/variables.tf"
-CUDOS_V5=$(awk '/default = {/,/^  }/ { if (/cudos_v5.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
-COST_INTEL=$(awk '/default = {/,/^  }/ { if (/cost_intelligence.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
-KPI_DASH=$(awk '/default = {/,/^  }/ { if (/kpi.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
-TRENDS_DASH=$(awk '/default = {/,/^  }/ { if (/trends.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
-DATATRANS_DASH=$(awk '/default = {/,/^  }/ { if (/datatransfer.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
-MARKET_DASH=$(awk '/default = {/,/^  }/ { if (/marketplace.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
-CONNECT_DASH=$(awk '/default = {/,/^  }/ { if (/connect.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
-CONTAINERS_DASH=$(awk '/default = {/,/^  }/ { if (/containers.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$VARS_FILE" || echo "no")
+# Extract dashboard values from user-config.tf defaults
+USER_CONFIG_FILE="$PROJECT_ROOT/terraform/cicd-deployment/user-config.tf"
+CUDOS_V5=$(awk '/variable "dashboards"/,/^}/ { if (/cudos_v5.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "yes")
+COST_INTEL=$(awk '/variable "dashboards"/,/^}/ { if (/cost_intelligence.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
+KPI_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/kpi.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
+TRENDS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/trends.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
+DATATRANS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/datatransfer.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
+MARKET_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/marketplace.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
+CONNECT_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/connect.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
+CONTAINERS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/containers.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
 
 # Extract CID CFN version from local cid-cfn.yml file
 CID_CFN_VERSION=$(sed -n '3p' "$PROJECT_ROOT/cfn-templates/cid-cfn.yml" | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/v//' || echo "${CID_VERSION}")
@@ -117,7 +117,7 @@ global_values = {
   environment            = \"${ENVIRONMENT}\"
 }
 
-# Dashboard configuration (extracted from variables.tf defaults)
+# Dashboard configuration (extracted from user-config.tf defaults)
 dashboards = {
   # Foundational
   cudos_v5          = \"${CUDOS_V5}\"
@@ -175,9 +175,15 @@ fi
 # Step 1.5: Check for existing stacks and handle cleanup
 echo ""
 echo "=== Checking for Existing CloudFormation Stacks ==="
+echo "Scanning for CID stacks (foundational + additional dashboards)..."
 
-# Check for existing CloudFormation stacks (single-account deployment)
-STACKS_TO_CHECK=("CID-DataExports-Destination" "Cloud-Intelligence-Dashboards")
+# Check for existing CloudFormation stacks
+# Foundational stacks
+FOUNDATIONAL_STACKS=("CID-DataExports-Destination" "Cloud-Intelligence-Dashboards")
+# Additional CUR-based dashboard stacks
+ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Cost-Allocation-Dashboard")
+# All stacks to check (excluding optional advanced stacks to reduce noise)
+STACKS_TO_CHECK=("${FOUNDATIONAL_STACKS[@]}" "${ADDITIONAL_STACKS[@]}")
 GOOD_STATES=("CREATE_COMPLETE" "UPDATE_COMPLETE")
 FAILED_STATES=("CREATE_FAILED" "ROLLBACK_COMPLETE" "ROLLBACK_FAILED" "DELETE_FAILED" "UPDATE_ROLLBACK_COMPLETE" "UPDATE_ROLLBACK_FAILED" "IMPORT_ROLLBACK_COMPLETE" "IMPORT_ROLLBACK_FAILED")
 IN_PROGRESS_STATES=("CREATE_IN_PROGRESS" "DELETE_IN_PROGRESS" "UPDATE_IN_PROGRESS" "UPDATE_ROLLBACK_IN_PROGRESS" "REVIEW_IN_PROGRESS" "IMPORT_IN_PROGRESS" "IMPORT_ROLLBACK_IN_PROGRESS")
@@ -187,9 +193,11 @@ GOOD_STACKS=()
 FAILED_STACKS=()
 IN_PROGRESS_STACKS=()
 
-for stack in "${STACKS_TO_CHECK[@]}"; do
+# Check foundational stacks first
+echo "Checking foundational stacks:"
+for stack in "${FOUNDATIONAL_STACKS[@]}"; do
   if STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "$stack" --region "$S3_REGION" --query 'Stacks[0].StackStatus' --output text 2>/dev/null); then
-    echo "Found existing stack: $stack (Status: $STACK_STATUS)"
+    echo "  ✓ Found: $stack (Status: $STACK_STATUS)"
     FOUND_STACKS+=("$stack")
     
     if [[ " ${GOOD_STATES[*]} " =~ " ${STACK_STATUS} " ]]; then
@@ -199,8 +207,36 @@ for stack in "${STACKS_TO_CHECK[@]}"; do
     elif [[ " ${IN_PROGRESS_STATES[*]} " =~ " ${STACK_STATUS} " ]]; then
       IN_PROGRESS_STACKS+=("$stack")
     fi
+  else
+    echo "  - Not found: $stack"
   fi
 done
+
+# Check additional dashboard stacks
+echo "Checking additional CUR-based dashboard stacks:"
+for stack in "${ADDITIONAL_STACKS[@]}"; do
+  if STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "$stack" --region "$S3_REGION" --query 'Stacks[0].StackStatus' --output text 2>/dev/null); then
+    echo "  ✓ Found: $stack (Status: $STACK_STATUS)"
+    FOUND_STACKS+=("$stack")
+    
+    if [[ " ${GOOD_STATES[*]} " =~ " ${STACK_STATUS} " ]]; then
+      GOOD_STACKS+=("$stack")
+    elif [[ " ${FAILED_STATES[*]} " =~ " ${STACK_STATUS} " ]]; then
+      FAILED_STACKS+=("$stack")
+    elif [[ " ${IN_PROGRESS_STATES[*]} " =~ " ${STACK_STATUS} " ]]; then
+      IN_PROGRESS_STACKS+=("$stack")
+    fi
+  else
+    echo "  - Not found: $stack"
+  fi
+done
+
+echo ""
+echo "Stack Summary:"
+echo "- Total stacks found: ${#FOUND_STACKS[@]}"
+echo "- Stacks in good state: ${#GOOD_STACKS[@]}"
+echo "- Stacks in failed state: ${#FAILED_STACKS[@]}"
+echo "- Stacks in progress: ${#IN_PROGRESS_STACKS[@]}"
 
 if [ ${#FOUND_STACKS[@]} -gt 0 ]; then
   # Handle in-progress stacks first
@@ -222,29 +258,47 @@ if [ ${#FOUND_STACKS[@]} -gt 0 ]; then
     echo "Running cleanup..."
     bash "$SCRIPT_DIR/cleanup.sh"
     echo "Cleanup completed. Proceeding with fresh deployment..."
-  # Auto-cleanup if partial deployment (not all stacks in good state)
-  elif [ ${#GOOD_STACKS[@]} -gt 0 ] && [ ${#GOOD_STACKS[@]} -lt ${#STACKS_TO_CHECK[@]} ]; then
-    echo ""
-    echo "Found partial deployment (only ${#GOOD_STACKS[@]} of ${#STACKS_TO_CHECK[@]} stacks in good state)."
-    echo "Auto-cleaning up for fresh deployment..."
-    bash "$SCRIPT_DIR/cleanup.sh"
-    echo "Cleanup completed. Proceeding with fresh deployment..."
-  # Ask for confirmation only if all stacks are in good state
-  elif [ ${#GOOD_STACKS[@]} -eq ${#STACKS_TO_CHECK[@]} ]; then
-    echo ""
-    echo "Found complete deployment with all stacks in good state:"
-    for stack in "${GOOD_STACKS[@]}"; do
-      echo "  - $stack"
+  # Auto-cleanup if partial foundational deployment (foundational stacks incomplete)
+  elif [ ${#GOOD_STACKS[@]} -gt 0 ]; then
+    # Check if foundational stacks are complete
+    FOUNDATIONAL_GOOD=0
+    for stack in "${FOUNDATIONAL_STACKS[@]}"; do
+      if [[ " ${GOOD_STACKS[*]} " =~ " ${stack} " ]]; then
+        FOUNDATIONAL_GOOD=$((FOUNDATIONAL_GOOD + 1))
+      fi
     done
-    echo ""
-    read -p "Do you want to clean up existing deployment before proceeding? (y/N): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      echo "Running cleanup..."
+    
+    if [ $FOUNDATIONAL_GOOD -lt ${#FOUNDATIONAL_STACKS[@]} ]; then
+      echo ""
+      echo "Found partial foundational deployment (only $FOUNDATIONAL_GOOD of ${#FOUNDATIONAL_STACKS[@]} foundational stacks in good state)."
+      echo "Auto-cleaning up for fresh deployment..."
       bash "$SCRIPT_DIR/cleanup.sh"
       echo "Cleanup completed. Proceeding with fresh deployment..."
     else
-      echo "Keeping existing deployment. Proceeding with current state..."
+      echo ""
+      echo "Found deployment with ${#GOOD_STACKS[@]} total stacks:"
+      echo "Foundational stacks:"
+      for stack in "${FOUNDATIONAL_STACKS[@]}"; do
+        if [[ " ${GOOD_STACKS[*]} " =~ " ${stack} " ]]; then
+          echo "  ✓ $stack"
+        fi
+      done
+      echo "Additional dashboard stacks:"
+      for stack in "${ADDITIONAL_STACKS[@]}"; do
+        if [[ " ${GOOD_STACKS[*]} " =~ " ${stack} " ]]; then
+          echo "  ✓ $stack"
+        fi
+      done
+      echo ""
+      read -p "Do you want to clean up existing deployment before proceeding? (y/N): " -n 1 -r
+      echo
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "Running cleanup..."
+        bash "$SCRIPT_DIR/cleanup.sh"
+        echo "Cleanup completed. Proceeding with fresh deployment..."
+      else
+        echo "Keeping existing deployment. Proceeding with current state..."
+      fi
     fi
   fi
 else
