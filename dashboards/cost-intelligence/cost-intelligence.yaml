@@ -7,7 +7,7 @@ dashboards:
       - s3_view
       - summary_view
     name: Cost Intelligence
-    dashboardId: cost_intelligence_dashboard
+    dashboardId: cost-intelligence-dashboard
     category: Custom
     theme: MIDNIGHT
     version: v3.6.0
