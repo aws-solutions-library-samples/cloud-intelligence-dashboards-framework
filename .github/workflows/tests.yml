@@ -35,7 +35,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install ./
       - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-session-name: ${{ secrets.AWS_SESSION_NAME }}
