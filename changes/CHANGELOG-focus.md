@@ -1,6 +1,6 @@
 # What's new in FOCUS Dashboard
 
-## FOCUS Dashboard v0.2.1
+## FOCUS Dashboard v1.0.0
 * Add Taxonomy with Resource Tags
 
 
