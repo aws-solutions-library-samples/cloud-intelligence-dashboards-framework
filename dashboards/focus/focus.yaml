@@ -4497,7 +4497,7 @@ dashboards:
         - Content: "<text-box>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"\
             center\">\n    <inline font-size=\"40px\">\n      <b>FOCUS Dashboard</b>\n \
             \   </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n    <inline\
-            \ font-size=\"40px\">\n      <b>v0.2.1</b>\n    </inline>\n  </block>\n  <br/>\n\
+            \ font-size=\"40px\">\n      <b>v1.0.0</b>\n    </inline>\n  </block>\n  <br/>\n\
             \  <block align=\"center\">\n    <inline font-size=\"40px\">\n      <b>FinOps\
             \ Cost and Usage Specification Dashboard</b>\n    </inline>\n  </block>\n  <br/>\n\
             \  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n\
