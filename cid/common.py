@@ -409,7 +409,7 @@ class Cid():
                     if isinstance(params[key], str):
                         params[key] = params[key].split(',')
                 elif not utils.isatty():
-                    params[key] = []
+                    params[key] = "'{}'"
                 else:
                     if 'query' not in value:
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: parameter with type Athena must have query value.')
