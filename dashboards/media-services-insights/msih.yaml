@@ -131,7 +131,7 @@ datasets:
               NewColumnName: linked_account_name
           Source:
             PhysicalTableId: 481b319c-c8f4-4e82-9ddf-fa705f6cf783
-        b6eb3c98-ab92-471c-bbd1-eab4fe15514e:
+        9d41b8af-311f-4f41-9835-e6df45e5e693:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -187,11 +187,11 @@ datasets:
               - linked_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: c8019994-2912-4f5d-a1b2-dab70cd5757b
+              LeftOperand: b36cde4d-cf09-4068-b51f-6d9032eff788
               RightOperand: 24baacd6-be68-44a1-ac29-318cfec3a2d9
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
-        c8019994-2912-4f5d-a1b2-dab70cd5757b:
+        b36cde4d-cf09-4068-b51f-6d9032eff788:
           Alias: Intermediate Table
           Source:
             JoinInstruction:
@@ -297,10 +297,15 @@ datasets:
               Type: STRING
             - Name: last_refresh_date
               Type: DATETIME
+            - Name: earliest_data_date
+              Type: DATETIME
             - Name: usage_quantity
               Type: DECIMAL
               SubType: FLOAT
             - Name: unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: net_unblended_cost
               Type: DECIMAL
               SubType: FLOAT
             - Name: amortized_cost
@@ -318,11 +323,6 @@ datasets:
             - Name: public_cost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: earliest_data_date
-              Type: DATETIME
-            - Name: net_unblended_cost
-              Type: DECIMAL
-              SubType: FIXED
         ca2f9216-c240-4505-9a10-3d7794d2633a:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
@@ -346,6 +346,14 @@ datasets:
             - Name: account_name
               Type: STRING
       LogicalTableMap:
+        3c7271a1-f31b-406e-850e-ad0f8d2d019c:
+          Alias: Intermediate Table
+          Source:
+            JoinInstruction:
+              LeftOperand: 3e96372e-5959-4a5b-a96a-730193e3990b
+              RightOperand: fe50ab11-682a-4611-b7a0-048682763adf
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
         3e96372e-5959-4a5b-a96a-730193e3990b:
           Alias: msih_view
           Source:
@@ -361,7 +369,7 @@ datasets:
               NewColumnName: payer_account_name
           Source:
             PhysicalTableId: ca2f9216-c240-4505-9a10-3d7794d2633a
-        e48a7245-1a66-419e-90c8-2b469dccd827:
+        6f0e0ca9-00b1-4ad0-b2a4-0f3cba59448a:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -421,8 +429,10 @@ datasets:
               - resource_id
               - reservation_id
               - last_refresh_date
+              - earliest_data_date
               - usage_quantity
               - unblended_cost
+              - net_unblended_cost
               - amortized_cost
               - net_amortized_cost
               - ri_sp_trueup
@@ -432,22 +442,12 @@ datasets:
               - payer_account_name
               - linked_account_formatted
               - payer_account_formatted
-              - net_unblended_cost
-              - earliest_data_date
           Source:
             JoinInstruction:
-              LeftOperand: fa4f543b-7694-4948-bfde-0fa8dccac811
+              LeftOperand: 3c7271a1-f31b-406e-850e-ad0f8d2d019c
               RightOperand: 43f7b42d-3957-4651-8f5c-278ecd1981cc
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
-        fa4f543b-7694-4948-bfde-0fa8dccac811:
-          Alias: Intermediate Table
-          Source:
-            JoinInstruction:
-              LeftOperand: 3e96372e-5959-4a5b-a96a-730193e3990b
-              RightOperand: fe50ab11-682a-4611-b7a0-048682763adf
-              Type: LEFT
-              OnClause: '{linked_account_id} = {account_id}'
         fe50ab11-682a-4611-b7a0-048682763adf:
           Alias: account_map_linked
           DataTransforms:
@@ -504,7 +504,25 @@ views:
       CREATE OR REPLACE VIEW "${athena_database_name}".msih_reservations AS
       WITH
         core AS (
-         SELECT *
+         SELECT
+           "reservation_reservation_a_r_n"
+         , "line_item_usage_amount"
+         , "line_item_usage_start_date"
+         , "line_item_usage_end_date"
+         , "line_item_product_code"
+         , "line_item_line_item_type"
+         , "reservation_start_time"
+         , "reservation_end_time"
+         , "line_item_usage_account_id"
+         , "bill_payer_account_id"
+         , "line_item_line_item_description"
+         , "line_item_usage_type"
+         , "product"
+         , "line_item_operation"
+         , "line_item_unblended_cost"
+         , "line_item_net_unblended_cost"
+         , "reservation_effective_cost"
+         , "pricing_public_on_demand_cost"
          FROM
            "${cur2_database}"."${cur2_table_name}"
          WHERE (CAST("line_item_usage_end_date" AS date) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '24' MONTH))
@@ -720,10 +738,23 @@ views:
       )
       , "cur_pre_processing" AS (
          SELECT
-           *
-         , split_part("billing_period", '-', 1) "year"
+           split_part("billing_period", '-', 1) "year"
          , split_part("billing_period", '-', 2) "month"
+         , "bill_billing_period_start_date" "billing_period"
          , (CASE WHEN ("date_trunc"('day', "line_item_usage_start_date") >= ("date_trunc"('day', current_timestamp) - INTERVAL  '30' DAY)) THEN "date_trunc"('hour', "line_item_usage_start_date") WHEN ("date_trunc"('month', "line_item_usage_start_date") >= ("date_trunc"('month', current_timestamp) - INTERVAL  '4' MONTH)) THEN "date_trunc"('day', "line_item_usage_start_date") ELSE "date_trunc"('month', "line_item_usage_start_date") END) "usage_date"
+         , "bill_billing_entity" "billing_entity"
+         , "line_item_product_code" "product_code"
+         , "line_item_usage_type" "usage_type"
+         , "line_item_line_item_type" "charge_type"
+         , "line_item_usage_start_date"
+         , "line_item_resource_id" "resource_id"
+         , "line_item_usage_account_id" "linked_account_id"
+         , "bill_payer_account_id" "payer_account_id"
+         , "line_item_line_item_description" "item_description"
+         , "product"
+         , "product_from_location" "location_source"
+         , "product_to_location" "location_destination"
+         , "pricing_unit"
          , (CASE WHEN ("strpos"("pricing_unit", 'Reserved') > 0) THEN 'Reserved' WHEN ("reservation_reservation_a_r_n" <> '') THEN 'Reserved' ELSE 'OnDemand' END) "purchase_option"
          , (CASE WHEN ("reservation_reservation_a_r_n" <> '') THEN "reservation_reservation_a_r_n" ELSE CAST('' AS varchar) END) "ri_sp_arn"
          , (CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN 'Running_Usage' WHEN ("line_item_line_item_type" = 'Usage') THEN 'Running_Usage' ELSE 'non_usage' END) "charge_category"
@@ -735,6 +766,9 @@ views:
          , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN -("reservation_amortized_upfront_fee_for_billing_period") ELSE 0 END) "ri_sp_trueup"
          , (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN "line_item_unblended_cost" WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN "line_item_unblended_cost" ELSE 0 END) "ri_sp_upfront_fees"
          , (CASE WHEN ("line_item_line_item_type" <> 'SavingsPlanNegation') THEN "pricing_public_on_demand_cost" ELSE 0 END) "public_cost"
+         , "line_item_usage_amount"
+         , "line_item_unblended_cost"
+         , "line_item_net_unblended_cost"
          FROM
            "${cur2_database}"."${cur2_table_name}"
          WHERE (("line_item_product_code" LIKE '%Media%') AND ("line_item_product_code" <> 'AWSElementalMediaStore') AND (NOT ("line_item_product_code" LIKE '%MediaSupport')) AND ("bill_billing_period_start_date" >= (date_trunc('month', current_timestamp) - INTERVAL  '25' MONTH)) AND (CAST(concat("billing_period", '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '25' MONTH)) AND (NOT ("line_item_line_item_type" IN ('Tax', 'Refund', 'Credit'))))
@@ -742,27 +776,27 @@ views:
       , "usage_type_normalization" AS (
          SELECT
            *
-         , (CASE WHEN ("r"."elemental_service" IS NOT NULL) THEN COALESCE(TRY_CAST(TRY(json_parse(REDUCE(SEQUENCE(1, CARDINALITY("r"."patterns")), "line_item_usage_type", ("acc", "i") -> REGEXP_REPLACE("acc", "r"."patterns"[i], "r"."reps"[i]), ("acc") -> "acc"))) AS map(varchar, varchar)), CAST(json_parse('{"error": "invalid json"}') AS map(varchar, varchar))) ELSE null END) "usage_type_json"
+         , (CASE WHEN ("r"."elemental_service" IS NOT NULL) THEN COALESCE(TRY_CAST(TRY(json_parse(REDUCE(SEQUENCE(1, CARDINALITY("r"."patterns")), "usage_type", ("acc", "i") -> REGEXP_REPLACE("acc", "r"."patterns"[i], "r"."reps"[i]), ("acc") -> "acc"))) AS map(varchar, varchar)), CAST(json_parse('{"error": "invalid json"}') AS map(varchar, varchar))) ELSE null END) "usage_type_json"
          FROM
            ("cur_pre_processing" c
-         LEFT JOIN "emc_usage_translation_compiled" r ON ((r."elemental_service" = "line_item_product_code") AND (c."product_family" = 'Transcode minute')))
+         LEFT JOIN "emc_usage_translation_compiled" r ON ((r."elemental_service" = "product_code") AND (c."product_family" = 'Transcode minute')))
       )
       SELECT
         "year"
       , "month"
-      , "bill_billing_period_start_date" "billing_period"
+      , "billing_period"
       , "usage_date"
-      , "bill_payer_account_id" "payer_account_id"
-      , "line_item_usage_account_id" "linked_account_id"
-      , "line_item_line_item_type" "charge_type"
+      , "norm"."payer_account_id"
+      , "linked_account_id"
+      , "charge_type"
       , "charge_category"
       , "purchase_option"
       , "ri_sp_arn"
-      , "line_item_product_code" "product_code"
+      , "product_code"
       , "product_family"
-      , "line_item_usage_type" "usage_type"
+      , "usage_type"
       , "operation"
-      , "line_item_line_item_description" "item_description"
+      , "item_description"
       , "product"['region'] "region"
       , "usage_type_json"['Pipeline'] "video_pipeline"
       , "usage_type_json"['FlowDirection'] "video_flow_direction"
@@ -778,11 +812,11 @@ views:
       , "usage_type_json"['IsStatmux'] "video_statmux"
       , "usage_type_json"
       , "product"['transcoding_result'] "video_transcoding_result"
-      , "product_from_location" "location_source"
-      , "product_to_location" "location_destination"
-      , "bill_billing_entity" "billing_entity"
-      , "pricing_unit" "pricing_unit"
-      , "line_item_resource_id" "resource_id"
+      , "location_source"
+      , "location_destination"
+      , "billing_entity"
+      , "pricing_unit"
+      , "resource_id"
       , "reservation_id"
       , "last_refresh_date"
       , "earliest_data_date"
@@ -798,19 +832,19 @@ views:
         (("usage_type_normalization" "norm"
       INNER JOIN (
          SELECT
-           "bill_payer_account_id" "payer_account_id"
+           "payer_account_id"
          , MAX("line_item_usage_start_date") "last_refresh_date"
          FROM
            "usage_type_normalization"
          WHERE ("line_item_usage_start_date" <= (date_trunc('day', current_timestamp) - INTERVAL  '0' DAY))
          GROUP BY 1
-      )  ld ON (ld."payer_account_id" = "norm"."bill_payer_account_id"))
+      )  ld ON (ld."payer_account_id" = "norm"."payer_account_id"))
       INNER JOIN (
          SELECT
-           "bill_payer_account_id" "payer_account_id"
+           "payer_account_id"
          , MIN("line_item_usage_start_date") "earliest_data_date"
          FROM
            "usage_type_normalization"
          GROUP BY 1
-      )  fd ON (fd."payer_account_id" = "norm"."bill_payer_account_id"))
+      )  fd ON (fd."payer_account_id" = "norm"."payer_account_id"))
       GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38

@@ -44,6 +44,10 @@ CalculatedFields:
     )
   Name: Reservation ID
 - DataSetIdentifier: msih_reservations
+  Expression: stdev({reservation_utilization_percent}, [{usage_start_time}, {Reservation
+    ID}])
+  Name: Reservation Stat
+- DataSetIdentifier: msih_reservations
   Expression: '{reservation_utilization_percent} * 100'
   Name: Reservation Utilization
 - DataSetIdentifier: msih_reservations
@@ -1660,7 +1664,6 @@ FilterGroups:
         - 806f73d8-230c-4deb-8a49-70a5c068e05f
         - 0308143d-ce59-4071-b3e6-7b2c612461e0
         - 3ff96a35-e9cc-43d9-8c7b-8427b4dc4710
-        - ef4be5d1-9b7f-46e7-88df-5f2b130d4f0c
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 1ba23446-1b17-4e4d-a1a7-439ba0e7be92
@@ -1854,7 +1857,6 @@ FilterGroups:
         - 806f73d8-230c-4deb-8a49-70a5c068e05f
         - 0308143d-ce59-4071-b3e6-7b2c612461e0
         - 3ff96a35-e9cc-43d9-8c7b-8427b4dc4710
-        - ef4be5d1-9b7f-46e7-88df-5f2b130d4f0c
   Status: ENABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: c1dee596-0dd0-4b71-adb2-a486b5b8c702
@@ -4861,7 +4863,11 @@ FilterGroups:
       - Scope: SELECTED_VISUALS
         SheetId: 652661af-5b76-4855-80ee-19e261578d3f
         VisualIds:
+        - be37da6b-f80c-45ee-afd8-fc5e1fd8d0d1
         - 67029010-af24-429d-89aa-a920caaa7805
+        - e61a2c58-5441-4d79-b525-14fbaa91379e
+        - 9468c54c-3f3a-4f8a-9db5-0a7a704da488
+        - 64a2da59-9bc6-41c5-9982-3221ac2b9991
   Status: ENABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: e3e8cce6-012c-4ec5-9e6b-b1e78eba99b1
@@ -5117,25 +5123,6 @@ FilterGroups:
         SheetId: 7c504d5e-c0c0-4e5c-9c0e-87a0b22d47c5
         VisualIds:
         - 950f333c-6f06-4b6b-9a1e-15baba1ee314
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: 4cf95191-44a8-4523-8717-b0cce3bb0ac4
-  Filters:
-  - NumericEqualityFilter:
-      Column:
-        ColumnName: is_eml_active_transcode
-        DataSetIdentifier: summary_view
-      FilterId: 9b882f3b-c760-4900-965c-7749982090f9
-      MatchOperator: EQUALS
-      NullOption: ALL_VALUES
-      Value: 1.0
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 652661af-5b76-4855-80ee-19e261578d3f
-        VisualIds:
-        - ef4be5d1-9b7f-46e7-88df-5f2b130d4f0c
   Status: ENABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: 57f4ce55-ed37-4ba7-941e-3f503996b09e
@@ -5426,6 +5413,29 @@ FilterGroups:
         VisualIds:
         - 7920a208-1328-462b-8d11-373bfeb05e52
   Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 209806f4-23a2-4079-ad7a-495bed4e303b
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: usage_start_time
+        DataSetIdentifier: msih_reservations
+      FilterId: f13fc56d-7c7a-40fb-8517-da8a3ad7d0ef
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 12
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 652661af-5b76-4855-80ee-19e261578d3f
+        VisualIds:
+        - 64a2da59-9bc6-41c5-9982-3221ac2b9991
+  Status: ENABLED
 Options: {}
 ParameterDeclarations:
 - IntegerParameterDeclaration:
@@ -5633,6 +5643,14 @@ ParameterDeclarations:
       - Active
     Name: EmlReservationStatus
     ParameterValueType: MULTI_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Median
+    Name: EmlReservationUtilizationStat
+    ParameterValueType: SINGLE_VALUED
     ValueWhenUnset:
       ValueWhenUnsetOption: RECOMMENDED_VALUE
 Sheets:
@@ -5928,54 +5946,47 @@ Sheets:
   TextBoxes:
   - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>Media\
       \ Services Insights Hub</b>\n  </inline>\n  <br/>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"22px\">\n    <b>\_</b>\n  </inline>\n  <inline font-size=\"18px\"\
-      >\n    <i>This dashboard is designed to help you track, understand, and optimize\
-      \ cost and usage pertaining to your\_</i>\n  </inline>\n  <inline color=\"#09add4\"\
-      \ font-size=\"18px\">\n    <a href=\"https://aws.amazon.com/media-services/\"\
+      \ font-size=\"22px\">\n    <b>\_</b>\n  </inline>\n  <inline color=\"#efefe9\"\
+      \ font-size=\"18px\">\n    <i>This dashboard is designed to help you track,\
+      \ understand, and optimize cost and usage pertaining to your\_</i>\n  </inline>\n\
+      \  <inline color=\"#09add4\" font-size=\"18px\">\n    <a href=\"https://aws.amazon.com/media-services/\"\
       \ target=\"_blank\">\n      <b>\n        <i>\n          <u>AWS Media Services</u>\n\
-      \        </i>\n      </b>\n    </a>\n  </inline>\n  <inline font-size=\"18px\"\
-      >\n    <i>\_usage.\_</i>\n  </inline>\n  <br/>\n  <br/>\n  <inline color=\"\
-      #fec48c\" font-size=\"22px\">\n    <b>\_\_S</b>\n  </inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"18px\">\n    <b>ECTIONS</b>\n  </inline>\n  <br/>\n  <ul>\n\
-      \    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">\n       \
-      \ <i>The\_</i>\n      </inline>\n      <inline color=\"#fc850d\" font-size=\"\
-      16px\">\n        <b>\n          <i>Executive Summary</i>\n        </b>\n   \
-      \   </inline>\n      <inline color=\"#fec48c\" font-size=\"16px\">\n       \
-      \ <b>\n          <i>\_</i>\n        </b>\n      </inline>\n      <inline color=\"\
-      #efefe9\" font-size=\"16px\">\n        <i>tab\_</i>\n      </inline>\n     \
-      \ <inline font-size=\"16px\">\n        <i>looks at Elemental spend in aggregate\
-      \ across all services.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n      </inline>\n\
-      \      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n        \
-      \  <i>Reservations &amp; Savings</i>\n        </b>\n      </inline>\n      <inline\
-      \ color=\"#fec48c\" font-size=\"16px\">\n        <b>\n          <i>\_</i>\n\
-      \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
-      16px\">\n        <i>tab looks</i>\n      </inline>\n      <inline font-size=\"\
-      16px\">\n        <i>\_specifically at current and potential savings for AWS\
-      \ Elemental MediaLive reservations.</i>\n      </inline>\n    </li>\n    <li\
-      \ class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
-      >\n        <i>Other,\_</i>\n      </inline>\n      <inline color=\"#fc850d\"\
-      \ font-size=\"16px\">\n        <b>\n          <i>product-specific</i>\n    \
-      \    </b>\n      </inline>\n      <inline color=\"#fec48c\" font-size=\"16px\"\
+      \        </i>\n      </b>\n    </a>\n  </inline>\n  <inline color=\"#efefe9\"\
+      \ font-size=\"18px\">\n    <i>\_usage.\_</i>\n  </inline>\n  <br/>\n  <br/>\n\
+      \  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>\_\_T</b>\n  </inline>\n\
+      \  <inline color=\"#fec48c\" font-size=\"18px\">\n    <b>ABS</b>\n  </inline>\n\
+      \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\"\
+      \ font-size=\"16px\">\n        <b>\n          <i>Executive Summary</i>\n   \
+      \     </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\"\
       >\n        <b>\n          <i>\_</i>\n        </b>\n      </inline>\n      <inline\
-      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>tabs\_</i>\n      </inline>\n\
-      \      <inline font-size=\"16px\">\n        <i>focus on specific Elemental services</i>\n\
-      \      </inline>\n    </li>\n  </ul>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"22px\">\n    <b>\_\_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"18px\">\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n  \
-      \  <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">\n        <i>Spend/cost\
-      \ values against invoice represent only spend on the services in the current\
-      \ scope, i.e. Elemental Media Services</i>\n      </inline>\n    </li>\n   \
-      \ <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">\n        <i>Use\
-      \ filters at the top each tab and/or click on graphs to drill down on particular\
-      \ data points</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline font-size=\"16px\">\n        <i>Key usage metrics for each\
-      \ service are represented as KPIs below</i>\n      </inline>\n    </li>\n  \
-      \  <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">\n        <i>Detail\
-      \ for each service may be found on the corresponding tabs</i>\n      </inline>\n\
-      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\"\
-      >\n        <i>Click a KPI tile to navigate to the corresponding product-specific\
-      \ detail tab</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>looks at Elemental spend\
+      \ in aggregate across all related services.</i>\n      </inline>\n    </li>\n\
+      \    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"\
+      16px\">\n        <b>\n          <i>Reservations &amp; Savings</i>\n        </b>\n\
+      \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
+      \    <b>\n          <i>\_</i>\n        </b>\n      </inline>\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>looks\_specifically at current\
+      \ and potential savings for AWS Elemental MediaLive reservations.</i>\n    \
+      \  </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      #efefe9\" font-size=\"16px\">\n        <i>Other,\_</i>\n      </inline>\n  \
+      \    <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n          <i>service-specific</i>\n\
+      \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <b>\n          <i>\_</i>\n        </b>\n      </inline>\n \
+      \     <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>tabs\_each focus\
+      \ on a specific Elemental service.</i>\n      </inline>\n    </li>\n  </ul>\n\
+      \  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>\_\
+      \_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n  \
+      \  <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Use the filter\
+      \ controls at the top each tab and/or click on individual graphs to drill down\
+      \ on particular data dimensions.</i>\n      </inline>\n    </li>\n    <li class=\"\
+      ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
+      \  <i>Only selective usage metrics for each service are represented as KPIs\
+      \ below.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n \
+      \     <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>The respecitive\
+      \ service-specific tabs provide more detail; click a KPI tile to navigate to\
+      \ the corresponding product-specific detail tab</i>\n      </inline>\n    </li>\n\
+      \  </ul>\n</text-box>"
     SheetTextBoxId: 86cd6b08-035c-4c2b-9a88-912329522c35
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
@@ -8384,7 +8395,7 @@ Sheets:
         TitleOptions:
           FontConfiguration:
             FontSize:
-              Relative: MEDIUM
+              Relative: LARGE
           Visibility: VISIBLE
       FilterControlId: 0a58170a-9870-4eab-84db-4497fb2c384b
       MaximumValue: 100.0
@@ -8484,91 +8495,91 @@ Sheets:
           ElementId: d51c35cd-d554-4639-82ec-713b929e75a6
           ElementType: TEXT_BOX
           RowIndex: 33
-          RowSpan: 3
+          RowSpan: 4
         - ColumnIndex: 29
           ColumnSpan: 7
           ElementId: 0a58170a-9870-4eab-84db-4497fb2c384b
           ElementType: FILTER_CONTROL
           RowIndex: 33
-          RowSpan: 3
+          RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 0308143d-ce59-4071-b3e6-7b2c612461e0
           ElementType: VISUAL
-          RowIndex: 36
+          RowIndex: 37
           RowSpan: 6
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: be37da6b-f80c-45ee-afd8-fc5e1fd8d0d1
           ElementType: VISUAL
-          RowIndex: 36
+          RowIndex: 37
           RowSpan: 6
-        - ColumnIndex: 0
-          ColumnSpan: 36
-          ElementId: e61a2c58-5441-4d79-b525-14fbaa91379e
-          ElementType: VISUAL
-          RowIndex: 42
-          RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 3
           ElementId: 37ebf190-66d8-44b5-9a9f-067ca44bd4a5
           ElementType: PARAMETER_CONTROL
-          RowIndex: 52
-          RowSpan: 8
+          RowIndex: 43
+          RowSpan: 10
         - ColumnIndex: 3
           ColumnSpan: 33
+          ElementId: e61a2c58-5441-4d79-b525-14fbaa91379e
+          ElementType: VISUAL
+          RowIndex: 43
+          RowSpan: 10
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 64a2da59-9bc6-41c5-9982-3221ac2b9991
+          ElementType: VISUAL
+          RowIndex: 53
+          RowSpan: 10
+        - ColumnIndex: 0
+          ColumnSpan: 36
           ElementId: 67029010-af24-429d-89aa-a920caaa7805
           ElementType: VISUAL
-          RowIndex: 52
+          RowIndex: 63
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: df48dd52-e806-4d02-a0b3-70428eb6da1f
           ElementType: VISUAL
-          RowIndex: 60
+          RowIndex: 71
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 9468c54c-3f3a-4f8a-9db5-0a7a704da488
           ElementType: VISUAL
-          RowIndex: 70
+          RowIndex: 81
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 2eaa808d-cf20-413f-bd26-30c9fd06a297
           ElementType: TEXT_BOX
-          RowIndex: 76
+          RowIndex: 87
           RowSpan: 2
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 3f2bab35-3767-4932-b8ea-b11eec5dcdae
           ElementType: TEXT_BOX
-          RowIndex: 78
+          RowIndex: 89
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 1dc2ecce-728d-4718-93b1-12417ebd7516
           ElementType: VISUAL
-          RowIndex: 82
+          RowIndex: 93
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 243d0afe-22f7-47e6-88f5-6921314e2961
           ElementType: VISUAL
-          RowIndex: 82
+          RowIndex: 93
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 806f73d8-230c-4deb-8a49-70a5c068e05f
           ElementType: VISUAL
-          RowIndex: 91
+          RowIndex: 102
           RowSpan: 6
-        - ColumnIndex: 0
-          ColumnSpan: 14
-          ElementId: ef4be5d1-9b7f-46e7-88df-5f2b130d4f0c
-          ElementType: VISUAL
-          RowIndex: 97
-          RowSpan: 5
   Name: MediaLive Reservation & Savings
   ParameterControls:
   - List:
@@ -8654,6 +8665,24 @@ Sheets:
       SourceParameterName: PayerAccount
       Title: Payer Account
       Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: e185c0cd-c3b6-49c1-89ce-819728f175a3
+      SelectableValues:
+        Values:
+        - Average
+        - Median
+        - Standard Deviation
+      SourceParameterName: EmlReservationUtilizationStat
+      Title: Statistical Method
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         InfoIconLabelOptions:
@@ -8728,45 +8757,52 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 2
           RowSpan: 1
+        - ColumnIndex: 3
+          ColumnSpan: 2
+          ElementId: e185c0cd-c3b6-49c1-89ce-819728f175a3
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 2
+          RowSpan: 1
   SheetId: 652661af-5b76-4855-80ee-19e261578d3f
   TextBoxes:
-  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>Reservations\
-      \ &amp; Savings</b>\n  </inline>\n  <br/>\n  <inline color=\"#f2f3f3\" font-size=\"\
-      16px\">\n    <i>This tab analyzes AWS Elemental MediaLive reservation usage,\
-      \ including a savings overview and additional savings opportunity sections.</i>\n\
-      \  </inline>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"24px\"\
-      >\n    <b>\_S</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"20px\"\
-      >\n    <b>ECTIONS</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
-      \    <i>Savings Overview:\_</i>\n        </b>\n      </inline>\n      <inline\
-      \ color=\"#f2f3f3\" font-size=\"16px\">\n        <i>Summarizes the past and\
-      \ some potential savings opportunities and compares to od-demand costs</i>\n\
-      \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Efficiency Tracking:</i>\n\
-      \        </b>\n      </inline>\n      <inline color=\"#f2f3f3\" font-size=\"\
-      16px\">\n        <i>\_Looks at the overall utilization of existing reservations\
-      \ as well as coverage effectiveness for various transcoding profiles</i>\n \
-      \     </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Additional Opportunity:</i>\n\
-      \        </b>\n      </inline>\n      <inline color=\"#f2f3f3\" font-size=\"\
-      16px\">\n        <i>\_Explores opportunity for new or additional savings</i>\n\
-      \      </inline>\n    </li>\n  </ul>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"24px\">\_\_</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      24px\">\n    <b>G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      20px\">\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"\
-      ql-indent-0\">\n      <inline color=\"#f2f3f3\" font-size=\"16px\">\n      \
-      \  <i>Savings estimations are based on up to\_</i>\n      </inline>\n      <inline\
-      \ color=\"#f2f3f3\" font-size=\"16px\">\n        <i>\n          <expression>${EmlReservationSavingRate}</expression>\n\
-      \        </i>\n      </inline>\n      <inline color=\"#f2f3f3\" font-size=\"\
-      16px\">\n        <i>% discount from public on demand pricing\_</i>\n      </inline>\n\
-      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#f2f3f3\"\
-      \ font-size=\"16px\">\n        <i>Adjust the discount % to model per your particular\
-      \ usage patterns and regional pricing</i>\n      </inline>\n    </li>\n    <li\
-      \ class=\"ql-indent-0\">\n      <inline color=\"#f2f3f3\" font-size=\"16px\"\
-      >\n        <i>Note, Elemental MediaLive reservations only support 1-year commitments</i>\n\
-      \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #f2f3f3\" font-size=\"16px\">\n        <i>Use the options at the top to filter\
-      \ your profile scope</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AEML\
+      \ Reservations &amp; Savings</b>\n  </inline>\n  <br/>\n  <inline color=\"#efefe9\"\
+      \ font-size=\"16px\">\n    <i>This tab analyzes AWS Elemental MediaLive reservation\
+      \ usage and opportunity.</i>\n  </inline>\n  <br/>\n  <br/>\n  <inline color=\"\
+      #fec48c\" font-size=\"24px\">\n    <b>\_S</b>\n  </inline>\n  <inline color=\"\
+      #fec48c\" font-size=\"20px\">\n    <b>ECTIONS</b>\n  </inline>\n  <br/>\n  <ul>\n\
+      \    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"\
+      16px\">\n        <b>\n          <i>Savings Overview</i>\n        </b>\n    \
+      \  </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <b>\n\
+      \          <i>\_</i>\n        </b>\n      </inline>\n      <inline color=\"\
+      #efefe9\" font-size=\"16px\">\n        <i>summarizes the past and some potential\
+      \ savings opportunities and compares to od-demand costs.</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\"\
+      \ font-size=\"16px\">\n        <b>\n          <i>Efficiency Tracking</i>\n \
+      \       </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <b>\n          <i>\_</i>\n        </b>\n      </inline>\n \
+      \     <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>looks at the\
+      \ overall utilization of existing reservations as well as coverage effectiveness\
+      \ for various transcoding profiles.</i>\n      </inline>\n    </li>\n    <li\
+      \ class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"16px\"\
+      >\n        <b>\n          <i>Additional Opportunity</i>\n        </b>\n    \
+      \  </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>\_\
+      explores opportunity for new or additional savings.</i>\n      </inline>\n \
+      \   </li>\n  </ul>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      24px\">\_\_</inline>\n  <inline color=\"#fec48c\" font-size=\"24px\">\n    <b>G</b>\n\
+      \  </inline>\n  <inline color=\"#fec48c\" font-size=\"20px\">\n    <b>UIDANCE</b>\n\
+      \  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>Savings estimations are\
+      \ based on up to\_</i>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>\n          <expression>${EmlReservationSavingRate}</expression>\n\
+      \        </i>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>% discount from public on demand pricing.\_</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
+      \ font-size=\"16px\">\n        <i>Adjust the discount % to model your particular\
+      \ usage patterns and regional pricing.</i>\n      </inline>\n    </li>\n   \
+      \ <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
+      >\n        <i>Use the controls at the top of the tab to filter your profile\
+      \ scope.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 9b2dd7a7-0f08-4323-8bc5-1addd986224b
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">S</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"30px\">AVINGS</inline>\n  <inline color=\"\
@@ -8777,17 +8813,18 @@ Sheets:
       \  <inline color=\"#fec48c\" font-size=\"30px\">DDITIONAL</inline>\n  <inline\
       \ color=\"#fec48c\" font-size=\"36px\">\_O</inline>\n  <inline color=\"#fec48c\"\
       \ font-size=\"30px\">PPORTUNITY</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li\
-      \ class=\"ql-indent-0\">\n      <inline color=\"#f2f3f3\" font-size=\"16px\"\
+      \ class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
       >\n        <i>Use these visuals to identify parameter combinations that could\
       \ benefit from additional reservation coverage.</i>\n      </inline>\n    </li>\n\
-      \    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">\n       \
-      \ <i>See also:\_</i>\n      </inline>\n      <inline color=\"#09add4\" font-size=\"\
-      16px\">\n        <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/input-output-reservations.html\"\
+      \    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>See also:\_</i>\n      </inline>\n      <inline color=\"\
+      #09add4\" font-size=\"16px\">\n        <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/input-output-reservations.html\"\
       \ target=\"_blank\">\n          <b>\n            <i>\n              <u>How input\
       \ and output reservations work</u>\n            </i>\n          </b>\n     \
       \   </a>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n     \
-      \ <inline font-size=\"16px\">\n        <i>See also:\_</i>\n      </inline>\n\
-      \      <inline color=\"#09add4\" font-size=\"16px\">\n        <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/purchasing-reservations.html\"\
+      \ <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>See also:\_</i>\n\
+      \      </inline>\n      <inline color=\"#09add4\" font-size=\"16px\">\n    \
+      \    <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/purchasing-reservations.html\"\
       \ target=\"_blank\">\n          <b>\n            <i>\n              <u>Purchasing\
       \ Elemental MediaLive reservations</u>\n            </i>\n          </b>\n \
       \       </a>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
@@ -8796,27 +8833,33 @@ Sheets:
       \  <inline color=\"#fec48c\" font-size=\"32px\">FFICIENCY</inline>\n  <inline\
       \ color=\"#fec48c\" font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\"\
       \ font-size=\"32px\">RACKING</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"\
-      ql-indent-0\">\n      <inline color=\"#f2f3f3\" font-size=\"16px\">\n      \
+      ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
       \  <i>Use these visuals to track overall coverage and utilization for your existing\
-      \ reservations.</i>\n      </inline>\n    </li>\n  </ul>\n  <br/>\n</text-box>"
+      \ reservations.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Median reservation\
+      \ utilization is based on an accounting for each hour of the month. In some\
+      \ cases a few hours of a day may reflect low utilization, which can be masked\
+      \ by the larger proportion of higher utilization. Use the threshold slider to\
+      \ inspect for reservations that potentially have brief periods of low utilization.</i>\n\
+      \      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: d51c35cd-d554-4639-82ec-713b929e75a6
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"24px\">A</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"20px\">BOUT\_</inline>\n  <inline color=\"\
       #fec48c\" font-size=\"24px\">AEML R</inline>\n  <inline color=\"#fec48c\" font-size=\"\
       20px\">ESERVATIONS</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#f2f3f3\" font-size=\"16px\">\n        <i>AWS Elemental\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>AWS Elemental\
       \ MediaLive offers pay-as-you-go on-demand, reserved, and discounted pricing\
       \ for live video transcoding.</i>\n      </inline>\n    </li>\n    <li class=\"\
       ql-indent-0\">\n      <inline color=\"#09add4\" font-size=\"16px\">\n      \
       \  <a href=\"https://aws.amazon.com/medialive/pricing/\" target=\"_blank\">\n\
       \          <b>\n            <i>\n              <u>Save up to 70% compared to\
       \ on-demand pricing</u>\n            </i>\n          </b>\n        </a>\n  \
-      \    </inline>\n      <inline color=\"#f2f3f3\" font-size=\"16px\">\n      \
+      \    </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
       \  <i>\_on inputs, outputs, and add-on features with a 12-month commitment.\_\
       </i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline\
-      \ font-size=\"16px\">\n        <i>To explore reservations and how they can reduce\
-      \ your transcoding cost, visit\_</i>\n      </inline>\n      <inline color=\"\
-      #09add4\" font-size=\"16px\">\n        <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/reservations.html\"\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>To explore reservations\
+      \ and how they can reduce your transcoding cost, visit\_</i>\n      </inline>\n\
+      \      <inline color=\"#09add4\" font-size=\"16px\">\n        <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/reservations.html\"\
       \ target=\"_blank\">\n          <b>\n            <i>\n              <u>Working\
       \ with reservations in MediaLive</u>\n            </i>\n          </b>\n   \
       \     </a>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
@@ -8829,28 +8872,57 @@ Sheets:
       </text-box>
     SheetTextBoxId: 2eaa808d-cf20-413f-bd26-30c9fd06a297
   Visuals:
-  - TableVisual:
-      Actions: []
+  - LineChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - de7100c7-5098-4d71-9f1e-8533bc21da54.2.1754681616913
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisuals:
+                - 67029010-af24-429d-89aa-a920caaa7805
+        CustomActionId: e76fefd9-38d2-448d-94b4-44b4c5324da7
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
       ChartConfiguration:
-        FieldOptions:
-          SelectedFieldOptions:
-          - FieldId: 54fba087-72c7-4715-a241-5b17ebeb9e52.0.1757093690785
-            Width: 217px
-          - FieldId: 26d05604-e766-4f5d-9977-d6ad2e5726a2.1.1757096515129
-            Width: 199px
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: HIDDEN
+        DefaultSeriesSettings:
+          AxisBinding: PRIMARY_YAXIS
+          LineStyleSettings:
+            LineInterpolation: SMOOTH
+            LineWidth: 3px
         FieldWells:
-          TableUnaggregatedFieldWells:
+          LineChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: usage_start_time
+                  DataSetIdentifier: msih_reservations
+                DateGranularity: MONTH
+                FieldId: 706b4ee3-530f-4d03-a442-6dee1eec1478.usage_start_time.2.1745874452284
+                HierarchyId: 1d6f3dec-9831-459d-8fc0-7b3dde6c4ea1
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Reservation ID
+                  DataSetIdentifier: msih_reservations
+                FieldId: de7100c7-5098-4d71-9f1e-8533bc21da54.2.1754681616913
             Values:
-            - Column:
-                ColumnName: EML Reservation Savings Rate
-                DataSetIdentifier: summary_view
-              FieldId: 54fba087-72c7-4715-a241-5b17ebeb9e52.0.1757093690785
-              FormatConfiguration:
-                NumberFormatConfiguration:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: STDEV
+                Column:
+                  ColumnName: reservation_utilization_percent
+                  DataSetIdentifier: msih_reservations
+                FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.ri utilization (%).1.1743083384665
+                FormatConfiguration:
                   FormatConfiguration:
                     PercentageDisplayFormatConfiguration:
-                      DecimalPlacesConfiguration:
-                        DecimalPlaces: 2
                       NegativeValueConfiguration:
                         DisplayMode: NEGATIVE
                       NullValueFormatConfiguration:
@@ -8861,34 +8933,80 @@ Sheets:
                           Symbol: COMMA
                           Visibility: VISIBLE
                       Suffix: '%'
-            - Column:
-                ColumnName: Amortized Cost
-                DataSetIdentifier: summary_view
-              FieldId: 26d05604-e766-4f5d-9977-d6ad2e5726a2.1.1757096515129
-            - Column:
-                ColumnName: public_cost
-                DataSetIdentifier: summary_view
-              FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.public_cost.2.1757096532472
-        SortConfiguration: {}
-        TableOptions:
-          HeaderStyle:
-            Height: 25
-            TextWrap: WRAP
+        Legend:
+          Title:
+            CustomLabel: Reservation Detail
+          Width: 637px
+        PrimaryYAxisDisplayOptions:
+          AxisOptions:
+            TickLabelOptions:
+              LabelOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: LARGE
+        PrimaryYAxisLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: reservation_utilization_percent
+                DataSetIdentifier: msih_reservations
+              FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.ri utilization (%).1.1743083384665
+            CustomLabel: Utilization
+        SortConfiguration:
+          CategoryItemsLimitConfiguration:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 706b4ee3-530f-4d03-a442-6dee1eec1478.usage_start_time.2.1745874452284
+          ColorItemsLimitConfiguration:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 706b4ee3-530f-4d03-a442-6dee1eec1478.usage_start_time.2.1745874452284
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: de7100c7-5098-4d71-9f1e-8533bc21da54.2.1754681616913
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.ri utilization (%).1.1743083384665
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        Type: LINE
+        XAxisDisplayOptions:
+          ScrollbarOptions:
+            Visibility: HIDDEN
+        XAxisLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: usage_start_time
+                DataSetIdentifier: msih_reservations
+              FieldId: 706b4ee3-530f-4d03-a442-6dee1eec1478.usage_start_time.2.1745874452284
+            CustomLabel: Billing Period
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 1d6f3dec-9831-459d-8fc0-7b3dde6c4ea1
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Estimation based on public cost</visual-subtitle>
+          RichText: <visual-subtitle>This chart can reveal the reservations with the
+            most fluxuation of utilization at an hourly level</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: "<visual-title>\n  <inline color=\"#fec48c\" font-size=\"20px\"\
-            >\n    <b>T</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
-            16px\">\n    <b>OTAL\_</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
-            20px\">\n    <b>S</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
-            16px\">\n    <b>AVINGS\_</b>\n  </inline>\n  <inline color=\"#fec48c\"\
-            \ font-size=\"20px\">\n    <b>R</b>\n  </inline>\n  <inline color=\"#fec48c\"\
-            \ font-size=\"16px\">\n    <b>ATE</b>\n  </inline>\n</visual-title>"
+          RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Standard\
+            \ Deviation of hourly per-reservation utilization %\_</b>\n  </inline>\n\
+            </visual-title>"
         Visibility: VISIBLE
-      VisualId: ef4be5d1-9b7f-46e7-88df-5f2b130d4f0c
+      VisualId: 64a2da59-9bc6-41c5-9982-3221ac2b9991
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -9079,7 +9197,7 @@ Sheets:
           RichText: |-
             <visual-title>
               <inline font-size="16px">
-                <b>Average overall reservation coverage %</b>
+                <b>Overall reservation coverage %</b>
               </inline>
             </visual-title>
         Visibility: VISIBLE
@@ -9109,7 +9227,7 @@ Sheets:
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
-                  SimpleNumericalAggregation: AVERAGE
+                  SimpleNumericalAggregation: MEDIAN
                 Column:
                   ColumnName: reservation_utilization_percent
                   DataSetIdentifier: msih_reservations
@@ -9131,7 +9249,7 @@ Sheets:
           Width: 150px
         PrimaryYAxisDisplayOptions:
           AxisOptions:
-            AxisOffset: 75px
+            AxisOffset: 76px
             DataOptions:
               NumericAxisOptions:
                 Range:
@@ -9170,17 +9288,16 @@ Sheets:
             AggregationVisibility: HIDDEN
             TooltipFields:
             - FieldTooltipItem:
-                FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.ri utilization (%).1.1743083384665
+                FieldId: 706b4ee3-530f-4d03-a442-6dee1eec1478.usage_start_time.2.1745874452284
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: 706b4ee3-530f-4d03-a442-6dee1eec1478.usage_start_time.2.1745874452284
+                FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.ri utilization (%).1.1743083384665
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         Type: LINE
         XAxisDisplayOptions:
-          AxisOffset: 56px
           ScrollbarOptions:
             Visibility: HIDDEN
         XAxisLabelOptions:
@@ -9196,13 +9313,16 @@ Sheets:
           DrillDownFilters: []
           HierarchyId: 7c2c17ac-d809-47e7-be22-b4e5f2d1fe9c
       Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Adjust the threshold slider to reveal reservations
+            performing below the bar for only a few hours per month.</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: |-
             <visual-title>
               <inline font-size="16px">
-                <b>Average overall reservation utilization %</b>
+                <b>Median reservation utilization %</b>
               </inline>
             </visual-title>
         Visibility: VISIBLE
@@ -10760,7 +10880,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 257px
+          AxisOffset: 409px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -10787,7 +10907,7 @@ Sheets:
       Subtitle:
         FormatText:
           RichText: <visual-subtitle>Use the arrows in the control box to the top
-            right of the graph to toggle to Usage Type representation</visual-subtitle>
+            right of the graph to switch the Usage Type representation</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -10821,9 +10941,9 @@ Sheets:
           - 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.ri utilization (%).1.1743083276962
           SelectedFieldOptions:
           - FieldId: 81d9c459-6953-4e14-9724-eaa3db57ae5f.13.1755229160456
-            Width: 178px
+            Width: 163px
           - FieldId: 589bb05e-0681-4403-8f96-b4ef9b7435bf.13.1753196337358
-            Width: 178px
+            Width: 157px
           - CustomLabel: Reservation ID
             FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation id.0.1743083275013
             Width: 113px
@@ -11014,7 +11134,7 @@ Sheets:
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
-                  SimpleNumericalAggregation: AVERAGE
+                  SimpleNumericalAggregation: MEDIAN
                 Column:
                   ColumnName: reservation_utilization_percent
                   DataSetIdentifier: msih_reservations
@@ -11038,7 +11158,7 @@ Sheets:
           Width: 637px
         PrimaryYAxisDisplayOptions:
           AxisOptions:
-            AxisOffset: 62px
+            AxisOffset: 74px
             DataOptions:
               NumericAxisOptions:
                 Range:
@@ -11074,21 +11194,26 @@ Sheets:
             AggregationVisibility: HIDDEN
             TooltipFields:
             - FieldTooltipItem:
-                FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.ri utilization (%).1.1743083384665
-                Visibility: VISIBLE
-            - FieldTooltipItem:
                 FieldId: 706b4ee3-530f-4d03-a442-6dee1eec1478.usage_start_time.2.1745874452284
                 Visibility: VISIBLE
             - FieldTooltipItem:
                 FieldId: de7100c7-5098-4d71-9f1e-8533bc21da54.2.1754681616913
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.ri utilization (%).1.1743083384665
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         Type: LINE
         XAxisDisplayOptions:
+          AxisOffset: 105px
           ScrollbarOptions:
-            Visibility: HIDDEN
+            Visibility: VISIBLE
+            VisibleRange:
+              PercentRange:
+                From: 0.0
+                To: 100.0
         XAxisLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -11102,10 +11227,12 @@ Sheets:
           DrillDownFilters: []
           HierarchyId: 423a80f8-250d-492a-8b46-94a02724ee10
       Subtitle:
-        Visibility: HIDDEN
+        FormatText:
+          RichText: <visual-subtitle>Median calculation based on hour-level granularity</visual-subtitle>
+        Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Average\
+          RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Median\
             \ per-reservation utilization %\_</b>\n  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: e61a2c58-5441-4d79-b525-14fbaa91379e
@@ -11228,7 +11355,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 295px
+          AxisOffset: 422px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -11257,7 +11384,7 @@ Sheets:
       Subtitle:
         FormatText:
           RichText: <visual-subtitle>Use the arrows in the control box to the top
-            right of the graph to toggle to Usage Type representation</visual-subtitle>
+            right of the graph to switch the Usage Type representation</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -11403,7 +11530,7 @@ Sheets:
           RichText: |-
             <visual-title>
               <inline font-size="16px">
-                <b>Average per-profile set coverage %</b>
+                <b>Average per-profile coverage %</b>
               </inline>
             </visual-title>
         Visibility: VISIBLE
@@ -11763,44 +11890,43 @@ Sheets:
       \  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n    <b>ECTIONS</b>\n\
       \  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline\
       \ color=\"#fc850d\" font-size=\"16px\">\n        <b>\n          <i>Usage Summary</i>\n\
-      \        </b>\n      </inline>\n      <inline color=\"#fc850d\" font-size=\"\
-      16px\">\n        <i>\_</i>\n      </inline>\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>looks at channel usage by various categories.</i>\n\
-      \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>\_looks at channel usage by various categories.</i>\n  \
+      \    </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
       #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Cost Summary</i>\n\
-      \        </b>\n      </inline>\n      <inline color=\"#fc850d\" font-size=\"\
-      16px\">\n        <i>\_</i>\n      </inline>\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>provides breakouts by various dimensions</i>\n\
+      \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>\_provides breakouts by various dimensions.</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\"\
+      \ font-size=\"16px\">\n        <b>\n          <i>Transcoding</i>\n        </b>\n\
+      \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
+      \    <b>\n          <i>\_</i>\n        </b>\n      </inline>\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>explores trends by parameter\
+      \ profiles.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
+      \      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n        \
+      \  <i>Job Detail</i>\n        </b>\n      </inline>\n      <inline color=\"\
+      #efefe9\" font-size=\"16px\">\n        <b>\n          <i>\_</i>\n        </b>\n\
+      \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
+      \    <i>reveals different dimensions of individual jobs.</i>\n      </inline>\n\
+      \    </li>\n  </ul>\n  <br/>\n  <inline font-size=\"16px\">\n    <i>\_</i>\n\
+      \  </inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n   \
+      \ <b>\_\_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\"\
+      >\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#09add4\" font-size=\"16px\">\n        <a href=\"https://aws.amazon.com/mediaconvert/pricing/\"\
+      \ target=\"_blank\">\n          <b>\n            <i>\n              <u>AEMC\
+      \ pricing and cost</u>\n            </i>\n          </b>\n        </a>\n   \
+      \   </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n       \
+      \ <b>\n          <i>\n            <u>\_</u>\n          </i>\n        </b>\n\
+      \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
+      \    <i>is primarily driven by transcoding time, as measured in minutes (Mins).</i>\n\
       \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Transcoding</i>\n \
-      \       </b>\n      </inline>\n      <inline color=\"#fec48c\" font-size=\"\
-      16px\">\n        <b>\n          <i>\_</i>\n        </b>\n      </inline>\n \
-      \     <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>explores trends\
-      \ by parameter profiles</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
-      \    <i>Job Detail\_</i>\n        </b>\n      </inline>\n      <inline color=\"\
-      #efefe9\" font-size=\"16px\">\n        <i>reveals different dimensions of individual\
-      \ jobs</i>\n      </inline>\n    </li>\n  </ul>\n  <br/>\n  <inline font-size=\"\
-      16px\">\n    <i>\_</i>\n  </inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
-      22px\">\n    <b>\_\_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      18px\">\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"\
-      ql-indent-0\">\n      <inline color=\"#09add4\" font-size=\"16px\">\n      \
-      \  <a href=\"https://aws.amazon.com/mediaconvert/pricing/\" target=\"_blank\"\
-      >\n          <b>\n            <i>\n              <u>AEMC pricing and cost</u>\n\
-      \            </i>\n          </b>\n        </a>\n      </inline>\n      <inline\
-      \ color=\"#09add4\" font-size=\"16px\">\n        <b>\n          <i>\n      \
-      \      <u>\_</u>\n          </i>\n        </b>\n      </inline>\n      <inline\
-      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>is primarily driven by transcoding\
-      \ time, as measured in minutes (Mins)</i>\n      </inline>\n    </li>\n    <li\
+      #efefe9\" font-size=\"16px\">\n        <i>Select the Usage Category or categories\
+      \ you wish to view from the list.</i>\n      </inline>\n    </li>\n    <li class=\"\
+      ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
+      \  <i>To analyze Usage, avoid mixing categories that measure by different units.\
+      \ For example, \"Hrs\"  and \"GB\".</i>\n      </inline>\n    </li>\n    <li\
       \ class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
-      >\n        <i>Select the Usage Category or categories you wish to view from\
-      \ the list</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
-      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>To analyze\
-      \ Usage, avoid mixing categories that measure by different units. For example,\
-      \ \"Hrs\"  and \"GB\"</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>To analyze\
-      \ Cost, you can mix different units because the end measure is cost</i>\n  \
-      \    </inline>\n    </li>\n  </ul>\n</text-box>"
+      >\n        <i>To analyze Cost, you can mix different units because the end measure\
+      \ is cost.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 586a5610-4de3-4aa1-8673-603267630f23
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">T</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"30px\">RANSCODING</inline>\n  <br/>\n\
@@ -11846,20 +11972,23 @@ Sheets:
       30px\">ATEGORIES</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
       \    <i>API Call (Invoke):</i>\n        </b>\n      </inline>\n      <inline\
-      \ font-size=\"16px\">\n        <b>\n          <i>\_</i>\n        </b>\n    \
-      \  </inline>\n      <inline font-size=\"16px\">\n        <i>API calls to invoke\
-      \ transcoding</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
-      \    <i>Create Job (Count):\_</i>\n        </b>\n      </inline>\n      <inline\
-      \ font-size=\"16px\">\n        <i>Number of transcoding jobs created</i>\n \
-      \     </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Reserved Transcoding\
-      \ (Mins):\_</i>\n        </b>\n      </inline>\n      <inline font-size=\"16px\"\
-      >\n        <i>Transcoding done using reserved transcoding slots (RTS)</i>\n\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <b>\n          <i>\_</i>\n\
+      \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>API calls to invoke transcoding</i>\n      </inline>\n \
+      \   </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"\
+      16px\">\n        <b>\n          <i>Create Job (Count):</i>\n        </b>\n \
+      \     </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n     \
+      \   <b>\n          <i>\_</i>\n        </b>\n      </inline>\n      <inline color=\"\
+      #efefe9\" font-size=\"16px\">\n        <i>Number of transcoding jobs created</i>\n\
       \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Transcoding (Mins):</i>\n\
-      \        </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <b>\n\
-      \          <i>\_</i>\n        </b>\n      </inline>\n      <inline font-size=\"\
+      #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Reserved Transcoding\
+      \ (Mins):\_</i>\n        </b>\n      </inline>\n      <inline color=\"#efefe9\"\
+      \ font-size=\"16px\">\n        <i>Transcoding done using reserved transcoding\
+      \ slots (RTS)</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
+      \    <i>Transcoding (Mins):</i>\n        </b>\n      </inline>\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <b>\n          <i>\_</i>\n\
+      \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
       16px\">\n        <i>Duration of transcoding</i>\n      </inline>\n    </li>\n\
       \  </ul>\n</text-box>"
     SheetTextBoxId: 1b874468-079d-49cf-bba9-1b2017ff980b
@@ -14292,14 +14421,8 @@ Sheets:
           RowIndex: 64
           RowSpan: 11
         - ColumnIndex: 0
-          ColumnSpan: 8
+          ColumnSpan: 36
           ElementId: a1a7d2ae-33c4-4840-b76c-bf43f14fba9d
-          ElementType: TEXT_BOX
-          RowIndex: 75
-          RowSpan: 3
-        - ColumnIndex: 8
-          ColumnSpan: 28
-          ElementId: 0c5ff456-b937-4091-abcf-87caed4220e5
           ElementType: TEXT_BOX
           RowIndex: 75
           RowSpan: 3
@@ -14442,30 +14565,30 @@ Sheets:
       >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
       \    <i>Resource Detail\_</i>\n        </b>\n      </inline>\n      <inline\
       \ color=\"#efefe9\" font-size=\"16px\">\n        <i>reveals different dimensions\
-      \ of specific service resources</i>\n      </inline>\n    </li>\n  </ul>\n \
-      \ <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>\_\
+      \ of specific service resources.</i>\n      </inline>\n    </li>\n  </ul>\n\
+      \  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>\_\
       \_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n  \
       \  <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#09add4\" font-size=\"16px\">\n        <a href=\"https://aws.amazon.com/mediaconnect/pricing/\"\
       \ target=\"_blank\">\n          <b>\n            <i>\n              <u>AEMX\
       \ pricing and costs</u>\n            </i>\n          </b>\n        </a>\n  \
       \    </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
-      \  <i>\_are driven by Running Flows and Data Transfer</i>\n      </inline>\n\
+      \  <i>\_are driven by Running Flows and Data Transfer.</i>\n      </inline>\n\
       \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
       \ font-size=\"16px\">\n        <i>Select the Usage Category or categories you\
-      \ wish to view from the list</i>\n      </inline>\n    </li>\n    <li class=\"\
+      \ wish to view from the list.</i>\n      </inline>\n    </li>\n    <li class=\"\
       ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
       \  <i>To analyze Usage, avoid mixing categories that measure by different units.\
-      \ For example, \"Hrs\"  and \"GB\"</i>\n      </inline>\n    </li>\n    <li\
+      \ For example, \"Hrs\"  and \"GB\".</i>\n      </inline>\n    </li>\n    <li\
       \ class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
       >\n        <i>To analyze Cost, you can mix different units because the end measure\
-      \ is cost</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
+      \ is cost.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
       \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Identify average\
       \ Internet data transfer; Reserved Outbound Bandwidth can reduce such cost by\
       \ up to 70%.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Check your\
       \ AMEX flows inventory for flows that has no destination output, which still\
-      \ incur hourly cost</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+      \ incur hourly cost.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 7aa11026-e9a8-4278-aea8-0fe2fd7c882c
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">R</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"30px\">ESOURCE</inline>\n  <inline\
@@ -14492,8 +14615,6 @@ Sheets:
       \ group by the data transfer category</i>\n      </inline>\n    </li>\n  </ul>\n\
       \  <br/>\n</text-box>"
     SheetTextBoxId: 87a25807-e4fe-4c0f-9892-cc2390aa7177
-  - Content: "<text-box>\_\_</text-box>"
-    SheetTextBoxId: 0c5ff456-b937-4091-abcf-87caed4220e5
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
       #fec48c\" font-size=\"36px\">\_C</inline>\n  <inline color=\"#fec48c\" font-size=\"\
@@ -16830,7 +16951,7 @@ Sheets:
       \  </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
       #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Channel Detail</i>\n\
       \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
-      16px\">\n        <i>\_explores usage and trends for individual channels\_</i>\n\
+      16px\">\n        <i>\_explores usage and trends for individual channels.</i>\n\
       \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
       #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Idle Resources</i>\n\
       \        </b>\n      </inline>\n      <inline color=\"#fc850d\" font-size=\"\
@@ -16844,25 +16965,25 @@ Sheets:
       \ target=\"_blank\">\n          <b>\n            <i>\n              <u>AEML\
       \ pricing and cost</u>\n            </i>\n          </b>\n        </a>\n   \
       \   </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n       \
-      \ <i>\_is primarily driven by transcoding time, as measured in hours (Hrs)</i>\n\
+      \ <i>\_is primarily driven by transcoding time, as measured in hours (Hrs).</i>\n\
       \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
       #efefe9\" font-size=\"16px\">\n        <i>Additional cost influencers include\
       \ channel features and idle resource time.</i>\n      </inline>\n    </li>\n\
       \    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"\
       16px\">\n        <i>Select the Usage Category or categories you wish to view\
-      \ from the list</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      \ from the list.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>To analyze\
       \ Usage, avoid mixing categories that measure by different units. For example,\
-      \ \"Hrs\"  and \"GB\"</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      \ \"Hrs\"  and \"GB\".</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>To analyze\
-      \ Cost, you can mix different units because the end measure is cost</i>\n  \
-      \    </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      \ Cost, you can mix different units because the end measure is cost.</i>\n \
+      \     </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
       #efefe9\" font-size=\"16px\">\n        <i>Cost spikes may be driven by reservation\
       \ purchases; adjust the Cost Model to show either Invoice or Amortized views\
-      \ of reserved usage</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline font-size=\"16px\">\n        <i>Consider using MediaPackage\
-      \ or Cloudfront to reduce Data Transfer Out costs</i>\n      </inline>\n   \
-      \ </li>\n  </ul>\n</text-box>"
+      \ of reserved usage.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Consider\
+      \ using MediaPackage or Cloudfront to reduce Data Transfer Out costs.</i>\n\
+      \      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 8cbd6d6e-1de4-4585-bb72-980c3f633759
   - Content: |-
       <text-box>
@@ -16872,32 +16993,32 @@ Sheets:
         <br/>
         <ul>
           <li class="ql-indent-0">
-            <inline font-size="16px">
+            <inline color="#efefe9" font-size="16px">
               <i>Transcoding metering is based on several parameters that form a profile, including: number of pipes, region, flow direction, codec, resolution, bitrate, framerate and quality</i>
             </inline>
           </li>
           <li class="ql-indent-0">
-            <inline font-size="16px">
+            <inline color="#efefe9" font-size="16px">
               <i>Charts in this section EXCLUDE idle resource time</i>
             </inline>
           </li>
           <li class="ql-indent-0">
-            <inline font-size="16px">
+            <inline color="#efefe9" font-size="16px">
               <i>Identify transcoding profiles that will have steady or increase traffic for the coming 12 months and proceed with the reservations to reduce their cost.</i>
             </inline>
           </li>
           <li class="ql-indent-0">
-            <inline font-size="16px">
+            <inline color="#efefe9" font-size="16px">
               <i>Identify expensive transcoding profiles and leverage reservations if usage is expected to be the same or greater for the next 12 months.</i>
             </inline>
           </li>
           <li class="ql-indent-0">
-            <inline font-size="16px">
+            <inline color="#efefe9" font-size="16px">
               <i>Review if high-resolution/frame-rate outputs align with viewer needs. Adjust the profiles if needed</i>
             </inline>
           </li>
           <li class="ql-indent-0">
-            <inline font-size="16px">
+            <inline color="#efefe9" font-size="16px">
               <i>Use the Parameter Type toggle to compare between options for a given parameter. For example, select Resolution to compare SD vs HD</i>
             </inline>
           </li>
@@ -16939,17 +17060,16 @@ Sheets:
             </inline>
           </li>
           <li class="ql-indent-0">
-            <inline font-size="16px">
+            <inline color="#efefe9" font-size="16px">
               <i>Idle Input hours usage should be lowered  as much as possible, by deleting MediaLive Inputs that are not attached to any channel.</i>
             </inline>
           </li>
           <li class="ql-indent-0">
-            <inline font-size="16px">
-              <i>Idle channel hours usage should be lowered as much as possible whenever possible, you can do this by deleting stopped channel</i>
+            <inline color="#efefe9" font-size="16px">
+              <i>Idle channel hours usage should be lowered as much as possible whenever possible, you can do this by deleting stopped channel.</i>
             </inline>
           </li>
         </ul>
-        <br/>
       </text-box>
     SheetTextBoxId: 707620d9-8812-4621-8cce-74a8c94182fa
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"24px\">T</inline>\n\
@@ -21763,28 +21883,28 @@ Sheets:
       ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"16px\">\n      \
       \  <b>\n          <i>Cost Summary</i>\n        </b>\n      </inline>\n     \
       \ <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>\_provides breakouts\
-      \ by various dimensions</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      \ by various dimensions.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
       \    <i>Resource Detail\_</i>\n        </b>\n      </inline>\n      <inline\
       \ color=\"#efefe9\" font-size=\"16px\">\n        <i>reveals different dimensions\
-      \ of specific service resources</i>\n      </inline>\n    </li>\n  </ul>\n \
-      \ <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>\_\
+      \ of specific service resources.</i>\n      </inline>\n    </li>\n  </ul>\n\
+      \  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>\_\
       \_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n  \
       \  <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#09add4\" font-size=\"16px\">\n        <a href=\"https://aws.amazon.com/mediatailor/pricing/\"\
       \ target=\"_blank\">\n          <b>\n            <i>\n              <u>AEMT\
       \ pricing and cost</u>\n            </i>\n          </b>\n        </a>\n   \
       \   </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n       \
-      \ <i>\_is primarily driven by ad insertions and channel assembly</i>\n     \
-      \ </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      \ <i>\_is primarily driven by ad insertions and channel assembly.</i>\n    \
+      \  </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
       #efefe9\" font-size=\"16px\">\n        <i>Select the Usage Category or categories\
-      \ you wish to view from the list</i>\n      </inline>\n    </li>\n    <li class=\"\
+      \ you wish to view from the list.</i>\n      </inline>\n    </li>\n    <li class=\"\
       ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
       \  <i>To analyze Usage, avoid mixing categories that measure by different units.\
-      \ For example, \"Hrs\"  and \"Count\"</i>\n      </inline>\n    </li>\n    <li\
-      \ class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
+      \ For example, \"Hrs\"  and \"Count\".</i>\n      </inline>\n    </li>\n   \
+      \ <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
       >\n        <i>To analyze Cost, you can mix different units because the end measure\
-      \ is cost</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+      \ is cost.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 0cac8001-2dc6-4da0-a8ea-e5fff5ad9191
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">R</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"30px\">ESOURCE</inline>\n  <inline\
@@ -23874,17 +23994,17 @@ Sheets:
       \ color=\"#fc850d\" font-size=\"16px\">\n        <b>\n          <i>Usage Summary</i>\n\
       \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
       16px\">\n        <i>\_looks at usage by various categories, including data transfer\
-      \ and packaging</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      \ and packaging.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
       \    <i>Cost Summary</i>\n        </b>\n      </inline>\n      <inline color=\"\
       #fc850d\" font-size=\"16px\">\n        <i>\_</i>\n      </inline>\n      <inline\
       \ color=\"#efefe9\" font-size=\"16px\">\n        <i>provides breakouts by various\
-      \ dimensions</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      \ dimensions.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
       \    <i>Data Transfer</i>\n        </b>\n      </inline>\n      <inline color=\"\
       #efefe9\" font-size=\"16px\">\n        <b>\n          <i>\_</i>\n        </b>\n\
       \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
-      \    <i>looks at the relative costs of different types of data transfer</i>\n\
+      \    <i>looks at the relative costs of different types of data transfer.</i>\n\
       \      </inline>\n    </li>\n  </ul>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\"\
       \ font-size=\"22px\">\n    <b>\_\_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\"\
       \ font-size=\"18px\">\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n  \
@@ -23893,15 +24013,15 @@ Sheets:
       _blank\">\n          <b>\n            <i>\n              <u>AEMP pricing and\
       \ cost</u>\n            </i>\n          </b>\n        </a>\n      </inline>\n\
       \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>\_is primarily\
-      \ driven by data transfer</i>\n      </inline>\n    </li>\n    <li class=\"\
+      \ driven by data transfer.</i>\n      </inline>\n    </li>\n    <li class=\"\
       ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
-      \  <i>Select the Usage Category or categories you wish to view from the list</i>\n\
+      \  <i>Select the Usage Category or categories you wish to view from the list.</i>\n\
       \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
       #efefe9\" font-size=\"16px\">\n        <i>For analyzing Usage, avoid mixing\
       \ categories that measure by different units. For example, \"Hrs\"  and \"GB\"\
-      </i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline\
+      .</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline\
       \ color=\"#efefe9\" font-size=\"16px\">\n        <i>For analyzing Cost, you\
-      \ can mix different units because the end measure is cost</i>\n      </inline>\n\
+      \ can mix different units because the end measure is cost.</i>\n      </inline>\n\
       \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
       \ font-size=\"16px\">\n        <i>Identify Data Transfer to Internet usage and\
       \ consider delivering through CloudFront to optimize cost.</i>\n      </inline>\n\
