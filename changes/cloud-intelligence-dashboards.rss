@@ -5,8 +5,38 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Mon, 2 Jun 2025 09:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 22 Sep 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[New Dashboard] Media Services Insights Hub v1.0.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/add-resilience-hub/changes/CHANGELOG-resiliencevue.md
+      </link>
+      <pubDate>Mon, 22 Sep 2025 12:00:00 GMT</pubDate>
+      <category><![CDATA[New Dashboard]]></category>
+      <guid isPermaLink="false">8b2f9e6a-417b-4fff-ae02-db8c844991d2</guid>
+      <description>Media Services Insights Hub v1.0.0 - Initial Release</description>
+      <content:encoded><![CDATA[
+    <div>
+      <p>
+        The <strong>Media Services Insights Hub (MSIH)</strong> dashboard provides comprehensive visibility into AWS Elemental Media Services usage, costs, 
+        and performance metrics. This dashboard leverages AWS Cost and Usage Report (CUR) data to deliver actionable insights for 
+        optimizing media workflows and managing costs across your media infrastructure.
+      </p>
+
+      <h3>Key Tabs and Features:</h3>
+      <ul>
+        <li><strong>Executive Summary:</strong> High-level overview of media services costs, usage trends, and key performance indicators.</li>
+        <li><strong>MediaLive Reservations & Savings:</strong> Deep-dive into current and potential savings achieved through AWS Elemental MediaLive reservations.</li>
+        <li><strong>MediaConnect:</strong> Detailed analysis of live video transport costs, connection usage, and data transfer metrics.</li>
+        <li><strong>MediaConvert:</strong> Comprehensive view of transcoding job costs, queue utilization, and processing time analysis.</li>
+        <li><strong>MediaLive:</strong> In-depth monitoring of live streaming costs, channel utilization, and reservation optimization opportunities.</li>
+        <li><strong>MediaTailor:</strong> Insights into ad insertion costs, session metrics, and revenue optimization opportunities.</li>
+        <li><strong>MediaPackage:</strong> Analysis of video packaging and origination costs, endpoint usage, and content delivery metrics.</li>
+      </ul>
+    </div>
+    ]]></content:encoded>
+     </item>
     <item>
       <title>[Update] TAO v4.0.0</title>
       <link>
