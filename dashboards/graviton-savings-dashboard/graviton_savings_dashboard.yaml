@@ -447,13 +447,13 @@ dashboards:
                     Visibility: VISIBLE
                 Symbol: USD
       DataSetIdentifierDeclarations:
-      - DataSetArn: arn:aws:quicksight:::dataset/3460a05f-5568-407f-a152-2025cad23c22
+      - DataSetArn: arn:aws:quicksight:::dataset/96e46197-d03a-41b1-b564-1cf2da51a2d7
         Identifier: ec2_graviton_dashboard
-      - DataSetArn: arn:aws:quicksight:::dataset/599d7ee2-a827-46a6-88d7-dd6e096bd03e
+      - DataSetArn: arn:aws:quicksight:::dataset/4398c46d-4d15-48b8-863d-c9275e0aa833
         Identifier: opensearch_graviton_dashboard
-      - DataSetArn: arn:aws:quicksight:::dataset/85036fa9-5abd-4539-bace-18f0b47b3dad
+      - DataSetArn: arn:aws:quicksight:::dataset/1e39a381-beda-4c55-b7e5-4b3bf159c9c8
         Identifier: elasticache_graviton_dashboard
-      - DataSetArn: arn:aws:quicksight:::dataset/1baaf931-67f0-4ee2-b20f-0aad7377cc00
+      - DataSetArn: arn:aws:quicksight:::dataset/5b0e1590-d9f3-46f3-a2c2-307fafc58549
         Identifier: rds_graviton_dashboard
       FilterGroups:
       - CrossDataset: SINGLE_DATASET
@@ -21752,7 +21752,7 @@ dashboards:
 datasets:
   graviton_opensearch_view:
     data:
-      DataSetId: 599d7ee2-a827-46a6-88d7-dd6e096bd03e
+      DataSetId: 4398c46d-4d15-48b8-863d-c9275e0aa833
       Name: graviton_opensearch_view
       PhysicalTableMap:
         25ebc7a6-65b7-47a5-abd8-003128d25bbc:
@@ -21901,7 +21901,7 @@ datasets:
     - default
   graviton_elasticache_view:
     data:
-      DataSetId: 85036fa9-5abd-4539-bace-18f0b47b3dad
+      DataSetId: 1e39a381-beda-4c55-b7e5-4b3bf159c9c8
       Name: graviton_elasticache_view
       PhysicalTableMap:
         1200c855-886f-45ad-b974-f8e1cc1c4241:
@@ -22050,7 +22050,7 @@ datasets:
     - default
   graviton_ec2_view:
     data:
-      DataSetId: 3460a05f-5568-407f-a152-2025cad23c22
+      DataSetId: 96e46197-d03a-41b1-b564-1cf2da51a2d7
       Name: graviton_ec2_view
       PhysicalTableMap:
         22b8a470-d369-4904-ab86-203f79fd69b4:
@@ -22208,7 +22208,7 @@ datasets:
     - default
   graviton_rds_view:
     data:
-      DataSetId: 1baaf931-67f0-4ee2-b20f-0aad7377cc00
+      DataSetId: 5b0e1590-d9f3-46f3-a2c2-307fafc58549
       Name: graviton_rds_view
       PhysicalTableMap:
         8881bb67-3603-4d41-a2a4-bc0752d99e7e:
