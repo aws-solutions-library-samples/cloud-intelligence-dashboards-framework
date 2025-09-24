@@ -2,8 +2,8 @@
 output "cid_dataexports_destination_outputs" {
   description = "Outputs from the cid_dataexports_destination stack"
   value = {
-    stack_id = aws_cloudformation_stack.cid_dataexports_destination.id
-    outputs  = aws_cloudformation_stack.cid_dataexports_destination.outputs
+    stack_id = module.cid_dataexports_destination.stack_id
+    outputs  = module.cid_dataexports_destination.stack_outputs
   }
 }
 
@@ -11,8 +11,8 @@ output "cid_dataexports_destination_outputs" {
 output "cid_dataexports_source_outputs" {
   description = "Outputs from the cid_dataexports_source stack"
   value = {
-    stack_id = aws_cloudformation_stack.cid_dataexports_source.id
-    outputs  = aws_cloudformation_stack.cid_dataexports_source.outputs
+    stack_id = module.cid_dataexports_source.stack_id
+    outputs  = module.cid_dataexports_source.stack_outputs
   }
 }
 
@@ -20,8 +20,8 @@ output "cid_dataexports_source_outputs" {
 output "cloud_intelligence_dashboards_outputs" {
   description = "Outputs from the cloud_intelligence_dashboards stack"
   value = {
-    stack_id = aws_cloudformation_stack.cloud_intelligence_dashboards.id
-    outputs  = aws_cloudformation_stack.cloud_intelligence_dashboards.outputs
+    stack_id = module.cloud_intelligence_dashboards.stack_id
+    outputs  = module.cloud_intelligence_dashboards.stack_outputs
   }
 }
 
@@ -30,7 +30,11 @@ output "dashboard_summary" {
   description = "Summary of all deployed dashboards"
   value = {
     foundational = {
-      for k, v in local.foundational_dashboards : k => v.enabled if v.enabled == "yes"
+      for k, v in {
+        cudos_v5          = var.dashboards.cudos_v5
+        cost_intelligence = var.dashboards.cost_intelligence
+        kpi               = var.dashboards.kpi
+      } : k => v if v == "yes"
     }
     additional = {
       for k, v in local.enabled_additional_dashboards : k => {
@@ -45,25 +49,25 @@ output "dashboard_summary" {
 output "additional_dashboards_stacks" {
   description = "Additional dashboard CloudFormation stacks"
   value = {
-    trends = length(aws_cloudformation_stack.trends_dashboard) > 0 ? {
-      stack_id = aws_cloudformation_stack.trends_dashboard[0].id
-      outputs  = aws_cloudformation_stack.trends_dashboard[0].outputs
+    trends = var.dashboards.trends == "yes" ? {
+      stack_id = module.trends_dashboard.stack_id
+      outputs  = module.trends_dashboard.stack_outputs
     } : null
-    datatransfer = length(aws_cloudformation_stack.datatransfer_dashboard) > 0 ? {
-      stack_id = aws_cloudformation_stack.datatransfer_dashboard[0].id
-      outputs  = aws_cloudformation_stack.datatransfer_dashboard[0].outputs
+    datatransfer = var.dashboards.datatransfer == "yes" ? {
+      stack_id = module.datatransfer_dashboard.stack_id
+      outputs  = module.datatransfer_dashboard.stack_outputs
     } : null
-    marketplace = length(aws_cloudformation_stack.marketplace_dashboard) > 0 ? {
-      stack_id = aws_cloudformation_stack.marketplace_dashboard[0].id
-      outputs  = aws_cloudformation_stack.marketplace_dashboard[0].outputs
+    marketplace = var.dashboards.marketplace == "yes" ? {
+      stack_id = module.marketplace_dashboard.stack_id
+      outputs  = module.marketplace_dashboard.stack_outputs
     } : null
-    connect = length(aws_cloudformation_stack.connect_dashboard) > 0 ? {
-      stack_id = aws_cloudformation_stack.connect_dashboard[0].id
-      outputs  = aws_cloudformation_stack.connect_dashboard[0].outputs
+    connect = var.dashboards.connect == "yes" ? {
+      stack_id = module.connect_dashboard.stack_id
+      outputs  = module.connect_dashboard.stack_outputs
     } : null
-    containers = length(aws_cloudformation_stack.containers_dashboard) > 0 ? {
-      stack_id = aws_cloudformation_stack.containers_dashboard[0].id
-      outputs  = aws_cloudformation_stack.containers_dashboard[0].outputs
+    containers = var.dashboards.containers == "yes" ? {
+      stack_id = module.containers_dashboard.stack_id
+      outputs  = module.containers_dashboard.stack_outputs
     } : null
   }
 }
