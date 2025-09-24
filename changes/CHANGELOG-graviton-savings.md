@@ -1,5 +1,12 @@
 # What's new in the Graviton Savings Dashboard
 
+## Graviton Savings Dashboard v2.2.0:
+```
+cid-cmd update --dashboard-id graviton-savings --force 
+```
+* New performance based cost savings feature
+* Updated visuals with action filters
+
 ## Graviton Savings Dashboard v2.1.0:
 ```
 cid-cmd update --dashboard-id graviton-savings --force --recursive
