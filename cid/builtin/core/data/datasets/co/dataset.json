@@ -19,7 +19,7 @@
                             {
                                 "ColumnName": "primary_tag",
                                 "ColumnId": "bd03d42a-c5c8-46dc-ac76-84a356bedeae",
-                                "Expression": "parseJson(tags, '$.${primary_tag_name}')"
+                                "Expression": "parseJson(tags, '$[\"${primary_tag_name}\"]')"
                             }
                         ]
                     }
@@ -30,7 +30,7 @@
                             {
                                 "ColumnName": "secondary_tag",
                                 "ColumnId": "78fe1f8a-57f5-4b14-8b41-67ffdaf0d0e6",
-                                "Expression": "parseJson(tags, '$.${secondary_tag_name}')"
+                                "Expression": "parseJson(tags, '$[\"${secondary_tag_name}\"]')"
                             }
                         ]
                     }
