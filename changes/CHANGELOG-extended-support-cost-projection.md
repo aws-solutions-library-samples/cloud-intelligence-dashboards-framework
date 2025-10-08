@@ -11,7 +11,7 @@ To update run these commands in your CloudShell (recommended) or other terminal:
 ```
 python3 -m ensurepip --upgrade
 pip3 install --upgrade cid-cmd
-cid-cmd update --dashboard-id extended-support-cost-projection
+cid-cmd update --dashboard-id extended-support-cost-projection --force --recursive
 ```
 
 - Adding Extended Support Elasticache sheet.
