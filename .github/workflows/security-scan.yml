@@ -37,8 +37,9 @@ jobs:
         run: |
           # GHSA-wfm5-v35h-vwf4  gitpython is a dependency of pip-audit not cid-cmd
           # GHSA-cwvm-v4w8-q58c  gitpython is a dependency of pip-audit not cid-cmd
+          # GHSA-4xh5-x5gv-qwph  pip not cid-cmd
           # GHSA-pq67-6m6q-mj2v  urllib3 <1.7 is a dep of boto3 need to wait till it updates to urllib3 2.5.0
-          pip-audit --ignore-vuln GHSA-wfm5-v35h-vwf4 --ignore-vuln GHSA-cwvm-v4w8-q58c --ignore-vuln GHSA-pq67-6m6q-mj2v
+          pip-audit --ignore-vuln GHSA-wfm5-v35h-vwf4 --ignore-vuln GHSA-cwvm-v4w8-q58c --ignore-vuln GHSA-pq67-6m6q-mj2v --ignore-vuln GHSA-4xh5-x5gv-qwph
 
   python-pylint-cid:
     runs-on: ubuntu-latest
