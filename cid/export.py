@@ -479,7 +479,7 @@ def export_analysis(qs, athena, glue):
 
         taxonomy_fields = detect_global_filter_fields(definition)
         taxonomy_fields = get_parameter('taxonomy',
-            message='leave only taxonomy filed you want to keep in export',
+            message='Enter the fields that you want removed from the taxonomy before export',
             choices=taxonomy_fields,
             default=[],
             multi=True
