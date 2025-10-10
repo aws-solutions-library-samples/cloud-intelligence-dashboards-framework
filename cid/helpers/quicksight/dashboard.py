@@ -228,7 +228,7 @@ class Dashboard(CidQsResource):
             logger.trace(f'something strange. unable to define cid_version')
         
         # Update tag to match actual deployed version
-        if self._cid_version:
+        if self._cid_version and not tag_version:
             logger.trace(f'setting tag of {self.arn} to cid_version_tag = {self._cid_version}')
             self.qs.set_tags(self.arn, cid_version_tag=self._cid_version)
         
