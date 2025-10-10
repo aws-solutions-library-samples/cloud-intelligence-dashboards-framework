@@ -8,6 +8,43 @@
     <lastBuildDate>Mon, 22 Sep 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Extended Support Cost Projection - v4.0.3</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v403</link>
+      <pubDate>Thu, 09 Oct 2025 12:00:00 GMT</pubDate>
+      <category><![CDATA[Update]]></category>
+      <guid isPermaLink="false">fff64290-032b-4e87-82a0-65bef8461015</guid>
+      <description>Extended Support Cost Projection for Elasticache</description>
+      <content:encoded><![CDATA[
+          <p>
+            In this release, we have introduced projection of extended support costs for 
+            <strong>Amazon Elasticache</strong>. The dashboard provides a clear view on 
+            <strong>Elasticache</strong> clusters reaching 
+            extended support in the next <strong>3, 6, 12 months</strong>, and beyond.
+          </p>
+          
+          <p>
+            <strong>Important:</strong> This version requires the data collection version 
+            <strong>3.2.0+</strong>. Update to this version requires a forced and recursive update. 
+            If you have modified the Extended Support Cost Projection dashboard view queries, 
+            they will be overridden when the dashboard is updated. Consider backing up the existing 
+            view queries if they contain custom changes you want to keep so you can re-apply them after 
+            the update takes place.
+          </p>
+          
+          <p>
+            To update, run these commands in your CloudShell (recommended) or another terminal:
+          </p>
+          
+          <pre>
+        python3 -m ensurepip --upgrade
+        pip3 install --upgrade cid-cmd
+        cid-cmd update --dashboard-id extended-support-cost-projection --force --recursive
+          </pre>
+        ]]>
+    </content:encoded>
+    </item>
+    <item>
       <title>[New Dashboard] Media Services Insights Hub v1.0.0</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/add-resilience-hub/changes/CHANGELOG-resiliencevue.md
