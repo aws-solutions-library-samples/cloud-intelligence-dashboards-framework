@@ -213,27 +213,25 @@ class Dashboard(CidQsResource):
     @property
     def deployed_cid_version(self):
         if self._cid_version:
-            return  self._cid_version
+            return self._cid_version
         
-        # Prioritize definition version over existing tags
-        if 'version' in self.definition:
-            self._cid_version = CidVersion(self.definition['version'])
-            # Update tag to match definition
-            logger.trace(f'updating tag of {self.arn} to cid_version_tag = {self._cid_version}')
-            self.qs.set_tags(self.arn, cid_version_tag=self._cid_version)
+        # Check deployed definition first (most accurate)
+        if self.deployed_definition:
+            self._cid_version = self.deployed_definition.cid_version
         else:
+            # Fallback to tag version if no deployed resources found
             tag_version = (self.qs.get_tags(self.arn) or {}).get('cid_version_tag')
             if tag_version:
                 logger.trace(f'version of {self.arn} from tag = {tag_version}')
                 self._cid_version = CidVersion(tag_version)
-            else:
-                if self.deployed_template:
+            elif self.deployed_template:
                     self._cid_version = self.deployed_template.cid_version
-                elif self.deployed_definition:
-                    self._cid_version = self.deployed_definition.cid_version
-                if self._cid_version:
-                    logger.trace(f'setting tag of {self.arn} to cid_version_tag = {self._cid_version}')
-                    self.qs.set_tags(self.arn, cid_version_tag=self._cid_version)
+        
+        # Update tag to match actual deployed version
+        if self._cid_version:
+            logger.trace(f'setting tag of {self.arn} to cid_version_tag = {self._cid_version}')
+            self.qs.set_tags(self.arn, cid_version_tag=self._cid_version)
+        
         return self._cid_version
 
 

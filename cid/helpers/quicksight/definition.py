@@ -38,13 +38,13 @@ class Definition:
         if about_content:
             all_about_content = " | ".join(about_content)
             # find first string that looks like vx.y.z using a regular expression where x, y and z are numbers
-            version_matches = re.findall(r"(v\d+?\.\d+?\.\d+?)", all_about_content)
+            version_matches = re.findall(r"([vV]\d+?\.\d+?\.\d+?)", all_about_content)
             if version_matches:
-                return version_matches[0]
+                return version_matches[0].lower()  # normalize to lowercase
             else:
-                version_matches = re.findall(r"(v\d+?\.\d+?)", all_about_content)
+                version_matches = re.findall(r"([vV]\d+?\.\d+?)", all_about_content)
                 if version_matches:
-                    return f"{version_matches[0]}.0"
+                    return f"{version_matches[0].lower()}.0"  # normalize to lowercase
 
         return None
     
