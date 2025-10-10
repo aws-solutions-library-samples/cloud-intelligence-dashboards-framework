@@ -216,16 +216,16 @@ class Dashboard(CidQsResource):
             return self._cid_version
         
         # Check deployed definition first (most accurate)
-        if self.deployed_definition:
+        tag_version = (self.qs.get_tags(self.arn) or {}).get('cid_version_tag')
+        if tag_version:
+            logger.trace(f'version of {self.arn} from tag = {tag_version}')
+            self._cid_version = CidVersion(tag_version)
+        elif self.deployed_definition:
             self._cid_version = self.deployed_definition.cid_version
+        elif self.deployed_template:
+            self._cid_version = self.deployed_template.cid_version
         else:
-            # Fallback to tag version if no deployed resources found
-            tag_version = (self.qs.get_tags(self.arn) or {}).get('cid_version_tag')
-            if tag_version:
-                logger.trace(f'version of {self.arn} from tag = {tag_version}')
-                self._cid_version = CidVersion(tag_version)
-            elif self.deployed_template:
-                    self._cid_version = self.deployed_template.cid_version
+            logger.trace(f'something strange. unable to define cid_version')
         
         # Update tag to match actual deployed version
         if self._cid_version:
