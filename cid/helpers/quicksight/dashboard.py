@@ -214,19 +214,26 @@ class Dashboard(CidQsResource):
     def deployed_cid_version(self):
         if self._cid_version:
             return  self._cid_version
-        tag_version = (self.qs.get_tags(self.arn) or {}).get('cid_version_tag')
-        #print(f'{self.id}: {tag_version}')
-        if tag_version:
-            logger.trace(f'version of {self.arn} from tag = {tag_version}')
-            self._cid_version = CidVersion(tag_version)
+        
+        # Prioritize definition version over existing tags
+        if 'version' in self.definition:
+            self._cid_version = CidVersion(self.definition['version'])
+            # Update tag to match definition
+            logger.trace(f'updating tag of {self.arn} to cid_version_tag = {self._cid_version}')
+            self.qs.set_tags(self.arn, cid_version_tag=self._cid_version)
         else:
-            if self.deployed_template:
-                self._cid_version = self.deployed_template.cid_version
-            elif self.deployed_definition:
-                self._cid_version = self.deployed_definition.cid_version
-            if self._cid_version:
-                logger.trace(f'setting tag of {self.arn} to cid_version_tag = {self._cid_version}')
-                self.qs.set_tags(self.arn, cid_version_tag=self._cid_version)
+            tag_version = (self.qs.get_tags(self.arn) or {}).get('cid_version_tag')
+            if tag_version:
+                logger.trace(f'version of {self.arn} from tag = {tag_version}')
+                self._cid_version = CidVersion(tag_version)
+            else:
+                if self.deployed_template:
+                    self._cid_version = self.deployed_template.cid_version
+                elif self.deployed_definition:
+                    self._cid_version = self.deployed_definition.cid_version
+                if self._cid_version:
+                    logger.trace(f'setting tag of {self.arn} to cid_version_tag = {self._cid_version}')
+                    self.qs.set_tags(self.arn, cid_version_tag=self._cid_version)
         return self._cid_version
 
 
