@@ -5,8 +5,33 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Mon, 22 Sep 2025 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 17 Oct 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] Media Services Insights Hub v1.1.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/add-resilience-hub/changes/CHANGELOG-resiliencevue.md
+      </link>
+      <pubDate>Fri, 17 Oct 2025 12:00:00 GMT</pubDate>
+      <category><![CDATA[Update]]></category>
+      <guid isPermaLink="false">f50ec0b7-f960-400d-91f0-c42a6d44e3d0</guid>
+      <description>Media Services Insights Hub v1.1.0 - Update</description>
+      <content:encoded><![CDATA[
+    <div>
+      <p>
+        This release includes the following
+      </p>
+            <h3>Key Tabs and Features:</h3>
+      <ul>
+        <li>Improves the performance of the main CUR query to work with very large account usage.</li>
+        <li>Corrects a filter for AEMX ingress bytes KPI</li>
+      </ul>
+
+    </div>
+    ]]></content:encoded>
+     </item>
+
+
     <item>
       <title>[Update] Extended Support Cost Projection - v4.0.3</title>
       <link>
