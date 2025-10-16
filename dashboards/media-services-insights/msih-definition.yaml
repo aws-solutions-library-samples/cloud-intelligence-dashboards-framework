@@ -449,7 +449,7 @@ CalculatedFields:
     operation = \"CHANNEL_FEATURE\", \"Channel Feature (Hrs)\",\n\t\t\tconcat(\"EML\
     \ other: \", {product_family}, \":\", operation, \":\", {usage_type})\n\t\t),\n\
     \tcontains({product_code}, \"MediaConvert\"),\n\t\tifelse(\n\t\t\tcontains({product_family},\
-    \ \"Transcode\"), \"Transcoding (Mins)\",\n\t\t\toperation = \"reserve\", \"Reserved\
+    \ \"Transcod\"), \"Transcoding (Mins)\",\n\t\t\toperation = \"reserve\", \"Reserved\
     \ Transcoding (Mins)\",\n\t\t\toperation = \"CreateJob\", \"Create Job (Count)\"\
     ,\n\t\t\t{product_family} = \"API Calls\", \"API Call (Invoke)\",\n\t\t\tconcat(\"\
     EMC other: \", {product_family}, \":\", operation, \":\", {usage_type})\n\t\t\
@@ -2992,7 +2992,7 @@ FilterGroups:
         DataSetIdentifier: msih_view
       Configuration:
         CustomFilterConfiguration:
-          CategoryValue: Transcode
+          CategoryValue: Transcod
           MatchOperator: CONTAINS
           NullOption: NON_NULLS_ONLY
       FilterId: d83c6739-fd34-40e3-8b4e-46321c9c5e91
@@ -3210,7 +3210,7 @@ FilterGroups:
         DataSetIdentifier: msih_view
       Configuration:
         CustomFilterConfiguration:
-          CategoryValue: Transcode
+          CategoryValue: Transcod
           MatchOperator: CONTAINS
           NullOption: NON_NULLS_ONLY
       FilterId: ee8b2c70-1d06-48c6-b77f-6554f6735365
