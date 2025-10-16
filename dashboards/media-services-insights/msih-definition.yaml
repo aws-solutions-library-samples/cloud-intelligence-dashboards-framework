@@ -592,7 +592,6 @@ FilterGroups:
         - 3c99c65d-0d8f-4f56-a0d2-011f406fcdfc
         - 850905e7-c5f9-4979-9413-59b8e930b13e
         - 114c8fbf-f7a9-4912-b69f-460dabb7cf9e
-        - e1d334ca-07ac-4f1c-a528-f924a7395071
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 6d58f644-b64e-46c7-bc68-7bde1dd45009
@@ -711,7 +710,6 @@ FilterGroups:
         - d1116720-cfc7-46f4-a5b1-a598120a3075
         - 64f1bdfb-436c-4474-bc5e-61d3f31bd854
         - 3c99c65d-0d8f-4f56-a0d2-011f406fcdfc
-        - e1d334ca-07ac-4f1c-a528-f924a7395071
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 5826ac3a-d0a4-49f4-8816-91caf1e68044
@@ -741,7 +739,6 @@ FilterGroups:
         - 65d894b8-3909-472d-b338-2081c27cb937
         - 5f657dc8-0a40-4f5f-96c5-1ef9d5c86df8
         - d045cc00-dcd8-4adc-acd4-ac4cb76c05e4
-        - e1d334ca-07ac-4f1c-a528-f924a7395071
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 7f84a1b5-3f76-4271-a2d3-8b66062c9cdf
@@ -16873,12 +16870,6 @@ Sheets:
           ElementType: VISUAL
           RowIndex: 177
           RowSpan: 9
-        - ColumnIndex: 0
-          ColumnSpan: 22
-          ElementId: e1d334ca-07ac-4f1c-a528-f924a7395071
-          ElementType: VISUAL
-          RowIndex: 186
-          RowSpan: 12
   Name: MediaLive
   ParameterControls:
   - List:
@@ -17293,113 +17284,6 @@ Sheets:
       \      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 79cf4f10-38ee-495a-bb56-3af585cfdaca
   Visuals:
-  - PivotTableVisual:
-      Actions: []
-      ChartConfiguration:
-        FieldOptions:
-          DataPathOptions:
-          - DataPathList:
-            - FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.operation.3.1760638975749
-              FieldValue: operation
-            Width: 319px
-          - DataPathList:
-            - FieldId: 989b5bde-90b8-4281-bc88-cb601b3ab0ac.2.1760638810161
-              FieldValue: Usage Category
-            Width: 203px
-          - DataPathList:
-            - FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.product_family.4.1760639011152
-              FieldValue: product_family
-            Width: 193px
-          SelectedFieldOptions:
-          - FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.1.1743454138367
-            Visibility: VISIBLE
-          - FieldId: 989b5bde-90b8-4281-bc88-cb601b3ab0ac.2.1760638810161
-            Visibility: VISIBLE
-          - FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.product_family.4.1760639011152
-            Visibility: VISIBLE
-          - FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.operation.3.1760638975749
-            Visibility: VISIBLE
-          - FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.usage_quantity.1.1743801731767
-            Visibility: VISIBLE
-        FieldWells:
-          PivotTableAggregatedFieldWells:
-            Columns: []
-            Rows:
-            - DateDimensionField:
-                Column:
-                  ColumnName: billing_period
-                  DataSetIdentifier: msih_view
-                FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.1.1743454138367
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: Usage Category
-                  DataSetIdentifier: msih_view
-                FieldId: 989b5bde-90b8-4281-bc88-cb601b3ab0ac.2.1760638810161
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: product_family
-                  DataSetIdentifier: msih_view
-                FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.product_family.4.1760639011152
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: operation
-                  DataSetIdentifier: msih_view
-                FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.operation.3.1760638975749
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: usage_quantity
-                  DataSetIdentifier: msih_view
-                FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.usage_quantity.1.1743801731767
-                FormatConfiguration:
-                  FormatConfiguration:
-                    NumberDisplayFormatConfiguration:
-                      DecimalPlacesConfiguration:
-                        DecimalPlaces: 0
-                      NullValueFormatConfiguration:
-                        NullString: 'null'
-                      SeparatorConfiguration:
-                        ThousandsSeparator:
-                          Visibility: VISIBLE
-        SortConfiguration:
-          FieldSortOptions: []
-        TableOptions:
-          CellStyle: {}
-          ColumnHeaderStyle: {}
-          RowAlternateColorOptions:
-            Status: DISABLED
-            UsePrimaryBackgroundColor: ENABLED
-          RowFieldNamesStyle: {}
-          RowsLayout: TABULAR
-        TotalOptions:
-          RowSubtotalOptions:
-            CustomLabel: <<$aws:subtotalDimension>> Subtotal
-            MetricHeaderCellStyle: {}
-            StyleTargets:
-            - CellType: VALUE
-            - CellType: TOTAL
-            - CellType: METRIC_HEADER
-            TotalCellStyle: {}
-            TotalsVisibility: HIDDEN
-            ValueCellStyle: {}
-      Subtitle:
-        FormatText:
-          RichText: |-
-            <visual-subtitle>
-              <inline font-size="14px">Month-over-month trend</inline>
-            </visual-subtitle>
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: "<visual-title>\n  <inline color=\"#fec48c\" font-size=\"20px\"\
-            >\n    <b>T</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
-            16px\">\n    <b>RANSCODING\_</b>\n  </inline>\n  <inline color=\"#fec48c\"\
-            \ font-size=\"20px\">\n    <b>H</b>\n  </inline>\n  <inline color=\"#fec48c\"\
-            \ font-size=\"16px\">\n    <b>OURS</b>\n  </inline>\n</visual-title>"
-        Visibility: VISIBLE
-      VisualId: e1d334ca-07ac-4f1c-a528-f924a7395071
   - ComboChartVisual:
       Actions: []
       ChartConfiguration:
