@@ -8,7 +8,7 @@ dashboards:
     dashboardId: media-services-insights
     category: Advanced
     theme: MIDNIGHT
-    version: v1.0.0
+    version: v1.1.0
     file: ./msih-definition.yaml
 datasets:
   msih_reservations:
@@ -279,7 +279,11 @@ datasets:
               Type: STRING
             - Name: video_statmux
               Type: STRING
-            - Name: usage_type_json
+            - Name: video_emc_term
+              Type: STRING
+            - Name: video_eml_idle
+              Type: STRING
+            - Name: video_emc_addon
               Type: STRING
             - Name: video_transcoding_result
               Type: STRING
@@ -296,8 +300,6 @@ datasets:
             - Name: reservation_id
               Type: STRING
             - Name: last_refresh_date
-              Type: DATETIME
-            - Name: earliest_data_date
               Type: DATETIME
             - Name: usage_quantity
               Type: DECIMAL
@@ -346,14 +348,6 @@ datasets:
             - Name: account_name
               Type: STRING
       LogicalTableMap:
-        3c7271a1-f31b-406e-850e-ad0f8d2d019c:
-          Alias: Intermediate Table
-          Source:
-            JoinInstruction:
-              LeftOperand: 3e96372e-5959-4a5b-a96a-730193e3990b
-              RightOperand: fe50ab11-682a-4611-b7a0-048682763adf
-              Type: LEFT
-              OnClause: '{linked_account_id} = {account_id}'
         3e96372e-5959-4a5b-a96a-730193e3990b:
           Alias: msih_view
           Source:
@@ -369,7 +363,15 @@ datasets:
               NewColumnName: payer_account_name
           Source:
             PhysicalTableId: ca2f9216-c240-4505-9a10-3d7794d2633a
-        6f0e0ca9-00b1-4ad0-b2a4-0f3cba59448a:
+        577d1b5c-c0f6-4c3b-9e19-073469c8b7b9:
+          Alias: Intermediate Table
+          Source:
+            JoinInstruction:
+              LeftOperand: 3e96372e-5959-4a5b-a96a-730193e3990b
+              RightOperand: fe50ab11-682a-4611-b7a0-048682763adf
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+        d43506c7-accc-4e0c-9554-60f5c5b75703:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -420,7 +422,9 @@ datasets:
               - video_emc_rts
               - video_audio_only
               - video_statmux
-              - usage_type_json
+              - video_emc_term
+              - video_eml_idle
+              - video_emc_addon
               - video_transcoding_result
               - location_source
               - location_destination
@@ -429,7 +433,6 @@ datasets:
               - resource_id
               - reservation_id
               - last_refresh_date
-              - earliest_data_date
               - usage_quantity
               - unblended_cost
               - net_unblended_cost
@@ -444,7 +447,7 @@ datasets:
               - payer_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: 3c7271a1-f31b-406e-850e-ad0f8d2d019c
+              LeftOperand: 577d1b5c-c0f6-4c3b-9e19-073469c8b7b9
               RightOperand: 43f7b42d-3957-4651-8f5c-278ecd1981cc
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
@@ -524,7 +527,7 @@ views:
          , "reservation_effective_cost"
          , "pricing_public_on_demand_cost"
          FROM
-           "${cur2_database}"."${cur2_table_name}"
+           "${cur2_database}".${cur2_table_name}
          WHERE (CAST("line_item_usage_end_date" AS date) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '24' MONTH))
       )
       , eml_ri_inventory AS (
@@ -648,178 +651,94 @@ views:
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".msih_view AS
       WITH
-        "emc_usage_translation_rules" AS (
+        "cur_base" AS (
          SELECT *
          FROM
-           (
-       VALUES
-              ROW (10, '-', ',', 'Prepare by replacing all hyphens with commas', 'AWSElementalMediaConvert')
-            , ROW (11, '$', ',', 'Ensure last char is comma to avoid | rules; cleaned in the end ', 'AWSElementalMediaConvert')
-            , ROW (12, '^[A-Z]{3},', ',', 'Remove region', 'AWSElementalMediaConvert')
-            , ROW (20, ',PASS,', ',",Video passthrough,', '', 'AWSElementalMediaConvert')
-            , ROW (21, '^,B,(.*?),', ',"Tier":"Basic","Codec":"$1",', 'Should handle all codecs plus new ones', 'AWSElementalMediaConvert')
-            , ROW (21, '^,P,(.*?),', ',"Tier":"Professional","Codec":"$1",', 'Should handle all codecs plus new ones', 'AWSElementalMediaConvert')
-            , ROW (30, ',AUD,', ',"IsAudioOnly":"Yes","Codec":"Audio-only",', 'Lack of entry will mean No; force codec', 'AWSElementalMediaConvert')
-            , ROW (30, ',NTM', ',"IsNTM":"Yes",', 'Lack of entry will mean No', 'AWSElementalMediaConvert')
-            , ROW (30, ',RTS,', ',"IsRTS":"Yes",', 'Lack of entry will mean No', 'AWSElementalMediaConvert')
-            , ROW (30, ',Y,', ',"Term":"Yearly",', '', 'AWSElementalMediaConvert')
-            , ROW (40, ',AV1,', ',"Codec":"AV1",', '', 'AWSElementalMediaConvert')
-            , ROW (40, ',AVC,', ',"Codec":"AVC",', '', 'AWSElementalMediaConvert')
-            , ROW (40, ',AVCI,', ',"Codec":"AVCI",', '', 'AWSElementalMediaConvert')
-            , ROW (40, ',HEVC,', ',"Codec":"HEVC",', '', 'AWSElementalMediaConvert')
-            , ROW (40, ',MP2,', ',"Codec":"MP2",', '', 'AWSElementalMediaConvert')
-            , ROW (40, ',VC3,', ',"Codec":"VC3",', '', 'AWSElementalMediaConvert')
-            , ROW (40, ',VP8,', ',"Codec":"VP8",', '', 'AWSElementalMediaConvert')
-            , ROW (40, ',VP9,', ',"Codec":"VP8",', '', 'AWSElementalMediaConvert')
-            , ROW (40, ',XAVC,', ',"Codec":"XAVC",', '', 'AWSElementalMediaConvert')
-            , ROW (41, ',30(,|$)', ',"Frame Rate":"<= 30fps",', '', 'AWSElementalMediaConvert')
-            , ROW (41, ',60(,|$)', ',"Frame Rate":"> 30, <= 60 fps",', '', 'AWSElementalMediaConvert')
-            , ROW (41, ',120(,|$)', ',"Frame Rate":"> 60 fps",', '', 'AWSElementalMediaConvert')
-            , ROW (42, ',MHQ,', ',"Quality":"Multi-pass HQ",', '', 'AWSElementalMediaConvert')
-            , ROW (42, ',M,', ',"Quality":"Multi-pass",', '', 'AWSElementalMediaConvert')
-            , ROW (42, ',SHQ,', ',"Quality":"Single-pass HQ",', '', 'AWSElementalMediaConvert')
-            , ROW (42, ',S,', ',"Quality":"Single-pass",', '', 'AWSElementalMediaConvert')
-            , ROW (43, ',4K,', ',"Resolution":"4K",', '', 'AWSElementalMediaConvert')
-            , ROW (43, ',8K,', ',"Resolution":"8K",', '', 'AWSElementalMediaConvert')
-            , ROW (43, ',HD,', ',"Resolution":"HD",', '', 'AWSElementalMediaConvert')
-            , ROW (43, ',HDR10PLUS,', ',"Resolution":"HDR 10+",', '', 'AWSElementalMediaConvert')
-            , ROW (43, ',SD,', ',"Resolution":"SD",', '', 'AWSElementalMediaConvert')
-            , ROW (44, '^,B,', ',"Tier":"Basic",', '', 'AWSElementalMediaConvert')
-            , ROW (44, '^,P-', ',"Tier:"Professional",', '', 'AWSElementalMediaConvert')
-            , ROW (45, ',GIF,', ',"Add-on":"Animated GIF",', '', 'AWSElementalMediaConvert')
-            , ROW (45, ',PR,', ',"Codec":"Apple ProRes",', '', 'AWSElementalMediaConvert')
-            , ROW (45, ',DTS,', ',"Add-on":"Audio normalization","IsAudioOnly":"Yes",', '', 'AWSElementalMediaConvert')
-            , ROW (45, ',DOLBY,', ',"Add-on":"Dolby Audio","IsAudioOnly":"Yes",', '', 'AWSElementalMediaConvert')
-            , ROW (45, ',DOLBY_VIS,', ',"Add-on":"Dolby Vision",', '', 'AWSElementalMediaConvert')
-            , ROW (45, ',FRAMEFORMER,', ',"Add-on":"FrameFormer",', '', 'AWSElementalMediaConvert')
-            , ROW (45, ',KANTAR,', ',"Add-on":"Kantar watermarking",', '', 'AWSElementalMediaConvert')
-            , ROW (45, ',PROBE,', ',"Add-on":"MediaConvert Probe",', '', 'AWSElementalMediaConvert')
-            , ROW (45, ',NEXGUARD,', ',"Add-on":"NexGuard watermarking",', '', 'AWSElementalMediaConvert')
-            , ROW (45, ',NIELSEN_SID_TIC,', ',"Add-on":"Nielsen watermarking",', '', 'AWSElementalMediaConvert')
-            , ROW (46, ',"Add-on":"(.*?)",', ',"Tier":"Professional","Add-on":"$1",', 'Any add-on is professional tier', 'AWSElementalMediaConvert')
-            , ROW (60, '"Codec":"NA",', '', 'Remove an NA codec from certain conditions like AUD', 'AWSElementalMediaConvert')
-            , ROW (61, '(,|")NA(,|")', '$1$2', 'Remove any NA', 'AWSElementalMediaConvert')
-            , ROW (62, ',NA,', ',', 'Remove any NA (need to do twice until regex can be tuned)', 'AWSElementalMediaConvert')
-            , ROW (90, '(,+)', ',', 'Remove multiple commas', 'AWSElementalMediaConvert')
-            , ROW (91, '^,', '', 'Remove leading comma', 'AWSElementalMediaConvert')
-            , ROW (92, ',$', '', 'Remove trailing comma', 'AWSElementalMediaConvert')
-            , ROW (99, '^(.*)$', '\{$1\}', 'Wrap in braces as json', 'AWSElementalMediaConvert')
-            , ROW (10, '-', ',', 'Prepare by replacing all hyphens with commas', 'AWSElementalMediaLive')
-            , ROW (11, '$', ',', 'Ensure last char is comma to avoid | rules; cleaned in the end', 'AWSElementalMediaLive')
-            , ROW (11, '^', ',', 'Ensure last char is comma to avoid | rules; cleaned in the end', 'AWSElementalMediaLive')
-            , ROW (20, '^,(.*?,).*?,(.*?$)', ',$1$2', 'Remove region', 'AWSElementalMediaLive')
-            , ROW (21, '^,MUX,', ',"IsStatmux":"Yes",', 'Handle statmux', 'AWSElementalMediaLive')
-            , ROW (22, '^,((.*?,){2})(.*?),', ',$1"Codec":"$3",', '', 'AWSElementalMediaLive')
-            , ROW (22, '^,((.*?,){3})(.*?),', ',$1"Resolution":"$3",', '', 'AWSElementalMediaLive')
-            , ROW (30, ',EML1,', ',"Pipeline":"Single",', '', 'AWSElementalMediaLive')
-            , ROW (30, ',EML2,', ',"Pipeline":"Standard",', '', 'AWSElementalMediaLive')
-            , ROW (30, ',IN,', ',"FlowDirection":"In",', '', 'AWSElementalMediaLive')
-            , ROW (30, ',OUT,', ',"FlowDirection":"Out",', '', 'AWSElementalMediaLive')
-            , ROW (30, ',L([0-9]*?),', ',"BitRate":"$1 mbps",', '', 'AWSElementalMediaLive')
-            , ROW (30, ',([0-9]*?),', ',"FrameRate":"$1 fps",', 'Should be the only digit-only entry', 'AWSElementalMediaLive')
-            , ROW (30, ',S,$', ',"Quality":"Standard",', '', 'AWSElementalMediaLive')
-            , ROW (30, ',E,$', ',"Quality":"Enhanced",', '', 'AWSElementalMediaLive')
-            , ROW (40, '"Codec":"IDLE"', ',"IsIdle":"Yes",', '', 'AWSElementalMediaLive')
-            , ROW (40, '"AUDIO"', '"Audio-only"', '', 'AWSElementalMediaLive')
-            , ROW (90, '(,+)', ',', 'Remove multiple commas', 'AWSElementalMediaLive')
-            , ROW (91, '^,', '', 'Remove leading comma', 'AWSElementalMediaLive')
-            , ROW (92, ',$', '', 'Remove trailing comma', 'AWSElementalMediaLive')
-            , ROW (99, '^(.*)$', '\{$1\}', 'Wrap in braces as json', 'AWSElementalMediaLive')
-         )  t ("priority", "pattern_exp", "replace_exp", "comment", "elemental_service")
-      )
-      , "emc_usage_translation_compiled" AS (
-         SELECT
-           "elemental_service"
-         , array_agg("pattern_exp" ORDER BY priority ASC) "patterns"
-         , array_agg("replace_exp" ORDER BY priority ASC) "reps"
-         FROM
-           "emc_usage_translation_rules"
-         GROUP BY 1
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE (("line_item_product_code" LIKE '%Media%') AND ("line_item_product_code" <> 'AWSElementalMediaStore') AND (NOT ("line_item_product_code" LIKE '%MediaSupport')) AND ("bill_billing_period_start_date" >= (date_trunc('month', current_timestamp) - INTERVAL  '13' MONTH)) AND (CAST(concat("billing_period", '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '13' MONTH)) AND (NOT ("line_item_line_item_type" IN ('Tax', 'Refund', 'Credit'))))
       )
       , "cur_pre_processing" AS (
          SELECT
-           split_part("billing_period", '-', 1) "year"
+           *
+         , split_part("billing_period", '-', 1) "year"
          , split_part("billing_period", '-', 2) "month"
-         , "bill_billing_period_start_date" "billing_period"
          , (CASE WHEN ("date_trunc"('day', "line_item_usage_start_date") >= ("date_trunc"('day', current_timestamp) - INTERVAL  '30' DAY)) THEN "date_trunc"('hour', "line_item_usage_start_date") WHEN ("date_trunc"('month', "line_item_usage_start_date") >= ("date_trunc"('month', current_timestamp) - INTERVAL  '4' MONTH)) THEN "date_trunc"('day', "line_item_usage_start_date") ELSE "date_trunc"('month', "line_item_usage_start_date") END) "usage_date"
-         , "bill_billing_entity" "billing_entity"
-         , "line_item_product_code" "product_code"
-         , "line_item_usage_type" "usage_type"
-         , "line_item_line_item_type" "charge_type"
-         , "line_item_usage_start_date"
-         , "line_item_resource_id" "resource_id"
-         , "line_item_usage_account_id" "linked_account_id"
-         , "bill_payer_account_id" "payer_account_id"
-         , "line_item_line_item_description" "item_description"
-         , "product"
-         , "product_from_location" "location_source"
-         , "product_to_location" "location_destination"
-         , "pricing_unit"
          , (CASE WHEN ("strpos"("pricing_unit", 'Reserved') > 0) THEN 'Reserved' WHEN ("reservation_reservation_a_r_n" <> '') THEN 'Reserved' ELSE 'OnDemand' END) "purchase_option"
          , (CASE WHEN ("reservation_reservation_a_r_n" <> '') THEN "reservation_reservation_a_r_n" ELSE CAST('' AS varchar) END) "ri_sp_arn"
          , (CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN 'Running_Usage' WHEN ("line_item_line_item_type" = 'Usage') THEN 'Running_Usage' ELSE 'non_usage' END) "charge_category"
-         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaPackage') AND ("line_item_usage_type" LIKE '%-origin-p%-bytes')) THEN 'Packaging Data Transfer' WHEN ("line_item_operation" = 'DataProcessed') THEN 'Data Transfer' WHEN ("line_item_operation" = 'RunningFlow') THEN 'Compute Instance' WHEN ("line_item_operation" = 'CreateJob') THEN 'Transcode minute' WHEN ("line_item_operation" = 'reserve') THEN 'Reserved Transcoding' WHEN ("line_item_operation" = 'CHANNEL_BANDWIDTH') THEN 'Data Transfer' WHEN (("line_item_operation" LIKE 'CHANNEL_%PUT') OR ("line_item_operation" LIKE 'INACTIVE_%') OR ("line_item_operation" = 'CHANNEL_Add-on')) THEN 'Transcode minute' WHEN ("line_item_usage_type" LIKE '%-Out-Bytes') THEN 'Data Transfer' WHEN (("line_item_usage_type" LIKE '%-ingest-bytes') OR ("line_item_usage_type" LIKE '%-origin-packaging-bytes')) THEN 'Packaging Data Transfer' WHEN ("line_item_usage_type" LIKE '%-AdInsertion') THEN 'Fee' WHEN ("line_item_operation" = 'runChannel') THEN 'Fee' ELSE "product_product_family" END) "product_family"
-         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" = 'Transcode minute') AND (NOT ("line_item_line_item_type" LIKE '%Usage'))) THEN 'CreateJob' ELSE "line_item_operation" END) "operation"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" = 'Transcoding') AND (NOT ("line_item_line_item_type" LIKE '%Usage'))) THEN 'CreateJob' ELSE "line_item_operation" END) "operation"
          , SPLIT_PART(reservation_reservation_a_r_n, ':', 7) "reservation_id"
          , (CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_effective_cost" WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee") WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0 ELSE "line_item_unblended_cost" END) "amortized_cost"
          , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN COALESCE(("reservation_net_unused_amortized_upfront_fee_for_billing_period" + "reservation_net_unused_recurring_fee"), ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee")) WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN COALESCE("reservation_net_effective_cost", "reservation_effective_cost") WHEN (("line_item_line_item_type" = 'Fee') AND (COALESCE("reservation_reservation_a_r_n", '') = '')) THEN COALESCE("line_item_net_unblended_cost", "line_item_unblended_cost") WHEN ("line_item_line_item_type" IN ('Usage', 'Tax', 'Credit', 'Refund')) THEN COALESCE("line_item_net_unblended_cost", "line_item_unblended_cost") ELSE 0 END) "net_amortized_cost"
          , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN -("reservation_amortized_upfront_fee_for_billing_period") ELSE 0 END) "ri_sp_trueup"
          , (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN "line_item_unblended_cost" WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN "line_item_unblended_cost" ELSE 0 END) "ri_sp_upfront_fees"
          , (CASE WHEN ("line_item_line_item_type" <> 'SavingsPlanNegation') THEN "pricing_public_on_demand_cost" ELSE 0 END) "public_cost"
-         , "line_item_usage_amount"
-         , "line_item_unblended_cost"
-         , "line_item_net_unblended_cost"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaPackage') AND ("line_item_usage_type" LIKE '%-origin-p%-bytes')) THEN 'Packaging Data Transfer' WHEN ("line_item_operation" = 'DataProcessed') THEN 'Data Transfer' WHEN ("line_item_operation" = 'RunningFlow') THEN 'Compute Instance' WHEN ("line_item_operation" = 'CreateJob') THEN 'Transcoding' WHEN ("line_item_operation" = 'reserve') THEN 'Reserved Transcoding' WHEN ("line_item_operation" = 'CHANNEL_BANDWIDTH') THEN 'Data Transfer' WHEN (("line_item_operation" LIKE 'CHANNEL_%PUT') OR ("line_item_operation" LIKE 'INACTIVE_%') OR ("line_item_operation" = 'CHANNEL_Add-on')) THEN 'Transcoding' WHEN ("line_item_usage_type" LIKE '%-Out-Bytes') THEN 'Data Transfer' WHEN (("line_item_usage_type" LIKE '%-ingest-bytes') OR ("line_item_usage_type" LIKE '%-origin-packaging-bytes')) THEN 'Packaging Data Transfer' WHEN ("line_item_usage_type" LIKE '%-AdInsertion') THEN 'Fee' WHEN ("line_item_operation" = 'runChannel') THEN 'Fee' ELSE "product_product_family" END) "product_family"
+         , replace(concat('-', "line_item_usage_type", '-'), '-NA-', '--') "line_item_usage_type_norm"
          FROM
-           "${cur2_database}"."${cur2_table_name}"
-         WHERE (("line_item_product_code" LIKE '%Media%') AND ("line_item_product_code" <> 'AWSElementalMediaStore') AND (NOT ("line_item_product_code" LIKE '%MediaSupport')) AND ("bill_billing_period_start_date" >= (date_trunc('month', current_timestamp) - INTERVAL  '25' MONTH)) AND (CAST(concat("billing_period", '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '25' MONTH)) AND (NOT ("line_item_line_item_type" IN ('Tax', 'Refund', 'Credit'))))
+           "cur_base"
       )
-      , "usage_type_normalization" AS (
+      , "usage_type_processing" AS (
          SELECT
            *
-         , (CASE WHEN ("r"."elemental_service" IS NOT NULL) THEN COALESCE(TRY_CAST(TRY(json_parse(REDUCE(SEQUENCE(1, CARDINALITY("r"."patterns")), "usage_type", ("acc", "i") -> REGEXP_REPLACE("acc", "r"."patterns"[i], "r"."reps"[i]), ("acc") -> "acc"))) AS map(varchar, varchar)), CAST(json_parse('{"error": "invalid json"}') AS map(varchar, varchar))) ELSE null END) "usage_type_json"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null WHEN (strpos("line_item_usage_type_norm", '-EML1-') > 0) THEN 'Single' WHEN (strpos("line_item_usage_type_norm", '-EML2-') > 0) THEN 'Standard' WHEN (strpos("line_item_usage_type_norm", '-EMLA-') > 0) THEN 'EML Anywhere' ELSE null END) "video_pipeline"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null WHEN (strpos("line_item_usage_type_norm", '-IN-') > 0) THEN 'In' WHEN (strpos("line_item_usage_type_norm", '-OUT-') > 0) THEN 'Out' ELSE null END) "video_flow_direction"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null ELSE concat(regexp_extract("line_item_usage_type_norm", '-L([0-9]*?)-', 1), ' mbps') END) "video_bit_rate"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaConvert')) THEN null WHEN (strpos("line_item_usage_type_norm", '-B-') > 0) THEN 'Basic' WHEN (strpos("line_item_usage_type_norm", '-P-') > 0) THEN 'Professional' ELSE null END) "video_tier"
+         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (strpos("line_item_usage_type_norm", '-AV1-') > 0) THEN 'AV1' WHEN (strpos("line_item_usage_type_norm", '-AVC-') > 0) THEN 'AVC' WHEN (strpos("line_item_usage_type_norm", '-AVCI-') > 0) THEN 'AVCI' WHEN (strpos("line_item_usage_type_norm", '-HEVC-') > 0) THEN 'HEVC' WHEN (strpos("line_item_usage_type_norm", '-MP2-') > 0) THEN 'MP2' WHEN (strpos("line_item_usage_type_norm", '-VC3-') > 0) THEN 'VC3' WHEN (strpos("line_item_usage_type_norm", '-VP8-') > 0) THEN 'VP8' WHEN (strpos("line_item_usage_type_norm", '-VP9-') > 0) THEN 'VP9' WHEN (strpos("line_item_usage_type_norm", '-XAVC-') > 0) THEN 'XAVC' WHEN (strpos("line_item_usage_type_norm", '-PR-') > 0) THEN 'Apple ProRes' WHEN (strpos("line_item_usage_type_norm", '-AUD-') > 0) THEN 'Audio-only' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-IDLE-') > 0)) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-AUDIO-') > 0)) THEN 'Audio-only' WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN regexp_extract("line_item_usage_type_norm", '(^-.*(OUT|IN)-)(.*)?-', 3) ELSE null END) "video_codec"
+         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-30-') > 0)) THEN '<= 30fps' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-60-') > 0)) THEN '> 30, <= 60 fps' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-120-') > 0)) THEN '> 60 fps' WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN concat(regexp_extract("line_item_usage_type_norm", '-([0-9]*?)-', 1), ' fps') ELSE null END) "video_frame_rate"
+         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-MHQ-') > 0)) THEN 'Multi-pass HQ' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-M-') > 0)) THEN 'Multi-pass' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-SHQ-') > 0)) THEN 'Single-pass HQ' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-S-') > 0)) THEN 'Single-pass' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-S-') > 0)) THEN 'Standard' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-E-') > 0)) THEN 'Enhanced' ELSE null END) "video_quality"
+         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (strpos("line_item_usage_type_norm", '-4K-') > 0) THEN '4K' WHEN (strpos("line_item_usage_type_norm", '-8K-') > 0) THEN '8K' WHEN (strpos("line_item_usage_type_norm", '-SD-') > 0) THEN 'SD' WHEN (strpos("line_item_usage_type_norm", '-HD-') > 0) THEN 'HD' WHEN (strpos("line_item_usage_type_norm", '-HDR10PLUS-') > 0) THEN 'HDR 10+' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-IDLE-') > 0)) THEN null ELSE null END) "video_resolution"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-NTM-') > 0)) THEN 'Yes' ELSE null END) "video_emc_ntm"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-RTS-') > 0)) THEN 'Yes' ELSE null END) "video_emc_rts"
+         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-AUD-') > 0)) THEN 'Yes' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-DTS-') > 0)) THEN 'Yes' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-DOLBY-') > 0)) THEN 'Yes' WHEN ("line_item_product_code" = 'AWSElementalMediaConvert') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-AUDIO-') > 0)) THEN 'Yes' ELSE null END) "video_audio_only"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-MUX-') > 0)) THEN 'Yes' ELSE null END) "video_statmux"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-Y-') > 0)) THEN 'Yearly' ELSE null END) "video_emc_term"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-IDLE-') > 0)) THEN 'Yes' ELSE null END) "video_eml_idle"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaConvert')) THEN null WHEN (strpos("line_item_usage_type_norm", '-GIF-') > 0) THEN 'Animated GIF' WHEN (strpos("line_item_usage_type_norm", '-DTS-') > 0) THEN 'Audio normalization' WHEN (strpos("line_item_usage_type_norm", '-DOLBY-') > 0) THEN 'Dolby Audio' WHEN (strpos("line_item_usage_type_norm", '-DOLBY_VIS-') > 0) THEN 'Dolby Vision' WHEN (strpos("line_item_usage_type_norm", '-FRAMEFORMER-') > 0) THEN 'FrameFormer' WHEN (strpos("line_item_usage_type_norm", '-KANTAR-') > 0) THEN 'Kantar watermarking' WHEN (strpos("line_item_usage_type_norm", '-PROBE-') > 0) THEN 'MediaConvert Probe' WHEN (strpos("line_item_usage_type_norm", '-NEXGUARD-') > 0) THEN 'NexGuard watermarking' WHEN (strpos("line_item_usage_type_norm", '-NIELSEN_SID_TIC-') > 0) THEN 'Nielsen watermarking' ELSE null END) "video_emc_addon"
          FROM
-           ("cur_pre_processing" c
-         LEFT JOIN "emc_usage_translation_compiled" r ON ((r."elemental_service" = "product_code") AND (c."product_family" = 'Transcode minute')))
+           "cur_pre_processing"
       )
       SELECT
         "year"
       , "month"
-      , "billing_period"
+      , "bill_billing_period_start_date" "billing_period"
       , "usage_date"
-      , "norm"."payer_account_id"
-      , "linked_account_id"
-      , "charge_type"
+      , "bill_payer_account_id" "payer_account_id"
+      , "line_item_usage_account_id" "linked_account_id"
+      , "line_item_line_item_type" "charge_type"
       , "charge_category"
       , "purchase_option"
       , "ri_sp_arn"
-      , "product_code"
+      , "line_item_product_code" "product_code"
       , "product_family"
-      , "usage_type"
+      , "line_item_usage_type" "usage_type"
       , "operation"
-      , "item_description"
+      , "line_item_line_item_description" "item_description"
       , "product"['region'] "region"
-      , "usage_type_json"['Pipeline'] "video_pipeline"
-      , "usage_type_json"['FlowDirection'] "video_flow_direction"
-      , "usage_type_json"['BitRate'] "video_bit_rate"
-      , "usage_type_json"['Tier'] "video_tier"
-      , "usage_type_json"['Codec'] "video_codec"
-      , "usage_type_json"['FrameRate'] "video_frame_rate"
-      , "usage_type_json"['Quality'] "video_quality"
-      , "usage_type_json"['Resolution'] "video_resolution"
-      , "usage_type_json"['IsNTM'] "video_emc_ntm"
-      , "usage_type_json"['IsRTS'] "video_emc_rts"
-      , "usage_type_json"['IsAudioOnly'] "video_audio_only"
-      , "usage_type_json"['IsStatmux'] "video_statmux"
-      , "usage_type_json"
+      , "video_pipeline"
+      , "video_flow_direction"
+      , "video_bit_rate"
+      , (CASE WHEN (length("video_emc_addon") > 0) THEN 'Professional' ELSE "video_tier" END) "video_tier"
+      , "video_codec"
+      , "video_frame_rate"
+      , "video_quality"
+      , "video_resolution"
+      , "video_emc_ntm"
+      , "video_emc_rts"
+      , "video_audio_only"
+      , "video_statmux"
+      , "video_emc_term"
+      , "video_eml_idle"
+      , "video_emc_addon"
       , "product"['transcoding_result'] "video_transcoding_result"
-      , "location_source"
-      , "location_destination"
-      , "billing_entity"
-      , "pricing_unit"
-      , "resource_id"
+      , "product_from_location" "location_source"
+      , "product_to_location" "location_destination"
+      , "bill_billing_entity" "billing_entity"
+      , "pricing_unit" "pricing_unit"
+      , "line_item_resource_id" "resource_id"
       , "reservation_id"
       , "last_refresh_date"
-      , "earliest_data_date"
       , sum("line_item_usage_amount") "usage_quantity"
       , sum("line_item_unblended_cost") "unblended_cost"
       , sum("line_item_net_unblended_cost") "net_unblended_cost"
@@ -829,22 +748,14 @@ views:
       , sum("ri_sp_upfront_fees") "ri_sp_upfront_fees"
       , sum("public_cost") "public_cost"
       FROM
-        (("usage_type_normalization" "norm"
+        ("usage_type_processing"
       INNER JOIN (
          SELECT
-           "payer_account_id"
+           "bill_payer_account_id" "payer_account_id"
          , MAX("line_item_usage_start_date") "last_refresh_date"
          FROM
-           "usage_type_normalization"
+           "cur_base"
          WHERE ("line_item_usage_start_date" <= (date_trunc('day', current_timestamp) - INTERVAL  '0' DAY))
          GROUP BY 1
-      )  ld ON (ld."payer_account_id" = "norm"."payer_account_id"))
-      INNER JOIN (
-         SELECT
-           "payer_account_id"
-         , MIN("line_item_usage_start_date") "earliest_data_date"
-         FROM
-           "usage_type_normalization"
-         GROUP BY 1
-      )  fd ON (fd."payer_account_id" = "norm"."payer_account_id"))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38
+      )  ts ON ("bill_payer_account_id" = "payer_account_id"))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
