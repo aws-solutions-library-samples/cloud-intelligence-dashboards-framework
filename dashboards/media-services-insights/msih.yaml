@@ -681,7 +681,7 @@ views:
       , "usage_type_processing" AS (
          SELECT
            *
-         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null WHEN (strpos("line_item_usage_type_norm", '-EML1-') > 0) THEN 'Single' WHEN (strpos("line_item_usage_type_norm", '-EML2-') > 0) THEN 'Standard' ELSE null END) "video_pipeline"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null WHEN (strpos("line_item_usage_type_norm", '-EML1-') > 0) THEN 'Single' WHEN (strpos("line_item_usage_type_norm", '-EML2-') > 0) THEN 'Standard' WHEN (strpos("line_item_usage_type_norm", '-EMLA-') > 0) THEN 'EML Anywhere' ELSE null END) "video_pipeline"
          , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null WHEN (strpos("line_item_usage_type_norm", '-IN-') > 0) THEN 'In' WHEN (strpos("line_item_usage_type_norm", '-OUT-') > 0) THEN 'Out' ELSE null END) "video_flow_direction"
          , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null ELSE concat(regexp_extract("line_item_usage_type_norm", '-L([0-9]*?)-', 1), ' mbps') END) "video_bit_rate"
          , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaConvert')) THEN null WHEN (strpos("line_item_usage_type_norm", '-B-') > 0) THEN 'Basic' WHEN (strpos("line_item_usage_type_norm", '-P-') > 0) THEN 'Professional' ELSE null END) "video_tier"
