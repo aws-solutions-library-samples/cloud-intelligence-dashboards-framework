@@ -1,0 +1,4202 @@
+AnalysisDefaults:
+  DefaultNewSheetConfiguration:
+    InteractiveLayoutConfiguration:
+      Grid:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+    SheetContentType: INTERACTIVE
+CalculatedFields:
+- DataSetIdentifier: resiliencehub_app_recommendations
+  Expression: |-
+    /*
+    (AI generated) concat('$', toString(round(parseDecimal(cost),2))) change this to show only 2 decimal places after string conversion
+    */
+    round(parseDecimal(cost),2)
+  Name: EstimatedCost
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    /*
+    (AI generated) Concatenate account name and account id in account name (account id) format
+    //concat({account_name}, ' (', {account_id}, ')')
+    */
+    ifelse({account_name} = '' or isNull({account_name}), {account_id}, {account_name})
+  Name: Account
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {estimated_overall_rpo} < 60,
+        concat(toString(floor({estimated_overall_rpo}/60)), 'm'),
+        ifelse(
+            {estimated_overall_rpo} < 3600,
+            concat(toString(floor({estimated_overall_rpo}/60)), 'm'),
+            ifelse(
+                {estimated_overall_rpo} < 86400,
+                concat(toString(floor({estimated_overall_rpo}/3600)), 'h ', toString(mod(floor({estimated_overall_rpo}/60),60)), 'm'),
+                concat(toString(floor({estimated_overall_rpo}/86400)), 'd ', toString(mod(floor({estimated_overall_rpo}/3600),24)), 'h ', toString(mod(floor({estimated_overall_rpo}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Current RPO
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {current_rpo_az} < 60,
+        concat(toString(floor({current_rpo_az}/60)), 'm'),
+        ifelse(
+            {current_rpo_az} < 3600,
+            concat(toString(floor({current_rpo_az}/60)), 'm'),
+            ifelse(
+                {current_rpo_az} < 86400,
+                concat(toString(floor({current_rpo_az}/3600)), 'h ', toString(mod(floor({current_rpo_az}/60),60)), 'm'),
+                concat(toString(floor({current_rpo_az}/86400)), 'd ', toString(mod(floor({current_rpo_az}/3600),24)), 'h ', toString(mod(floor({current_rpo_az}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Current RPO AZ
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {current_rpo_software} < 60,
+        concat(toString(floor({current_rpo_software}/60)), 'm'),
+        ifelse(
+            {current_rpo_software} < 3600,
+            concat(toString(floor({current_rpo_software}/60)), 'm'),
+            ifelse(
+                {current_rpo_software} < 86400,
+                concat(toString(floor({current_rpo_software}/3600)), 'h ', toString(mod(floor({current_rpo_software}/60),60)), 'm'),
+                concat(toString(floor({current_rpo_software}/86400)), 'd ', toString(mod(floor({current_rpo_software}/3600),24)), 'h ', toString(mod(floor({current_rpo_software}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Current RPO Application
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {current_rpo_hardware} < 60,
+        concat(toString(floor({current_rpo_hardware}/60)), 'm'),
+        ifelse(
+            {current_rpo_hardware} < 3600,
+            concat(toString(floor({current_rpo_hardware}/60)), 'm'),
+            ifelse(
+                {current_rpo_hardware} < 86400,
+                concat(toString(floor({current_rpo_hardware}/3600)), 'h ', toString(mod(floor({current_rpo_hardware}/60),60)), 'm'),
+                concat(toString(floor({current_rpo_hardware}/86400)), 'd ', toString(mod(floor({current_rpo_hardware}/3600),24)), 'h ', toString(mod(floor({current_rpo_hardware}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Current RPO Infrastructure
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {estimated_overall_rto} < 60,
+        concat(toString(floor({estimated_overall_rto}/60)), 'm'),
+        ifelse(
+            {estimated_overall_rto} < 3600,
+            concat(toString(floor({estimated_overall_rto}/60)), 'm'),
+            ifelse(
+                {estimated_overall_rto} < 86400,
+                concat(toString(floor({estimated_overall_rto}/3600)), 'h ', toString(mod(floor({estimated_overall_rto}/60),60)), 'm'),
+                concat(toString(floor({estimated_overall_rto}/86400)), 'd ', toString(mod(floor({estimated_overall_rto}/3600),24)), 'h ', toString(mod(floor({estimated_overall_rto}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Current RTO
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {current_rto_az} < 60,
+        concat(toString(floor({current_rto_az}/60)), 'm'),
+        ifelse(
+            {current_rto_az} < 3600,
+            concat(toString(floor({current_rto_az}/60)), 'm'),
+            ifelse(
+                {current_rto_az} < 86400,
+                concat(toString(floor({current_rto_az}/3600)), 'h ', toString(mod(floor({current_rto_az}/60),60)), 'm'),
+                concat(toString(floor({current_rto_az}/86400)), 'd ', toString(mod(floor({current_rto_az}/3600),24)), 'h ', toString(mod(floor({current_rto_az}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Current RTO AZ
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {current_rto_software} < 60,
+        concat(toString(floor({current_rto_software}/60)), 'm'),
+        ifelse(
+            {current_rto_software} < 3600,
+            concat(toString(floor({current_rto_software}/60)), 'm'),
+            ifelse(
+                {current_rto_software} < 86400,
+                concat(toString(floor({current_rto_software}/3600)), 'h ', toString(mod(floor({current_rto_software}/60),60)), 'm'),
+                concat(toString(floor({current_rto_software}/86400)), 'd ', toString(mod(floor({current_rto_software}/3600),24)), 'h ', toString(mod(floor({current_rto_software}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Current RTO Application
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {current_rto_hardware} < 60,
+        concat(toString(floor({current_rto_hardware}/60)), 'm'),
+        ifelse(
+            {current_rto_hardware} < 3600,
+            concat(toString(floor({current_rto_hardware}/60)), 'm'),
+            ifelse(
+                {current_rto_hardware} < 86400,
+                concat(toString(floor({current_rto_hardware}/3600)), 'h ', toString(mod(floor({current_rto_hardware}/60),60)), 'm'),
+                concat(toString(floor({current_rto_hardware}/86400)), 'd ', toString(mod(floor({current_rto_hardware}/3600),24)), 'h ', toString(mod(floor({current_rto_hardware}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Current RTO Infrastructure
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        contains({resiliency_status}, 'Breached'),'Breached',
+        contains({resiliency_status}, 'Met'), 'Met',
+        {resiliency_status}
+    )
+  Name: Status
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {target_rpo} < 60,
+        concat(toString(floor({target_rpo}/60)), 'm'),
+        ifelse(
+            {target_rpo} < 3600,
+            concat(toString(floor({target_rpo}/60)), 'm'),
+            ifelse(
+                {target_rpo} < 86400,
+                concat(toString(floor({target_rpo}/3600)), 'h ', toString(mod(floor({target_rpo}/60),60)), 'm'),
+                concat(toString(floor({target_rpo}/86400)), 'd ', toString(mod(floor({target_rpo}/3600),24)), 'h ', toString(mod(floor({target_rpo}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Target RPO
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {target_rpo_az} < 60,
+        concat(toString(floor({target_rpo_az}/60)), 'm'),
+        ifelse(
+            {target_rpo_az} < 3600,
+            concat(toString(floor({target_rpo_az}/60)), 'm'),
+            ifelse(
+                {target_rpo_az} < 86400,
+                concat(toString(floor({target_rpo_az}/3600)), 'h ', toString(mod(floor({target_rpo_az}/60),60)), 'm'),
+                concat(toString(floor({target_rpo_az}/86400)), 'd ', toString(mod(floor({target_rpo_az}/3600),24)), 'h ', toString(mod(floor({target_rpo_az}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Target RPO AZ
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {target_rpo_software} < 60,
+        concat(toString(floor({target_rpo_software}/60)), 'm'),
+        ifelse(
+            {target_rpo_software} < 3600,
+            concat(toString(floor({target_rpo_software}/60)), 'm'),
+            ifelse(
+                {target_rpo_software} < 86400,
+                concat(toString(floor({target_rpo_software}/3600)), 'h ', toString(mod(floor({target_rpo_software}/60),60)), 'm'),
+                concat(toString(floor({target_rpo_software}/86400)), 'd ', toString(mod(floor({target_rpo_software}/3600),24)), 'h ', toString(mod(floor({target_rpo_software}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Target RPO Application
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {target_rpo_hardware} < 60,
+        concat(toString(floor({target_rpo_hardware}/60)), 'm'),
+        ifelse(
+            {target_rpo_hardware} < 3600,
+            concat(toString(floor({target_rpo_hardware}/60)), 'm'),
+            ifelse(
+                {target_rpo_hardware} < 86400,
+                concat(toString(floor({target_rpo_hardware}/3600)), 'h ', toString(mod(floor({target_rpo_hardware}/60),60)), 'm'),
+                concat(toString(floor({target_rpo_hardware}/86400)), 'd ', toString(mod(floor({target_rpo_hardware}/3600),24)), 'h ', toString(mod(floor({target_rpo_hardware}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Target RPO Infrastructure
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {target_rto} < 60,
+        concat(toString(floor({target_rto}/60)), 'm'),
+        ifelse(
+            {target_rto} < 3600,
+            concat(toString(floor({target_rto}/60)), 'm'),
+            ifelse(
+                {target_rto} < 86400,
+                concat(toString(floor({target_rto}/3600)), 'h ', toString(mod(floor({target_rto}/60),60)), 'm'),
+                concat(toString(floor({target_rto}/86400)), 'd ', toString(mod(floor({target_rto}/3600),24)), 'h ', toString(mod(floor({target_rto}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Target RTO
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {target_rto_az} < 60,
+        concat(toString(floor({target_rto_az}/60)), 'm'),
+        ifelse(
+            {target_rto_az} < 3600,
+            concat(toString(floor({target_rto_az}/60)), 'm'),
+            ifelse(
+                {target_rto_az} < 86400,
+                concat(toString(floor({target_rto_az}/3600)), 'h ', toString(mod(floor({target_rto_az}/60),60)), 'm'),
+                concat(toString(floor({target_rto_az}/86400)), 'd ', toString(mod(floor({target_rto_az}/3600),24)), 'h ', toString(mod(floor({target_rto_az}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Target RTO AZ
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {target_rto_software} < 60,
+        concat(toString(floor({target_rto_software}/60)), 'm'),
+        ifelse(
+            {target_rto_software} < 3600,
+            concat(toString(floor({target_rto_software}/60)), 'm'),
+            ifelse(
+                {target_rto_software} < 86400,
+                concat(toString(floor({target_rto_software}/3600)), 'h ', toString(mod(floor({target_rto_software}/60),60)), 'm'),
+                concat(toString(floor({target_rto_software}/86400)), 'd ', toString(mod(floor({target_rto_software}/3600),24)), 'h ', toString(mod(floor({target_rto_software}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Target RTO Application
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    ifelse(
+        {target_rto_hardware} < 60,
+        concat(toString(floor({target_rto_hardware}/60)), 'm'),
+        ifelse(
+            {target_rto_hardware} < 3600,
+            concat(toString(floor({target_rto_hardware}/60)), 'm'),
+            ifelse(
+                {target_rto_hardware} < 86400,
+                concat(toString(floor({target_rto_hardware}/3600)), 'h ', toString(mod(floor({target_rto_hardware}/60),60)), 'm'),
+                concat(toString(floor({target_rto_hardware}/86400)), 'd ', toString(mod(floor({target_rto_hardware}/3600),24)), 'h ', toString(mod(floor({target_rto_hardware}/60),60)), 'm')
+            )
+        )
+    )
+  Name: Target RTO Infrastructure
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    /*
+    (AI generated) distinct count of applications id with resiliency status not assessed
+    */
+    distinct_countIf({application_id}, {resiliency_status} = "Not_Assessed")
+  Name: application_not_assessed
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: distinct_countif({application_arn},{resiliency_drift_status}='DETECTED')
+  Name: applications_drift_detected
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    /*
+    (AI generated) count distinct applications id if estimated RPO is equal to target rpo
+    */
+    distinct_countIf({application_id}, {estimated_overall_rpo} >= {target_rpo})
+  Name: applications_meeting_rpo
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    /*
+    (AI generated) count distinct application id if estimated rto  = target rto
+    */
+    distinctCountOver(ifelse({estimated_overall_rto} >= {target_rto}, {application_id}, NULL), [], PRE_AGG)
+  Name: applications_meeting_rto
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: 'distinct_countif({application_arn},{resiliency_status}=''PolicyMet'')
+
+    '
+  Name: applications_policy_met
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: distinct_countif({application_arn},{resiliency_status}='PolicyBreached')
+  Name: applications_policy_not_met
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: 'firstValue({application_name},[{application_name} ASC])
+
+    '
+  Name: defaultlistvalue
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    /*
+    (AI generated) difference between target rpo and estimated rpo
+    */
+    {target_rpo} - {estimated_overall_rpo}
+  Name: diff-rpo
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: |-
+    /*
+    (AI generated) difference between target RTO and current rto
+    */
+    {target_rto}-{estimated_overall_rto}
+  Name: diff-rto
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: ifelse({current_rpo_az}<={target_rpo_az},1,0)
+  Name: is_current_rpo_az_compliant
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: ifelse({current_rpo_hardware}<={target_rpo_hardware},1,0)
+  Name: is_current_rpo_hardwrae_compliant
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: ifelse({current_rpo_software}<={target_rpo_software},1,0)
+  Name: is_current_rpo_software_compliant
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: ifelse({current_rto_az}<={target_rto_az},1,0)
+  Name: is_current_rto_az_compliant
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: ifelse({current_rto_hardware}<={target_rto_hardware},1,0)
+  Name: is_current_rto_hardware_compliant
+- DataSetIdentifier: resiliencehub_complete_view
+  Expression: ifelse({current_rto_software}<={target_rto_software},1,0)
+  Name: is_current_rto_software_compliant
+- DataSetIdentifier: resiliencehub_daily_assessments
+  Expression: split({assessment_arn}, '/', 2)
+  Name: Assesment Id
+- DataSetIdentifier: resiliencehub_resource_types
+  Expression: |-
+    /*
+    (AI generated) concatenate account id and account name in accunt name (account id) format
+    */
+    concat({account_name}, ' (', {account_id}, ')')
+  Name: account_info
+- DataSetIdentifier: resiliencehub_sop_recommendations
+  Expression: |-
+    /*
+    (AI generated) if "excluded" column is 0 set value to false else set it true
+    */
+    ifelse(parseInt(excluded) = 0, 'False', 'True')
+  Name: excluded_status
+ColumnConfigurations:
+- Column:
+    ColumnName: EstimatedCost
+    DataSetIdentifier: resiliencehub_app_recommendations
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        CurrencyDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 2
+          NegativeValueConfiguration:
+            DisplayMode: POSITIVE
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+          Symbol: USD
+  Role: MEASURE
+- ColorsConfiguration:
+    CustomColors:
+    - Color: '#3D993D'
+      FieldValue: Met
+    - Color: '#FF6B6B'
+      FieldValue: Breached
+  Column:
+    ColumnName: Status
+    DataSetIdentifier: resiliencehub_complete_view
+- Column:
+    ColumnName: application_name
+    DataSetIdentifier: resiliencehub_complete_view
+  FormatConfiguration:
+    StringFormatConfiguration:
+      NullValueFormatConfiguration:
+        NullString: 'null'
+- Column:
+    ColumnName: resiliency_score_percent
+    DataSetIdentifier: resiliencehub_complete_view
+  Role: DIMENSION
+- ColorsConfiguration:
+    CustomColors:
+    - Color: '#FF6B6B'
+      FieldValue: PolicyBreached
+    - Color: '#3D993D'
+      FieldValue: PolicyMet
+  Column:
+    ColumnName: resiliency_status
+    DataSetIdentifier: resiliencehub_complete_view
+- Column:
+    ColumnName: app_component_drifts
+    DataSetIdentifier: resiliencehub_daily_assessments
+  Role: MEASURE
+- Column:
+    ColumnName: input_source_drifts
+    DataSetIdentifier: resiliencehub_daily_assessments
+  Role: MEASURE
+DataSetIdentifierDeclarations:
+- DataSetArn: arn:aws:quicksight:::dataset/e2af9281-d892-412b-b491-42961d68165e
+  Identifier: resiliencehub_fis_test_recommendations
+- DataSetArn: arn:aws:quicksight:::dataset/29f9c88d-3b1e-47a2-b86a-2dda4a616c42
+  Identifier: resiliencehub_app_recommendations
+- DataSetArn: arn:aws:quicksight:::dataset/f0d8ed52-5851-419a-8f81-eb21aa579aa2
+  Identifier: resiliencehub_resiliency_policy_view
+- DataSetArn: arn:aws:quicksight:::dataset/c3cb9b44-be86-4b90-a9a4-d27bfe04bf65
+  Identifier: resiliencehub_alarm_recommendations
+- DataSetArn: arn:aws:quicksight:::dataset/ccc6b5b3-578f-410a-a9c8-8e503e61429b
+  Identifier: resiliencehub_complete_view
+- DataSetArn: arn:aws:quicksight:::dataset/35d30171-b633-4e64-ab1c-b4a32312383c
+  Identifier: resiliencehub_sop_recommendations
+- DataSetArn: arn:aws:quicksight:::dataset/20ec5c0d-3d71-4020-b8bd-dd04b15b42ea
+  Identifier: resiliencehub_daily_assessments
+- DataSetArn: arn:aws:quicksight:::dataset/cb17ec84-3160-45a6-9224-3b979fe88c7d
+  Identifier: resiliencehub_applications
+- DataSetArn: arn:aws:quicksight:::dataset/49837f36-3233-4805-b5b9-b15305af3736
+  Identifier: resiliencehub_resource_types
+FilterGroups:
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: 5bdc67be-0332-49b3-a771-7d17409bd905
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: application_name
+        DataSetIdentifier: resiliencehub_daily_assessments
+      Configuration:
+        CustomFilterListConfiguration:
+          CategoryValues:
+          - CHANGE SELECTION TO SEE DATA
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+      FilterId: 1db9d613-56ab-4f95-9e09-5d2fe87a744b
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: 9318ba71-28ca-4ced-ae11-306a1f598925
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 999a6422-9d39-4523-b677-04ad4108224c
+  Filters:
+  - TimeRangeFilter:
+      Column:
+        ColumnName: last_assessment_time
+        DataSetIdentifier: resiliencehub_complete_view
+      FilterId: 864b65e6-886c-41bd-ae4c-2d50caac7b92
+      IncludeMaximum: false
+      IncludeMinimum: true
+      NullOption: NON_NULLS_ONLY
+      RangeMaximumValue:
+        RollingDate:
+          Expression: addDateTime(-1, 'SS', addDateTime(1, 'YYYY', truncDate('YYYY',
+            now())))
+      RangeMinimumValue:
+        RollingDate:
+          Expression: truncDate('YYYY', now())
+      TimeGranularity: DAY
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: a566f056-b54c-47aa-8314-43e9a362df47
+        VisualIds:
+        - d4bbab03-c988-470f-aee9-40b5335ba36a
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: d060bb6e-e248-4aaa-912d-b47e7b056635
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: region
+        DataSetIdentifier: resiliencehub_complete_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: c32d7acd-ad81-4535-be20-fe6777955c8e
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: a566f056-b54c-47aa-8314-43e9a362df47
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fef83ca1-c739-4f96-a6f9-b23a11cf96c3
+  Filters:
+  - TopBottomFilter:
+      AggregationSortConfigurations:
+      - AggregationFunction:
+          DateAggregationFunction: MAX
+        Column:
+          ColumnName: assessment_time
+          DataSetIdentifier: resiliencehub_daily_assessments
+        SortDirection: DESC
+      Column:
+        ColumnName: assessment_time
+        DataSetIdentifier: resiliencehub_daily_assessments
+      FilterId: 23b42548-853e-4d7a-aeaa-59941629d3d9
+      Limit: 10
+      TimeGranularity: DAY
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 9318ba71-28ca-4ced-ae11-306a1f598925
+        VisualIds:
+        - 91a1ea73-1090-4949-845f-c63bef16fcb6
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 9225aba7-20c4-493d-a79e-3a9ad27ec031
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: Current RPO
+        DataSetIdentifier: resiliencehub_complete_view
+      Configuration:
+        CustomFilterConfiguration:
+          CategoryValue: 0m
+          MatchOperator: EQUALS
+          NullOption: NON_NULLS_ONLY
+      FilterId: d68a28e8-85d0-4632-a5bd-6aec6c0f896f
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 9318ba71-28ca-4ced-ae11-306a1f598925
+        VisualIds:
+        - bd2637cc-8a06-408c-b575-fcebc0e75b65
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 01551d2d-23b2-4879-b534-257d79f43896
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: Current RPO
+        DataSetIdentifier: resiliencehub_complete_view
+      Configuration:
+        CustomFilterConfiguration:
+          CategoryValue: 0m
+          MatchOperator: EQUALS
+          NullOption: NON_NULLS_ONLY
+      FilterId: 29dcc592-8a95-4176-886d-999164bf3f6e
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 9318ba71-28ca-4ced-ae11-306a1f598925
+        VisualIds:
+        - bd2637cc-8a06-408c-b575-fcebc0e75b65
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fe06c293-96d5-4cd2-9832-c2b561d56a39
+  Filters:
+  - TopBottomFilter:
+      AggregationSortConfigurations:
+      - AggregationFunction:
+          NumericalAggregationFunction:
+            SimpleNumericalAggregation: AVERAGE
+        Column:
+          ColumnName: resiliency_score_percent
+          DataSetIdentifier: resiliencehub_complete_view
+        SortDirection: DESC
+      Column:
+        ColumnName: resiliency_score_percent
+        DataSetIdentifier: resiliencehub_complete_view
+      FilterId: 3590b873-00cf-459a-b9a3-c038e8965dfe
+      Limit: 5
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: a566f056-b54c-47aa-8314-43e9a362df47
+        VisualIds:
+        - 0b7ed33f-9685-4c16-92ce-dbdacb695fad
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: eaa293a7-18f4-4e22-a557-59a4ee868967
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: ha_architecture
+        DataSetIdentifier: resiliencehub_app_recommendations
+      Configuration:
+        CustomFilterConfiguration:
+          MatchOperator: EQUALS
+          NullOption: NON_NULLS_ONLY
+          ParameterName: HAarchitecture
+      FilterId: 1073a12e-9738-4b61-903b-65b6a4f20719
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: 1e5feab6-cf98-4223-9b5c-64fb61031c06
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fd2c5af0-5799-4059-bbe7-f019d13961b7
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: optimization_type
+        DataSetIdentifier: resiliencehub_app_recommendations
+      Configuration:
+        CustomFilterConfiguration:
+          MatchOperator: EQUALS
+          NullOption: NON_NULLS_ONLY
+          ParameterName: OptimizationType
+      FilterId: ce163f47-7908-4917-9656-46d25cdc5733
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: 1e5feab6-cf98-4223-9b5c-64fb61031c06
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 24f4781e-0ded-479c-95fe-e8d2908ff79d
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: app_component_name
+        DataSetIdentifier: resiliencehub_sop_recommendations
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 383420c8-daab-4af3-8507-4a1866cc04ab
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: 1e5feab6-cf98-4223-9b5c-64fb61031c06
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: cf99946d-4ca5-4a02-8362-f433da6125be
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: Account
+        DataSetIdentifier: resiliencehub_complete_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+      FilterId: cf9daa54-3e52-47a3-a52c-6796551d273f
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: 9318ba71-28ca-4ced-ae11-306a1f598925
+  Status: DISABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: f67560c4-706a-44a4-9b5f-0afbbe2e31d9
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: application_name
+        DataSetIdentifier: resiliencehub_app_recommendations
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - CHANGE SELECTION TO SEE DATA
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+      FilterId: bb438173-998c-464a-80df-32c3066059b1
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: 1e5feab6-cf98-4223-9b5c-64fb61031c06
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: 26ece326-019c-44ba-9f5a-f6989bc2df6b
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: payer_id
+        DataSetIdentifier: resiliencehub_complete_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 999b481c-8276-4ca6-8752-abf151e24032
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: a566f056-b54c-47aa-8314-43e9a362df47
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: b6f002ac-3b64-40c5-a251-84e990e98d4d
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: payer_id
+        DataSetIdentifier: resiliencehub_complete_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: ac027ccd-da90-428a-a226-ef0ba4041a95
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: 9318ba71-28ca-4ced-ae11-306a1f598925
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: 5ce8e128-ffa4-485f-9820-281ec3b827e6
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: resiliency_status
+        DataSetIdentifier: resiliencehub_complete_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 31f5141f-438f-4ccf-9834-1d5bb8ea401d
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: a566f056-b54c-47aa-8314-43e9a362df47
+  Status: ENABLED
+Options:
+  WeekStart: SUNDAY
+ParameterDeclarations:
+- StringParameterDeclaration:
+    DefaultValues: {}
+    Name: HAarchitecture
+    ParameterValueType: MULTI_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues: {}
+    Name: OptimizationType
+    ParameterValueType: MULTI_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues: []
+    Name: DefaultListValue
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues: []
+    Name: PayerId
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+Sheets:
+- ContentType: INTERACTIVE
+  FilterControls:
+  - DateTimePicker:
+      DisplayOptions:
+        DateTimeFormat: YYYY/MM/DD HH:mm:ss
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 3f377207-a737-4ecc-9345-888c63023862
+      SourceFilterId: 864b65e6-886c-41bd-ae4c-2d50caac7b92
+      Title: Last Assessment Time between
+      Type: DATE_RANGE
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 77f5da2a-e2ad-4da4-9c04-b3e04fe76412
+      SourceFilterId: c32d7acd-ad81-4535-be20-fe6777955c8e
+      Title: Region
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: c7179659-33e8-4666-b30a-cf5b938d9cd6
+      SourceFilterId: 999b481c-8276-4ca6-8752-abf151e24032
+      Title: Management Account
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 0d5cf4bc-a2ef-4690-9b9a-c2592445cf2d
+      SourceFilterId: 31f5141f-438f-4ccf-9834-1d5bb8ea401d
+      Title: Resiliency Status
+      Type: MULTI_SELECT
+  Layouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 29
+          ElementId: 8826b673-750e-4705-92f2-463f85276391
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 4
+        - ColumnIndex: 29
+          ColumnSpan: 7
+          ElementId: c179477f-553d-4db7-a601-802e11e8feb6
+          ElementType: VISUAL
+          RowIndex: 0
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 7c4b65aa-0578-40de-846c-d29c25eea91a
+          ElementType: TEXT_BOX
+          RowIndex: 4
+          RowSpan: 2
+        - ColumnIndex: 0
+          ColumnSpan: 4
+          ElementId: bbab0750-e14a-4e2a-b5df-b0c11efaa283
+          ElementType: VISUAL
+          RowIndex: 6
+          RowSpan: 4
+        - ColumnIndex: 4
+          ColumnSpan: 5
+          ElementId: cf240443-4388-478e-8370-3c016a6f0a54
+          ElementType: VISUAL
+          RowIndex: 6
+          RowSpan: 4
+        - ColumnIndex: 9
+          ColumnSpan: 5
+          ElementId: d4bbab03-c988-470f-aee9-40b5335ba36a
+          ElementType: VISUAL
+          RowIndex: 6
+          RowSpan: 4
+        - ColumnIndex: 14
+          ColumnSpan: 5
+          ElementId: ba40ebf3-3942-4ea6-afd5-6778d83f73c3
+          ElementType: VISUAL
+          RowIndex: 6
+          RowSpan: 4
+        - ColumnIndex: 19
+          ColumnSpan: 5
+          ElementId: 5ed43695-4b1a-4afb-a0ad-71b62d87e398
+          ElementType: VISUAL
+          RowIndex: 6
+          RowSpan: 4
+        - ColumnIndex: 24
+          ColumnSpan: 5
+          ElementId: 51e359f8-a8cd-4ea4-84a0-c47602105819
+          ElementType: VISUAL
+          RowIndex: 6
+          RowSpan: 4
+        - ColumnIndex: 29
+          ColumnSpan: 7
+          ElementId: 284ae374-3ede-4745-bfcf-29a0d812417c
+          ElementType: VISUAL
+          RowIndex: 6
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 17
+          ElementId: e3e03abe-f81d-49a4-b65e-b66ed378223b
+          ElementType: VISUAL
+          RowIndex: 10
+          RowSpan: 12
+        - ColumnIndex: 17
+          ColumnSpan: 19
+          ElementId: 32fc2afc-d43b-49e5-8f4e-0120a4d4a0e3
+          ElementType: VISUAL
+          RowIndex: 10
+          RowSpan: 12
+        - ColumnIndex: 0
+          ColumnSpan: 18
+          ElementId: 51ac772c-7e43-4d6f-91d9-c3e4578b9287
+          ElementType: VISUAL
+          RowIndex: 22
+          RowSpan: 12
+        - ColumnIndex: 18
+          ColumnSpan: 18
+          ElementId: c50b9162-b7e7-46a7-acb8-246012470648
+          ElementType: VISUAL
+          RowIndex: 22
+          RowSpan: 12
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 92959822-3c16-4692-91a9-bdebf9921963
+          ElementType: VISUAL
+          RowIndex: 34
+          RowSpan: 7
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 44290270-f47d-46da-b084-5f2d7ddcc75a
+          ElementType: TEXT_BOX
+          RowIndex: 41
+          RowSpan: 3
+        - ColumnIndex: 0
+          ColumnSpan: 28
+          ElementId: 7a98a4f2-e570-4a2a-bb44-4750e9a1e169
+          ElementType: VISUAL
+          RowIndex: 44
+          RowSpan: 12
+        - ColumnIndex: 28
+          ColumnSpan: 8
+          ElementId: 44a85167-0988-4356-b341-75a91e3e133e
+          ElementType: VISUAL
+          RowIndex: 44
+          RowSpan: 6
+        - ColumnIndex: 28
+          ColumnSpan: 8
+          ElementId: 196c303e-f205-4526-92d9-1380f24de7d1
+          ElementType: VISUAL
+          RowIndex: 50
+          RowSpan: 6
+        - ColumnIndex: 0
+          ColumnSpan: 22
+          ElementId: 009b3c39-74a3-4f4c-8025-97e0762e74de
+          ElementType: VISUAL
+          RowIndex: 56
+          RowSpan: 7
+        - ColumnIndex: 22
+          ColumnSpan: 14
+          ElementId: aef96875-c7c8-4a31-be87-218f636ca5c5
+          ElementType: VISUAL
+          RowIndex: 56
+          RowSpan: 14
+        - ColumnIndex: 0
+          ColumnSpan: 22
+          ElementId: 0b7ed33f-9685-4c16-92ce-dbdacb695fad
+          ElementType: VISUAL
+          RowIndex: 63
+          RowSpan: 7
+        - ColumnIndex: 0
+          ColumnSpan: 22
+          ElementId: 4c6e1379-8d3e-4461-ac24-b7d42e29ad6a
+          ElementType: VISUAL
+          RowIndex: 70
+          RowSpan: 7
+        - ColumnIndex: 22
+          ColumnSpan: 14
+          ElementId: 2ce5cf98-5335-48ed-b001-edeb3573428e
+          ElementType: VISUAL
+          RowIndex: 70
+          RowSpan: 7
+        - ColumnIndex: 0
+          ColumnSpan: 22
+          ElementId: a829a883-71d9-4a79-a427-db8127668b7c
+          ElementType: VISUAL
+          RowIndex: 77
+          RowSpan: 7
+        - ColumnIndex: 22
+          ColumnSpan: 14
+          ElementId: 7910e921-1df3-4894-9ae2-0234acd90dcf
+          ElementType: VISUAL
+          RowIndex: 77
+          RowSpan: 7
+  Name: Organizational Summary
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 3
+          ElementId: c7179659-33e8-4666-b30a-cf5b938d9cd6
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 5
+          ColumnSpan: 3
+          ElementId: 3f377207-a737-4ecc-9345-888c63023862
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 8
+          ColumnSpan: 2
+          ElementId: 77f5da2a-e2ad-4da4-9c04-b3e04fe76412
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 0d5cf4bc-a2ef-4690-9b9a-c2592445cf2d
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+  SheetId: a566f056-b54c-47aa-8314-43e9a362df47
+  TextBoxes:
+  - Content: "<text-box>\n  <inline color=\"#15b7ed\" font-size=\"14px\">\n    <b>How\
+      \ to use this dashboard:\_</b>\n  </inline>\n  <br/>\n  <inline font-size=\"\
+      14px\">The ResilienceVue Dashboard is designed to provide you with valuable\
+      \ insights into your current AWS workloads assessed by AWS Resilience Hub.\_\
+      </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">Organizational Summary\
+      \ Tab gives you a high level view of your Organizations Resilience Posture.</li>\n\
+      \    <li class=\"ql-indent-0\">Application Resiliency Tab let's you drill down\
+      \ into the resilience trends and recommendations status for each assessed application.</li>\n\
+      \    <li class=\"ql-indent-0\">Recommendations Tab provides insights into Resiliency\
+      \ and Operational recommendations for each assessed application based on latest\
+      \ assessment.</li>\n  </ul>\n  <br/>\n  <br/>\n  To ensure most recent data\
+      \ within the dashboard, we recommend  you enable AWS Resilience Hub and assess\
+      \ applications using scheduled assessments.\n  <br/>\n  <a href=\"https://docs.aws.amazon.com/resilience-hub/latest/userguide/getting-started.html\"\
+      \ target=\"_blank\">Getting Started</a>\n</text-box>"
+    SheetTextBoxId: 8826b673-750e-4705-92f2-463f85276391
+  - Content: |-
+      <text-box>
+        <inline color="#f78902" font-size="40px">Organizational Summary of Application Resilience</inline>
+        <br/>
+        Insights across all accounts and applications that have AWS Resilience Hub enabled. This  provides a Bird's eye view for your teams into your Organization's overall resilience posture.
+      </text-box>
+    SheetTextBoxId: 7c4b65aa-0578-40de-846c-d29c25eea91a
+  - Content: |-
+      <text-box>
+        <br/>
+        <br/>
+        <inline color="#f78902" font-size="40px">Details</inline>
+        <br/>
+      </text-box>
+    SheetTextBoxId: 44290270-f47d-46da-b084-5f2d7ddcc75a
+  Visuals:
+  - SankeyDiagramVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 5dfefcab-379d-41d3-8263-4b3db1c192ac
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          SankeyDiagramAggregatedFieldWells:
+            Destination:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_drift_status
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.resiliency_drift_status.1.1751314520385
+            Source:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.application_name.1.1751310018072
+            Weight:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: operational_recommendations_outstanding
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.operational_recommendations_outstanding.2.1751314532612
+        SortConfiguration:
+          WeightSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.operational_recommendations_outstanding.2.1751314532612
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Click to filter</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Resiliency Drift Status Per Application</visual-title>
+        Visibility: VISIBLE
+      VisualId: 51ac772c-7e43-4d6f-91d9-c3e4578b9287
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 5bf45007-29c4-4d90-a100-1ff432bdbcbd
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: Account
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: dd10dc28-8803-4007-8bfc-23503c85c32b.1.1744767475002
+            CustomLabel: Account
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: HIDDEN
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Account
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: dd10dc28-8803-4007-8bfc-23503c85c32b.1.1744767475002
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_status
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.resiliency_status.2.1751314879891
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
+                Column:
+                  ColumnName: application_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.application_id.2.1751262485284
+        Legend:
+          Width: 161px
+        Orientation: HORIZONTAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.application_id.2.1751262485284
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: dd10dc28-8803-4007-8bfc-23503c85c32b.1.1744767475002
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.application_id.2.1751262485284
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.resiliency_status.2.1751314879891
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+        ValueAxis:
+          DataOptions:
+            NumericAxisOptions:
+              Scale:
+                Linear:
+                  StepSize: 1.0
+        ValueLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: application_id
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.application_id.2.1751262485284
+            CustomLabel: Number of Applications
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Click to filter</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Latest Application Resiliency Status Per AWS Account</visual-title>
+        Visibility: VISIBLE
+      VisualId: c50b9162-b7e7-46a7-acb8-246012470648
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Application Name
+            FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.application_name.0.1751065734038
+          - CustomLabel: Account Number
+            FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.account_id.1.1751065750316
+          - CustomLabel: Account Name
+            FieldId: 37426458-ba8c-4242-8745-b4d8aaacdea6.account_name.2.1751065767913
+          - CustomLabel: Resiliency Score
+            FieldId: 8ce686c1-25c9-4145-bddb-520868f3474e.3.1751065801627
+          - CustomLabel: Last Assessment Time
+            FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.last_assessment_time.4.1751065817843
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.application_name.0.1751065734038
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.account_id.1.1751065750316
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 37426458-ba8c-4242-8745-b4d8aaacdea6.account_name.2.1751065767913
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: resiliency_score_percent
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 8ce686c1-25c9-4145-bddb-520868f3474e.3.1751065801627
+            - DateDimensionField:
+                Column:
+                  ColumnName: last_assessment_time
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.last_assessment_time.4.1751065817843
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#FF8700'
+            Height: 25
+            TextWrap: WRAP
+            Visibility: VISIBLE
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications By Resiliency Scores</visual-title>
+        Visibility: VISIBLE
+      VisualId: 0b7ed33f-9685-4c16-92ce-dbdacb695fad
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              Column:
+                ColumnName: application_not_assessed
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: b20b5708-fd45-45ba-91e9-1abf3c3cad9b.0.1741641602257
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontColor: '#219FD7'
+            FontSize:
+              Relative: EXTRA_LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications Not Assessed</visual-title>
+        Visibility: VISIBLE
+      VisualId: d4bbab03-c988-470f-aee9-40b5335ba36a
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: account_id
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: be21f777-fe71-41ad-894f-262540dfceb8.account_id.0.1741378748174
+        KPIOptions:
+          PrimaryValueFontConfiguration:
+            FontColor: '#219FD7'
+          ProgressBar:
+            Visibility: HIDDEN
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Accounts Assessed</visual-title>
+        Visibility: VISIBLE
+      VisualId: bbab0750-e14a-4e2a-b5df-b0c11efaa283
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              Column:
+                ColumnName: applications_drift_detected
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: 0f4b2d2b-9992-447a-b644-06bdd8088255.0.1741378705752
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontColor: '#D42A41'
+            FontSize:
+              Relative: EXTRA_LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications Drifted</visual-title>
+        Visibility: VISIBLE
+      VisualId: 5ed43695-4b1a-4afb-a0ad-71b62d87e398
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: application_arn
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_arn
+        KPIOptions:
+          PrimaryValueFontConfiguration:
+            FontColor: '#219FD7'
+            FontSize:
+              Relative: EXTRA_LARGE
+          ProgressBar:
+            Visibility: HIDDEN
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications Assessed</visual-title>
+        Visibility: VISIBLE
+      VisualId: cf240443-4388-478e-8370-3c016a6f0a54
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              Column:
+                ColumnName: applications_policy_met
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: 29da29d9-713e-4d74-a549-dfb6a7073d48.0.1741375998642
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontColor: '#3D993D'
+            FontSize:
+              Relative: EXTRA_LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications In Policy</visual-title>
+        Visibility: VISIBLE
+      VisualId: 51e359f8-a8cd-4ea4-84a0-c47602105819
+  - PieChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 0a86967f-274d-403c-a4b2-08a01398e0b2
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        CategoryLabelOptions:
+          Visibility: HIDDEN
+        DataLabels:
+          CategoryLabelVisibility: VISIBLE
+          MeasureLabelVisibility: VISIBLE
+          Overlap: DISABLE_OVERLAP
+          Position: OUTSIDE
+          Visibility: VISIBLE
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: MEDIUM
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_status
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_status.0.1741376516868
+                HierarchyId: eabb61e2-5b46-4210-adba-94f83f0edf43
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
+                Column:
+                  ColumnName: application_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_id.1.1741376526905
+        Legend:
+          Width: 141px
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_id.1.1741376526905
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_id.1.1741376526905
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_status.0.1741376516868
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+      ColumnHierarchies:
+      - ExplicitHierarchy:
+          Columns:
+          - ColumnName: resiliency_status
+            DataSetIdentifier: resiliencehub_complete_view
+          - ColumnName: application_name
+            DataSetIdentifier: resiliencehub_complete_view
+          DrillDownFilters: []
+          HierarchyId: eabb61e2-5b46-4210-adba-94f83f0edf43
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>This visual shows application compliance with
+            attached policies for Resiliency</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications By Resiliency Status</visual-title>
+        Visibility: VISIBLE
+      VisualId: e3e03abe-f81d-49a4-b65e-b66ed378223b
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              Column:
+                ColumnName: applications_policy_not_met
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: 1af2ad20-e527-44d7-ab8a-787597b7713a.0.1741377716402
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontColor: '#D42A41'
+            FontSize:
+              Relative: EXTRA_LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications Breaching Policy</visual-title>
+        Visibility: VISIBLE
+      VisualId: ba40ebf3-3942-4ea6-afd5-6778d83f73c3
+  - WordCloudVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: region
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.region.0.1741376960486
+            Size:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
+                Column:
+                  ColumnName: application_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_id.1.1741376977766
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions:
+          WordPadding: SMALL
+          WordScaling: EMPHASIZE
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Region With Most Assessments</visual-title>
+        Visibility: VISIBLE
+      VisualId: 284ae374-3ede-4745-bfcf-29a0d812417c
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 66c21931-86dd-45e0-85c4-6d50840b344f
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: CLUSTERED
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: resiliency_score
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_score.0.1741379000697
+            CustomLabel: Resiliency Score
+          - ApplyTo:
+              Column:
+                ColumnName: resiliency_score_percent
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_score.0.1741379000697
+            CustomLabel: Resiliency Score
+          SortIconVisibility: HIDDEN
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Position: INSIDE
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: resiliency_score_percent
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_score.0.1741379000697
+            Colors: []
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
+                Column:
+                  ColumnName: application_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_id.1.1741379011459
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_score.0.1741379000697
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_id.1.1741379011459
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_score.0.1741379000697
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: application_id
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_id.1.1741379011459
+            CustomLabel: Number of applications
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>This visual shows count of applications based
+            on their resiliency score</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title># Of Applications By Resiliency Score</visual-title>
+        Visibility: VISIBLE
+      VisualId: 32fc2afc-d43b-49e5-8f4e-0120a4d4a0e3
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Application Name
+            FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.application_name.0.1751065496764
+          - CustomLabel: Account Number
+            FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.account_id.1.1751065507385
+          - CustomLabel: Account Name
+            FieldId: 37426458-ba8c-4242-8745-b4d8aaacdea6.account_name.2.1751065516406
+            Width: 182px
+          - CustomLabel: Infrastructure Recommendations
+            FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.infrastructure_recommendations_total.3.1751065526712
+          - CustomLabel: Last Assessment Time
+            FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.last_assessment_time.4.1751065543240
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.application_name.0.1751065496764
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.account_id.1.1751065507385
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 37426458-ba8c-4242-8745-b4d8aaacdea6.account_name.2.1751065516406
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: infrastructure_recommendations_total
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.infrastructure_recommendations_total.3.1751065526712
+            - DateDimensionField:
+                Column:
+                  ColumnName: last_assessment_time
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.last_assessment_time.4.1751065543240
+            Values: []
+        SortConfiguration:
+          RowSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 16dceb2d-4e9f-4916-bfdf-b46048d34c02.infrastructure_recommendations_total.3.1751065526712
+        TableOptions:
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#FF8700'
+            Height: 25
+            TextWrap: WRAP
+            Visibility: VISIBLE
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications With Most Infrastructure Recommendations</visual-title>
+        Visibility: VISIBLE
+      VisualId: 009b3c39-74a3-4f4c-8025-97e0762e74de
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Application Name
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_name.0.1741614882619
+            Width: 233px
+          - CustomLabel: Account Number
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.account_id.3.1741614950247
+          - CustomLabel: Account Name
+            FieldId: 628c6748-7d0c-453c-8f85-9ef4430d3b1e.account_name.4.1749750974046
+            Width: 187px
+          - CustomLabel: Unimplemented Operational Recommendations
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.operational_recommendations_outstanding.1.1741614894846
+            Width: 256px
+          - CustomLabel: Last Assessment Time
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.last_assessment_time.2.1741614902091
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_name.0.1741614882619
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.account_id.3.1741614950247
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 628c6748-7d0c-453c-8f85-9ef4430d3b1e.account_name.4.1749750974046
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: operational_recommendations_outstanding
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.operational_recommendations_outstanding.1.1741614894846
+            - DateDimensionField:
+                Column:
+                  ColumnName: last_assessment_time
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.last_assessment_time.2.1741614902091
+            Values: []
+        SortConfiguration:
+          RowSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: be21f777-fe71-41ad-894f-262540dfceb8.operational_recommendations_outstanding.1.1741614894846
+        TableOptions:
+          CellStyle:
+            Height: 25
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#FF8700'
+            Height: 25
+            TextWrap: WRAP
+            Visibility: VISIBLE
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications With Unimplemented Operational Recommendations</visual-title>
+        Visibility: VISIBLE
+      VisualId: 4c6e1379-8d3e-4461-ac24-b7d42e29ad6a
+  - PieChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 626f5cc8-327e-474c-b037-47d23f5f28de
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        CategoryLabelOptions:
+          Visibility: HIDDEN
+        DataLabels:
+          MeasureLabelVisibility: VISIBLE
+          Overlap: DISABLE_OVERLAP
+          Position: OUTSIDE
+          Visibility: VISIBLE
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: MEDIUM
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_policy_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_policy_name.1.1741615753406
+                HierarchyId: ac5fef46-2f2b-42f7-909a-3942c020e3dc
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
+                Column:
+                  ColumnName: application_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_id.1.1741615776040
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_id.1.1741615776040
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_id.1.1741615776040
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_policy_name.1.1741615753406
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueLabelOptions:
+          Visibility: HIDDEN
+      ColumnHierarchies:
+      - ExplicitHierarchy:
+          Columns:
+          - ColumnName: resiliency_policy_name
+            DataSetIdentifier: resiliencehub_complete_view
+          - ColumnName: application_name
+            DataSetIdentifier: resiliencehub_complete_view
+          DrillDownFilters: []
+          HierarchyId: ac5fef46-2f2b-42f7-909a-3942c020e3dc
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>This visual shows the count of applications attached
+            to a resiliency policy across the organization</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications By Resiliency Policy</visual-title>
+        Visibility: VISIBLE
+      VisualId: aef96875-c7c8-4a31-be87-218f636ca5c5
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 0f50e9ed-e53f-40ea-a1c5-24465ffa252f
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: account_info
+                DataSetIdentifier: resiliencehub_resource_types
+              FieldId: 8eff51a5-f9ea-4642-bc6e-15cadd6d0301.2.1744768633230
+            CustomLabel: Account
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_info
+                  DataSetIdentifier: resiliencehub_resource_types
+                FieldId: 8eff51a5-f9ea-4642-bc6e-15cadd6d0301.2.1744768633230
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resource_type
+                  DataSetIdentifier: resiliencehub_resource_types
+                FieldId: 84b1c778-9286-44b9-92c4-a79800cf72ec.resource_type.2.1741702827148
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
+                Column:
+                  ColumnName: recommendations
+                  DataSetIdentifier: resiliencehub_resource_types
+                FieldId: 84b1c778-9286-44b9-92c4-a79800cf72ec.recommendations.1.1741701517248
+        Legend:
+          Width: 168px
+        Orientation: HORIZONTAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 84b1c778-9286-44b9-92c4-a79800cf72ec.recommendations.1.1741701517248
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 84b1c778-9286-44b9-92c4-a79800cf72ec.recommendations.1.1741701517248
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 84b1c778-9286-44b9-92c4-a79800cf72ec.resource_type.2.1741702827148
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 8eff51a5-f9ea-4642-bc6e-15cadd6d0301.2.1744768633230
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: recommendations
+                DataSetIdentifier: resiliencehub_resource_types
+              FieldId: 84b1c778-9286-44b9-92c4-a79800cf72ec.recommendations.1.1741701517248
+            CustomLabel: Number of recommendations
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: "<visual-subtitle>This visual displays the number of infrastructure\
+            \ recommendations for each resource type of your AWS resources per account\
+            \ provided in the last successful assessment.\_</visual-subtitle>"
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Top Infrastructure Recommendations By Account And
+            Resource Type</visual-title>
+        Visibility: VISIBLE
+      VisualId: 7a98a4f2-e570-4a2a-bb44-4750e9a1e169
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: MIN
+              Column:
+                ColumnName: applications_meeting_rto
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: a339b73d-eed1-4578-bec0-1a5c4c0281ac.0.1741703558563
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontColor: '#FF8700'
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications Meeting RTO</visual-title>
+        Visibility: VISIBLE
+      VisualId: 44a85167-0988-4356-b341-75a91e3e133e
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              Column:
+                ColumnName: applications_meeting_rpo
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: e09b7de8-fc05-493a-bfc1-e7a5fefe13cf.0.1741703748760
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontColor: '#FC850D'
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Applications Meeting RPO</visual-title>
+        Visibility: VISIBLE
+      VisualId: 196c303e-f205-4526-92d9-1380f24de7d1
+  - TableVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 24a7be97-92fa-4b6a-b9ba-731b87427d88
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Application Name
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_name.0.1742570985428
+          - CustomLabel: Account Number
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.account_id.5.1742571073758
+          - CustomLabel: Last Assessment Time
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.last_assessment_time.2.1742571010993
+          - CustomLabel: Resiliency Policy
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_policy_name.2.1742571034940
+          - CustomLabel: Resiliency Status
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_status.3.1742571039851
+            Width: 136px
+          - CustomLabel: Region
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.region.4.1742571052979
+            Width: 79px
+          - CustomLabel: Resiliency Score
+            FieldId: 79960f5f-3124-401a-9ca1-752a2689da40.10.1742571143046
+            Width: 158px
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_name.0.1742570985428
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.account_id.5.1742571073758
+            - DateDimensionField:
+                Column:
+                  ColumnName: last_assessment_time
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.last_assessment_time.2.1742571010993
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_policy_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_policy_name.2.1742571034940
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_status
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_status.3.1742571039851
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: region
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.region.4.1742571052979
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RPO
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: f9f57f6d-8f1c-4d40-a5b4-0344f1eca07d.10.1742573460328
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Current RPO
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: e7704592-32e2-4cac-b1ce-906ccc548f07.10.1742585461373
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RTO
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 5ba7f5d2-1855-4d78-8cca-7d14ff16bd74.9.1742573384569
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Current RTO
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 252aee98-be19-4fac-8c94-5253ae632039.8.1742573278208
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: resiliency_score_percent
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 79960f5f-3124-401a-9ca1-752a2689da40.10.1742571143046
+        SortConfiguration: {}
+        TableInlineVisualizations:
+        - DataBars:
+            FieldId: 79960f5f-3124-401a-9ca1-752a2689da40.10.1742571143046
+            NegativeColor: '#DE3B00'
+            PositiveColor: '#FC850D'
+        TableOptions:
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#FF8700'
+            Height: 25
+            TextWrap: WRAP
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - Cell:
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_status.3.1742571039851
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#FF6B6B'
+                  Expression: '{resiliency_status} = "PolicyBreached"'
+        - Cell:
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_status.3.1742571039851
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#2CAD00'
+                  Expression: '{resiliency_status} = "PolicyMet"'
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>This visual shows resilience data for each application
+            assessed based on  the latest assessment report</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Resiliency Report For All Assessed Applications</visual-title>
+        Visibility: VISIBLE
+      VisualId: 92959822-3c16-4692-91a9-bdebf9921963
+  - WordCloudVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - DateDimensionField:
+                Column:
+                  ColumnName: latest_assessment_time
+                  DataSetIdentifier: resiliencehub_complete_view
+                DateGranularity: DAY
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.latest_assessment_time.0.1744215221621
+                HierarchyId: a4cf01c0-d9be-4931-9267-830a5a3e8d1d
+            Size:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_name.1.1745341237510
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions: {}
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: a4cf01c0-d9be-4931-9267-830a5a3e8d1d
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Latest Data Refresh Time</visual-title>
+        Visibility: VISIBLE
+      VisualId: c179477f-553d-4db7-a601-802e11e8feb6
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Resiliency Policy
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_policy_name.2.1744387054640
+          - CustomLabel: Account Number
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.account_id.3.1744484242824
+          - CustomLabel: Account Name
+            FieldId: 628c6748-7d0c-453c-8f85-9ef4430d3b1e.account_name.4.1749750992771
+          - FieldId: 5ba7f5d2-1855-4d78-8cca-7d14ff16bd74.2.1744386835013
+            Width: 106px
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_policy_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_policy_name.2.1744387054640
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.account_id.3.1744484242824
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 628c6748-7d0c-453c-8f85-9ef4430d3b1e.account_name.4.1749750992771
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RPO
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: f9f57f6d-8f1c-4d40-a5b4-0344f1eca07d.2.1744386803449
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RTO
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 5ba7f5d2-1855-4d78-8cca-7d14ff16bd74.2.1744386835013
+            Values: []
+        SortConfiguration:
+          RowSort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_policy_name.2.1744387054640
+        TableOptions:
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#FF8700'
+            Height: 25
+            TextWrap: WRAP
+          RowAlternateColorOptions:
+            Status: ENABLED
+            UsePrimaryBackgroundColor: ENABLED
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Resiliency Policies</visual-title>
+        Visibility: VISIBLE
+      VisualId: a829a883-71d9-4a79-a427-db8127668b7c
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Application Name
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_name.0.1744735475010
+            Width: 296px
+          - CustomLabel: Account Number
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.account_id.3.1744738972191
+          - CustomLabel: Account Name
+            FieldId: 628c6748-7d0c-453c-8f85-9ef4430d3b1e.account_name.4.1749751001100
+          - CustomLabel: Resiliency Drift Status
+            FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_drift_status.1.1744735535539
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.application_name.0.1744735475010
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.account_id.3.1744738972191
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 628c6748-7d0c-453c-8f85-9ef4430d3b1e.account_name.4.1749751001100
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_drift_status
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_drift_status.1.1744735535539
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#F78902'
+            Height: 25
+            TextWrap: WRAP
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Application Drift Status</visual-title>
+        Visibility: VISIBLE
+      VisualId: 2ce5cf98-5335-48ed-b001-edeb3573428e
+  - PieChartVisual:
+      Actions: []
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: WHOLE
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: tier
+                  DataSetIdentifier: resiliencehub_resiliency_policy_view
+                FieldId: 086d4ef2-a6fe-455f-91fe-bd47446001b0.tier.0.1751074398508
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
+                Column:
+                  ColumnName: policyarn
+                  DataSetIdentifier: resiliencehub_resiliency_policy_view
+                FieldId: 086d4ef2-a6fe-455f-91fe-bd47446001b0.policyarn.1.1751074406304
+        Legend:
+          Width: 135px
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 086d4ef2-a6fe-455f-91fe-bd47446001b0.policyarn.1.1751074406304
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 086d4ef2-a6fe-455f-91fe-bd47446001b0.tier.0.1751074398508
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 086d4ef2-a6fe-455f-91fe-bd47446001b0.policyarn.1.1751074406304
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Resiliency Policies by application tier</visual-title>
+        Visibility: VISIBLE
+      VisualId: 7910e921-1df3-4894-9ae2-0234acd90dcf
+- ContentType: INTERACTIVE
+  FilterControls:
+  - Dropdown:
+      CascadingControlConfiguration:
+        SourceControls: []
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: fe319707-2c49-4083-b741-e0e644219c73
+      SourceFilterId: 1db9d613-56ab-4f95-9e09-5d2fe87a744b
+      Title: Application Name
+      Type: SINGLE_SELECT
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 8
+          ElementId: fe319707-2c49-4083-b741-e0e644219c73
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 3
+        - ColumnIndex: 8
+          ColumnSpan: 4
+          ElementId: 912dee10-e54a-4b7f-b9c3-fc61eb714656
+          ElementType: VISUAL
+          RowIndex: 0
+          RowSpan: 3
+        - ColumnIndex: 12
+          ColumnSpan: 8
+          ElementId: ca284c06-c2a8-4146-bf98-4cf5fb9c9d8e
+          ElementType: VISUAL
+          RowIndex: 0
+          RowSpan: 3
+        - ColumnIndex: 20
+          ColumnSpan: 4
+          ElementId: 32437916-149e-40bd-af16-eb6c23df239e
+          ElementType: VISUAL
+          RowIndex: 0
+          RowSpan: 3
+        - ColumnIndex: 24
+          ColumnSpan: 8
+          ElementId: 53edc261-3a6f-4ce1-9a64-0fb497a2b5b3
+          ElementType: VISUAL
+          RowIndex: 0
+          RowSpan: 3
+        - ColumnIndex: 32
+          ColumnSpan: 4
+          ElementId: a3dc3a2e-0d0f-4807-98d1-9c83acf41adc
+          ElementType: VISUAL
+          RowIndex: 0
+          RowSpan: 3
+        - ColumnIndex: 0
+          ColumnSpan: 8
+          ElementId: c3f5acc3-c681-427e-a967-5dd17369ceb3
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 7
+        - ColumnIndex: 8
+          ColumnSpan: 4
+          ElementId: a4f990d4-a387-4d30-9303-a6ced47041f8
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 3
+        - ColumnIndex: 12
+          ColumnSpan: 8
+          ElementId: 4d85ad18-5a66-434e-bbfb-35b857bebca3
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 3
+        - ColumnIndex: 20
+          ColumnSpan: 4
+          ElementId: bd2637cc-8a06-408c-b575-fcebc0e75b65
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 3
+        - ColumnIndex: 24
+          ColumnSpan: 8
+          ElementId: 3897600c-4ab1-490b-99c9-e9bf4d967637
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 3
+        - ColumnIndex: 32
+          ColumnSpan: 4
+          ElementId: 769cf06a-8036-4523-80e9-45d28aa7dc86
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 3
+        - ColumnIndex: 8
+          ColumnSpan: 28
+          ElementId: 8a6a05b9-a142-425a-b433-e0ae00352d31
+          ElementType: TEXT_BOX
+          RowIndex: 6
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 8
+          ElementId: 30e1af6f-2584-40e3-8538-fa6c2ad0727d
+          ElementType: VISUAL
+          RowIndex: 10
+          RowSpan: 3
+        - ColumnIndex: 8
+          ColumnSpan: 28
+          ElementId: 3d420326-1596-4388-a15e-f16688a50e92
+          ElementType: VISUAL
+          RowIndex: 10
+          RowSpan: 7
+        - ColumnIndex: 0
+          ColumnSpan: 8
+          ElementId: 1989ad76-17b2-4e6c-bd68-fa78d21ac9e5
+          ElementType: VISUAL
+          RowIndex: 13
+          RowSpan: 3
+        - ColumnIndex: 0
+          ColumnSpan: 8
+          ElementId: 61da34a7-12ba-4979-85b1-9c97aa77f8a7
+          ElementType: VISUAL
+          RowIndex: 16
+          RowSpan: 3
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 41ecf05a-7c2e-4a40-8cba-b3e59e694792
+          ElementType: VISUAL
+          RowIndex: 19
+          RowSpan: 12
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 91a1ea73-1090-4949-845f-c63bef16fcb6
+          ElementType: VISUAL
+          RowIndex: 31
+          RowSpan: 8
+  Name: Application Resiliency
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements: []
+  SheetId: 9318ba71-28ca-4ced-ae11-306a1f598925
+  TextBoxes:
+  - Content: |-
+      <text-box>
+        <inline color="#0d94a4">
+          <b>How to Interpret Resiliency Score?</b>
+        </inline>
+        <br/>
+        <br/>
+        The top resiliency score is 100 points. To achieve the best possible score or the top score, you must implement all the recommended alarms, SOPs, and tests in your application within AWS console. For example, AWS Resilience Hub recommends one test with one alarm and one SOP. The test runs and fires the alarm and initiates the associated SOP. If they perform successfully and if the application meets the resiliency policy, it receives a resiliency score close to or equal to 100 points.
+        <br/>
+        <br/>
+        <a href="https://docs.aws.amazon.com/resilience-hub/latest/userguide/resil-score.html" target="_blank">Read More</a>
+      </text-box>
+    SheetTextBoxId: 8a6a05b9-a142-425a-b433-e0ae00352d31
+  Visuals:
+  - WordCloudVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RTO
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 0236e715-abc2-41b4-bad6-0abc95d0c726.0.1751297301984
+            Size: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Target RTO</visual-title>
+        Visibility: VISIBLE
+      VisualId: 912dee10-e54a-4b7f-b9c3-fc61eb714656
+  - WordCloudVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Account
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: dd10dc28-8803-4007-8bfc-23503c85c32b.0.1744767789871
+            Size: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Account</visual-title>
+        Visibility: VISIBLE
+      VisualId: 61da34a7-12ba-4979-85b1-9c97aa77f8a7
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: RTO AZ
+            FieldId: 28fc1f35-fff4-4fb2-bd78-295656a929a3.3.1742914114843
+          - CustomLabel: RTO App
+            FieldId: 1933b7de-f580-4883-9988-9729d2d363c0.5.1742914168187
+          - CustomLabel: RTO Infra
+            FieldId: 6107bfb5-23cd-42bf-9752-969003f7f693.4.1742914117812
+          - FieldId: e38ac07c-6480-4309-87db-f344a7ac0664.3.1742923241020
+            Visibility: HIDDEN
+          - FieldId: 80033296-3cd4-48a7-8635-e4bdab9a8d20.4.1742923541408
+            Visibility: HIDDEN
+          - FieldId: 4ddef13a-747f-4a87-b705-d329a0c471f4.5.1742923604043
+            Visibility: HIDDEN
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Current RTO AZ
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 28fc1f35-fff4-4fb2-bd78-295656a929a3.3.1742914114843
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Current RTO Application
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 1933b7de-f580-4883-9988-9729d2d363c0.5.1742914168187
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Current RTO Infrastructure
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 6107bfb5-23cd-42bf-9752-969003f7f693.4.1742914117812
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: is_current_rto_az_compliant
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: e38ac07c-6480-4309-87db-f344a7ac0664.3.1742923241020
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      NegativeValueConfiguration:
+                        DisplayMode: NEGATIVE
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      SeparatorConfiguration:
+                        DecimalSeparator: DOT
+                        ThousandsSeparator:
+                          Symbol: COMMA
+                          Visibility: VISIBLE
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: is_current_rto_software_compliant
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 80033296-3cd4-48a7-8635-e4bdab9a8d20.4.1742923541408
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: is_current_rto_hardware_compliant
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 4ddef13a-747f-4a87-b705-d329a0c471f4.5.1742923604043
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          Orientation: HORIZONTAL
+          RowAlternateColorOptions:
+            Status: ENABLED
+            UsePrimaryBackgroundColor: ENABLED
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - Cell:
+            FieldId: 28fc1f35-fff4-4fb2-bd78-295656a929a3.3.1742914114843
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#FF6B6B'
+                  Expression: '{is_current_rto_az_compliant} = 0'
+        - Cell:
+            FieldId: 28fc1f35-fff4-4fb2-bd78-295656a929a3.3.1742914114843
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#2CAD00'
+                  Expression: '{is_current_rto_az_compliant} = 1'
+        - Cell:
+            FieldId: 6107bfb5-23cd-42bf-9752-969003f7f693.4.1742914117812
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#2CAD00'
+                  Expression: '{is_current_rto_hardware_compliant} = 1'
+        - Cell:
+            FieldId: 6107bfb5-23cd-42bf-9752-969003f7f693.4.1742914117812
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#FF6B6B'
+                  Expression: '{is_current_rto_hardware_compliant} = 0'
+        - Cell:
+            FieldId: 1933b7de-f580-4883-9988-9729d2d363c0.5.1742914168187
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#FF6B6B'
+                  Expression: '{is_current_rto_software_compliant} = 0'
+        - Cell:
+            FieldId: 1933b7de-f580-4883-9988-9729d2d363c0.5.1742914168187
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#2CAD00'
+                  Expression: '{is_current_rto_software_compliant} = 1'
+      Subtitle:
+        Visibility: HIDDEN
+      Title:
+        Visibility: HIDDEN
+      VisualId: 4d85ad18-5a66-434e-bbfb-35b857bebca3
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: RTO AZ
+            FieldId: 7511d908-9b0e-4b68-80ef-4601f2a2e17e.2.1742919943685
+          - CustomLabel: RTO App
+            FieldId: ed09fb40-a3dc-4e71-94cc-8aa7e5fc367c.2.1742913966000
+          - CustomLabel: RTO Infra
+            FieldId: b06d0466-eb5a-4058-abb5-566d22f7b808.3.1742913954719
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RTO AZ
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 7511d908-9b0e-4b68-80ef-4601f2a2e17e.2.1742919943685
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RTO Application
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: ed09fb40-a3dc-4e71-94cc-8aa7e5fc367c.2.1742913966000
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RTO Infrastructure
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: b06d0466-eb5a-4058-abb5-566d22f7b808.3.1742913954719
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          HeaderStyle:
+            Height: 25
+            TextWrap: WRAP
+            Visibility: VISIBLE
+          Orientation: HORIZONTAL
+          RowAlternateColorOptions:
+            Status: DISABLED
+            UsePrimaryBackgroundColor: ENABLED
+      Subtitle:
+        Visibility: HIDDEN
+      Title:
+        FormatText:
+          RichText: <visual-title>Target RTO</visual-title>
+        Visibility: HIDDEN
+      VisualId: ca284c06-c2a8-4146-bf98-4cf5fb9c9d8e
+  - WordCloudVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Current RPO
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: e7704592-32e2-4cac-b1ce-906ccc548f07.0.1742826886370
+            Size: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Current RPO</visual-title>
+        Visibility: VISIBLE
+      VisualId: bd2637cc-8a06-408c-b575-fcebc0e75b65
+  - WordCloudVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RPO
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: f9f57f6d-8f1c-4d40-a5b4-0344f1eca07d.0.1742827044092
+            Size: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Target RPO</visual-title>
+        Visibility: VISIBLE
+      VisualId: 32437916-149e-40bd-af16-eb6c23df239e
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RPO AZ
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: f7b8c8c6-1b61-4b80-84cf-85671de215c6.3.1742914504765
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RPO Application
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: d0929814-0dae-4b0e-a997-9a9218164067.4.1742914505907
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Target RPO Infrastructure
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: c1400283-e3c5-43ea-9318-ce7fbeb7f490.5.1742914506702
+            Values: []
+        SortConfiguration:
+          RowSort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: f7b8c8c6-1b61-4b80-84cf-85671de215c6.3.1742914504765
+        TableOptions:
+          CellStyle:
+            Height: 25
+          Orientation: HORIZONTAL
+      Subtitle:
+        Visibility: HIDDEN
+      Title:
+        Visibility: HIDDEN
+      VisualId: 53edc261-3a6f-4ce1-9a64-0fb497a2b5b3
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: RPO AZ
+            FieldId: 6376d1ce-91b7-4ade-9f5a-c13ad576edbe.3.1742914344441
+          - CustomLabel: RPO App
+            FieldId: 7c94f89d-8bb0-477f-a76b-69739b9073d5.4.1742914345421
+          - CustomLabel: RPO Infra
+            FieldId: 7a20d80d-c412-46a5-9b18-200eb028a142.5.1742914346237
+          - FieldId: 73fc71ad-dc2c-4602-83cf-50f0ee157bb3.3.1742923918330
+            Visibility: HIDDEN
+          - FieldId: 020ea7f0-3faf-4cfe-9dd0-5c75b35a463f.5.1742923919904
+            Visibility: HIDDEN
+          - FieldId: 397cd38c-3a8b-43e8-b142-3eb6ad163888.4.1742923919233
+            Visibility: HIDDEN
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Current RPO AZ
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 6376d1ce-91b7-4ade-9f5a-c13ad576edbe.3.1742914344441
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Current RPO Application
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 7c94f89d-8bb0-477f-a76b-69739b9073d5.4.1742914345421
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Current RPO Infrastructure
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 7a20d80d-c412-46a5-9b18-200eb028a142.5.1742914346237
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: is_current_rpo_az_compliant
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 73fc71ad-dc2c-4602-83cf-50f0ee157bb3.3.1742923918330
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: is_current_rpo_software_compliant
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 020ea7f0-3faf-4cfe-9dd0-5c75b35a463f.5.1742923919904
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: is_current_rpo_hardwrae_compliant
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 397cd38c-3a8b-43e8-b142-3eb6ad163888.4.1742923919233
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          CellStyle:
+            Border:
+              UniformBorder:
+                Style: SOLID
+          Orientation: HORIZONTAL
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - Cell:
+            FieldId: 7a20d80d-c412-46a5-9b18-200eb028a142.5.1742914346237
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#FF6B6B'
+                  Expression: '{is_current_rpo_hardwrae_compliant} = 0'
+        - Cell:
+            FieldId: 7a20d80d-c412-46a5-9b18-200eb028a142.5.1742914346237
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#2CAD00'
+                  Expression: '{is_current_rpo_hardwrae_compliant} = 1'
+        - Cell:
+            FieldId: 7c94f89d-8bb0-477f-a76b-69739b9073d5.4.1742914345421
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#FF6B6B'
+                  Expression: '{is_current_rpo_software_compliant} = 0'
+        - Cell:
+            FieldId: 7c94f89d-8bb0-477f-a76b-69739b9073d5.4.1742914345421
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#2CAD00'
+                  Expression: '{is_current_rpo_software_compliant} = 1'
+        - Cell:
+            FieldId: 6376d1ce-91b7-4ade-9f5a-c13ad576edbe.3.1742914344441
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#FF6B6B'
+                  Expression: '{is_current_rpo_az_compliant} = 0'
+        - Cell:
+            FieldId: 6376d1ce-91b7-4ade-9f5a-c13ad576edbe.3.1742914344441
+            TextFormat:
+              BackgroundColor:
+                Solid:
+                  Color: '#2CAD00'
+                  Expression: '{is_current_rpo_az_compliant} = 1'
+      Subtitle:
+        Visibility: HIDDEN
+      Title:
+        Visibility: HIDDEN
+      VisualId: 3897600c-4ab1-490b-99c9-e9bf4d967637
+  - GaugeChartVisual:
+      Actions: []
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          TargetValues: []
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: AVERAGE
+              Column:
+                ColumnName: resiliency_score_percent
+                DataSetIdentifier: resiliencehub_complete_view
+              FieldId: 79960f5f-3124-401a-9ca1-752a2689da40.0.1741827746270
+        GaugeChartOptions:
+          ArcAxis:
+            Range:
+              Max: 100.0
+              Min: 0.0
+            ReserveRange: 0
+        TooltipOptions:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 79960f5f-3124-401a-9ca1-752a2689da40.0.1741827746270
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      Subtitle:
+        FormatText:
+          RichText: |-
+            <visual-subtitle>
+              <inline color="PrimaryForeground" font-size="12px">This score reflects how closely the application follows the recommendations for meeting resiliency policies, SOPs, alarms, and experiments</inline>
+            </visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Application Resiliency Score</visual-title>
+        Visibility: VISIBLE
+      VisualId: c3f5acc3-c681-427e-a967-5dd17369ceb3
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Account Number
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.account_id.2.1741820181621
+            Width: 141px
+          - CustomLabel: Account Name
+            FieldId: b865413c-f342-487d-a4b9-babab9cfe4f1.account_name.20.1744767587430
+          - FieldId: e9893e53-287f-4727-b4a2-d7a9e253e185.19.1751263143441
+            Width: 259px
+          - CustomLabel: Assessment Time
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.assessment_time.3.1741820181621
+            Width: 128px
+          - CustomLabel: Resiliency Score (%)
+            FieldId: 4237aba9-fb5a-448f-999f-a1cc5b334b2c.9.1742914934263
+            Width: 135px
+          - CustomLabel: Resiliency Status
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.resiliency_status.8.1741820236588
+          - CustomLabel: Resiliency Drift Status
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.resiliency_drift_status.6.1741820225184
+          - CustomLabel: Application Component Drift
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.app_component_drifts.1.1741820181621
+          - CustomLabel: Total Alarms
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.alarms_total.8.1742915465080
+          - CustomLabel: Alarms Excluded
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.alarms_excluded.9.1742915468086
+          - CustomLabel: Alarma Outstanding
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.alarms_outstanding.10.1742915469013
+          - CustomLabel: Total FIS Experiments
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.fis_tests_total.11.1742915491244
+          - CustomLabel: FIS Experiments Excluded
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.fis_tests_excluded.13.1742915493868
+          - CustomLabel: FIS Experiments Outstanding
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.fis_tests_outstanding.12.1742915492689
+          - CustomLabel: Total Operational Recommendations
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.operational_recommendations_total.14.1742915502499
+          - CustomLabel: Operational Recommendations Excluded
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.operational_recommendations_excluded.15.1742915503808
+          - CustomLabel: 'Operational Recommendations Outstanding '
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.operational_recommendations_outstanding.16.1742915504754
+          - CustomLabel: Total SOPs
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.sops_total.17.1742915515417
+          - CustomLabel: SOPs Excluded
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.sops_excluded.18.1742915516331
+          - CustomLabel: SOPs Outstanding
+            FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.sops_outstanding.19.1742915516997
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.account_id.2.1741820181621
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_name
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: b865413c-f342-487d-a4b9-babab9cfe4f1.account_name.20.1744767587430
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Assesment Id
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: e9893e53-287f-4727-b4a2-d7a9e253e185.19.1751263143441
+            - DateDimensionField:
+                Column:
+                  ColumnName: assessment_time
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.assessment_time.3.1741820181621
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: resiliency_score_percent
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: 4237aba9-fb5a-448f-999f-a1cc5b334b2c.9.1742914934263
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_status
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.resiliency_status.8.1741820236588
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_drift_status
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.resiliency_drift_status.6.1741820225184
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: app_component_drifts
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.app_component_drifts.1.1741820181621
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: alarms_total
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.alarms_total.8.1742915465080
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: alarms_excluded
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.alarms_excluded.9.1742915468086
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: alarms_outstanding
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.alarms_outstanding.10.1742915469013
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: fis_tests_total
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.fis_tests_total.11.1742915491244
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: fis_tests_excluded
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.fis_tests_excluded.13.1742915493868
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: fis_tests_outstanding
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.fis_tests_outstanding.12.1742915492689
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: operational_recommendations_total
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.operational_recommendations_total.14.1742915502499
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: operational_recommendations_excluded
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.operational_recommendations_excluded.15.1742915503808
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: operational_recommendations_outstanding
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.operational_recommendations_outstanding.16.1742915504754
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: sops_total
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.sops_total.17.1742915515417
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: sops_excluded
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.sops_excluded.18.1742915516331
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: sops_outstanding
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.sops_outstanding.19.1742915516997
+            Values: []
+        SortConfiguration:
+          RowSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.assessment_time.3.1741820181621
+        TableOptions:
+          CellStyle:
+            Height: 25
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#FF8700'
+            Height: 25
+            TextWrap: WRAP
+          RowAlternateColorOptions:
+            Status: DISABLED
+            UsePrimaryBackgroundColor: ENABLED
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Summary Of 10 Latest  Assessments</visual-title>
+        Visibility: VISIBLE
+      VisualId: 91a1ea73-1090-4949-845f-c63bef16fcb6
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: assessment_arn
+                DataSetIdentifier: resiliencehub_daily_assessments
+              FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.assessment_arn.1.1741832249213
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontColor: '#FF8700'
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Number of Assessments</visual-title>
+        Visibility: VISIBLE
+      VisualId: 769cf06a-8036-4523-80e9-45d28aa7dc86
+  - LineChartVisual:
+      Actions: []
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: HIDDEN
+        FieldWells:
+          LineChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: assessment_time
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.assessment_time.0.1741828336034
+                HierarchyId: 3114b151-83bc-4666-b176-d71b65be066c
+            Colors: []
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: AVERAGE
+                Column:
+                  ColumnName: resiliency_score_percent
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: 4237aba9-fb5a-448f-999f-a1cc5b334b2c.1.1741828336034
+        PrimaryYAxisLabelOptions:
+          Visibility: VISIBLE
+        ReferenceLines:
+        - DataConfiguration:
+            AxisBinding: PRIMARY_YAXIS
+            SeriesType: LINE
+            StaticConfiguration:
+              Value: 100.0
+          Status: ENABLED
+          StyleConfiguration:
+            Pattern: DASHED
+        SortConfiguration:
+          CategoryItemsLimitConfiguration:
+            OtherCategories: INCLUDE
+          ColorItemsLimitConfiguration:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.assessment_time.0.1741828336034
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 4237aba9-fb5a-448f-999f-a1cc5b334b2c.1.1741828336034
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        Type: LINE
+        XAxisDisplayOptions:
+          AxisLineVisibility: VISIBLE
+          AxisOffset: 66px
+          DataOptions:
+            DateAxisOptions:
+              MissingDateVisibility: HIDDEN
+          ScrollbarOptions:
+            Visibility: VISIBLE
+          TickLabelOptions:
+            LabelOptions:
+              Visibility: VISIBLE
+        XAxisLabelOptions:
+          Visibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 3114b151-83bc-4666-b176-d71b65be066c
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Resiliency Score Trend</visual-title>
+        Visibility: VISIBLE
+      VisualId: 3d420326-1596-4388-a15e-f16688a50e92
+  - WordCloudVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - DateDimensionField:
+                Column:
+                  ColumnName: last_assessment_time
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.last_assessment_time.0.1742612188429
+                HierarchyId: d33d2ecd-846a-4695-9d18-2b6f15714685
+            Size: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions: {}
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: d33d2ecd-846a-4695-9d18-2b6f15714685
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Last Assessed</visual-title>
+        Visibility: VISIBLE
+      VisualId: a3dc3a2e-0d0f-4807-98d1-9c83acf41adc
+  - WordCloudVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_status
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_status.0.1742612285502
+            Size: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Resiliency Status For Last Assessment</visual-title>
+        Visibility: VISIBLE
+      VisualId: 30e1af6f-2584-40e3-8538-fa6c2ad0727d
+  - BarChartVisual:
+      Actions: []
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: assessment_time
+                DataSetIdentifier: resiliencehub_daily_assessments
+              FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.assessment_time.0.1742614034263
+            CustomLabel: Assessment Time
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: HIDDEN
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: assessment_time
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.assessment_time.0.1742614034263
+                HierarchyId: c3230b9a-4f2e-4a3f-a3a8-32ba0037595a
+            Colors: []
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: alarms_outstanding
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.alarms_outstanding.1.1742614051281
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: compliance_outstanding
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.compliance_outstanding.2.1742614061701
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: fis_tests_outstanding
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.fis_tests_outstanding.3.1742614070361
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: sops_outstanding
+                  DataSetIdentifier: resiliencehub_daily_assessments
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.sops_outstanding.5.1742614089060
+        Legend:
+          Width: 206px
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.assessment_time.0.1742614034263
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.assessment_time.0.1742614034263
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.alarms_outstanding.1.1742614051281
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.compliance_outstanding.2.1742614061701
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.fis_tests_outstanding.3.1742614070361
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: c4ad6c54-5c4c-430f-8c0f-ac455475d3b9.sops_outstanding.5.1742614089060
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: c3230b9a-4f2e-4a3f-a3a8-32ba0037595a
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>This visual shows the Operational recommendations
+            that need to be implemented. It provides insight into Outstanding Alarms,
+            SOPs and Fault Injection Experiments.</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Outstanding Operational Recommendations</visual-title>
+        Visibility: VISIBLE
+      VisualId: 41ecf05a-7c2e-4a40-8cba-b3e59e694792
+  - WordCloudVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Current RTO
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: 252aee98-be19-4fac-8c94-5253ae632039.0.1742826793802
+            Size: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Current RTO</visual-title>
+        Visibility: VISIBLE
+      VisualId: a4f990d4-a387-4d30-9303-a6ced47041f8
+  - WordCloudVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resiliency_policy_name
+                  DataSetIdentifier: resiliencehub_complete_view
+                FieldId: be21f777-fe71-41ad-894f-262540dfceb8.resiliency_policy_name.0.1742914670147
+            Size: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions:
+          WordScaling: EMPHASIZE
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Resiliency Policy For Last Assessment</visual-title>
+        Visibility: VISIBLE
+      VisualId: 1989ad76-17b2-4e6c-bd68-fa78d21ac9e5
+- ContentType: INTERACTIVE
+  FilterControls:
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: LARGE
+          Visibility: VISIBLE
+      FilterControlId: a5dc4fdf-a2e8-4602-8adf-0b416b06d600
+      SourceFilterId: 383420c8-daab-4af3-8507-4a1866cc04ab
+      Title: App Component
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: ec6c0c14-f222-4657-a4e9-1bdf5e614775
+      SourceFilterId: bb438173-998c-464a-80df-32c3066059b1
+      Title: Application Name
+      Type: MULTI_SELECT
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 6
+          ElementId: ec6c0c14-f222-4657-a4e9-1bdf5e614775
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 2
+        - ColumnIndex: 6
+          ColumnSpan: 30
+          ElementId: d0d840b2-d5d8-4163-b391-e98119647bbf
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 6
+          ElementId: a5dc4fdf-a2e8-4602-8adf-0b416b06d600
+          ElementType: FILTER_CONTROL
+          RowIndex: 2
+          RowSpan: 3
+        - ColumnIndex: 30
+          ColumnSpan: 6
+          ElementId: 5822d5a5-a50d-4dc4-a4c8-94bd2736ebcf
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 4
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 30
+          ElementId: f1636187-69b5-4b77-a69f-80c6126be87a
+          ElementType: VISUAL
+          RowIndex: 5
+          RowSpan: 9
+        - ColumnIndex: 30
+          ColumnSpan: 6
+          ElementId: 211522d5-3719-4a98-80b0-12a890d27d86
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 8
+          RowSpan: 5
+        - ColumnIndex: 0
+          ColumnSpan: 27
+          ElementId: 25a5b9a0-4c9d-4acc-992b-a5a190aea242
+          ElementType: VISUAL
+          RowIndex: 14
+          RowSpan: 9
+        - ColumnIndex: 27
+          ColumnSpan: 9
+          ElementId: d194e8a5-f6b4-4ff4-8334-b796d294638e
+          ElementType: VISUAL
+          RowIndex: 14
+          RowSpan: 9
+        - ColumnIndex: 0
+          ColumnSpan: 9
+          ElementId: 5b210874-69b3-4bce-80df-33755e70c82e
+          ElementType: VISUAL
+          RowIndex: 23
+          RowSpan: 12
+        - ColumnIndex: 9
+          ColumnSpan: 27
+          ElementId: 3bde3117-8589-4340-ad50-72aa42a6ce70
+          ElementType: VISUAL
+          RowIndex: 23
+          RowSpan: 12
+        - ColumnIndex: 0
+          ColumnSpan: 27
+          ElementId: cb569120-4837-4fac-bb1f-db000a1ae1f7
+          ElementType: VISUAL
+          RowIndex: 35
+          RowSpan: 9
+        - ColumnIndex: 27
+          ColumnSpan: 9
+          ElementId: 5ae5d4a2-bb57-4b46-8c30-a5534f569847
+          ElementType: VISUAL
+          RowIndex: 35
+          RowSpan: 9
+  Name: Recommendations
+  ParameterControls:
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Visibility: VISIBLE
+      ParameterControlId: 5822d5a5-a50d-4dc4-a4c8-94bd2736ebcf
+      SelectableValues:
+        LinkToDataSetColumn:
+          ColumnName: ha_architecture
+          DataSetIdentifier: resiliencehub_app_recommendations
+      SourceParameterName: HAarchitecture
+      Title: Availability Architecture
+      Type: MULTI_SELECT
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Visibility: VISIBLE
+      ParameterControlId: 211522d5-3719-4a98-80b0-12a890d27d86
+      SelectableValues:
+        LinkToDataSetColumn:
+          ColumnName: optimization_type
+          DataSetIdentifier: resiliencehub_app_recommendations
+      SourceParameterName: OptimizationType
+      Title: Optimization Type
+      Type: MULTI_SELECT
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements: []
+  SheetId: 1e5feab6-cf98-4223-9b5c-64fb61031c06
+  TextBoxes:
+  - Content: "<text-box>\n  <inline color=\"#f78902\" font-size=\"36px\">Recommendations\_\
+      </inline>\n  <br/>\n  Resiliency recommendations evaluate Application Components\
+      \ and recommend how to optimize by estimated workload RTO and estimated workload\
+      \ RPO, costs, and minimal changes.\n  <br/>\n  With AWS Resilience Hub, you\
+      \ can optimize resiliency using one of the recommended options: Best AZ Recoevery,\
+      \ Best Regional Recovery, Least Cost to meet  RTO/RPO, Least Change to meet\
+      \ RTO/RPO.\n  <br/>\n  Operational recommendations contain recommendations to\
+      \ set up alarms, SOPs, and AWS FIS experiments through AWS CloudFormation templates.\n\
+      \  <br/>\n  <br/>\n  <a href=\"https://docs.aws.amazon.com/resilience-hub/latest/userguide/review-assessment.html\"\
+      \ target=\"_blank\">More Info</a>\n</text-box>"
+    SheetTextBoxId: d0d840b2-d5d8-4163-b391-e98119647bbf
+  Visuals:
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Application Name
+            FieldId: 0ac0e07d-4bfb-4643-896d-406ada9c5f11.application_name.5.1744489856975
+            Width: 179px
+          - CustomLabel: App Component Name
+            FieldId: 5957ebc3-97cf-488c-aec4-72451a1807f8.app_component_name.0.1744479996032
+            Width: 348px
+          - CustomLabel: Description
+            FieldId: 5957ebc3-97cf-488c-aec4-72451a1807f8.description.2.1744480016238
+            Width: 632px
+          - CustomLabel: Suggested Changes
+            FieldId: 5957ebc3-97cf-488c-aec4-72451a1807f8.suggested_changes.3.1744480020279
+            Width: 578px
+          - CustomLabel: Estimated Cost of Change
+            FieldId: 5f2d6976-23ba-49c0-a6cd-63c3e03ca896.6.1745339229877
+          - CustomLabel: Optimization Type
+            FieldId: 5957ebc3-97cf-488c-aec4-72451a1807f8.optimization_type.4.1744481049839
+            Width: 144px
+          - CustomLabel: Availability Architecture
+            FieldId: 5957ebc3-97cf-488c-aec4-72451a1807f8.ha_architecture.5.1744481056488
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_app_recommendations
+                FieldId: 0ac0e07d-4bfb-4643-896d-406ada9c5f11.application_name.5.1744489856975
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: app_component_name
+                  DataSetIdentifier: resiliencehub_app_recommendations
+                FieldId: 5957ebc3-97cf-488c-aec4-72451a1807f8.app_component_name.0.1744479996032
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: description
+                  DataSetIdentifier: resiliencehub_app_recommendations
+                FieldId: 5957ebc3-97cf-488c-aec4-72451a1807f8.description.2.1744480016238
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: suggested_changes
+                  DataSetIdentifier: resiliencehub_app_recommendations
+                FieldId: 5957ebc3-97cf-488c-aec4-72451a1807f8.suggested_changes.3.1744480020279
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: EstimatedCost
+                  DataSetIdentifier: resiliencehub_app_recommendations
+                FieldId: 5f2d6976-23ba-49c0-a6cd-63c3e03ca896.6.1745339229877
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: optimization_type
+                  DataSetIdentifier: resiliencehub_app_recommendations
+                FieldId: 5957ebc3-97cf-488c-aec4-72451a1807f8.optimization_type.4.1744481049839
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: ha_architecture
+                  DataSetIdentifier: resiliencehub_app_recommendations
+                FieldId: 5957ebc3-97cf-488c-aec4-72451a1807f8.ha_architecture.5.1744481056488
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          CellStyle:
+            Height: 25
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#FF8700'
+            Height: 25
+            TextWrap: WRAP
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline color="PrimaryForeground">Suggested Resiliency Recommendations</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: f1636187-69b5-4b77-a69f-80c6126be87a
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Application Name
+            FieldId: 08389279-ff31-47a7-b217-e6d7deeae5b4.application_name.0.1751068076414
+          - CustomLabel: SOP Name
+            FieldId: 5dbf374a-df5c-4d56-875f-773d9763ce39.name.1.1751068093231
+            Width: 435px
+          - CustomLabel: Description
+            FieldId: 5dbf374a-df5c-4d56-875f-773d9763ce39.description.4.1751068151078
+            Width: 616px
+          - CustomLabel: State
+            FieldId: 5dbf374a-df5c-4d56-875f-773d9763ce39.recommendationstatus.2.1751068118703
+          - CustomLabel: AppComponent
+            FieldId: 5dbf374a-df5c-4d56-875f-773d9763ce39.app_component_name.7.1751068445810
+          - CustomLabel: Account Number
+            FieldId: 22c2375d-332b-4009-8bda-a27bdf0f7043.account_id.6.1751068216882
+          - CustomLabel: Account Name
+            FieldId: 22c2375d-332b-4009-8bda-a27bdf0f7043.account_name.7.1751068221032
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_sop_recommendations
+                FieldId: 08389279-ff31-47a7-b217-e6d7deeae5b4.application_name.0.1751068076414
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: name
+                  DataSetIdentifier: resiliencehub_sop_recommendations
+                FieldId: 5dbf374a-df5c-4d56-875f-773d9763ce39.name.1.1751068093231
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: description
+                  DataSetIdentifier: resiliencehub_sop_recommendations
+                FieldId: 5dbf374a-df5c-4d56-875f-773d9763ce39.description.4.1751068151078
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: recommendationstatus
+                  DataSetIdentifier: resiliencehub_sop_recommendations
+                FieldId: 5dbf374a-df5c-4d56-875f-773d9763ce39.recommendationstatus.2.1751068118703
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: app_component_name
+                  DataSetIdentifier: resiliencehub_sop_recommendations
+                FieldId: 5dbf374a-df5c-4d56-875f-773d9763ce39.app_component_name.7.1751068445810
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: resiliencehub_sop_recommendations
+                FieldId: 22c2375d-332b-4009-8bda-a27bdf0f7043.account_id.6.1751068216882
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_name
+                  DataSetIdentifier: resiliencehub_sop_recommendations
+                FieldId: 22c2375d-332b-4009-8bda-a27bdf0f7043.account_name.7.1751068221032
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          CellStyle:
+            Height: 25
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#FC850D'
+            Height: 25
+            TextWrap: WRAP
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Suggested Standard Operating Procedures (SOP)</visual-title>
+        Visibility: VISIBLE
+      VisualId: 25a5b9a0-4c9d-4acc-992b-a5a190aea242
+  - PieChartVisual:
+      Actions: []
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: WHOLE
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: recommendationstatus
+                  DataSetIdentifier: resiliencehub_sop_recommendations
+                FieldId: 5dbf374a-df5c-4d56-875f-773d9763ce39.recommendationstatus.0.1751068279390
+            Values: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 5dbf374a-df5c-4d56-875f-773d9763ce39.recommendationstatus.0.1751068279390
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>SOP Recommendations by status</visual-title>
+        Visibility: VISIBLE
+      VisualId: d194e8a5-f6b4-4ff4-8334-b796d294638e
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Application Name
+            FieldId: 79481280-bc1f-4ed3-9ca7-40856066129b.application_name.4.1751068869950
+          - CustomLabel: Alarm Name
+            FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.name.0.1751068776193
+          - CustomLabel: Description
+            FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.description.1.1751068793784
+          - CustomLabel: State
+            FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.recommendationstatus.2.1751068809474
+          - CustomLabel: AppComponent
+            FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.app_component_name.3.1751068840530
+          - CustomLabel: Account Number
+            FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.targetaccountid.5.1751068883247
+          - CustomLabel: Account Name
+            FieldId: c9536805-8ed0-409e-96d9-9ccc32412025.account_name.6.1751068892748
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_alarm_recommendations
+                FieldId: 79481280-bc1f-4ed3-9ca7-40856066129b.application_name.4.1751068869950
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: name
+                  DataSetIdentifier: resiliencehub_alarm_recommendations
+                FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.name.0.1751068776193
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: description
+                  DataSetIdentifier: resiliencehub_alarm_recommendations
+                FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.description.1.1751068793784
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: recommendationstatus
+                  DataSetIdentifier: resiliencehub_alarm_recommendations
+                FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.recommendationstatus.2.1751068809474
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: app_component_name
+                  DataSetIdentifier: resiliencehub_alarm_recommendations
+                FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.app_component_name.3.1751068840530
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: targetaccountid
+                  DataSetIdentifier: resiliencehub_alarm_recommendations
+                FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.targetaccountid.5.1751068883247
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_name
+                  DataSetIdentifier: resiliencehub_alarm_recommendations
+                FieldId: c9536805-8ed0-409e-96d9-9ccc32412025.account_name.6.1751068892748
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#FC850D'
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Suggested Alarm Recommendations</visual-title>
+        Visibility: VISIBLE
+      VisualId: 3bde3117-8589-4340-ad50-72aa42a6ce70
+  - PieChartVisual:
+      Actions: []
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: WHOLE
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: recommendationstatus
+                  DataSetIdentifier: resiliencehub_alarm_recommendations
+                FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.recommendationstatus.0.1751068920307
+            Values: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 5c16050c-ce89-4114-bcba-7550a25429ce.recommendationstatus.0.1751068920307
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Alarm Recommendations by status</visual-title>
+        Visibility: VISIBLE
+      VisualId: 5b210874-69b3-4bce-80df-33755e70c82e
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Application Name
+            FieldId: ce946a6d-1eb9-48d8-9b87-d346cf2f463d.application_name.0.1751068965180
+          - CustomLabel: Experiment Name
+            FieldId: 93bbcd03-8892-485a-8748-f3409acd61a0.name.1.1751068978479
+          - CustomLabel: Description
+            FieldId: 93bbcd03-8892-485a-8748-f3409acd61a0.description.2.1751069009787
+          - CustomLabel: State
+            FieldId: 93bbcd03-8892-485a-8748-f3409acd61a0.recommendationstatus.3.1751069021240
+          - CustomLabel: Account Number
+            FieldId: 5fc5eee6-f80b-48a3-8dff-ad3c4378f155.account_id.4.1751069080365
+          - CustomLabel: Account Name
+            FieldId: 5fc5eee6-f80b-48a3-8dff-ad3c4378f155.account_name.5.1751069084807
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: application_name
+                  DataSetIdentifier: resiliencehub_fis_test_recommendations
+                FieldId: ce946a6d-1eb9-48d8-9b87-d346cf2f463d.application_name.0.1751068965180
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: name
+                  DataSetIdentifier: resiliencehub_fis_test_recommendations
+                FieldId: 93bbcd03-8892-485a-8748-f3409acd61a0.name.1.1751068978479
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: description
+                  DataSetIdentifier: resiliencehub_fis_test_recommendations
+                FieldId: 93bbcd03-8892-485a-8748-f3409acd61a0.description.2.1751069009787
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: recommendationstatus
+                  DataSetIdentifier: resiliencehub_fis_test_recommendations
+                FieldId: 93bbcd03-8892-485a-8748-f3409acd61a0.recommendationstatus.3.1751069021240
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: resiliencehub_fis_test_recommendations
+                FieldId: 5fc5eee6-f80b-48a3-8dff-ad3c4378f155.account_id.4.1751069080365
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_name
+                  DataSetIdentifier: resiliencehub_fis_test_recommendations
+                FieldId: 5fc5eee6-f80b-48a3-8dff-ad3c4378f155.account_name.5.1751069084807
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          HeaderStyle:
+            FontConfiguration:
+              FontColor: '#FC850D'
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Suggested Fault Injection Experiments</visual-title>
+        Visibility: VISIBLE
+      VisualId: cb569120-4837-4fac-bb1f-db000a1ae1f7
+  - PieChartVisual:
+      Actions: []
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: WHOLE
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: recommendationstatus
+                  DataSetIdentifier: resiliencehub_fis_test_recommendations
+                FieldId: 93bbcd03-8892-485a-8748-f3409acd61a0.recommendationstatus.0.1751069127148
+            Values: []
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 93bbcd03-8892-485a-8748-f3409acd61a0.recommendationstatus.0.1751069127148
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>Experiment Recemmendations by status</visual-title>
+        Visibility: VISIBLE
+      VisualId: 5ae5d4a2-bb57-4b46-8c30-a5534f569847
+- ContentType: INTERACTIVE
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 73839506-e507-4743-999a-eef1d2c4e378
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 6
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: d21c1c8b-2534-48dd-be52-257fe25cc161
+          ElementType: TEXT_BOX
+          RowIndex: 6
+          RowSpan: 13
+  Name: About
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements: []
+  SheetId: 9e1d2d3f-8b5d-4bdf-973d-3dc72500e84a
+  TextBoxes:
+  - Content: "<text-box>\n  <inline font-size=\"48px\">Notices</inline>\n  <br/>\n\
+      \  <br/>\n  <inline font-size=\"20px\">Customers are responsible for making\
+      \ their own independent assessment of\_this dashboard and its content.\_This\
+      \ dashboard and its content: (a) is for informational purposes only, (b) represents\
+      \ current AWS product offerings and practices, which are subject to change without\
+      \ notice, and (c) does not create any commitments or assurances from AWS and\
+      \ its affiliates, suppliers or licensors. AWS\_content, products or services\
+      \ are provided \u201Cas is\u201D without warranties, representations, or conditions\
+      \ of any kind, whether express or implied. The responsibilities and liabilities\
+      \ of AWS to its customers are controlled by AWS agreements, and this document\
+      \ is not part of, nor does it modify, any agreement between AWS and its customers.</inline>\n\
+      </text-box>"
+    SheetTextBoxId: 73839506-e507-4743-999a-eef1d2c4e378
+  - Content: "<text-box>\n  <block align=\"center\">\n    <inline color=\"#23dae6\"\
+      \ font-size=\"48px\">\n      <b>ResilienceVue\_</b>\n    </inline>\n  </block>\n\
+      \  <br/>\n  <block align=\"center\">\n    <inline color=\"PrimaryForeground\"\
+      \ font-size=\"48px\">\n      <b>V 0.1.0</b>\n    </inline>\n  </block>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\">\n    <inline\
+      \ color=\"PrimaryForeground\" font-size=\"24px\">\n      <b>Centralized AWS\
+      \ Resilience Assessment Solution</b>\n    </inline>\n  </block>\n  <br/>\n \
+      \ <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"right\">Built by: Subha Kalia,  Ravindra Kori, Beau Henry,\
+      \ Praney Mahajan</block>\n  <br/>\n  <block align=\"right\">\n    If you wish\
+      \ to provide feedback please or report an error please email:\n    <inline color=\"\
+      #61d1d6\">\_</inline>\n    <inline background-color=\"PrimaryBackground\" color=\"\
+      #61d1d6\">\n      <a href=\"mailto:cloud-intelligence-dashboards@amazon.com?subject=CUDOS%20Dashboard%20Feedback\"\
+      \ target=\"_blank\">cloud-intelligence-dashboards@amazon.com</a>\n    </inline>\n\
+      \  </block>\n  <br/>\n  <block align=\"right\">\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\
+      \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\
+      \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tPowered\
+      \ by: Amazon QuickSight, AWS Resilience Hub, Amazon Athena, Amazon S3</block>\n\
+      </text-box>"
+    SheetTextBoxId: d21c1c8b-2534-48dd-be52-257fe25cc161
+  Visuals: []

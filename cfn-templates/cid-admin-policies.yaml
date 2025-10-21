@@ -161,6 +161,7 @@ Resources:
           - s3:GetBucketLocation
           - s3:AbortMultipartUpload
           - s3:ListMultipartUploadParts
+          - s3:PutBucketTagging
           Effect: Allow
           Resource:
           - !Sub arn:${AWS::Partition}:s3:::cid-${AWS::AccountId}-shared
@@ -567,6 +568,7 @@ Resources:
           - s3:PutEncryptionConfiguration
           - s3:PutLifecycleConfiguration
           - s3:PutObject
+          - s3:PutBucketTagging
           Effect: Allow
           Resource:
           - !Sub arn:${AWS::Partition}:s3:::cid-${AWS::AccountId}-shared
@@ -696,18 +698,21 @@ Resources:
           - s3:PutBucketOwnershipControls
           - s3:PutBucketPolicy
           - s3:PutBucketPublicAccessBlock
+          - s3:PutBucketTagging
           - s3:PutBucketVersioning
           - s3:PutEncryptionConfiguration
           - s3:PutLifecycleConfiguration
           - s3:PutObject
           - s3:PutReplicationConfiguration
+          - s3:PutBucketTagging
           Effect: Allow
           Resource:
           - !Sub arn:${AWS::Partition}:s3:::cid-${AWS::AccountId}-local
           - !Sub arn:${AWS::Partition}:s3:::cid-${AWS::AccountId}-local/*
           - !Sub arn:${AWS::Partition}:s3:::cid-${AWS::AccountId}-data-local
           - !Sub arn:${AWS::Partition}:s3:::cid-${AWS::AccountId}-data-local/*
-
+          - !Sub arn:${AWS::Partition}:s3:::cid-${AWS::AccountId}-local-assets
+          - !Sub arn:${AWS::Partition}:s3:::cid-${AWS::AccountId}-local-assets/*
         - Sid: ReadOnly
           Action:
           - cloudformation:GetTemplate

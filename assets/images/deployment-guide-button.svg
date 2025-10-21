@@ -1,0 +1,20 @@
+<svg width="288" height="54" viewBox="0 0 144 27" xmlns="http://www.w3.org/2000/svg">
+  <title>Deployment Guide</title>
+  <defs>
+    <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="a">
+      <stop stop-color="#FFE4B2" offset="0%"/>
+      <stop stop-color="#F79800" offset="100%"/>
+    </linearGradient>
+    <linearGradient x1="45.017%" y1="100%" x2="68.082%" y2="3.32%" id="b">
+      <stop stop-color="#151443" offset="0%"/>
+      <stop stop-color="#6D80B2" offset="100%"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <path d="M2 5v17c0 1.66 1.34 3 3 3h125.5c6.348 0 11.5-5.15 11.5-11.5C142 7.148 136.852 2 130.5 2H5C3.34 2 2 3.34 2 5z" fill="url(#a)"/>
+    <path d="M2 5v17c0 1.66 1.34 3 3 3h125.5c6.348 0 11.5-5.15 11.5-11.5C142 7.148 136.852 2 130.5 2H5C3.34 2 2 3.34 2 5zM0 5c0-2.762 2.233-5 5-5h125.5c7.456 0 13.5 6.043 13.5 13.5 0 7.456-6.05 13.5-13.5 13.5H5c-2.762 0-5-2.232-5-5V5z" fill="#0058A5"/>
+    <circle fill="url(#b)" cx="129.5" cy="13.5" r="9.5"/>
+    <path fill="#FFF" d="M133 13.5l-5 4.5V9"/>
+    <text x="10" y="18" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="black">Deployment Guide</text>
+  </g>
+</svg>

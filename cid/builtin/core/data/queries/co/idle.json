@@ -1,0 +1,137 @@
+{
+    "DatabaseName": "${athena_database_name}",
+    "TableInput": {
+        "Name": "${athena_table_name}",
+        "StorageDescriptor": {
+            "Location": "${s3FolderPath}",
+            "Columns": [
+                {
+                    "Name": "accountid",
+                    "Type": "string"
+                },
+                {
+                    "Name": "resourcearn",
+                    "Type": "string"
+                },
+                {
+                    "Name": "resourceid",
+                    "Type": "string"
+                },
+                {
+                    "Name": "resourcetype",
+                    "Type": "string"
+                },
+                {
+                    "Name": "lastrefreshtimestamp_utc",
+                    "Type": "string"
+                },
+                {
+                    "Name": "lookbackperiodindays",
+                    "Type": "string"
+                },
+                {
+                    "Name": "recommendations_count",
+                    "Type": "string"
+                },
+                {
+                    "Name": "savingsopportunitypercentage",
+                    "Type": "string"
+                },
+                {
+                    "Name": "estimatedmonthlysavingscurrency",
+                    "Type": "string"
+                },
+                {
+                    "Name": "estimatedmonthlysavingsvalue",
+                    "Type": "string"
+                },
+                {
+                    "Name": "savingsopportunitypercentageafterdiscounts",
+                    "Type": "string"
+                },
+                {
+                    "Name": "estimatedmonthlysavingscurrencyafterdiscounts",
+                    "Type": "string"
+                },
+                {
+                    "Name": "estimatedmonthlysavingsvalueafterdiscounts",
+                    "Type": "string"
+                },
+                {
+                    "Name": "utilizationmetricscpumaximum",
+                    "Type": "string"
+                },
+                {
+                    "Name": "utilizationmetricsmemorymaximum",
+                    "Type": "string"
+                },
+                {
+                    "Name": "utilizationmetricsnetworkoutbytespersecondmaximum",
+                    "Type": "string"
+                },
+                {
+                    "Name": "utilizationmetricsnetworkinbytespersecondmaximum",
+                    "Type": "string"
+                },
+                {
+                    "Name": "utilizationmetricsdatabaseconnectionsmaximum",
+                    "Type": "string"
+                },
+                {
+                    "Name": "utilizationmetricsebsvolumereadiopsmaximum",
+                    "Type": "string"
+                },
+                {
+                    "Name": "utilizationmetricsebsvolumewriteiopsmaximum",
+                    "Type": "string"
+                },
+                {
+                    "Name": "utilizationmetricsvolumereadopspersecondmaximum",
+                    "Type": "string"
+                },
+                {
+                    "Name": "utilizationmetricsvolumewriteopspersecondmaximum",
+                    "Type": "string"
+                },
+                {
+                    "Name": "finding",
+                    "Type": "string"
+                },
+                {
+                    "Name": "findingdescription",
+                    "Type": "string"
+                },
+                {
+                    "Name": "errorcode",
+                    "Type": "string"
+                },
+                {
+                    "Name": "errormessage",
+                    "Type": "string"
+                },
+                {
+                    "Name": "tags",
+                    "Type": "string"
+                }
+            ],
+            "InputFormat": "org.apache.hadoop.mapred.TextInputFormat",
+            "NumberOfBuckets": -1,
+            "OutputFormat": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+            "Parameters": {},
+            "SerdeInfo": {
+                "Parameters": {
+                    "quoteChar": "\"",
+                    "separatorChar": ",",
+                    "serialization.format": "1"
+                },
+                "SerializationLibrary": "org.apache.hadoop.hive.serde2.OpenCSVSerde"
+            }
+        },
+        "Parameters": {
+            "EXTERNAL": "TRUE",
+            "skip.header.line.count": "1"
+        },
+        "PartitionKeys": [],
+        "TableType": "EXTERNAL_TABLE"
+    }
+}

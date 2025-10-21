@@ -2,6 +2,22 @@
 
 # CUDOS v5
 
+# CUDOS - 5.6.1
+
+* **Executive: Trends**: Fix sort order in Amortized Cost by Account visual. Excluded unused RI and SP costs in the current month.
+* **Databases**: Excluded unused RI costs in the current month.
+
+# CUDOS - 5.6
+
+* **Executive: Trends**: Sheet 'MoM Trends' renamed to 'Trends'. Added control Trends Type which allows to switch between Monthly, Weekly and Daily Trends. Added control Trends Time Range which allows to adjust a time period when switching between Trend Types. Changed positioning of Product and Account Trends visuals to effectively present more than 3 trends periods. 
+* **Databases**: Added 'Amazon ElastiCache Redis Migration to Valkey - Adoption Tracking and Potential Savings' section with visuals 'ElastiCache Redis vs Valkey: Cost Breakdown', 'ElastiCache Valkey: Achieved Cost Efficiency Gains vs Redis', 'Monthly Cost Savings Opportunities with Migration to Valkey' and 'Redis Cache Instances and Serverlless Cache: Cost Savings Opportunities with migration to Valkey' to track migration progress to Valkey.
+* **Taxonomy Explorer**: 'TAGSplorer sheet complexly redesigned and renamed to Taxonomy Explorer. Now it allows to interactively explore cost and usage details across 2 Taxonomy Dimensions such as tags and account level mappings which added to the dashboard via new [Add Organizational Taxonomy](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/add-org-taxonomy.html) capability. 
+* **AI/ML**: Added 'Amazon Bedrock Model Unit Cost' and 'Amazon Bedrock Cost per Legal Entity' visuals . Updated Bedrock UsageType Group for more accurate usage type categorization. Added Model Name calculated field to group different model ids under the same name on 'Amazon Bedrock Daily Cost per Resource' visual.
+* **Amazon S3 Summary**: Added 'Group By' control which allows to switch between S3 Operation and S3 UsageType Group in 'Total Cost per Bucket by Operation', 'Daily Cost Bucket Explorer' and 'Daily Storage Bucket Explorer' visuals.
+* **Analytics**: Added new section AWS Glue with 'AWS Glue Spend per Account','AWS Glue Spend per UsageType Group', 'AWS Glue Spend per Usage Type' and 'AWS Glue Detailed Resource View'  visuals.
+* **Analytics**: Added new section Amazon Elastic MapReduce (EMR) with 'EMR Spend per Account', 'EMR Spend Per UsageType Group', 'EMR Spend Per UsageType Sub Group', 'EMR Spend Per Processor Type' 'EMR Daily Cost per Usage Type Sub Group' and 'EMR Detailed Resource View (Top 20)' visuals.
+* **Executive: RI/SP Summary**: Added Amazon ElastiCache, OpenSearch, Redshift, DynamoDB and MemoryDB services into 'Savings Option for Compute by Owner / Consumer' visual
+
 # CUDOS - 5.5
 
 * **DynamoDB**: Refactored visuals to improve user experience and simplify navigation. *'DynamoDB Accounts by Category'* visuals replaced with 'DynamoDB Cost per Account' and 'DynamoDB Cost per Usage Type Group'
@@ -52,7 +68,7 @@
 * **Databases:** Fix for Normalized Instance Hours not shown on RI Coverage and Daily Elasticity visuals.
 
 # CUDOS - 5.1.0
-**Important!** If you have CUDOS v5.0.0 deployed you can use [standard update process](https://catalog.workshops.aws/awscid/en-US/dashboards/update). If you have previous version deployed follow [this guide](https://catalog.workshops.aws/awscid/en-US/faqs#how-to-update-to-cudos-v5-if-i-have-previous-version-of-cudos-installed) to deploy CUDOS v5. You can check version of your currently deployed dashboard on the About tab.
+**Important!** If you have CUDOS v5.0.0 deployed you can use [standard update process](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/update-dashboards.html). If you have previous version deployed follow [this guide](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/faq.html#how-to-update-to-cudos-v5-if-i-have-previous-version-of-cudos-installed) to deploy CUDOS v5. You can check version of your currently deployed dashboard on the About tab.
 
 **Changes**
 * **Executive: Billing Summary**: Added control to group Invoice and Amortized Spend by Payer Account, Charge Type Group and Service Category from [FOCUS](https://focus.finops.org/#specification) specification.
@@ -66,7 +82,7 @@
 * **Storage**: Changed 'Volume Explorer: TOP 50 EBS Volume Details' filter from previous month to last 30 days.
 
 # CUDOS - 5.0.0
-**Important!** Learn more about CUDOS v5 and how to deploy in our [FAQ](https://catalog.workshops.aws/awscid/en-US/faqs#cudos-v5-faqs) page.
+**Important!** Learn more about CUDOS v5 and how to deploy in our [FAQ](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/faq.html#cudos-v5-faqs) page.
 
 **Changes**
 * Re-designed dataset structure. All datasets used by CUDOS v5 use fast QuickSight SPICE storage which reduces time required to load visuals. CUDOS v5 is using 3 datasets:

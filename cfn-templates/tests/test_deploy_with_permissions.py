@@ -293,7 +293,9 @@ def create_cid_as_finops(update):
             {"ParameterKey": 'QuickSightUser', "ParameterValue": get_qs_user()},
             {"ParameterKey": 'CURVersion', "ParameterValue": '2.0'},
             {"ParameterKey": 'DeployCUDOSv5', "ParameterValue": 'yes'},
-            {"ParameterKey": 'LambdaLayerBucketPrefix', "ParameterValue": TMP_BUCKET_PREFIX},
+            {"ParameterKey": 'CreateLocalAssetsBucket', "ParameterValue": 'yes'},
+            {"ParameterKey": 'ReferenceAssetsBucket', "ParameterValue": TMP_BUCKET},
+
         ],
         Capabilities=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
     )

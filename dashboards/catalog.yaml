@@ -7,6 +7,7 @@ Resources:
   - Url: graviton-savings-dashboard/graviton_savings_dashboard.yaml
   - Url: graviton-savings-dashboard/graviton_legacy.yaml # deprecated
   - Url: amazon-connect/amazon-connect.yaml
+  - Url: euc/euc-dashboard.yaml
   - Url: support-cases-radar/support-cases-radar.yaml
   - Url: health-events/health-events.yaml
   - Url: scad-containers-cost-allocation/scad-containers-cost-allocation.yaml
@@ -14,3 +15,10 @@ Resources:
   - Url: focus/focus.yaml
   - Url: cora/cora.yaml
   - Url: aws-budgets/aws-budgets.yaml
+  - Url: cudos/CUDOS-v5.yaml
+  - Url: kpi_dashboard/kpi_dashboard.yaml
+  - Url: cost-intelligence/cost-intelligence.yaml
+  - Url: resilience-vue/resilience-vue.yaml
+  - Url: data-collection-monitor/data-collection-monitor.yaml
+  - Url: tao/tao.yaml
+  - Url: media-services-insights/msih.yaml

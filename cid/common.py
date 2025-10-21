@@ -6,7 +6,7 @@ import functools
 import webbrowser
 from string import Template
 from typing import Dict
-from pkg_resources import resource_string
+from importlib import resources
 from importlib.metadata import entry_points
 from functools import cached_property
 
@@ -18,8 +18,9 @@ from botocore.exceptions import ClientError, NoCredentialsError, CredentialRetri
 from cid import utils
 from cid.base import CidBase
 from cid.plugin import Plugin
-from cid.utils import get_parameter, get_parameters, set_parameters, unset_parameter, get_yesno_parameter, cid_print, isatty, merge_objects, IsolatedParameters
+from cid.utils import get_parameter, get_parameters, set_parameters, unset_parameter, get_yesno_parameter, cid_print, isatty, merge_objects, IsolatedParameters, set_defaults
 from cid.helpers.account_map import AccountMap
+from cid.helpers.parameter_store import ParametersController
 from cid.helpers import Athena, S3, IAM, CUR, ProxyCUR, Glue, QuickSight, Dashboard, Dataset, Datasource, csv2view, Organizations, CFN
 from cid.helpers.quicksight.template import Template as CidQsTemplate
 from cid._version import __version__
@@ -125,10 +126,15 @@ class Cid():
         """ get/create a cur2 """
         return self.get_cur('2')
 
-    def get_cur(self, target_cur_version):
+    @cached_property
+    def parameters_controller(self):
+        """ get/create parameters_controller """
+        return ParametersController(self.athena)
+
+    def get_cur(self, target_cur_version=None):
         """ get a cur """
         cur_version = self.cur.version
-        if cur_version != target_cur_version or get_parameters().get('use-cur-proxy'):
+        if (target_cur_version and cur_version != target_cur_version) or get_parameters().get('use-cur-proxy'):
             return ProxyCUR(self.cur, target_cur_version=target_cur_version)
         return self.cur
 
@@ -164,7 +170,7 @@ class Cid():
         account_map = AccountMap(
             self.base.session,
             self.athena,
-            self.cur, # can be any CUR. But it is only needed for trends and dummy
+            self.get_cur, # can be any CUR. But it is only needed for trends and dummy
         )
         return account_map.create_or_update(name)
 
@@ -276,16 +282,22 @@ class Cid():
         export_analysis(self.qs, self.athena, glue=self.glue)
 
     def track(self, action, dashboard_id):
-        """ Send dashboard_id and account_id to adoption tracker """
+        """ Send dashboard_id and account_id to CID adoption tracker """
         method = {'created':'PUT', 'updated':'PATCH', 'deleted': 'DELETE'}.get(action, None)
         if not method:
             logger.debug(f"This will not fail the deployment. Logging action {action} is not supported. This issue will be ignored")
             return
-        endpoint = 'https://okakvoavfg.execute-api.eu-west-1.amazonaws.com/'
+        endpoint = 'https://okakvoavfg.execute-api.eu-west-1.amazonaws.com/' # AWS Managed
+        if os.environ.get('AWS_DEPLOYMENT_TYPE'):
+            deployment_type = os.environ.get('AWS_DEPLOYMENT_TYPE')
+        elif os.environ.get('AWS_EXECUTION_ENV', '').startswith('AWS_Lambda'):
+            deployment_type = 'Lambda'
+        else:
+            deployment_type = 'CID'
         payload = {
             'dashboard_id': dashboard_id,
             'account_id': self.base.account_id,
-            action + '_via': 'Lambda' if os.environ.get('AWS_EXECUTION_ENV', '').startswith('AWS_Lambda') else 'CID',
+            action + '_via': deployment_type,
         }
         try:
             res = requests.request(
@@ -313,50 +325,73 @@ class Cid():
             self.load_catalog(catalog_url)
         if get_parameters().get('resources'):
             source = get_parameters().get('resources')
-            self.load_resource_file(source)
+            self.load_resource_file(source, os.getcwd())
         self.resources = self.resources_with_global_parameters(self.resources)
 
-    def load_resource_file(self, source):
+    def resolve_relative_path(self, source, parent_source=None):
+        if not source.startswith('https://'): # it is a relative path
+            if not parent_source:
+                parent_source = os.getcwd()
+                logger.error(f'Parent not provided to get {source}. trying current folder {parent_source}')
+            if parent_source.startswith('https://'):
+                source = urllib.parse.urljoin(parent_source, source)
+            else: # it is a local file, so expand that
+                parent_source = os.path.abspath(os.path.expanduser(parent_source))
+                if os.path.isfile(parent_source):
+                    parent_source = os.path.dirname(parent_source)
+                source = os.path.abspath(os.path.join(parent_source, source))
+                if not os.path.isfile(source):
+                    raise CidCritical(f'Cannot find {source} file')
+        return source
+
+
+    def load_text_file(self, source, parent_source=None):
+        ''' return a text from local or remote file
+        '''
+        source = self.resolve_relative_path(source, parent_source)
+        if source.startswith('https://'):
+            return self.get_page(source).text
+        else:
+            with open(source, encoding='utf-8') as file_:
+                return file_.read()
+
+
+    def load_resource_file(self, source, parent_source=None):
         ''' load additional resources from resource file
         '''
-        logger.debug(f'Loading resources from {source}')
+        logger.debug(f'Loading resources from {source} from {parent_source}')
         resources = {}
         try:
-            if source.startswith('https://'):
-                resources = yaml.safe_load(self.get_page(source).text)
-                if not isinstance(resources, dict):
-                    raise CidCritical(f'Failed to load {source}. Got {type(resources)} ({repr(resources)[:150]}...)')
-            else:
-                with open(source, encoding='utf-8') as file_:
-                    resources = yaml.safe_load(file_)
+            text = self.load_text_file(source, parent_source)
+            resources = yaml.safe_load(text)
         except Exception as exc:
             logger.warning(f'Failed to load resources from {source}: {exc}')
             return
         resources.get('views', {}).pop('account_map', None) # Exclude account map as it is a special view
+        for groups_of_resources in resources.values(): # add source metadata to each loaded resource
+            if isinstance(groups_of_resources, dict):
+                for res in groups_of_resources.values():
+                    res['source'] = self.resolve_relative_path(source, parent_source)
         self.resources = merge_objects(self.resources, resources, depth=1)
 
     def load_catalog(self, catalog_url):
         ''' load additional resources from catalog
         '''
         try:
-            if 'https://' in catalog_url:
-                text = self.get_page(catalog_url).text
-            else:
-                with open(catalog_url, encoding='utf-8') as catalog_file:
-                    text = catalog_file.read()
+            text = self.load_text_file(catalog_url, os.getcwd())
             catalog = yaml.safe_load(text)
         except (requests.exceptions.RequestException, yaml.error.MarkedYAMLError) as exc:
             logger.warning(f'Failed to load a catalog url: {exc}')
             logger.debug(exc, exc_info=True)
             return
         for resource_ref in catalog.get('Resources', []):
-            url = urllib.parse.urljoin(catalog_url, resource_ref.get("Url"))
-            self.load_resource_file(url)
+            self.load_resource_file(resource_ref.get("Url"), catalog_url)
 
 
     def get_template_parameters(self, parameters: dict, param_prefix: str='', others: dict=None):
         """ Get template parameters. """
         params = get_parameters()
+        others = others or {}
         for key, value in parameters.items():
             logger.debug(f'reading template parameter: {key} / {value}')
             prefix = '' if value.get('global') else param_prefix
@@ -368,6 +403,26 @@ class Cid():
                     message=f"Required parameter: {key} ({value.get('description')})",
                     choices=self.cur.tag_and_cost_category_fields + ["'none'"],
                 )
+            elif isinstance(value, dict) and value.get('type') == 'tags_json': # a json
+                if get_parameters().get(prefix + key): # priority to user input
+                    params[key] = get_parameters().get(prefix + key)
+                    if isinstance(params[key], str):
+                        params[key] = params[key].split(',')
+                elif not utils.isatty():
+                    params[key] = "'{}'"
+                else:
+                    if 'query' not in value:
+                        raise CidCritical(f'Failed fetching parameter {prefix}{key}: parameter with type Athena must have query value.')
+                    query = Template(value['query']).safe_substitute(params|others)
+                    try:
+                        res_list = self.athena.query(query)
+                    except (self.athena.client.exceptions.ClientError, CidError, CidCritical) as exc:
+                        raise CidCritical(f'Failed fetching parameter {prefix}{key}: {exc}.') from exc
+                    options = ['-'.join(res) for res in (res_list or [])]
+                    params[key] = self.generic_tags_json(
+                        param_name=key,
+                        options=options,
+                    )
             elif isinstance(value, dict) and value.get('type') == 'athena':
                 if get_parameters().get(prefix + key): # priority to user input
                     params[key] = get_parameters().get(prefix + key)
@@ -380,12 +435,21 @@ class Cid():
                     except (self.athena.client.exceptions.ClientError, CidError, CidCritical) as exc:
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: {exc}.') from exc
                     if not res_list:
-                        raise CidCritical(f'Failed fetching parameter {prefix}{key}, {value}. Athena returns empty results. {value.get("error")}')
-                    elif len(res_list) == 1:
-                        params[key] = '-'.join(res_list[0])
+                        raise CidCritical(f'Failed fetching parameter {prefix}{key}, {value}. Athena returns empty results. {value.get("error", "")}')
+                    options = ['-'.join(res) for res in res_list]
+                    default = value.get('default', '{default not provided}')
+                    if len(options) == 1:
+                        # silently taking the 1st available option
+                        params[key] = options[0]
+                    elif not utils.isatty():
+                        if default in options:
+                            # silently taking the default option if we cannot ask user
+                            params[key] = default
+                        else:
+                            # silently taking the first option
+                            params[key] = sorted(options)[0]
                     else:
-                        options = ['-'.join(res) for res in res_list]
-                        default = value.get('default')
+                        # asking user
                         params[key] = get_parameter(
                             param_name=prefix + key,
                             message=f"Required parameter: {key} ({value.get('description')})",
@@ -413,6 +477,27 @@ class Cid():
     def deploy(self, dashboard_id: str=None, recursive=True, update=False, **kwargs):
         """ Deploy Dashboard Command"""
         self._deploy(dashboard_id, recursive, update, **kwargs)
+
+
+    def load_default_parameters(self):
+        defaults = self.parameters_controller.load_parameters(
+            context=get_parameters().get('dashboard-id')
+        )
+        if defaults:
+            logger.debug(f'loaded default from Athena {defaults}')
+            set_defaults(defaults)
+
+    def dump_default_parameters(self):
+        stop_list = ['profile-name', 'region', 'aws-access-key-id', 'aws-secret-access-key', 'aws-session-token', 'athena-database', 'athena-workgroup']
+        current_defaults = get_parameters()
+        for key in list(current_defaults.keys()):
+            if key in stop_list:
+                del current_defaults[key]
+        logger.trace(f'dumping parameters {current_defaults}')
+        self.parameters_controller.dump_parameters(
+            current_defaults,
+            context=get_parameters().get('dashboard-id')
+        )
 
 
     def ensure_subscription(self):
@@ -472,6 +557,8 @@ class Cid():
             print('No dashboard selected')
             return
 
+        self.load_default_parameters()
+
         # Get selected dashboard definition
         dashboard_definition = self.get_definition("dashboard", id=dashboard_id)
         dashboard = None
@@ -509,23 +596,19 @@ class Cid():
                 raise CidCritical(exc) # Cannot proceed without a valid template
             dashboard_definition['sourceTemplate'] = source_template
             print(f'\nLatest template: {source_template.arn}/version/{source_template.version}')
-        elif dashboard_definition.get('data'):
-            data = dashboard_definition.get('data')
-            params = self.get_template_parameters(dashboard_definition.get('parameters', dict()))
+        elif dashboard_definition.get('data') or dashboard_definition.get('file') or dashboard_definition.get('url'):
+            data = self.get_data_from_definition(dashboard_definition)
             if isinstance(data, dict):
-                #TODO: need to apply template to data structure as well
-                data = yaml.safe_dump(data)
-            if isinstance(data, str):
-                data = Template(data).safe_substitute(params)
+                data = yaml.safe_dump(data, width=100000) # dump without line breaks
+            params = self.get_template_parameters(dashboard_definition.get('parameters', dict()))
+            data = Template(data).safe_substitute(params)
             dashboard_definition['definition'] = yaml.safe_load(data)
-        elif dashboard_definition.get('file'):
-            raise NotImplementedError('File option is not implemented')
         else:
             raise CidCritical('Definition of dashboard resource must contain data or template_id')
 
         compatible = self.check_dashboard_version_compatibility(dashboard_id)
         if not recursive and compatible == False:
-            if get_yesno_parameter(
+            if not get_yesno_parameter(
                 param_name=f'confirm-recursive',
                 message=f'This is a major update and require recursive action. This could lead to the loss of dataset customization. Continue anyway?',
                 default='yes'):
@@ -533,20 +616,39 @@ class Cid():
             logger.info("Switch to recursive mode")
             recursive = True
 
+        logger.debug(f'found  dashboard_datasets= {dashboard_datasets}')
+
         if recursive:
-            self.create_datasets(required_datasets_names, dashboard_datasets, recursive=recursive, update=update)
+            logger.info('creating datasets')
+            dashboard_datasets = self.create_datasets(required_datasets_names, known_datasets=dashboard_datasets, recursive=recursive, update=update)
 
         # Find datasets for template or definition
         if not dashboard_definition.get('datasets'):
             dashboard_definition['datasets'] = {}
 
+        logger.debug(f'found  dashboard_datasets= {dashboard_datasets}')
+
         for dataset_name in required_datasets_names:
             dataset = None
-            # First try to find the dataset with the id
-            try:
-                dataset = self.qs.describe_dataset(id=dataset_name)
-            except Exception as exc:
-                logger.debug(f'Failed to describe_dataset {dataset_name} {exc}')
+            # First try existing datasets
+            if dashboard_datasets.get(dataset_name):
+                dataset = self.qs.describe_dataset(id=dashboard_datasets.get(dataset_name), no_cache=True)
+
+            if not isinstance(dataset, Dataset):
+                # Second chance:  try to find the dataset with the id from resources
+                try:
+                    _ds_id = self.resources['datasets'].get(dataset_name, {}).get('data', {}).get('DataSetId')
+                    if _ds_id:
+                        dataset = self.qs.describe_dataset(id=_ds_id, no_cache=True)
+                except Exception as exc:
+                    logger.debug(f'Failed to describe_dataset {dataset_name} {exc}')
+
+            if not isinstance(dataset, Dataset):
+                # Third chance:  try to find the dataset with the id that is the name
+                try:
+                    dataset = self.qs.describe_dataset(id=dataset_name, no_cache=True)
+                except Exception as exc:
+                    logger.debug(f'Failed to describe_dataset {dataset_name} {exc}')
 
             if isinstance(dataset, Dataset):
                 logger.debug(f'Found dataset {dataset_name} with id match = {dataset.arn}')
@@ -580,14 +682,18 @@ class Cid():
 
                 if not matching_datasets:
                     reco = ''
-                    logger.warning(f'Dataset {dataset_name} is not found')
-                    if utils.exec_env()['shell'] == 'lambda':
-                        # We are in lambda
-                        reco = 'You can try deleting existing dataset and re-run.'
-                    else:
-                        # We are in command line mode
-                        reco = 'Please retry with --update "yes" --force --recursive flags.'
-                    raise CidCritical(f'Failed to find a Dataset "{dataset_name}" with required fields. ' + reco)
+                    new_datasets = self.create_datasets([dataset_name], known_datasets=dashboard_datasets, recursive=recursive, update=update)
+                    if not new_datasets:
+                        logger.warning(f'Dataset {dataset_name} is not found.')
+                        if utils.exec_env()['shell'] == 'lambda':
+                            # We are in lambda
+                            reco = 'You can try deleting existing dataset and re-run.'
+                        else:
+                            # We are in command line mode
+                            reco = 'Please retry with --update "yes" --force --recursive flags.'
+                        raise CidCritical(f'Failed to find a Dataset "{dataset_name}" with required fields. ' + reco)
+                    _ds_id = self.resources['datasets'].get(dataset_name, {}).get('data', {}).get('DataSetId')
+                    dashboard_definition['datasets'][dataset_name] = f'arn:{self.base.partition}:quicksight:{self.base.region}:{self.base.account_id}:dataset/{_ds_id}'
                 elif len(matching_datasets) >= 1:
                     if len(matching_datasets) > 1:
                         # FIXME: propose a choice?
@@ -636,6 +742,7 @@ class Cid():
             set_parameters({'share-method': 'account'})
             self.share(dashboard_id)
 
+        self.dump_default_parameters()
         return dashboard_id
 
 
@@ -729,6 +836,7 @@ class Cid():
     def delete(self, dashboard_id, **kwargs):
         """Delete QuickSight dashboard"""
 
+        # select
         if not dashboard_id:
             if not self.qs.dashboards:
                 print('No deployed dashboards')
@@ -737,27 +845,28 @@ class Cid():
             if not dashboard_id:
                 return
 
+        # save datasets to destroy later
         if self.qs.dashboards and dashboard_id in self.qs.dashboards:
             datasets = self.qs.discover_dashboard(dashboard_id).datasets # save for later
         else:
             dashboard_definition = self.get_definition("dashboard", id=dashboard_id)
             datasets = {d: None for d in (dashboard_definition or {}).get('dependsOn', {}).get('datasets', [])}
 
+        # delete dash
         try:
-            # Execute query
-            print('Deleting dashboard')
+            cid_print('Deleting dashboard')
             self.qs.delete_dashboard(dashboard_id=dashboard_id)
-            print(f'Dashboard {dashboard_id} deleted')
+            cid_print(f'Dashboard {dashboard_id} deleted')
             self.track('deleted', dashboard_id)
         except self.qs.client.exceptions.ResourceNotFoundException:
-            print('not found')
+            cid_print('not found')
         except Exception as e:
             # Catch exception and dump a reason
             logger.debug(e, exc_info=True)
-            print(f'failed with an error message: {e}')
+            cid_print(f'failed with an error message: {e}')
             return dashboard_id
 
-        print('Processing dependencies')
+        cid_print('Processing dependencies')
         for dataset_name, dataset_id in datasets.items():
             self.delete_dataset(name=dataset_name, id=dataset_id)
 
@@ -812,7 +921,7 @@ class Cid():
             logger.info(f'View {view_name} is not managed by CID. Skipping.')
             return False
         logger.info(f'Deleting view "{view_name}"')
-        definition = self.get_definition("view", name=view_name)
+        definition = self.get_definition("view", name=view_name, noparams=True)
         if not definition:
             logger.info(f'Definition not found for view: "{view_name}"')
             return False
@@ -833,9 +942,9 @@ class Cid():
                 print(f'Deleting view:  {view_name}')
                 self.athena.delete_view(view_name)
 
-        # manage dependancies
-        for dependancy_view in list(set(definition.get('dependsOn', {}).get('views', []))):
-            self.delete_view(dependancy_view)
+        # manage dependencies
+        for dependency_view in list(set(definition.get('dependsOn', {}).get('views', []))):
+            self.delete_view(dependency_view)
 
         return True
 
@@ -851,7 +960,7 @@ class Cid():
                 if dataset_id not in references:
                     references[dataset_id] = []
                 references[dataset_id].append(dashboard.id)
-        for dataset in self.qs._datasets.values():
+        for dataset in list(self.qs._datasets.values()):
             if dataset.id in references:
                 cid_print(f'Dataset {dataset.name} ({dataset.id}) is in use ({", ".join(references[dataset.id])})')
                 continue
@@ -933,10 +1042,9 @@ class Cid():
                             param_name='folder-name',
                             message='Please enter the folder name to create'
                         )
-                        folder_permissions_tpl = Template(resource_string(
-                            package_or_requirement='cid.builtin.core',
-                            resource_name=f'data/permissions/folder_permissions.json',
-                        ).decode('utf-8'))
+                        folder_permissions_tpl = Template(
+                            (resources.files('cid.builtin.core') / 'data/permissions/folder_permissions.json').read_text()
+                        )
                         columns_tpl = {
                             'PrincipalArn': self.qs.get_principal_arn()
                         }
@@ -972,10 +1080,9 @@ class Cid():
             columns_tpl = {
                 'PrincipalArn': principal_arn
             }
-            dashboard_permissions_tpl = Template(resource_string(
-                package_or_requirement='cid.builtin.core',
-                resource_name=template_filename,
-            ).decode('utf-8'))
+            dashboard_permissions_tpl = Template(
+                (resources.files('cid.builtin.core') / template_filename).read_text()
+            )
             dashboard_permissions = json.loads(dashboard_permissions_tpl.safe_substitute(columns_tpl))
             dashboard_params = {
                 "GrantPermissions": [
@@ -1000,10 +1107,9 @@ class Cid():
             if share_method == 'account':
                 logger.info(f'Sharing datasets/datasources with an account is not supported, skipping')
             else:
-                data_set_permissions_tpl = Template(resource_string(
-                    package_or_requirement='cid.builtin.core',
-                    resource_name=f'data/permissions/data_set_permissions.json',
-                ).decode('utf-8'))
+                data_set_permissions_tpl = Template(
+                    (resources.files('cid.builtin.core') / 'data/permissions/data_set_permissions.json').read_text()
+                )
                 data_set_permissions = json.loads(data_set_permissions_tpl.safe_substitute(columns_tpl))
 
                 _datasources: Dict[str, Datasource] = {}
@@ -1018,10 +1124,9 @@ class Cid():
                         if not _datasources.get(_datasource.id):
                             _datasources.update({_datasource.id: _datasource})
 
-                data_source_permissions_tpl = Template(resource_string(
-                    package_or_requirement='cid.builtin.core',
-                    resource_name=f'data/permissions/data_source_permissions.json',
-                ).decode('utf-8'))
+                data_source_permissions_tpl = Template(
+                    (resources.files('cid.builtin.core') / f'data/permissions/data_source_permissions.json').read_text()
+                )
                 data_source_permissions = json.loads(data_source_permissions_tpl.safe_substitute(columns_tpl))
                 for k, v in _datasources.items():
                     logger.info(f'Sharing data source "{v.name}" ({k})')
@@ -1099,6 +1204,7 @@ class Cid():
             logger.debug(exc, exc_info=True)
             print(f'failed with an error message: {exc}')
 
+        self.dump_default_parameters()
         return dashboard_id
 
 
@@ -1112,11 +1218,26 @@ class Cid():
             if _ds_id:
                 self.qs.describe_dataset(_ds_id)
 
-        found_datasets = utils.intersection(required_datasets, [v.name for v in self.qs.datasets.values()])
+        existing_datasets = {}
+        try:
+            existing_datasets = {v['Name']: v['Id'] for v in self.qs.list_data_sets()}
+            found_datasets = utils.intersection(required_datasets, existing_datasets.keys())
+            for dataset_name in found_datasets:
+                if dataset_name not in known_datasets:
+                    known_datasets[dataset_name] = found_datasets[dataset_name]
+        except:
+            found_datasets = utils.intersection(required_datasets, known_datasets.keys())
         missing_datasets = utils.difference(required_datasets, found_datasets)
 
+
+        logger.debug('known_datasets = %s', known_datasets)
+        logger.debug('found_datasets = %s', found_datasets)
+        logger.debug('missing_datasets = %s', missing_datasets)
+
+        update = update or get_parameters().get('update')
         # Update existing datasets
         if update:
+            logger.debug('updating datasets')
             for dataset_name in found_datasets[:]:
                 if dataset_name in known_datasets.keys():
                     _found_dsc = self.qs.get_datasets(id=known_datasets.get(dataset_name))
@@ -1136,12 +1257,12 @@ class Cid():
                             choices=[v.id for v in datasets],
                             default=datasets[0].id
                         )
-                    known_datasets.update({dataset_name: dataset_id})
-                print(f'Updating dataset: "{dataset_name}"')
+                    known_datasets[dataset_name] = dataset_id
+                cid_print(f'Updating dataset: "{dataset_name}"')
                 try:
                     dataset_definition = self.get_definition("dataset", name=dataset_name)
                     if not dataset_definition:
-                        print(f'Dataset definition not found, skipping {dataset_name}')
+                        cid_print(f'Dataset definition not found, skipping {dataset_name}')
                         continue
                 except Exception as e:
                     logger.critical('dashboard definition is broken, unable to proceed.')
@@ -1161,17 +1282,18 @@ class Cid():
 
 
         # Look by DataSetId from dataset_template file
-        if len(missing_datasets):
+        if missing_datasets:
             # Look for previously saved deployment info
-            print('\nLooking by DataSetId defined in template...', end='')
+            cid_print('Looking by DataSetId defined in template...')
             for dataset_name in missing_datasets[:]:
                 try:
                     dataset_definition = self.get_definition(type='dataset', name=dataset_name, noparams=True)
-                    raw_template = self.get_data_from_definition('dataset', dataset_definition)
+                    raw_template = self.get_data_from_definition(dataset_definition)
                     if raw_template:
                         ds = self.qs.describe_dataset(raw_template.get('DataSetId'))
                         if isinstance(ds, Dataset) and ds.name == dataset_name:
                             missing_datasets.remove(dataset_name)
+                            known_datasets[dataset_name] = ds.id
                             print(f"\n\tFound {dataset_name} as {raw_template.get('DataSetId')}")
 
                 except FileNotFoundError:
@@ -1188,9 +1310,20 @@ class Cid():
             print('complete')
 
         # If there still datasets missing try automatic creation
-        if len(missing_datasets):
+        if missing_datasets:
             missing_str = ', '.join(missing_datasets)
-            print(f'\nThere are still {len(missing_datasets)} datasets missing: {missing_str}')
+            cid_print(f'\nThere are still {len(missing_datasets)} datasets missing: {missing_str}')
+
+            # get rls status of existing datasets
+            found_dataset_objects = [self.qs.describe_dataset(ds_id) for ds_id in found_datasets]
+            rls_dataset_arns = [ds.rls_arn for ds in found_dataset_objects if ds and ds.rls_arn]
+            if rls_dataset_arns:
+                rls_dataset_arn = max(set(rls_dataset_arns), key=rls_dataset_arns.count) #get the most frequent
+                if not get_parameters().get('rls-dataset-id') and not get_parameters().get('rls'):
+                    rls_dataset_id = rls_dataset_arn.split('/')[-1]
+                    cid_print('Existing datasets are linked to RLS {rls_dataset_id}. We will reuse it for {missing_str} datasets.')
+                    set_parameters({'rls-dataset-id': rls_dataset_id})
+
             for dataset_name in missing_datasets[:]:
                 dataset_id = known_datasets.get(dataset_name)
                 print(f'Creating dataset: {dataset_name}')
@@ -1206,6 +1339,7 @@ class Cid():
                 try:
                     if self.create_or_update_dataset(dataset_definition, dataset_id, recursive=recursive, update=update):
                         missing_datasets.remove(dataset_name)
+                        known_datasets[dataset_name] = dataset_id
                         print(f'Dataset "{dataset_name}" created')
                     else:
                         print(f'Dataset "{dataset_name}" creation failed, collect debug log for more info')
@@ -1218,12 +1352,12 @@ class Cid():
                     raise
 
         # Last chance to enter DataSetIds manually by user
-        if len(missing_datasets):
+        if missing_datasets:
             missing_str = '\n - '.join(missing_datasets)
             print(f'\nThere are still {len(missing_datasets)} datasets missing: \n - {missing_str}')
             print(f"\nCan't move forward without full list, please manually create datasets and provide DataSetIds")
             # Loop over the list unless we get it empty
-            while len(missing_datasets):
+            while missing_datasets:
                 # Make a copy and then get an item from the list
                 dataset_name = missing_datasets.copy().pop()
                 _id = get_parameter(
@@ -1239,6 +1373,7 @@ class Cid():
                         continue
                     self.qs._datasets.update({dataset_name: _dataset})
                     missing_datasets.remove(dataset_name)
+                    known_datasets[dataset_name] = _dataset.id
                     print(f'\tFound valid "{_dataset.name}" dataset, using')
                     logger.info(f'\tFound valid "{_dataset.name}" ({_dataset.id}) dataset, using')
                 except Exception as e:
@@ -1246,29 +1381,22 @@ class Cid():
                     print(f"\tProvided DataSetId '{id}' can't be found\n")
                     unset_parameter(f'{dataset_name}-dataset-id')
                     continue
-            print('\n')
+        return known_datasets
 
-    def get_data_from_definition(self, asset_type, definition):
+
+    def get_data_from_definition(self, definition):
         """ Returns an json object for json resource file and a text for all other definitions
         """
-        subfolder = {
-            'dataset': 'datasets',
-            'view': 'queries',
-            'table': 'queries',
-        }.get(asset_type)
         data = None
-        file_name = definition.get('File')
-        if definition.get('Data'):
-            data = definition.get('Data')
-        elif definition.get('data'):
-            data = definition.get('data')
-        elif file_name:
-            text = resource_string(
-                definition.get('providedBy'), f'data/{subfolder}/{file_name}'
-            ).decode('utf-8')
-            if file_name.endswith('.json') or file_name.endswith('.jsn'):
+        if definition.get('Data') or definition.get('data'):
+            data = definition.get('Data') or definition.get('data')
+        elif definition.get('url') or definition.get('File') or definition.get('file'):
+            source = definition.get('url') or definition.get('File') or definition.get('file')
+            assert definition.get('source'), str(definition)
+            text =  self.load_text_file(source, definition.get('source'))
+            if source.endswith('.json') or source.endswith('.jsn'):
                 data = json.loads(text)
-            elif file_name.endswith('.yaml') or file_name.endswith('.yml'):
+            elif source.endswith('.yaml') or source.endswith('.yml'):
                 data = yaml.safe_load(text)
             else:
                 data = text
@@ -1349,7 +1477,7 @@ class Cid():
 
     def create_or_update_dataset(self, dataset_definition: dict, dataset_id: str=None,recursive: bool=True, update: bool=False) -> bool:
         # Read dataset definition from template
-        data = self.get_data_from_definition('dataset', dataset_definition)
+        data = self.get_data_from_definition(dataset_definition)
         template = Template(json.dumps(data))
         cur1_required = dataset_definition.get('dependsOn', dict()).get('cur') or dataset_definition.get('dependsOn', dict()).get('cur1')
         cur2_required = dataset_definition.get('dependsOn', dict()).get('cur2')
@@ -1509,7 +1637,78 @@ class Cid():
         if dataset_id:
             compiled_dataset.update({'DataSetId': dataset_id})
 
-        found_dataset = self.qs.describe_dataset(compiled_dataset.get('DataSetId'))
+        # patch dataset for tags
+        cur_tags_json_required = False
+        for dep_view_name in dataset_definition.get('dependsOn', {}).get('views', []):
+            try:
+                tags_type = self.resources['views'][dep_view_name]['dependsOn']['tags']
+            except (KeyError, TypeError, AttributeError):
+                tags_type = None
+            try:
+                param_res_tag =  self.resources['views'][dep_view_name]['parameters']['resource_tags']
+            except (KeyError, TypeError, AttributeError):
+                param_res_tag = None
+            if tags_type == 'json' or param_res_tag:
+                cur_tags_json_required = True
+                break
+        custom_fields = {}
+        resource_tags = get_parameters().get('resource-tags', [])
+        if isinstance(resource_tags, str):
+            resource_tags = [t for t in resource_tags.split(',') if t]
+        logger.debug(f'dataset {compiled_dataset.get("Name")} resource_tags = {resource_tags}')
+        if cur_tags_json_required and resource_tags:
+            custom_fields = {
+                name: f"parseJson(tags_json, '$.{name}')" # This syntax does not work:  $[\"{name}\"]
+                for name in resource_tags
+            }
+        logger.debug(f'custom_fields = {custom_fields}')
+        compiled_dataset = Dataset.patch(dataset=compiled_dataset, custom_fields=custom_fields, athena=self.athena)
+        logger.trace(f"compiled_dataset = {json.dumps(compiled_dataset)}")
+        found_dataset = self.qs.describe_dataset(compiled_dataset.get('DataSetId'), timeout=0)
+
+        rls_dataset_id = get_parameters().get('rls-dataset-id')
+        rls_dataset_status = get_parameters().get('rls')
+        if rls_dataset_status == 'CLEAR':
+            logger.debug('deleting rls')
+            if "RowLevelPermissionDataSet" in compiled_dataset:
+                del compiled_dataset["RowLevelPermissionDataSet"]
+            if "RowLevelPermissionDataSet" in found_dataset:
+                del found_dataset["RowLevelPermissionDataSet"]
+
+        if rls_dataset_id or rls_dataset_status:
+            if not rls_dataset_id:
+                for ds in self.qs.list_data_sets():
+                    print(ds)
+                choices = {
+                    f"{ds.get('Name')}({ds.get('DataSetId')})":ds.get('DataSetId')
+                    for ds in self.qs.list_data_sets()
+                    if ds.get('UseAs') == 'RLS_RULES'
+                }
+                if not choices:
+                    raise CidCritical(f"Cannot find RLS DataSets")
+                rls_dataset_id = get_parameter('rls-dataset-id', message='Select RLS dataset', choices=choices)
+            rls_dataset = self.qs.describe_dataset(id=rls_dataset_id)
+            if not rls_dataset:
+                raise CidCritical(f"RLS DataSet {rls_dataset_id} not found")
+            if not rls_dataset.is_rls:
+                raise CidCritical(f"DataSet {rls_dataset_id} is not RLS")
+            rls_permissions = {
+                "Arn": rls_dataset.arn,
+                "Status": (rls_dataset_status
+                    or (found_dataset and found_dataset.rls_status)
+                    or "ENABLED"
+                ),
+                "PermissionPolicy": "GRANT_ACCESS",
+            }
+            cols = [c['Name'] for c in rls_dataset.columns]
+            if 'UserName' in cols or 'GroupName' in cols:
+                rls_permissions['FormatVersion'] = "VERSION_1"
+            elif 'UserARN' in cols or 'GroupARN' in cols:
+                rls_permissions['FormatVersion'] = "VERSION_2"
+            else:
+                raise CidCritical(f"DataSet {rls_dataset_id} must have 'UserName'/'GroupName' or 'UserARN'/'GroupARN' columns.")
+            compiled_dataset["RowLevelPermissionDataSet"] = rls_permissions
+
         if isinstance(found_dataset, Dataset):
             update_dataset = False
             if update:
@@ -1527,7 +1726,7 @@ class Cid():
                             param_name='dataset-' + found_dataset.name.lower().replace(' ', '-') + '-override',
                             message=f'The existing dataset is different. Override?',
                             choices=['retry diff', 'proceed and override', 'keep existing', 'exit'],
-                            default='retry diff'
+                            yes_choice='proceed and override'
                         )
                         if choice == 'retry diff':
                             unset_parameter('dataset-' + found_dataset.name.lower().replace(' ', '-') + '-override')
@@ -1545,13 +1744,16 @@ class Cid():
                             param_name=found_dataset.name.lower().replace(' ', '-') + '-override',
                             message=f'Cannot get sql diff for {found_dataset.name}. Continue?',
                             choices=['override', 'exit'],
-                            default='override'
                             ) != 'override':
                             raise CidCritical(f'User choice is not to update {found_dataset.name}.')
                         update_dataset = True
                     break
-            if update_dataset:
-                self.qs.update_dataset(compiled_dataset)
+
+            identical = Dataset.datasets_are_identical(found_dataset, compiled_dataset) # check if dataset needs an update
+
+            if update_dataset and not identical:
+                merged_dataset = Dataset.merge_datasets(compiled_dataset, found_dataset)
+                self.qs.update_dataset(merged_dataset)
                 if compiled_dataset.get("ImportMode") == "SPICE":
                     dataset_id = compiled_dataset.get('DataSetId')
                     schedules_definitions = []
@@ -1590,7 +1792,7 @@ class Cid():
 
         # Create a view
         logger.info(f'Getting view definition {view_name}')
-        view_definition = self.get_definition("view", name=view_name)
+        view_definition = self.get_definition("view", name=view_name, noparams=True)
         if not view_definition and view_name in self.athena._metadata.keys():
             logger.info(f"Definition is unavailable but view exists: {view_name}, skipping")
             return
@@ -1666,7 +1868,7 @@ class Cid():
     def create_or_update_crawler(self, crawler_name, location):
         """ Create or Update Crawler """
         crawler_definition = self.get_definition("crawler", name=crawler_name)
-        data = self.get_data_from_definition('crawler', crawler_definition)
+        data = self.get_data_from_definition(crawler_definition)
         template = Template(json.dumps(data))
 
         # Filter roles trusted by Glue
@@ -1699,12 +1901,74 @@ class Cid():
         self.glue.create_or_update_crawler(crawler_definition=compiled_definition)
 
 
+    def generic_tags_json(self, param_name='resource-tags', options=[]) -> str:
+        ''' returns an sql for json tag
+        '''
+        def _tag_to_name(tag):
+            tag_name = (tag
+                .replace('resource_tags_', '')
+                .replace('cost_category_', '')
+                .replace("'user_","'tag_")
+                .replace("'aws_","'tag_aws_")
+                .split("['")[-1].split("']")[0]
+            )
+            if not tag_name.startswith('tag_'):
+                if tag.startswith('cost_category'):
+                    tag_name = 'cost_category_' + tag_name
+                else:
+                    tag_name = 'tag_' + tag_name
+            return tag_name.replace(':', '_')
+
+        resource_tags = get_parameters().get(param_name, None)
+        tags_and_names = {_tag_to_name(tag):tag  for tag in sorted(options)}
+        logger.info(f'tags_and_names = {tags_and_names}')
+        logger.info(f'resource_tags = {resource_tags}')
+        if isinstance(resource_tags, str):
+            resource_tags = [tag for tag in resource_tags.split(',') if tag]
+        if resource_tags is None:
+            resource_tags = get_parameter(
+                param_name,
+                message='Enter Cost Allocation Tags to be added to datasets(WARNING: this can affect performance. Choose only the strict minimum)',
+                multi=True,
+                choices=sorted(list(set(tags_and_names.keys()))),
+                default=resource_tags or [],
+            )
+
+        if not resource_tags:
+            return "'{}'"
+        logger.debug(f'selected_tag_names = {resource_tags}')
+        array = ',\n                        '.join(
+            [f"('{name}', {tags_and_names[name]})"
+            for name in resource_tags]
+        )
+        res = f'''
+            json_format(
+                CAST (
+                    MAP_FROM_ENTRIES (
+                        ARRAY[
+                            {array}
+                        ]
+                    )
+                AS JSON)
+            )
+        '''
+        logger.trace(f'cur_tags_json = {res}')
+        return res
+
+    def cur_tags_json(self, cur) -> str:
+        return self.generic_tags_json(
+            param_name='resource-tags',
+            options=cur.tag_and_cost_category_fields,
+        )
+
     def get_view_query(self, view_name: str) -> str:
         """ Returns a fully compiled AHQ """
         # View path
         view_definition = self.get_definition("view", name=view_name)
         cur1_required = view_definition.get('dependsOn', dict()).get('cur') or view_definition.get('dependsOn', dict()).get('cur1')
         cur2_required = view_definition.get('dependsOn', dict()).get('cur2')
+        cur_tags_json_required = view_definition.get('dependsOn', dict()).get('tags') == 'json'
+
         #if cur_required and self.cur.has_savings_plans and self.cur.has_reservations and view_definition.get('spriFile'):
         #    view_definition['File'] = view_definition.get('spriFile')
         #elif cur_required and self.cur.has_savings_plans and view_definition.get('spFile'):
@@ -1718,7 +1982,7 @@ class Cid():
         #    raise Exception(f'\nCannot find view {view_name}')
 
         # Load TPL file
-        data = self.get_data_from_definition('view', view_definition)
+        data = self.get_data_from_definition(view_definition)
         if isinstance(data, dict):
             template = Template(yaml.safe_dump(data))
         else:
@@ -1735,6 +1999,10 @@ class Cid():
             'cur1_table_name': self.cur1.table_name if cur1_required else None,
             'cur2_database':   self.cur2.database   if cur2_required else None,
             'cur2_table_name': self.cur2.table_name if cur2_required else None,
+            'cur_tags_json':
+                self.cur_tags_json(self.cur2 if cur2_required else self.cur1)
+                if cur_tags_json_required
+                else None,
         }
 
         columns_tpl = self.get_template_parameters(

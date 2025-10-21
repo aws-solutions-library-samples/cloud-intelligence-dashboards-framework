@@ -38,7 +38,7 @@ from functools import lru_cache
 
 from string import Template
 from boto3.session import Session
-from pkg_resources import resource_string
+from importlib import resources
 
 from cid.base import CidBase
 from cid.helpers import Athena, CUR
@@ -65,8 +65,8 @@ class AccountMap(CidBase):
         }
     }
 
-    def __init__(self, session: Session, athena: Athena, cur=None) -> None:
-        self.cur = cur # Only for trends and dummy
+    def __init__(self, session: Session, athena: Athena, get_cur=None) -> None:
+        self.get_cur = get_cur # get_cur callback Only for trends and dummy
         self.athena = athena
         super().__init__(session)
 
@@ -119,10 +119,7 @@ class AccountMap(CidBase):
         if view_definition.get('File'):
             view_file = view_definition.get('File')
             template = Template(
-                resource_string(
-                    view_definition.get('providedBy'),
-                    f'data/queries/{view_file}'
-                ).decode('utf-8')
+                (resources.files(view_definition.get('providedBy')) / f'data/{view_file}').read_text()
             )
         elif view_definition.get('data'):
             template = Template(str(view_definition.get('data')))
@@ -133,8 +130,8 @@ class AccountMap(CidBase):
         vars = {
             'metadata_table_name': metadata_table['Name'],
             'metadata_database_name': metadata_table['Database'],
-            'cur_database': self.cur.database, # only for trends in metadata
-            'cur_table_name': self.cur.table_name, # only for trends in metadata
+            'cur_database': self.get_cur().database if name == 'aws_accounts' and self.get_cur else None, # only for trends in metadata
+            'cur_table_name': self.get_cur().table_name if name == 'aws_accounts' and self.get_cur else None, # only for trends in metadata
         }
         for key, val in self.mappings.get(name).get(metadata_table['Name']).items():
             logger.debug(f'Mapping field {key} to {val}')
@@ -151,18 +148,18 @@ class AccountMap(CidBase):
     def get_dummy_account_mapping_sql(self, name) -> list:
         """Create dummy account mapping"""
         logger.info(f'Creating dummy account mapping for {name}')
-        if self.cur.version.startswith('2'):
+        cur = self.get_cur()
+        if cur.version.startswith('2'):
             sql_file = 'data/queries/shared/account_map_cur2.sql'
         else:
             sql_file = 'data/queries/shared/account_map_dummy.sql'
-        template = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name=sql_file,
-        ).decode('utf-8'))
+        template = Template(
+            (resources.files('cid.builtin.core') / sql_file).read_text()
+        )
         columns_tpl = {
             'athena_view_name': name,
-            'cur_table_name': self.cur.table_name,
-            'cur_database': self.cur.database,
+            'cur_table_name': cur.table_name,
+            'cur_database': cur.database,
         }
         compiled_query = template.safe_substitute(columns_tpl)
         return compiled_query
@@ -278,20 +275,23 @@ class AccountMap(CidBase):
             except CidError as exc:
                 logger.debug(exc)
 
-        if self.cur.version.startswith('2'):
+        if self.get_cur and self.get_cur().version.startswith('2'):
             cid_print('Looks like CUR2 is used. Will use it for account map.')
             set_parameters({'account-map-source': 'dummy'})
 
         for attempt in range(3):
             try:
+                choices = {
+                    'AWS Organizations (one time account listing)': 'organization',
+                    'CSV file (relative path required)': 'csv',
+                }
+                if self.get_cur:
+                    choices['Dummy (CUR account data, no names for CUR1)'] = 'dummy'
+
                 metadata_source = get_parameter(
                     param_name='account-map-source',
                     message="Please select account metadata collection method",
-                    choices={
-                        'Dummy (CUR account data, no names for CUR1)': 'dummy',
-                        'AWS Organizations (one time account listing)': 'organization',
-                        'CSV file (relative path required)': 'csv',
-                    },
+                    choices=choices,
                 )
                 logger.info(f'Attempt {attempt + 2}' )
                 # Collect account list from different sources of user choice

@@ -2,6 +2,7 @@ CREATE OR REPLACE VIEW hourly_view AS
     SELECT DISTINCT
       "line_item_product_code" "product_code"
     , "product_servicecode" "service"
+    , ${cur_tags_json} tags_json --replace with ''
     , "line_item_operation" "operation"
     , "line_item_line_item_type" "charge_type"
     , "line_item_usage_type" "usage_type"
@@ -25,4 +26,4 @@ CREATE OR REPLACE VIEW hourly_view AS
       (((current_date - INTERVAL  '30' DAY) <= line_item_usage_start_date)
       AND ((("line_item_line_item_type" = 'Usage') OR ("line_item_line_item_type" = 'SavingsPlanCoveredUsage')) OR ("line_item_line_item_type" = 'DiscountedUsage'))
       AND coalesce("line_item_operation", '') NOT IN ('EKSPod-EC2','ECSTask-EC2'))
-    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16

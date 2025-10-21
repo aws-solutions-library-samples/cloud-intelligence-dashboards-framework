@@ -2,6 +2,24 @@
     "DataSetId": "0e7cd1a6-e38d-4ca8-af6f-9256577d651e",
     "Name": "kpi_ebs_snap",
     "PhysicalTableMap": {
+        "88cab3bf-bb23-4b37-9ff6-6f32e4c3d9d8": {
+            "RelationalTable": {
+                "DataSourceArn": "${athena_datasource_arn}",
+                "Catalog": "AwsDataCatalog",
+                "Schema": "${athena_database_name}",
+                "Name": "account_map",
+                "InputColumns": [
+                    {
+                        "Name": "account_id",
+                        "Type": "STRING"
+                    },
+                    {
+                        "Name": "account_name",
+                        "Type": "STRING"
+                    }
+                ]
+            }
+        },
         "f224e706-8cd3-4c2f-b4e8-d8470368782f": {
             "RelationalTable": {
                 "DataSourceArn": "${athena_datasource_arn}",
@@ -25,11 +43,7 @@
                         "Type": "STRING"
                     },
                     {
-                        "Name": "account_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "account_name",
+                        "Name": "snapshot_type",
                         "Type": "STRING"
                     },
                     {
@@ -37,36 +51,37 @@
                         "Type": "STRING"
                     },
                     {
-                        "Name": "snapshot_type",
-                        "Type": "STRING"
-                    },
-                    {
                         "Name": "usage_quantity",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_snapshot_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "public_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_snapshots_under_1yr_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_snapshots_over_1yr_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     }
                 ]
             }
         }
     },
     "LogicalTableMap": {
-        "f224e706-8cd3-4c2f-b4e8-d8470368782f": {
-            "Alias": "kpi_ebs_snap",
+        "9cd6e7ab-5a7a-40b8-8d3f-0061502aa428": {
+            "Alias": "Intermediate Table",
             "DataTransforms": [
                 {
                     "ProjectOperation": {
@@ -75,19 +90,36 @@
                             "start_date",
                             "payer_account_id",
                             "linked_account_id",
-                            "account_id",
-                            "account_name",
-                            "resource_id",
                             "snapshot_type",
+                            "resource_id",
                             "usage_quantity",
                             "ebs_snapshot_cost",
                             "public_cost",
                             "ebs_snapshots_under_1yr_cost",
-                            "ebs_snapshots_over_1yr_cost"
+                            "ebs_snapshots_over_1yr_cost",
+                            "account_id",
+                            "account_name"
                         ]
                     }
                 }
             ],
+            "Source": {
+                "JoinInstruction": {
+                    "LeftOperand": "f224e706-8cd3-4c2f-b4e8-d8470368782f",
+                    "RightOperand": "f0d714f0-5bdc-467d-a201-d15ec6f1bcbc",
+                    "Type": "LEFT",
+                    "OnClause": "{linked_account_id} = {account_id}"
+                }
+            }
+        },
+        "f0d714f0-5bdc-467d-a201-d15ec6f1bcbc": {
+            "Alias": "account_map",
+            "Source": {
+                "PhysicalTableId": "88cab3bf-bb23-4b37-9ff6-6f32e4c3d9d8"
+            }
+        },
+        "f224e706-8cd3-4c2f-b4e8-d8470368782f": {
+            "Alias": "kpi_ebs_snap",
             "Source": {
                 "PhysicalTableId": "f224e706-8cd3-4c2f-b4e8-d8470368782f"
             }

@@ -36,8 +36,6 @@ Resources:
       Dashboard:
         dashboard-id: !Ref DashboardId
         account-map-source: 'dummy'
-        account-map-database-name: {'Fn::ImportValue':  "cid-CidDatabase"}
-        data-collection-database-name: 'optimization_data'
         resources: !If [ResourcesUrlIsEmpty, !Ref 'AWS::NoValue', !Ref ResourcesUrl]
         data_exports_database_name: !If [RequiresDataExports, {'Fn::ImportValue':  "cid-DataExports-Database"}, !Ref 'AWS::NoValue']
         data_collection_database_name: !If [RequiresDataCollection, {'Fn::ImportValue':  "cid-DataCollection-Database"}, !Ref 'AWS::NoValue']

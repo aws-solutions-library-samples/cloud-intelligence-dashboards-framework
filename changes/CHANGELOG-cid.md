@@ -1,5 +1,8 @@
 # What's new in the Cost Intelligence Dashboard (CID) 
 
+## CID - 3.6
+* Added support for organizational taxonomy
+
 ## CID - 3.5
 * Removed link to deprecated feedback form
 

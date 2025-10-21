@@ -98,40 +98,6 @@ class Dashboard(CidQsResource):
         return self._source_template
 
     @property
-    def _patch_template_version(self, template):
-        # Checking for version override in template definition
-        # Check for extra information from resource definition
-        version_obj = self.definition.get('versions', dict())
-        min_template_version = _safe_int(version_obj.get('minTemplateVersion'))
-        default_description_version = version_obj.get('minTemplateDescription')
-
-        if not isinstance(template, CidQsTemplate)\
-            or int(template.version) <= 0 \
-            or not version_obj:
-            return
-
-        logger.debug("versions object found in template")
-        version_map = version_obj.get('versionMap', dict())
-        description_override = version_map.get(int(template.version))
-
-        try:
-            if description_override:
-                logger.info(f"Template description is overridden with: {description_override}")
-                description_override = str(description_override)
-                template.raw['Version']['Description'] = description_override
-            else:
-                if min_template_version and default_description_version:
-                    if int(template.version) <= min_template_version:
-                        logger.info(f"The template version does not provide cid_version in description, using the default template description: {default_description_version}")
-                        template.raw['Version']['Description'] = default_description_version
-        except ValueError as val_error:
-            logger.debug(val_error,  exc_info=True)
-            logger.info("The provided values of the versions object are not well formed, please use int for template version and str for template description")
-        except Exception as exc:
-            logger.debug(exc, exc_info=True)
-            logger.info("Unable to override template description")
-
-    @property
     def deployed_template(self) -> CidQsTemplate:
         ''' Fetch template referenced as current dashboard source (if any)
         '''
@@ -215,7 +181,7 @@ class Dashboard(CidQsResource):
                 logger.debug(f'Access denied describing DataSetId {dataset_id} for Dashboard {self.id}')
             except self.qs.client.exceptions.InvalidParameterValueException:
                 logger.debug(f'Invalid dataset {dataset_id}')
-        logger.info(f"{self.name} has {len(self.datasets)} datasets")
+        logger.info(f"{self.name} has {len(self._datasets)} datasets")
         return self._datasets
 
     @property
@@ -248,7 +214,8 @@ class Dashboard(CidQsResource):
     def deployed_cid_version(self):
         if self._cid_version:
             return  self._cid_version
-        tag_version = (self.qs.get_tags(self.arn) or {}).get('cid_version')
+        tag_version = (self.qs.get_tags(self.arn) or {}).get('cid_version_tag')
+        #print(f'{self.id}: {tag_version}')
         if tag_version:
             logger.trace(f'version of {self.arn} from tag = {tag_version}')
             self._cid_version = CidVersion(tag_version)
@@ -258,8 +225,8 @@ class Dashboard(CidQsResource):
             elif self.deployed_definition:
                 self._cid_version = self.deployed_definition.cid_version
             if self._cid_version:
-                logger.trace(f'setting tag of {self.arn} to cid_version = {self._cid_version}')
-                self.qs.set_tags(self.arn, cid_version=self._cid_version)
+                logger.trace(f'setting tag of {self.arn} to cid_version_tag = {self._cid_version}')
+                self.qs.set_tags(self.arn, cid_version_tag=self._cid_version)
         return self._cid_version
 
 
@@ -270,6 +237,9 @@ class Dashboard(CidQsResource):
 
     @property
     def latest_available_cid_version(self) -> int:
+        if 'version' in self._definition:
+            return CidVersion(self._definition['version'])
+
         if self.source_template:
             return self.source_template.cid_version
         elif self.source_definition:
@@ -353,8 +323,10 @@ class Dashboard(CidQsResource):
         if self.datasets:
             cid_print(f"  <BOLD>Datasets:<END>")
             for dataset_name, dataset_id in  sorted(self.datasets.items()):
+                ds = self.qs.describe_dataset(dataset_id)
+                rls = {'ENABLED': '🔐', 'DISABLED': '🔓', None: ' '}.get(ds.rls_status)
                 status = self.qs.get_dataset_last_ingestion(dataset_id) or '<BLUE>DIRECT<END>' #todo fix this Blue using dataset import type.
-                cid_print(f'    {dataset_name: <36} ({dataset_id: <36}) {status}')
+                cid_print(f'   {rls} {dataset_name: <36} ({dataset_id: <36}) {status}')
 
     def display_url(self, url_template: str, launch: bool = False, **kwargs) -> None:
         url = url_template.format(dashboard_id=self.id, **kwargs)

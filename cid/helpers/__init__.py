@@ -9,6 +9,7 @@ from cid.helpers.csv2view import csv2view
 from cid.helpers.organizations import Organizations
 from cid.helpers.cur_proxy import ProxyView
 from cid.helpers.cloudformation import CFN
+from cid.helpers.parameter_store import ParametersController
 
 __all__ = [
     "Athena",
@@ -27,4 +28,5 @@ __all__ = [
     "Organizations",
     "ProxyView",
     "CFN",
+    "ParametersController",
 ]

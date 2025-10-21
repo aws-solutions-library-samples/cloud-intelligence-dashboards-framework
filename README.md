@@ -2,192 +2,158 @@
 
 [![PyPI version](https://badge.fury.io/py/cid-cmd.svg)](https://badge.fury.io/py/cid-cmd)
 
-## Welcome to Cloud Intelligence Dashboards (CUDOS Framework) automation repository
-This repository contains CloudFormation templates, Terraform modules, and a Command Line tool (cid-cmd) for managing various dashboards provided in AWS Well Architected LAB [Cloud Intelligence Dashboards](https://www.wellarchitectedlabs.com/cloud-intelligence-dashboards/).
 
-There are several ways we can manage dashboards:
-1. [CloudFormation Template](./cfn-templates/cid-cfn.yml) (using cid-cmd tool in lambda)
-2. [Terraform module](./terraform-modules/cid-dashboards/README.md) (wrapper around CloudFormation Template)
-3. Using cid-cmd tool from command line
+## Table of Contents
+1. [Overview](#Overview)
+1. [Architecture of Foundational Dashboards](#Architecture-of-Foundational-Dashboards)
+1. [Cost](#Cost)
+1. [Prerequisites](#Prerequisites)
+1. [Regions](#Regions)
+1. [Deployment Steps](#Deployment-Steps)
+1. [Cleanup](#Cleanup)
+1. [FAQ](#FAQ)
+1. [Changelogs](#Changelogs)
+1. [Feedback](#Feedback)
+1. [Security](#Security)
+1. [License](#License)
+1. [Notices](#Notices)
 
-We recommend cid-cmd tool via [AWS CloudShell](https://console.aws.amazon.com/cloudshell/home).
+## Overview
+The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best practices for governance, and achieve operational excellence across all your organization.
 
-## Supported dashboards
----
-| Dashboard documentation | Demo URL | Prerequisites URL |
-| --- | --- | --- |
-| [CUDOS Dashboard](https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi#cudos-dashboard) | [demo](https://cid.workshops.aws.dev/demo?dashboard=cudos) | [link](https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi/deploy) (Steps 1 and 2) |
-| [Cost Intelligence Dashboard](https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi#cost-intelligence-dashboard-(cid)) | [demo](https://cid.workshops.aws.dev/demo?dashboard=cost_intelligence_dashboard) | [link](https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi/deploy) (Steps 1 and 2) |
-| [Trusted Advisor Organisation (TAO) Dashboard](https://catalog.workshops.aws/awscid/en-US/dashboards/advanced/trusted-advisor) | [demo](https://cid.workshops.aws.dev/demo?dashboard=tao-dashboard) | [link](https://catalog.workshops.aws/awscid/en-US/dashboards/advanced/trusted-advisor/prerequisites) |
-| [Trends Dashboard](https://catalog.workshops.aws/awscid/en-US/dashboards/additional/trends) | [demo](https://cid.workshops.aws.dev/demo?dashboard=trends-dashboard) | [link](https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi/deploy) (Steps 1 and 2) |
-| [KPI Dashboard](https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi#kpi-dashboard) | [demo](https://cid.workshops.aws.dev/demo?dashboard=kpi) | [link](https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi/deploy) (Steps 1 and 2) |
-| [Compute Optimizer Dashboard](https://catalog.workshops.aws/awscid/en-US/dashboards/advanced/compute-optimizer) | [demo](https://cid.workshops.aws.dev/demo?dashboard=compute-optimizer-dashboard) | [link](https://catalog.workshops.aws/awscid/en-US/dashboards/advanced/compute-optimizer/prerequisites) |
-| [Cost Anomaly Dashboard](https://catalog.workshops.aws/awscid/en-US/dashboards/advanced/cost-anomaly) | [demo](https://cid.workshops.aws.dev/demo?dashboard=aws-cost-anomalies) | [link](https://catalog.workshops.aws/awscid/en-US/dashboards/advanced/cost-anomaly/prerequisites) |
-| [Data Transfer Cost Dashboard](https://catalog.workshops.aws/awscid/en-US/dashboards/additional/data-transfer) | [demo](https://cid.workshops.aws.dev/demo?dashboard=datatransfer-cost-analysis-dashboard) | [link](https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi/deploy) (Steps 1 and 2) |
-| [AWS Budgets Dashboard](https://catalog.workshops.aws/awscid/en-US/dashboards/advanced/aws-budgets) | [demo](https://cid.workshops.aws.dev/demo?dashboard=aws-budgets) | [link](https://catalog.workshops.aws/awscid/en-US/dashboards/advanced/aws-budgets#deploy-via-cid-tool) |
+Cloud Intelligence Dashboards Framework provides AWS customers with [more then 20 Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html).
+* Foundational Dashboards - A set of main Dashboards that only require Cost and Usage Report(CUR)
+* Advanced Dashboards - Require CID Data Collection and CUR
+* Additional Dashboards - Require various custom datasources or created for very specific use cases.
 
-See more dashboards on the [workshop page](https://catalog.workshops.aws/awscid/en-US/dashboards).
-
-## Before you start
-1. :heavy_exclamation_mark: Complete the prerequisites for respective dashboard (see above).
-2. :heavy_exclamation_mark: [Specifying a Query Result Location Using a Workgroup](https://docs.aws.amazon.com/athena/latest/ug/querying.html#query-results-specify-location-workgroup)
-3. :heavy_exclamation_mark: Make sure QuickSight [Enterprise edition](https://aws.amazon.com/premiumsupport/knowledge-center/quicksight-enterprise-account/) is activated.
-
-## Command line tool cid-cmd
-
-#### Demo: Deployment of Dashboards with cid-cmd tool
-
-   [![asciicast](https://asciinema.org/a/467770.svg)](https://asciinema.org/a/467770)
-
-#### Install
-
-1. Launch [AWS CloudShell](https://console.aws.amazon.com/cloudshell/home) or your local shell
-
-    Automation requires Python 3
-
-2. Make sure you have the latest pip package installed
-    ```bash
-    python3 -m ensurepip --upgrade
-    ```
-
-4. Install CID Python automation PyPI package
-    ```bash
-    pip3 install --upgrade cid-cmd
-    ```
-
-#### Dashboard Deployment
-
-```bash
-cid-cmd deploy
-```
+We recommend starting with deployment of [Foundational Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboard-foundational.html). Then deploy [Data Collection](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html) and [Advanced Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html#advanced-dashboards). Check for [Additional](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html#additional) Dashboards.
 
 
-#### Update existing Dashboards
-Update only Dashboard
-```bash
-cid-cmd update
-```
-Update dashboard and all dependencies (Datasets and Athena View). WARNING: this will override any customization of SQL files and Datasets.
-```bash
-cid-cmd update --force --recursive
-```
-
-#### Show Dashboard Status
-Show dashboards status
-
-```bash
-cid-cmd status
-```
-[<img width="558" alt="status" src="https://github.com/aws-samples/aws-cudos-framework-deployment/assets/82834333/cae2015f-0f81-4593-80b3-c67ec1200fcd">](https://www.youtube.com/watch?v=ivr1MoGaApM)
+[![Documentation >](assets/images/documentation.svg)](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html)
 
 
-####  Share QuickSight resources
-```bash
-cid-cmd share
-```
+## Architecture of Foundational Dashboards
 
-#### Initialize Amazon QuickSight
-One time action to initialize Amazon QuickSight Enterprise Edition.
+![Foundational Architecture](assets/images/foundational-architecture.png  "Foundational Architecture")
+1. [AWS Data Exports](https://aws.amazon.com/aws-cost-management/aws-data-exports/) delivers daily the Cost & Usage Report (CUR2) to an [Amazon S3 Bucket](https://aws.amazon.com/s3/) in the Management Account.
+2. [Amazon S3](https://aws.amazon.com/s3/) replication rule copies Export data to a dedicated Data Collection Account S3 bucket automatically.
+3. [Amazon Athena](https://aws.amazon.com/athena/) allows querying data directly from the S3 bucket using an [AWS Glue](https://aws.amazon.com/glue/) table schema definition.
+4. [Amazon QuickSight](https://aws.amazon.com/quicksight/) creates datasets from [Amazon Athena](https://aws.amazon.com/athena/), refreshes daily and caches in [SPICE](https://docs.aws.amazon.com/quicksight/latest/user/spice.html)(Super-fast, Parallel, In-memory Calculation Engine) for [Amazon QuickSight](https://aws.amazon.com/quicksight/)
+5. User Teams (Executives, FinOps, Engineers) can access Cloud Intelligence Dashboards in [Amazon QuickSight](https://aws.amazon.com/quicksight/). Access is secured through [AWS IAM](https://aws.amazon.com/iam/), IIC ([AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/), formerly SSO), and optional [Row Level Security](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/row-level-security.html).
 
-```bash
-cid-cmd init-qs
-```
+This foundational architecture is recommended for starting and allows deployment of [Foundational Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboard-foundational.html) like CUDOS, CID and KPI.
 
-#### Initialize CUR
-One time action to initialize Athena table and Crawler from s3 with CUR data. Currently only CUR1 supported.
+## Architecture of Advanced Dashboards
+![Advanced Architecture](assets/images/advanced-architecture.png  "Foundational Architecture")
 
-```bash
-cid-cmd init-cur
-```
+1. [AWS Data Exports](https://aws.amazon.com/aws-cost-management/aws-data-exports/) delivers daily the Cost & Usage Report (CUR2) to an [Amazon S3 Bucket](https://aws.amazon.com/s3/) in the Management Account.
+2. [Amazon S3](https://aws.amazon.com/s3/) replication rule copies Export data to a dedicated Data Collection Account S3 bucket automatically.
+3. [Amazon Athena](https://aws.amazon.com/athena/) allows querying data directly from the S3 bucket using an [AWS Glue](https://aws.amazon.com/glue/) table schema definition.
+4. [Amazon QuickSight](https://aws.amazon.com/quicksight/) creates datasets from [Amazon Athena](https://aws.amazon.com/athena/), refreshes daily and caches in [SPICE](https://docs.aws.amazon.com/quicksight/latest/user/spice.html)(Super-fast, Parallel, In-memory Calculation Engine) for [Amazon QuickSight](https://aws.amazon.com/quicksight/)
+5. User Teams (Executives, FinOps, Engineers) can access Cloud Intelligence Dashboards in [Amazon QuickSight](https://aws.amazon.com/quicksight/). Access is secured through [AWS IAM](https://aws.amazon.com/iam/), IIC ([AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/), formerly SSO), and optional [Row Level Security](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/row-level-security.html).
+6. Optionally, the Advanced data collection can be deployed to enable advanced dashboards based on [AWS Trusted Advisor](https://aws.amazon.com/premiumsupport/trustedadvisor/), [AWS Health](https://aws.amazon.com/premiumsupport/technology/aws-health-dashboard/) Events and other sources. Additional data is retrieved from [AWS Organizations](https://aws.amazon.com/organizations/) or Linked Accounts. In this case [Amazon EventBridge](https://aws.amazon.com/eventbridge/) rule triggers an [AWS Step Functions](https://aws.amazon.com/step-functions/) workflow for data collection modules on a configurable schedule.
+7. The "Account Collector" [AWS Lambda](https://aws.amazon.com/lambda/) in AWS Step Functions retrieves linked account details using AWS Organizations API.
+8. The "Data Collection" Lambda function in AWS Step Functions assumes a role in each linked account to retrieve account-specific data via [AWS SDK](https://aws.amazon.com/developer/tools/).
+9. Retrieved data is stored in a centralized Amazon S3 Bucket.
+10. [Advanced Cloud Intelligence Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html#advanced-dashboards) leverage Amazon Athena and Amazon QuickSight for comprehensive data analysis.
 
-#### Create CUR proxy
-There are 2 CUR formats that `cid-cmd` supports. CUR1 and CUR2 have slightly different fields structure. Each dashboard can be developed using CUR2 or CUR1, but on installation `cid-cmd` will deploy a special Athena View "CUR proxy". This View will play a role of compatibility layer between the CUR version used by Dashboard and available CUR. This View can be extended as new dashboard request CUR fields.
-
-Please note that Cost Allocation Tags and Cost Categories are not present in CUR Proxy by default. You will need to add these fields by modifying CUR Proxy in Athena or using `cid-cmd` tool:
-
-For CUR2 proxy (using CUR1 data as source)
-```bash
-cid-cmd create-cur-proxy -vv \
-   --cur-version '2' \
-   --cur-table-name 'mycur1' \
-   --athena-workgroup 'primary' \
-   --fields "resource_tags['user_cost_center'],resource_tags['user_owner']"
-```
-
-For CUR1 proxy (using CUR2 data as source)
-```bash
-cid-cmd create-cur-proxy -vv \
-   --cur-version '1' \
-   --cur-table-name 'mycur2' \
-   --athena-workgroup 'primary' \
-   --fields "resource_tags_user_cost_center,resource_tags_user_owner"
-```
+This advanced data collection architecture allows deployment of [Advanced Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html#advanced-dashboards) like Trusted Advisor Dashboard, Health, Graviton, Compute Optimizer Dashboard and many more.
 
 
-#### Delete Dashboard and all dependencies unused by other
-Delete Dashboards and all dependencies unused by other CID-managed dashboards.(including QuickSight datasets, Athena views and tables)
-```bash
-cid-cmd delete
-```
+## Cost
+The following table provides a sample cost breakdown for deploying of Foundational Dashboards with the default parameters in the US East (N. Virginia) Region for one month. 
 
+| AWS Service                     | Dimensions                    |  Cost [USD]      |
+|---------------------------------|-------------------------------|------------------|
+| S3 (CUR Storage)                | Monthly storage               | $5-10/month*     |
+| AWS Glue Crawler                | Daily scans                   | $3/month*        |
+| AWS Athena                      | Daily scans                   | $15/month*       |
+| QuickSight Enterprise (Authors) | 3 authors  ($24/month/author) | $72/month**      |
+| QuickSight Enterprise (Readers) | 15 readers ($3/month/reader)  | $45/month**      |
+| QuickSight SPICE Capacity       | 100 GB                        | $10-20/month*    |
+| **Total Estimated Monthly Cost** |                              | **$100-$200**    |
 
-#### Delete Command Options:
-```
- --dashboard-id TEXT QuickSight dashboard id
- --athena-database TEXT Athena database
- ```
+\* Costs are relative to the size of your Cost and Usage Report (CUR) data  
+\** Costs are relative to the number of users
 
-#### Export
-The command `export` lets you download or share a customized dashboard with another AWS Account. It takes the QuickSight Analysis as an input and generates all the assets needed to deploy your Analysis into another AWS Account. This command will generate a yaml file with a description of the Dashboard and all required Datasets. Also this command generates a QuickSight Template in the current AWS Account that can be used for Dashboard deployment in other accounts. The resource file can be used with all other cid commands. Both accounts must have relevant Athena Views and Tables.
+**Additional Notes:**
+- Free trial available for 30 days for 4 QuickSight users
+- Actual costs may vary based on specific usage and data volume
 
-Export from account A:
-```
-cid-cmd export
-```
+Please use the AWS Pricing Calculator for precise estimation.
 
-Deployment to account B:
-```
-cid-cmd deploy --resources ./mydashboard.yaml
-```
+## Prerequisites
+You need access to AWS Accounts. We recommend deployment of the Dashboards in a dedicated Data Collection Account, other than your Management (Payer) Account. We provide CloudFormation templates to copy CUR 2.0 data from your Management Account to a dedicated one. You can use it to aggregate data from multiple Management (Payer) Accounts or multiple Linked Accounts.
 
-#### See available commands and command line options
-```
-cid-cmd --help
-```
+If you do not have access to the Management/Payer Account, you can still collect the data across multiple Linked accounts using the same approach.
 
-#### CSV to Athena View
-Generate and SQL file for Athena View for CSV file
-
-```
-cid-cmd csv2view --input my_mapping.csv --name my_mapping
-```
-This command generates a SQL file that you can execute. Please mind [Athena Service Limit for Query Size](https://docs.aws.amazon.com/athena/latest/ug/service-limits.html#service-limits-query-string-length).
-
-
-## Cloud Formation
-CID is also provided in a form of CloudFormation templates. See detailed instructions in the [Well Architected Labs](https://wellarchitectedlabs.com/cost/200_labs/200_cloud_intelligence/cost-usage-report-dashboards/dashboards/deploy_dashboards/) site.
-
-## Terraform
-CID offers a set of Terraform modules to deploy CUR replication and CID dashboards. Refer to these [deployment instructions](terraform-modules/README.md) for details of
-how to deploy CID dashboards with these modules.
-
-  1. Create a bucket for consolidating CUR [terraform-modules/cur-setup-destination/](terraform-modules/cur-setup-destination/)
-  2. Create a CUR in Payer Account(s) [terraform-modules/cur-setup-source/](terraform-modules/cur-setup-source/)
-  3. Create Dashboards (wrapper around CloudFormation) [terraform-modules/cid-dashboards/](terraform-modules/cid-dashboards/)
-
-## Rights Management
 The ownership of CID is usually with the FinOps team, who do not have administrative access. However, they require specific privileges to install and operate CID dashboards. To assist the Admin team in granting the necessary privileges to the CID owners, a CFN template is provided. This template, located at [CFN template](cfn-templates/cid-admin-policies.yaml), takes an IAM role name as a parameter and adds the required policies to the role.
 
 
-## Troubleshooting and Support
-If you experience unexpected behaviour of the `cid-cmd` script please run `cid-cmd` in debug mode:
+## Regions
+Make sure you are installing data collection in the same region where you are going to use the data to avoid cross-region charges.
+CFN deployment is only available in a limited number of regions, while CLI deployment is region agnostic.
 
-```bash
-cid-cmd -vv [command]
-```
-    
-This will produce a log file in the same directory that were at the tile of launch of cid-cmd. 
+| Region Name | Region Code | Support CLI  | Support CFN |
+|:------------ | :-------------| :-------------| :------------- |
+| Africa (Cape Town) | af-south-1 | :heavy_check_mark: |   |
+| Asia Pacific (Tokyo) | ap-northeast-1 | :heavy_check_mark: | :heavy_check_mark: |
+| Asia Pacific (Seoul) | ap-northeast-2 | :heavy_check_mark: | :heavy_check_mark: |
+| Asia Pacific (Mumbai) | ap-south-1 | :heavy_check_mark: | :heavy_check_mark: |
+| Asia Pacific (Singapore) | ap-southeast-1 | :heavy_check_mark: | :heavy_check_mark: |
+| Asia Pacific (Sydney) | ap-southeast-2 | :heavy_check_mark: | :heavy_check_mark: |
+| Asia Pacific (Jakarta) | ap-southeast-3 | :heavy_check_mark: |   |
+| Canada (Central) | ca-central-1 | :heavy_check_mark: | :heavy_check_mark: |
+| China (Beijing) | cn-north-1 | :heavy_check_mark: |   |
+| Europe (Frankfurt) | eu-central-1 | :heavy_check_mark: | :heavy_check_mark: |
+| Europe (Zurich) | eu-central-2 | :heavy_check_mark: |   |
+| Europe (Stockholm) | eu-north-1 | :heavy_check_mark: | :heavy_check_mark: |
+| Europe (Milan) | eu-south-1 | :heavy_check_mark: |   |
+| Europe (Spain) | eu-south-2 | :heavy_check_mark: |   |
+| Europe (Ireland) | eu-west-1 | :heavy_check_mark: | :heavy_check_mark: |
+| Europe (London) | eu-west-2 | :heavy_check_mark: | :heavy_check_mark: |
+| Europe (Paris) | eu-west-3 | :heavy_check_mark: | :heavy_check_mark: |
+| South America (São Paulo) | sa-east-1 | :heavy_check_mark: | :heavy_check_mark: |
+| US East (N. Virginia) | us-east-1 | :heavy_check_mark: | :heavy_check_mark: |
+| US East (Ohio) | us-east-2 | :heavy_check_mark: | :heavy_check_mark: |
+| AWS GovCloud (US-East) | us-gov-east-1 | :heavy_check_mark: |   |
+| AWS GovCloud (US-West) | us-gov-west-1 | :heavy_check_mark: |   |
+| US West (Oregon) | us-west-2 | :heavy_check_mark: | :heavy_check_mark: |
 
-:heavy_exclamation_mark:Inspect the produced debug log for any sensitive information and anonymize it.
 
-We encourage you to open [new issue](https://github.com/aws-samples/aws-cudos-framework-deployment/issues/new) with description of the problem and attached debug log file.
+## Deployment Steps
+There are several ways we can deploy dashboards:
+1. Using cid-cmd tool from the command line
+1. [CloudFormation Template](./cfn-templates/cid-cfn.yml) using cid-cmd tool in Amazon Lambda. (Recommended)
+
+Please refer to the deployment documentation [here](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html).
+
+[![Deployment Guide >](assets/images/deployment-guide-button.svg)](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html)
+
+
+## Cleanup
+Please refer to the documentation [here](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboard-teardown.html).
+
+## FAQ
+Please refer to the documentation [here](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/faq.html).
+
+## Changelogs
+For dashboards please check change log [here](changes/)
+For CID deployment tool, including CLI and CFN please check [Releases](/releases)
+
+## Feedback
+Please reference to [this page](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/feedback-support.html)
+
+## Security
+When you build systems on AWS infrastructure, security responsibilities are shared between you and AWS. This [shared responsibility
+model](https://aws.amazon.com/compliance/shared-responsibility-model/) reduces your operational burden because AWS operates, manages, and
+controls the components including the host operating system, the virtualization layer, and the physical security of the facilities in
+which the services operate. For more information about AWS security, visit [AWS Cloud Security](http://aws.amazon.com/security/).
+
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+
+## License
+This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file.
+
+## Notices
+Dashboards and their content: (a) are for informational purposes only, (b) represent current AWS product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS content, products or services are provided “as is” without warranties, representations, or conditions of any kind, whether express or implied. The responsibilities and liabilities of AWS to its customers are controlled by AWS agreements, and this document is not part of, nor does it modify, any agreement between AWS and its customers.

@@ -1,0 +1,129 @@
+{
+    "DatabaseName": "${athena_database_name}",
+    "TableInput": {
+        "Name": "${athena_table_name}",
+        "StorageDescriptor": {
+            "Location": "${s3FolderPath}",
+            "Columns": [
+                {
+                    "Name": "accountid",
+                    "Type": "string"
+                },
+                {
+                    "Name": "resourcearn",
+                    "Type": "string"
+                },
+                {
+                    "Name": "lookbackperiodindays",
+                    "Type": "string"
+                },
+                {
+                    "Name": "lastrefreshtimestamp_utc",
+                    "Type": "string"
+                },
+                {
+                    "Name": "currentlicenseconfiguration_numberofcores",
+                    "Type": "string"
+                },
+                {
+                    "Name": "currentlicenseconfiguration_instancetype",
+                    "Type": "string"
+                },
+                {
+                    "Name": "currentlicenseconfiguration_operatingsystem",
+                    "Type": "string"
+                },
+                {
+                    "Name": "currentlicenseconfiguration_licensename",
+                    "Type": "string"
+                },
+                {
+                    "Name": "currentlicenseconfiguration_licenseedition",
+                    "Type": "string"
+                },
+                {
+                    "Name": "currentlicenseconfiguration_licensemodel",
+                    "Type": "string"
+                },
+                {
+                    "Name": "currentlicenseconfiguration_licenseversion",
+                    "Type": "string"
+                },
+                {
+                    "Name": "finding",
+                    "Type": "string"
+                },
+                {
+                    "Name": "findingreasoncodes_isinvalidcloudwatchapplicationinsightssetup",
+                    "Type": "string"
+                },
+                {
+                    "Name": "findingreasoncodes_iscloudwatchapplicationinsightserror",
+                    "Type": "string"
+                },
+                {
+                    "Name": "findingreasoncodes_islicenseoverprovisioned",
+                    "Type": "string"
+                },
+                {
+                    "Name": "findingreasoncodes_isoptimized",
+                    "Type": "string"
+                },
+                {
+                    "Name": "recommendationoptions_1_operatingsystem",
+                    "Type": "string"
+                },
+                {
+                    "Name": "recommendationoptions_1_licenseedition",
+                    "Type": "string"
+                },
+                {
+                    "Name": "recommendationoptions_1_licensemodel",
+                    "Type": "string"
+                },
+                {
+                    "Name": "recommendationoptions_1_savingsopportunitypercentage",
+                    "Type": "string"
+                },
+                {
+                    "Name": "recommendationoptions_1_estimatedmonthlysavingscurrency",
+                    "Type": "string"
+                },
+                {
+                    "Name": "recommendationoptions_1_estimatedmonthlysavingsvalue",
+                    "Type": "string"
+                },
+                {
+                    "Name": "errorcode",
+                    "Type": "string"
+                },
+                {
+                    "Name": "errormessage",
+                    "Type": "string"
+                },
+                {
+                    "Name": "tags",
+                    "Type": "string"
+                }
+            ],
+            "InputFormat": "org.apache.hadoop.mapred.TextInputFormat",
+            "NumberOfBuckets": -1,
+            "OutputFormat": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+            "Parameters": {},
+            "SerdeInfo": {
+                "Parameters": {
+                    "quoteChar": "\"",
+                    "separatorChar": ",",
+                    "serialization.format": "1"
+                },
+                "SerializationLibrary": "org.apache.hadoop.hive.serde2.OpenCSVSerde"
+            }
+        },
+        "Parameters": {
+            "EXTERNAL": "TRUE",
+            "skip.header.line.count": "1"
+        },
+        "PartitionKeys": [],
+        "TableType": "EXTERNAL_TABLE"
+    }
+}

@@ -2,6 +2,24 @@
     "DataSetId": "5349c977-5ad9-4cd3-923d-868f4184e708",
     "Name": "kpi_instance_all",
     "PhysicalTableMap": {
+        "22881e79-6d20-4794-b50c-c96e002eee9f": {
+            "RelationalTable": {
+                "DataSourceArn": "${athena_datasource_arn}",
+                "Catalog": "AwsDataCatalog",
+                "Schema": "${athena_database_name}",
+                "Name": "account_map",
+                "InputColumns": [
+                    {
+                        "Name": "account_id",
+                        "Type": "STRING"
+                    },
+                    {
+                        "Name": "account_name",
+                        "Type": "STRING"
+                    }
+                ]
+            }
+        },
         "958b7222-e3e2-41ab-8093-6ba24c5e88a1": {
             "RelationalTable": {
                 "DataSourceArn": "${athena_datasource_arn}",
@@ -110,19 +128,23 @@
                     },
                     {
                         "Name": "usage_quantity",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "amortized_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "adjusted_amortized_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "public_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "latest_graviton",
@@ -145,268 +167,324 @@
                         "Type": "STRING"
                     },
                     {
-                        "Name": "account_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "account_name",
-                        "Type": "STRING"
-                    },
-                    {
                         "Name": "sagemaker_all_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "sagemaker_usage_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "sagemaker_ondemand_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "sagemaker_commit_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "sagemaker_commit_potential_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "compute_all_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "compute_usage_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "compute_ondemand_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "compute_commit_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "compute_commit_potential_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_all_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_usage_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_spot_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_previous_generation_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_graviton_eligible_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_graviton_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_amd_eligible_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_amd_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_spot_potential_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_spot_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_previous_generation_potential_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_graviton_potential_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ec2_amd_potential_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "rds_all_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "rds_ondemand_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "rds_graviton_eligible_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "rds_graviton_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "rds_graviton_potential_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "rds_commit_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "rds_commit_potential_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "elasticache_all_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "elasticache_usage_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "elasticache_ondemand_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "elasticache_commit_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "elasticache_commit_potential_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "elasticache_graviton_eligible_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "elasticache_graviton_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "elasticache_graviton_potential_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "opensearch_all_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "opensearch_usage_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "opensearch_ondemand_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "opensearch_commit_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "opensearch_commit_potential_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "opensearch_graviton_eligible_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "opensearch_graviton_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "opensearch_graviton_potential_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "redshift_all_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "redshift_usage_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "redshift_ondemand_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "redshift_commit_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "redshift_commit_potential_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "dynamodb_all_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "dynamodb_committed_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "dynamodb_usage_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "dynamodb_ondemand_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "dynamodb_commit_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "dynamodb_commit_potential_savings",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "lambda_all_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "lambda_usage_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "lambda_graviton_eligible_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "lambda_graviton_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "lambda_graviton_potential_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "rds_oracle_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "rds_sql_server_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "elasticache_all_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "elasticache_usage_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "elasticache_ondemand_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "elasticache_commit_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "elasticache_commit_potential_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "elasticache_graviton_eligible_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "elasticache_graviton_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "elasticache_graviton_potential_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "opensearch_all_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "opensearch_usage_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "opensearch_ondemand_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "opensearch_commit_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "opensearch_commit_potential_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "opensearch_graviton_eligible_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "opensearch_graviton_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "opensearch_graviton_potential_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "redshift_all_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "redshift_usage_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "redshift_ondemand_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "redshift_commit_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "redshift_commit_potential_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "dynamodb_all_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "dynamodb_committed_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "dynamodb_usage_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "dynamodb_ondemand_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "dynamodb_commit_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "dynamodb_commit_potential_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "lambda_all_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "lambda_usage_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "lambda_graviton_eligible_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "lambda_graviton_cost",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "lambda_graviton_potential_savings",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     }
                 ]
             }
@@ -415,6 +493,12 @@
     "LogicalTableMap": {
         "958b7222-e3e2-41ab-8093-6ba24c5e88a1": {
             "Alias": "kpi_instance_all",
+            "Source": {
+                "PhysicalTableId": "958b7222-e3e2-41ab-8093-6ba24c5e88a1"
+            }
+        },
+        "c9a018b5-815a-41a6-81ac-d2226b4e5183": {
+            "Alias": "Intermediate Table",
             "DataTransforms": [
                 {
                     "TagColumnOperation": {
@@ -463,8 +547,6 @@
                             "latest_intel",
                             "generation",
                             "instance_processor",
-                            "account_id",
-                            "account_name",
                             "sagemaker_all_cost",
                             "sagemaker_usage_cost",
                             "sagemaker_ondemand_cost",
@@ -495,6 +577,8 @@
                             "rds_graviton_potential_savings",
                             "rds_commit_savings",
                             "rds_commit_potential_savings",
+                            "rds_oracle_cost",
+                            "rds_sql_server_cost",
                             "elasticache_all_cost",
                             "elasticache_usage_cost",
                             "elasticache_ondemand_cost",
@@ -527,14 +611,25 @@
                             "lambda_graviton_eligible_cost",
                             "lambda_graviton_cost",
                             "lambda_graviton_potential_savings",
-                            "rds_oracle_cost",
-                            "rds_sql_server_cost"
+                            "account_id",
+                            "account_name"
                         ]
                     }
                 }
             ],
             "Source": {
-                "PhysicalTableId": "958b7222-e3e2-41ab-8093-6ba24c5e88a1"
+                "JoinInstruction": {
+                    "LeftOperand": "958b7222-e3e2-41ab-8093-6ba24c5e88a1",
+                    "RightOperand": "cb6058ec-233a-45b8-b760-d3a0265979d1",
+                    "Type": "LEFT",
+                    "OnClause": "{linked_account_id} = {account_id}"
+                }
+            }
+        },
+        "cb6058ec-233a-45b8-b760-d3a0265979d1": {
+            "Alias": "account_map",
+            "Source": {
+                "PhysicalTableId": "22881e79-6d20-4794-b50c-c96e002eee9f"
             }
         }
     },

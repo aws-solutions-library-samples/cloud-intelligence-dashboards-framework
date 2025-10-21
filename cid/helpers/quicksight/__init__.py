@@ -1,13 +1,12 @@
 import re
 import json
-import uuid
 import time
 import datetime
 import logging
-import yaml
+from uuid import uuid4
 from string import Template
 from typing import Dict, List, Union
-from pkg_resources import resource_string
+from importlib import resources
 
 from tqdm import tqdm
 
@@ -15,6 +14,7 @@ from cid.base import CidBase
 from cid.helpers import diff, timezone, randtime
 from cid.helpers.quicksight.dashboard import Dashboard
 from cid.helpers.quicksight.dataset import Dataset
+from cid.helpers.quicksight.dashboard_patching import add_filter_to_dashboard_definition, patch_currency, patch_group_by, patch_spaces
 from cid.helpers.quicksight.datasource import Datasource
 from cid.helpers.quicksight.template import Template as CidQsTemplate
 from cid.helpers.quicksight.definition import Definition as CidQsDefinition
@@ -261,7 +261,9 @@ class QuickSight(CidBase):
             return True
         except self.client.exceptions.AccessDeniedException as exc:
             logger.debug(f'Cannot tag {arn} (AccessDenied).')
-            return False
+        except self.client.exceptions.ClientError as exc:
+            logger.debug(f'Cannot tag {arn} ({exc}).')
+        return False
 
 
     def get_tags(self, arn):
@@ -350,13 +352,12 @@ class QuickSight(CidBase):
         columns_tpl = {
             'PrincipalArn': self.get_principal_arn()
         }
-        data_source_permissions_tpl = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name='data/permissions/data_source_permissions.json',
-        ).decode('utf-8'))
+        data_source_permissions_tpl = Template(
+            (resources.files('cid.builtin.core') / 'data/permissions/data_source_permissions.json').read_text()
+        )
         data_source_permissions = json.loads(data_source_permissions_tpl.safe_substitute(columns_tpl))
         datasource_name = datasource_id or "CID Athena"
-        datasource_id = datasource_id or str(uuid.uuid4())
+        datasource_id = datasource_id or str(uuid4())
         params = {
             "AwsAccountId": self.account_id,
             "DataSourceId": datasource_id,
@@ -687,13 +688,16 @@ class QuickSight(CidBase):
             poll_interval
         """
         poll_interval = kwargs.get('poll_interval', 5)
+        if 'DashboardId' not in kwargs:
+            raise ValueError('DashboardId must be provided')
+        dashboard_id = kwargs.get("DashboardId")
         try:
             dashboard: Dashboard = None
             current_status = None
             # Poll for the current status of query as long as its not finished
             while current_status in [None, 'CREATION_IN_PROGRESS', 'UPDATE_IN_PROGRESS']:
                 if current_status:
-                    logger.info(f'Dashboard {dashboard.name} status is {current_status}, waiting for {poll_interval} seconds')
+                    logger.info(f'Dashboard {dashboard.id} status is {current_status}, waiting for {poll_interval} seconds')
                     # Sleep before polling again
                     time.sleep(poll_interval)
                 elif poll:
@@ -704,14 +708,16 @@ class QuickSight(CidBase):
                     logger.debug('Got ThrottlingException will sleep for 5 sec')
                     time.sleep(5)
                     continue
-                logger.debug(response)
+                logger.debug(f'response for create = {response}')
                 dashboard = Dashboard(response, qs=self)
                 current_status = dashboard.version.get('Status')
+                logger.info(f'status = {current_status}')
                 if not poll:
                     break
             logger.info(f'Dashboard {dashboard.name} status is {current_status}')
             return dashboard
         except self.client.exceptions.ResourceNotFoundException:
+            logger.debug(f'ResourceNotFoundException {dashboard_id} returning None')
             return None
         except self.client.exceptions.UnsupportedUserEditionException as exc:
             raise CidCritical('Error: Amazon QuickSight Enterprise Edition is required') from exc
@@ -728,6 +734,7 @@ class QuickSight(CidBase):
                     'AwsAccountId': self.account_id,
                     'DashboardId': dashboard_id
                 }
+                logger.debug(f'describe_dashboard_definition({dashboard_id})')
                 result = self.client.describe_dashboard_definition(**parameters)
                 self._definitions.update({f'{self.account_id}:{self.identityRegion}:{dashboard_id}': CidQsDefinition(result.get('Definition'))})
                 logger.debug(result)
@@ -747,9 +754,22 @@ class QuickSight(CidBase):
             'DashboardId': dashboard_id
         }
         logger.info(f'Deleting dashboard {dashboard_id}')
-        result = self.client.delete_dashboard(**params)
-        del self._dashboards[dashboard_id]
-        return result
+        try:
+            self.client.delete_dashboard(**params)
+        except self.client.exceptions.ResourceNotFoundException:
+            logger.info(f' ResourceNotFoundException for {dashboard_id}. Already deleted?')
+        if self._dashboards and dashboard_id in self._dashboards:
+            del self._dashboards[dashboard_id]
+        #Wait till it is deleted
+        for i in range(60):
+            if not self.describe_dashboard(DashboardId=dashboard_id, poll=False):
+                logger.info(f'Deleted dashboard {dashboard_id}')
+                break
+            logger.info(f'Waiting for deletion of {dashboard_id}')
+            time.sleep(1)
+        else:
+            raise CidError(f'Was unable to delete {dashboard_id}')
+        return
 
     def delete_data_source(self, datasource_id):
         """ Deletes an Amazon QuickSight dashboard """
@@ -820,21 +840,25 @@ class QuickSight(CidBase):
         return result
 
 
-    def describe_dataset(self, id, timeout: int=10) -> Dataset:
+    def describe_dataset(self, id, timeout: int=0, no_cache=False) -> Dataset:
         """ Describes an Amazon QuickSight dataset """
-        if self._datasets and id in self._datasets:
+        if self._datasets and id in self._datasets and not no_cache:
             return self._datasets.get(id)
         self._datasets = self._datasets or {}
         poll_interval = 1
         deadline = time.time() + timeout
-        while time.time() <= deadline:
+        while True:
             try:
-                _dataset = Dataset(self.client.describe_data_set(AwsAccountId=self.account_id, DataSetId=id).get('DataSet'))
+                _dataset = Dataset(self.client.describe_data_set(AwsAccountId=self.account_id, DataSetId=id).get('DataSet'), qs=self)
                 logger.info(f'Saving dataset details "{_dataset.name}" ({_dataset.id})')
                 self._datasets[_dataset.id] = _dataset
                 break
-            except self.client.exceptions.ResourceNotFoundException:
-                logger.info(f'DataSetId {id} not found')
+            except self.client.exceptions.ResourceNotFoundException as exc:
+                logger.info(f'DataSetId {id} not found yet (ResourceNotFoundException). will wait {deadline - time.time()}')
+
+                if time.time() > deadline:
+                    logger.debug(f'DataSetId {id} Not found ResourceNotFoundException')
+                    break
                 time.sleep(poll_interval)
                 continue
             except self.client.exceptions.AccessDeniedException:
@@ -843,6 +867,8 @@ class QuickSight(CidBase):
             except self.client.exceptions.ClientError as exc:
                 logger.warning(f'Error when trying to describe dataset {id}: {exc}')
                 return None
+ 
+        logger.info(f'DataSetId {id} timeout')
         return self._datasets.get(id, None)
 
     def get_dataset_last_ingestion(self, dataset_id) -> str:
@@ -883,7 +909,7 @@ class QuickSight(CidBase):
         try:
             for dataset in self.list_data_sets():
                 try:
-                    self.describe_dataset(dataset.get('DataSetId'))
+                    self._datasets[dataset['DataSetId']] = Dataset(dataset, qs=self)
                 except Exception as exc:
                     logger.debug(exc, exc_info=True)
                     continue
@@ -1023,10 +1049,9 @@ class QuickSight(CidBase):
         columns_tpl = {
             'PrincipalArn': self.get_principal_arn()
         }
-        data_set_permissions_tpl = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name='data/permissions/data_set_permissions.json',
-        ).decode('utf-8'))
+        data_set_permissions_tpl = Template(
+            (resources.files('cid.builtin.core') / 'data/permissions/data_set_permissions.json').read_text()
+        )
         data_set_permissions = json.loads(data_set_permissions_tpl.safe_substitute(columns_tpl))
         definition.update({
             'AwsAccountId': self.account_id,
@@ -1181,6 +1206,8 @@ class QuickSight(CidBase):
             schedule["RefreshType"] = schedule.get("RefreshType", "FULL_REFRESH")
             if "providedBy" in schedule:
                 del schedule["providedBy"]
+            if "source" in schedule:
+                del schedule["source"]
 
             if not existing_schedule:
                 # Avoid adding a new schedule  when customer already has put a schedule manually as this can lead to additional charges.
@@ -1236,10 +1263,9 @@ class QuickSight(CidBase):
 
         create_parameters = self._build_params_for_create_update_dash(definition)
 
-        dashboard_permissions_tpl = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name='data/permissions/dashboard_permissions.json',
-        ).decode('utf-8'))
+        dashboard_permissions_tpl = Template(
+            (resources.files('cid.builtin.core') / 'data/permissions/dashboard_permissions.json').read_text()
+        )
         columns_tpl = {
             'PrincipalArn': self.get_principal_arn()
         }
@@ -1248,21 +1274,23 @@ class QuickSight(CidBase):
 
         try:
             logger.info(f'Creating dashboard "{definition.get("name")}"')
-            logger.debug(create_parameters)
+            logger.debug(f'create_parameters = {create_parameters}')
             create_status = self.client.create_dashboard(**create_parameters)
             logger.debug(create_status)
         except self.client.exceptions.ResourceExistsException:
             logger.info(f'Dashboard {definition.get("name")} already exists')
             raise
-        created_version = int(create_status['VersionArn'].split('/')[-1])
+        created_version = int(create_status['VersionArn'].split('/')[-1]) # 'arn:aws:quicksight:us-east-1:217869122917:dashboard/cudos-v5/version/1
 
         # Poll for the current status of query as long as its not finished
         describe_parameters = {
             'DashboardId': definition.get('dashboardId'),
             'VersionNumber': created_version
         }
+        logger.debug(f"describe_dashboard { definition.get('dashboardId')}")
         dashboard = self.describe_dashboard(poll=True, **describe_parameters)
-        self.set_tags(dashboard.arn, cid_version=dashboard.cid_version) # try to update version tag
+        logger.debug('dashboard={dashboard}')
+        self.set_tags(dashboard.arn, cid_version_tag=dashboard.cid_version) # try to update version tag
 
         self.discover_dashboard(dashboard.id)
         if not dashboard.health:
@@ -1272,8 +1300,12 @@ class QuickSight(CidBase):
         return dashboard
 
 
-    def _build_params_for_create_update_dash(self, definition: dict, permissions: bool=True) -> Dict:
-
+    def _build_params_for_create_update_dash(self, definition: dict) -> Dict:
+        """
+        definition: cid dashboard definition. NOT QS DEFINITION.
+        returns: what we need tof create or update API
+        """
+        cid_print('Preparing dashboard definition')
         create_parameters = {
             'AwsAccountId': self.account_id,
             'DashboardId': definition.get('dashboardId'),
@@ -1301,6 +1333,11 @@ class QuickSight(CidBase):
             }
         elif definition.get('definition'):
             create_parameters['Definition'] = definition.get('definition')
+            create_parameters['Definition'] = patch_currency(
+                create_parameters['Definition'],
+                currency_symbol=get_parameters().get('currency-symbol', 'USD')
+            )
+            create_parameters['Definition'] = patch_spaces(create_parameters['Definition'])
             dataset_references = []
             for identifier, arn in definition.get('datasets', {}).items():
                 # Fetch dataset by name (preferably) OR by id
@@ -1320,6 +1357,31 @@ class QuickSight(CidBase):
 
             create_parameters['SourceEntity'] = {}
             create_parameters['Definition']['DataSetIdentifierDeclarations'] = dataset_references
+
+            # Get a list of common columns for all datasets to update the filters
+            common_columns = None
+            for dataset_reference in dataset_references:
+                dataset = self.describe_dataset(dataset_reference['DataSetArn'].split('/')[-1])
+                all_columns = dataset.raw['OutputColumns']
+                logger.debug(f'{dataset_references}: {all_columns}')
+                if common_columns is None:
+                    common_columns = all_columns
+                else:
+                    common_columns = [c for c in all_columns if c in common_columns]
+            logger.debug(f'all_datasets: {all_columns}')
+            non_taxonomy_cols = definition.get('nonTaxonomyColumns', [])
+            logger.debug(f'non_taxonomy_cols: {non_taxonomy_cols}')
+            taxonomy_columns_candidates = [c['Name'] for c in common_columns if c['Type'] == 'STRING' and c['Name'] not in non_taxonomy_cols]
+            if taxonomy_columns_candidates:
+                taxonomy = get_parameter('taxonomy',
+                    message='Select taxonomy fields to add as dashboard filters and group by fields',
+                    choices=taxonomy_columns_candidates,
+                    multi=True,
+                    order=True,
+                )
+                if taxonomy:
+                    create_parameters['Definition'] = add_filter_to_dashboard_definition(create_parameters['Definition'], taxonomy)
+                    create_parameters['Definition'] = patch_group_by(create_parameters['Definition'], taxonomy)
         else:
             logger.debug(f'Definition = {definition}')
             raise CidCritical('Dashboard definition must contain sourceTemplate or definition')
@@ -1335,7 +1397,6 @@ class QuickSight(CidBase):
         updated_version = int(update_status['VersionArn'].split('/')[-1])
 
         dashboard = self.describe_dashboard(poll=True, DashboardId=dashboard.id, VersionNumber=updated_version)
-        self.set_tags(dashboard.arn, cid_version=dashboard.cid_version) # try to update version tag
 
         if not dashboard.health:
             failure_reason = dashboard.version.get('Errors')
@@ -1350,6 +1411,7 @@ class QuickSight(CidBase):
         logger.debug(result)
         if result['Status'] != 200:
             raise Exception(result)
+        self.set_tags(dashboard.arn, cid_version_tag=dashboard.latest_available_cid_version) # update version tag to the latest
 
         return result
 

@@ -21,4 +21,10 @@ UNION    SELECT *
 UNION    SELECT *
    FROM
      compute_optimizer_ecs_service_options
+UNION    SELECT *
+   FROM
+     compute_optimizer_license_options
+UNION    SELECT *
+   FROM
+     compute_optimizer_idle_options
 )

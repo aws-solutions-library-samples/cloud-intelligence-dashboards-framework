@@ -114,6 +114,7 @@ dashboards:
               ${GroupBy} = 'Source Account Id', {source_account_id},
               ${GroupBy} = 'Tag', Tag1,
               ${GroupBy} = 'Business Unit', 'N/A',
+              // Add ${GroupBy}
               'N/A'
           )
         Name: Group By
@@ -157,7 +158,7 @@ dashboards:
         Expression: |-
           maxOver(
               {Savings Estimate, Monthly},
-              [{RI Product}, {RI Service}, date, Account, {RI Quantaty}, {RI Instance Type}, region],
+              [{RI Product}, {RI Service}, date, Account, {RI Quantity}, {RI Instance Type}, region],
               PRE_AGG
           )
           /*
@@ -166,7 +167,7 @@ dashboards:
           RI Product
           RI Instance Type
           region
-          RI Quantaty
+          RI Quantity
           Best RI
           */
         Name: Max Savings By RI Options
@@ -184,7 +185,7 @@ dashboards:
       - DataSetIdentifier: cora_view
         Expression: split(split({recommended_resource_summary}, 'in AWS account ', 2),'
           (',1)
-        Name: RI Beneft Account
+        Name: RI Benefit Account
       - DataSetIdentifier: cora_view
         Expression: 'split({recommended_resource_summary}, '' '', 2) '
         Name: RI Instance Type
@@ -204,7 +205,7 @@ dashboards:
         Name: RI Product
       - DataSetIdentifier: cora_view
         Expression: 'split({recommended_resource_summary}, '' '', 1) '
-        Name: RI Quantaty
+        Name: RI Quantity
       - DataSetIdentifier: cora_view
         Expression: concat(split({recommended_resource_summary},'/',1),'/hour')
         Name: RI SP Commitment
@@ -260,6 +261,7 @@ dashboards:
           ifelse(
               {action_type} = 'PurchaseReservedInstances', 'Reserved Instance',
               {action_type} = 'PurchaseSavingsPlans', 'Savings Plan',
+              {current_resource_type} = 'Ec2AutoScalingGroup' AND split({resource_arn},'/',2) <> '', split({resource_arn},'/',2), // special treatment for ASG to get ASG name
               split({resource_arn},':',7) <> '', concat(split({resource_arn},':',6), ':',split({resource_arn},':',7)),
               split({resource_arn},':',6)
           )
@@ -271,7 +273,11 @@ dashboards:
               {current_resource_type} = 'Ec2ReservedInstances', 'EC2 Reserved Instances',
               {current_resource_type} = 'Ec2Instance', 'EC2 Instance',
               {current_resource_type} = 'RdsReservedInstances', 'RDS Reserved Instances',
-              {current_resource_type} = 'EbsVolume', 'EBS Volume',
+              {current_resource_type} = 'EbsVolume',
+                  ifelse(
+                      contains({current_resource_details},'Unattached'), 'EBS Volume: Unattached',
+                      'EBS Volume'
+                  ),
               {current_resource_type} = 'ComputeSavingsPlans', 'Compute Savings Plans',
               {current_resource_type} = 'OpenSearchReservedInstances', 'OpenSearch Reserved Instances',
               {current_resource_type} = 'EcsService', 'ECS Service',
@@ -317,7 +323,7 @@ dashboards:
         Name: Service
       - DataSetIdentifier: cora_view
         Expression: |-
-          // CO does not provide ARNs for RI and SP recommnedations. This represents an artificial ARN allowing to unduplicate savings.
+          // CO does not provide ARNs for RI and SP recommendations. This represents an artificial ARN allowing to un-duplicate savings.
           ifelse(
               {resource_arn} <> '', {resource_arn},
               contains({current_resource_type}, 'ReservedInstances'),
@@ -327,11 +333,11 @@ dashboards:
                           {RI Service}, ':',
                           region,':',
                           {RI Product}, ':',
-                          //{RI Beneft Account}, ':',
+                          //{RI Benefit Account}, ':',
                           {RI Instance Type}, ':',
                           {RI Instance Type}
                           //, ':',
-                         //{RI Quantaty}
+                         //{RI Quantity}
                       )
                   ),
               contains({current_resource_type}, 'ComputeSavingsPlan'), 'Compute',
@@ -380,6 +386,7 @@ dashboards:
               'Rightsize',                    'Usage Optimization',
               'Stop',                         'Usage Optimization',
               'Upgrade',                      'Usage Optimization',
+              'Delete',                       'Usage Optimization',
               'NA'
           )
         Name: Type of Saving
@@ -1089,7 +1096,7 @@ dashboards:
             IncludeMinimum: false
             NullOption: ALL_VALUES
             RangeMinimum:
-              Parameter: SavingsTheshold
+              Parameter: SavingsThreshold
         ScopeConfiguration:
           AllSheets: {}
         Status: ENABLED
@@ -1726,7 +1733,7 @@ dashboards:
       - IntegerParameterDeclaration:
           DefaultValues:
             StaticValues: []
-          Name: SavingsTheshold
+          Name: SavingsThreshold
           ParameterValueType: SINGLE_VALUED
           ValueWhenUnset:
             ValueWhenUnsetOption: RECOMMENDED_VALUE
@@ -2147,9 +2154,9 @@ dashboards:
             MaximumValue: 1000.0
             MinimumValue: 0.0
             ParameterControlId: 7ff78aa1-6064-4f2c-be77-7dc986181032
-            SourceParameterName: SavingsTheshold
+            SourceParameterName: SavingsThreshold
             StepSize: 100.0
-            Title: Monthly Savings Theshold
+            Title: Monthly Savings Threshold
         - TextField:
             DisplayOptions:
               InfoIconLabelOptions:
@@ -2258,10 +2265,10 @@ dashboards:
             </text-box>
           SheetTextBoxId: 1a5e9b89-f55b-4ed5-82f7-1b8ffd1e02f1
         - Content: "<text-box>\n  <ul>\n    <li>\n      We recommend reviewing rightsizing\
-            \ first and then proceed with commitments. See\_more [\n      <a href=\"https://catalog.workshops.aws/awscid/en-US/dashboards/additional/cora#usage-guide\"\
+            \ first and then proceed with commitments. See\_more [\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/cora-dashboard.html#usage-guide\"\
             \ target=\"_blank\">1</a>\n      ].\n    </li>\n    <li>\n      There might\
             \ be a\_difference\_with data presented here and on the Console [\n      <a\
-            \ href=\"https://catalog.workshops.aws/awscid/en-US/dashboards/additional/cora#difference-with-ui\"\
+            \ href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/cora-dashboard.html#difference-with-ui\"\
             \ target=\"_blank\">2</a>\n      ].\n    </li>\n    <li>Top Actions are deduplicating\
             \ actions choosing the best per Resource Id.</li>\n  </ul>\n</text-box>"
           SheetTextBoxId: 2bb35924-202f-4467-a958-4feb38e7eff3
@@ -2549,7 +2556,7 @@ dashboards:
                 TotalsVisibility: VISIBLE
             Subtitle:
               FormatText:
-                RichText: "<visual-subtitle>\n  Click To Filter to Focus on Resoruce Type\
+                RichText: "<visual-subtitle>\n  Click To Filter to Focus on Resource Type\
                   \ and Action.\n  <br/>\n  <inline font-size=\"12px\">\n    <i>Other visuals\
                   \ will use  the Action Type as Top one and show resources where it was\
                   \ not Top Action before.\_</i>\n  </inline>\n</visual-subtitle>"
@@ -2595,7 +2602,7 @@ dashboards:
                 - CustomLabel: Current
                   FieldId: e5febe5d-d4f1-40a7-a305-78afc5a50b0e.current_resource_summary.6.1721464202000
                   Width: 91px
-                - CustomLabel: Reconmmended
+                - CustomLabel: Recommended
                   FieldId: e5febe5d-d4f1-40a7-a305-78afc5a50b0e.recommended_resource_summary.9.1721465617571
                   Width: 123px
                 - CustomLabel: Region
@@ -3718,7 +3725,7 @@ dashboards:
               Visibility: VISIBLE
             Title:
               FormatText:
-                RichText: "<visual-title>\_Details of Cost Esitmation Calculations\_</visual-title>"
+                RichText: "<visual-title>\_Details of Cost Estimation Calculations\_</visual-title>"
               Visibility: VISIBLE
             VisualId: 0116975b-8047-4f45-8e70-5c94de9c22bf
         - PieChartVisual:
@@ -4030,7 +4037,7 @@ dashboards:
             </li>\n  </ul>\n</text-box>"
           SheetTextBoxId: d85839b7-5c5c-48ed-86cc-6ee53ccae5f7
         - Content: "<text-box>\n  <inline font-size=\"40px\">Usage Optimization\_</inline>\n\
-            \  <br/>\n  <inline font-size=\"20px\">Rightsizing, Stop, Update and Migrate\
+            \  <br/>\n  <inline font-size=\"20px\">Rightsizing, Stop, Delete, Update and Migrate\
             \ to Graviton</inline>\n</text-box>"
           SheetTextBoxId: 256981d3-38c8-49eb-8ace-166fc0ec61e0
         Visuals:
@@ -5030,7 +5037,7 @@ dashboards:
             \ target=\"_blank\">1</a>\n      ]\_for some Savings Plans and it only works\
             \ within the same calendar month.\n    </li>\n    <li>Check CUDOS dashboard\
             \ for more analysis of your current spend and SP Commitment potential.</li>\n\
-            \    <li>You can buy small SP ammounts incermentally increasing the coverage\
+            \    <li>You can buy small SP amounts incrementally increasing the coverage\
             \ to avoid expiration at the same day.</li>\n    <li>\n      <a href=\"https://catalog.workshops.aws/awscff/en-US/playbooks/compute/ec2/7-commitment-plans\"\
             \ target=\"_blank\">See\_more recommendations</a>\n      .\n    </li>\n  </ul>\n\
             </text-box>"
@@ -5810,7 +5817,7 @@ dashboards:
           SheetTextBoxId: 0b4cef1a-eecd-4c27-a19b-352a974fb0e4
         - Content: "<text-box>\n  How to use:\n  <br/>\n  <ul>\n    <li>Select Level, Terms\
             \  and Upfront options</li>\n    <li>Define the right commitment</li>\n    <li>Take\
-            \ into acccount your rightsizing plan and how much it can reduce the commitment\
+            \ into account your rightsizing plan and how much it can reduce the commitment\
             \ plan.\_</li>\n  </ul>\n  <br/>\n</text-box>"
           SheetTextBoxId: 94e091ed-e24d-4c77-81c7-8aa2659c604d
         Visuals:
@@ -6020,7 +6027,7 @@ dashboards:
                       FieldId: e5febe5d-d4f1-40a7-a305-78afc5a50b0e.region.6.1722345069871
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: RI Quantaty
+                        ColumnName: RI Quantity
                         DataSetIdentifier: cora_view
                       FieldId: 4475723f-2fdd-4adf-a931-85cb282a19e2.9.1722374183483
                   - CategoricalDimensionField:
@@ -6521,7 +6528,7 @@ dashboards:
                   Width: 135px
                 - DataPathList:
                   - FieldId: 4475723f-2fdd-4adf-a931-85cb282a19e2.9.1722374183483
-                    FieldValue: RI Quantaty
+                    FieldValue: RI Quantity
                   Width: 111px
                 SelectedFieldOptions:
                 - CustomLabel: Service
@@ -6591,7 +6598,7 @@ dashboards:
                       FieldId: e5febe5d-d4f1-40a7-a305-78afc5a50b0e.region.6.1722345069871
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: RI Quantaty
+                        ColumnName: RI Quantity
                         DataSetIdentifier: cora_view
                       FieldId: 4475723f-2fdd-4adf-a931-85cb282a19e2.9.1722374183483
                   Values:
@@ -6770,13 +6777,13 @@ dashboards:
             \    <inline font-size=\"24px\">ecommended\_</inline>\n    <inline font-size=\"\
             24px\">\n      <b>A</b>\n    </inline>\n    <inline font-size=\"24px\">ctions</inline>\n\
             \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
-            >v0.0.7</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+            >v0.0.9</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
             \  <block align=\"center\">\n    <inline font-size=\"24px\">\n      <a href=\"\
-            https://catalog.workshops.aws/awscid/en-US/dashboards/additional/cora#usage-guide\"\
+            https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/cora-dashboard.html#usage-guide\"\
             \ target=\"_blank\">Documentation</a>\n    </inline>\n    <inline font-size=\"\
             24px\">\_|\_</inline>\n    <inline font-size=\"24px\">\n      <a href=\"https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cora.md\"\
             \ target=\"_blank\">Changelog</a>\n    </inline>\n    <inline font-size=\"24px\"\
-            >\_|\_</inline>\n    <inline font-size=\"24px\">\n      <a href=\"https://catalog.workshops.aws/awscid/en-US/dashboards/additional/cora#deployment\"\
+            >\_|\_</inline>\n    <inline font-size=\"24px\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/cora-dashboard.html#deployment\"\
             \ target=\"_blank\">Deployment</a>\n    </inline>\n    <inline font-size=\"\
             24px\">\_|\_</inline>\n    <inline font-size=\"24px\">\n      <a href=\"https://catalog.workshops.aws/awscid/en-US/feedback-support\"\
             \ target=\"_blank\">Feedback</a>\n    </inline>\n    <inline font-size=\"24px\"\
@@ -6792,7 +6799,7 @@ dashboards:
             \ </block>\n  <br/>\n  <block align=\"right\">\n    If you wish to provide feedback\
             \ please or report an error please email:\n    <inline color=\"#61d1d6\">\_\
             </inline>\n    <inline background-color=\"#21a0d7\" color=\"#61d1d6\">\n   \
-            \   <a href=\"mailto:cloud-intelligence-dashboards@amazon.com?subject=CUDOS%20Dashboard%20Feedback\"\
+            \   <a href=\"mailto:cloud-intelligence-dashboards@amazon.com?subject=CORA%20Dashboard%20Feedback\"\
             \ target=\"_blank\">cloud-intelligence-dashboards@amazon.com</a>\n    </inline>\n\
             \  </block>\n  <br/>\n  <block align=\"right\">Powered by: Amazon QuickSight,\
             \ Amazon Athena, Amazon S3, AWS Cost Optimization Hub</block>\n  <br/>\n  <block\
@@ -6957,6 +6964,7 @@ datasets:
       account_map_database_name:
         type: athena
         query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'account_map'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
         error: You need to install Foundational Dashboards that provide account_map view.
         default: cid_cur
         description: Database of account_map table (from foundational dashboards)
@@ -7002,6 +7010,7 @@ views:
       data_exports_database_name:
         type: athena
         query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'coh'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
         default: cid_data_export
         description: Database of cid data exports
         global: True

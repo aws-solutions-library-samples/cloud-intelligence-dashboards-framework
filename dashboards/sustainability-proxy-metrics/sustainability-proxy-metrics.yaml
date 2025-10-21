@@ -3,7 +3,6 @@ dashboards:
     category: 'Additional'
     dependsOn:
       datasets:
-      - carbon_emissions_longform
       - sus_carbon_emissions
       - sus_compute_ec2
       - sus_compute_split
@@ -13,7 +12,7 @@ dashboards:
       - sus_network
       - sus_s3_storage_all
       - sus_storage_athena
-    name: Sustainability Proxy Metrics And CCFT
+    name: Sustainability Proxy and Carbon emissions data
     dashboardId: sustainability-proxy-metrics
     theme: MIDNIGHT
     data: |-
@@ -27,18 +26,23 @@ dashboards:
                   ResizeOption: FIXED
           SheetContentType: INTERACTIVE
       CalculatedFields:
-      - DataSetIdentifier: carbon_emissions_longform
-        Expression: |-
-          ifelse(metric = 'gridmixinefficiency', 'Emission savings from AWS renewable energy purchases' ,
-          metric = 'servermedianinefficiency', 'Emission savings from using AWS computing services' ,
-          metric = 'mbmcarbon', 'Estimated carbon emissions' ,
-          "none"
-          )
-        Name: metric_speaking
       - DataSetIdentifier: sus_carbon_emissions
-        Expression: 'ifelse({account_name} = '''', {account_id} , {account_name})
-          '
-        Name: Account Name
+        Expression: |-
+          ifelse(
+              isNull({account_name}),
+              {usage_account_id},
+              {account_name}
+          )
+        Name: calc_account_name
+      - DataSetIdentifier: sus_carbon_emissions
+        Expression: '{total_lbm_emissions_value}-{total_mbm_emissions_value}'
+        Name: estimated_carbon_emissions_reduction
+      - DataSetIdentifier: sus_carbon_emissions
+        Expression: |-
+          ifelse(${scope2Method}="market-based method", {total_mbm_emissions_value}
+          , {total_lbm_emissions_value}
+          )
+        Name: scope2_method_total_emissions_value
       - DataSetIdentifier: sus_compute_ec2
         Expression: |-
           ifelse(${GroupByPara} = 'Linked Account',
@@ -162,8 +166,7 @@ dashboards:
           )
         Name: TransferType
       - DataSetIdentifier: sus_s3_storage_all
-        Expression: ifelse(${GroupByPara} = 'Linked Account', {6a3cecf1-7160-48cd-91e9-a6a07ddd44fc.linked_account_id},
-          {6a3cecf1-7160-48cd-91e9-a6a07ddd44fc.resource_tags_user_application})
+        Expression: ifelse(${GroupByPara} = 'Linked Account', {linked_account_id}, {resource_tags_user_application})
         Name: CalcFWorkload
       - DataSetIdentifier: sus_s3_storage_all
         Expression: |-
@@ -195,9 +198,9 @@ dashboards:
       - DataSetIdentifier: sus_storage_athena
         Expression: |-
           ifelse(
-              ${IncludeKPI} = 'No',               usage,
-              ${GroupByPara} = 'Linked Account',  usage / accbuskpi ,
-              ${GroupByPara} = 'Environment Tag', usage / tagbuskpi ,
+              ${IncludeKPI} = 'No',               {3bf588fa-4b55-4746-b422-1799d4cb51ff.usage},
+              ${GroupByPara} = 'Linked Account',  {3bf588fa-4b55-4746-b422-1799d4cb51ff.usage} / accbuskpi ,
+              ${GroupByPara} = 'Environment Tag', {3bf588fa-4b55-4746-b422-1799d4cb51ff.usage} / tagbuskpi ,
               0
           )
         Name: ScaledValue
@@ -250,11 +253,11 @@ dashboards:
                   NullString: 'null'
                 Suffix: TB
       DataSetIdentifierDeclarations:
-      - DataSetArn: arn:aws:quicksight:::dataset/aca88952-9aff-4b3d-9619-b309d3f7d76c
+      - DataSetArn: arn:aws:quicksight:::dataset/20912ab9-05e1-48c0-99f7-b70e68c743f0
         Identifier: sus_compute_split
       - DataSetArn: arn:aws:quicksight:::dataset/c8a8cb07-8d9d-4b90-9862-e2a7e1370908
         Identifier: sus_idle_natgw
-      - DataSetArn: arn:aws:quicksight:::dataset/12419d71-ec67-4e23-bd1f-fcd7b34c82f9
+      - DataSetArn: arn:aws:quicksight:::dataset/6e2ba899-6fc4-4321-95cb-b332dcbd8ef5
         Identifier: sus_carbon_emissions
       - DataSetArn: arn:aws:quicksight:::dataset/cf4c1a8b-6e9a-4cac-b2da-d82c970271e4
         Identifier: sus_compute_ec2
@@ -268,31 +271,7 @@ dashboards:
         Identifier: sus_geo_region_athena
       - DataSetArn: arn:aws:quicksight:::dataset/af858de6-f6ef-4961-88c4-964aa1266b9a
         Identifier: sus_storage_athena
-      - DataSetArn: arn:aws:quicksight:::dataset/814f2ac6-3205-43b8-ac8b-bab4dc1c864a
-        Identifier: carbon_emissions_longform
       FilterGroups:
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: 52f87545-d3b8-45c0-9148-da6b8d46c388
-        Filters:
-        - TimeRangeFilter:
-            Column:
-              ColumnName: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.usage_date
-              DataSetIdentifier: d01a936f-2b8f-49dd-8f95-d9c7130c5e46
-            FilterId: d82d18d5-82a8-48bb-80e2-0d09dbec7875
-            IncludeMaximum: false
-            IncludeMinimum: true
-            NullOption: NON_NULLS_ONLY
-            RangeMaximumValue:
-              Parameter: EndDate
-            RangeMinimumValue:
-              Parameter: StartDate
-            TimeGranularity: DAY
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: 8e8cac4d-8d13-4cf2-8ca2-5e3de093e26a
-        Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: 77907915-3979-4880-9750-ac6617fd83ea
         Filters:
@@ -312,7 +291,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: bd74ef4d-0d98-4a1a-97bf-59a5352241ff
+              SheetId: f672a1e2-ddeb-49b9-b89f-2880d60fa7ed
         Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: b505e712-f323-4bb4-ab4a-837f9fc5888b
@@ -331,7 +310,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: bd74ef4d-0d98-4a1a-97bf-59a5352241ff
+              SheetId: f672a1e2-ddeb-49b9-b89f-2880d60fa7ed
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 4945d044-5857-4e26-8c89-768a9eeb3635
@@ -350,9 +329,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: bd74ef4d-0d98-4a1a-97bf-59a5352241ff
+              SheetId: f672a1e2-ddeb-49b9-b89f-2880d60fa7ed
               VisualIds:
-              - d3e13b7d-fe5f-479e-b8b9-62bd0d965145
+              - e2fb846a-1509-4437-bb44-fa3f53238488
         Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: 8b258d89-56ff-462a-b723-e1fb0d6d5e9f
@@ -373,7 +352,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 79117f56-7653-4ad4-a5ed-2306ad69a91e
+              SheetId: 6f379d1e-3b60-4353-8271-1bb54394e233
         Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: c4d96f5c-293e-499d-8010-ba5a3740b33c
@@ -392,7 +371,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 79117f56-7653-4ad4-a5ed-2306ad69a91e
+              SheetId: 6f379d1e-3b60-4353-8271-1bb54394e233
         Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: 904c5556-4c90-4136-ba89-d4c6ba1cec88
@@ -411,7 +390,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 8e8cac4d-8d13-4cf2-8ca2-5e3de093e26a
+              SheetId: f53c1e71-6dd7-4fb3-9e64-9bed5f908ae1
         Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: 76ff731f-2383-4742-b1ad-6a524c6eb0b0
@@ -422,6 +401,17 @@ dashboards:
             Column:
               ColumnName: line_item_usage_start_date
               DataSetIdentifier: sus_compute_split
+            DefaultFilterControlConfiguration:
+              ControlOptions:
+                DefaultRelativeDateTimeOptions:
+                  DisplayOptions:
+                    DateTimeFormat: YYYY/MM/DD HH:mm:ss
+                    TitleOptions:
+                      FontConfiguration:
+                        FontSize:
+                          Relative: MEDIUM
+                      Visibility: VISIBLE
+              Title: Date Range
             FilterId: 7b613744-a8f4-46db-a5b5-7aeb0da534b7
             MinimumGranularity: DAY
             NullOption: NON_NULLS_ONLY
@@ -429,29 +419,7 @@ dashboards:
             RelativeDateValue: 24
             TimeGranularity: MONTH
         ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: 8e8cac4d-8d13-4cf2-8ca2-5e3de093e26a
-        Status: ENABLED
-      - CrossDataset: ALL_DATASETS
-        FilterGroupId: 33b9e87f-2253-4bb7-ad36-3d6eb14bb576
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: accountid
-              DataSetIdentifier: sus_carbon_emissions
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            FilterId: 4dc7a6e5-19a2-433d-a22f-fb078b17f46a
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: e5a60f56-b9b7-40e5-91aa-987b5f70acf3
+          AllSheets: {}
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: f244c343-08aa-4e4c-84eb-c9ecfd96664f
@@ -470,73 +438,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: bd74ef4d-0d98-4a1a-97bf-59a5352241ff
+              SheetId: f672a1e2-ddeb-49b9-b89f-2880d60fa7ed
               VisualIds:
-              - e4a0c828-69df-47ab-b597-b8389177fc0e
-        Status: ENABLED
-      - CrossDataset: ALL_DATASETS
-        FilterGroupId: b0119f70-3da5-478d-a73b-40afb340c1bd
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: Account Name
-              DataSetIdentifier: sus_carbon_emissions
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            FilterId: c51f5f0b-5f99-4d7f-9bfc-1419796a6341
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: e5a60f56-b9b7-40e5-91aa-987b5f70acf3
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: a4a96c0f-2863-44a8-b6a3-84da850cff08
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: metric_speaking
-              DataSetIdentifier: carbon_emissions_longform
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            FilterId: 907d404c-c218-41c8-b8d7-e3041fb2230b
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: e5a60f56-b9b7-40e5-91aa-987b5f70acf3
-              VisualIds:
-              - a31027d5-1668-4967-9524-7d426d4bbad8
-        Status: ENABLED
-      - CrossDataset: ALL_DATASETS
-        FilterGroupId: 896e0115-fc5f-4c9a-b2f4-c0ea24cca234
-        Filters:
-        - TimeRangeFilter:
-            Column:
-              ColumnName: startdate
-              DataSetIdentifier: sus_carbon_emissions
-            FilterId: 80c1db3c-7046-4887-b5cd-429be83aa953
-            IncludeMaximum: true
-            IncludeMinimum: true
-            NullOption: NON_NULLS_ONLY
-            RangeMaximumValue:
-              RollingDate:
-                Expression: truncDate('DD', now())
-            RangeMinimumValue:
-              RollingDate:
-                Expression: addDateTime(-24, 'MM', truncDate('MM', now()))
-            TimeGranularity: DAY
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: e5a60f56-b9b7-40e5-91aa-987b5f70acf3
+              - 53e33142-0c45-4371-b48a-10107bbb5d43
         Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: 16589d28-e102-4d8a-ae41-d3bff092272b
@@ -557,9 +461,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: ce592008-069c-4719-9b7d-ecba16a8b7e1
+              SheetId: 0b72e6f2-92bc-46fd-9818-7fbce3f0cf58
               VisualIds:
-              - d20563c5-d6de-42b5-9aa5-4327960abcee
+              - 900df7e0-e5ae-4a16-ba4a-ff084cab37b4
         Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: d4a1532e-4730-4747-accc-e435f9e4b7a5
@@ -578,9 +482,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: ce592008-069c-4719-9b7d-ecba16a8b7e1
+              SheetId: 0b72e6f2-92bc-46fd-9818-7fbce3f0cf58
               VisualIds:
-              - d20563c5-d6de-42b5-9aa5-4327960abcee
+              - 900df7e0-e5ae-4a16-ba4a-ff084cab37b4
         Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: 430ce6ef-8db6-4544-be2b-8202b425edf3
@@ -601,9 +505,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: ce592008-069c-4719-9b7d-ecba16a8b7e1
+              SheetId: 0b72e6f2-92bc-46fd-9818-7fbce3f0cf58
               VisualIds:
-              - 22de809c-985e-419e-8164-3f06dd52a2bf
+              - 63325141-46cd-492d-9523-03737399145e
         Status: DISABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: 54181248-a575-49f5-a3e8-a9759d92ffc1
@@ -622,9 +526,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: ce592008-069c-4719-9b7d-ecba16a8b7e1
+              SheetId: 0b72e6f2-92bc-46fd-9818-7fbce3f0cf58
               VisualIds:
-              - 22de809c-985e-419e-8164-3f06dd52a2bf
+              - 63325141-46cd-492d-9523-03737399145e
         Status: ENABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: d425bece-026a-4951-9688-e80ce8c354fa
@@ -645,9 +549,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: ce592008-069c-4719-9b7d-ecba16a8b7e1
+              SheetId: 0b72e6f2-92bc-46fd-9818-7fbce3f0cf58
               VisualIds:
-              - 5c0178cf-b9fd-4567-9637-00e4202edd81
+              - e9ad0568-2e3e-41f8-9997-a238f63ebdc8
         Status: DISABLED
       - CrossDataset: ALL_DATASETS
         FilterGroupId: 85046f11-8888-42e5-bc19-359083a65584
@@ -666,9 +570,99 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: ce592008-069c-4719-9b7d-ecba16a8b7e1
+              SheetId: 0b72e6f2-92bc-46fd-9818-7fbce3f0cf58
               VisualIds:
-              - 5c0178cf-b9fd-4567-9637-00e4202edd81
+              - e9ad0568-2e3e-41f8-9997-a238f63ebdc8
+        Status: ENABLED
+      - CrossDataset: ALL_DATASETS
+        FilterGroupId: 67c37cdb-f942-41a0-826d-b26de2f2a196
+        Filters:
+        - TimeRangeFilter:
+            Column:
+              ColumnName: usage_period_start
+              DataSetIdentifier: sus_carbon_emissions
+            DefaultFilterControlConfiguration:
+              ControlOptions:
+                DefaultRelativeDateTimeOptions:
+                  DisplayOptions:
+                    DateTimeFormat: YYYY/MM/DD HH:mm:ss
+                    TitleOptions:
+                      FontConfiguration:
+                        FontSize:
+                          Relative: MEDIUM
+                      Visibility: VISIBLE
+              Title: Date Range
+            FilterId: 6c80c8d1-a7bc-4f45-bdb4-6f46bdc2a7d6
+            NullOption: NON_NULLS_ONLY
+            RangeMaximumValue:
+              StaticValue: 2025-02-28 01:00:00+01:00
+            RangeMinimumValue:
+              StaticValue: 2024-01-01 01:00:00+01:00
+            TimeGranularity: DAY
+        ScopeConfiguration:
+          AllSheets: {}
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 22095de3-1f41-4a21-9337-ce9da85bc962
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: usage_account_id
+              DataSetIdentifier: sus_carbon_emissions
+            Configuration:
+              FilterListConfiguration:
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+                SelectAllOptions: FILTER_ALL_VALUES
+            FilterId: e91cbb06-a972-4743-81ea-ee89edd2c14b
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: 156ba9c5-51b9-43b7-8afe-5bff0eed39f8
+              VisualIds:
+              - 5ec23d54-4592-4cd0-8497-5a7ef33b5513
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 1c9c686e-b579-4771-a5eb-8f4686eb937c
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: payer_account_id
+              DataSetIdentifier: sus_carbon_emissions
+            Configuration:
+              FilterListConfiguration:
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+                SelectAllOptions: FILTER_ALL_VALUES
+            FilterId: a41ac62f-7ed7-45a5-810d-b449c3d0eec2
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: 156ba9c5-51b9-43b7-8afe-5bff0eed39f8
+              VisualIds:
+              - 5ec23d54-4592-4cd0-8497-5a7ef33b5513
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: c99a36dd-136c-4102-b3f1-dd6a25c695a7
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: carbon_model_version
+              DataSetIdentifier: sus_carbon_emissions
+            Configuration:
+              CustomFilterListConfiguration:
+                CategoryValues:
+                - v1.0.0
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+            FilterId: 08d7cdf2-a43e-4187-ace2-98557ebfee3e
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: ALL_VISUALS
+              SheetId: 156ba9c5-51b9-43b7-8afe-5bff0eed39f8
         Status: ENABLED
       Options: {}
       ParameterDeclarations:
@@ -997,6 +991,14 @@ dashboards:
           ParameterValueType: MULTI_VALUED
           ValueWhenUnset:
             ValueWhenUnsetOption: RECOMMENDED_VALUE
+      - StringParameterDeclaration:
+          DefaultValues:
+            StaticValues:
+            - market-based method
+          Name: scope2Method
+          ParameterValueType: SINGLE_VALUED
+          ValueWhenUnset:
+            ValueWhenUnsetOption: RECOMMENDED_VALUE
       - DateTimeParameterDeclaration:
           DefaultValues:
             RollingDate:
@@ -1029,24 +1031,24 @@ dashboards:
               Elements:
               - ColumnIndex: 0
                 ColumnSpan: 18
-                ElementId: d20563c5-d6de-42b5-9aa5-4327960abcee
+                ElementId: 900df7e0-e5ae-4a16-ba4a-ff084cab37b4
                 ElementType: VISUAL
                 RowIndex: 0
                 RowSpan: 14
               - ColumnIndex: 18
                 ColumnSpan: 18
-                ElementId: 22de809c-985e-419e-8164-3f06dd52a2bf
+                ElementId: 63325141-46cd-492d-9523-03737399145e
                 ElementType: VISUAL
                 RowIndex: 0
-                RowSpan: 12
+                RowSpan: 14
               - ColumnIndex: 0
                 ColumnSpan: 35
-                ElementId: 5c0178cf-b9fd-4567-9637-00e4202edd81
+                ElementId: e9ad0568-2e3e-41f8-9997-a238f63ebdc8
                 ElementType: VISUAL
                 RowIndex: 14
                 RowSpan: 12
         Name: Regional Footprint
-        SheetId: ce592008-069c-4719-9b7d-ecba16a8b7e1
+        SheetId: 0b72e6f2-92bc-46fd-9818-7fbce3f0cf58
         Visuals:
         - LineChartVisual:
             Actions: []
@@ -1063,7 +1065,7 @@ dashboards:
                         DataSetIdentifier: sus_geo_region_athena
                       DateGranularity: WEEK
                       FieldId: ea7b9711-1cfb-47ce-a7f1-2d7686890f72.usage_date.2.1683548429034
-                      HierarchyId: ea7b9711-1cfb-47ce-a7f1-2d7686890f72.usage_date.2.1683548429034
+                      HierarchyId: 53c6ed93-bd29-452b-86f9-6e7e3c83b0be
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -1111,14 +1113,15 @@ dashboards:
               Type: LINE
             ColumnHierarchies:
             - DateTimeHierarchy:
-                HierarchyId: ea7b9711-1cfb-47ce-a7f1-2d7686890f72.usage_date.2.1683548429034
+                DrillDownFilters: []
+                HierarchyId: 53c6ed93-bd29-452b-86f9-6e7e3c83b0be
             Subtitle:
               Visibility: HIDDEN
             Title:
               FormatText:
                 RichText: <visual-title>Regional Use Over Time</visual-title>
               Visibility: VISIBLE
-            VisualId: 5c0178cf-b9fd-4567-9637-00e4202edd81
+            VisualId: e9ad0568-2e3e-41f8-9997-a238f63ebdc8
         - InsightVisual:
             Actions: []
             DataSetIdentifier: sus_geo_region_athena
@@ -1126,16 +1129,16 @@ dashboards:
               Computations: []
               CustomNarrative:
                 Narrative: "<narrative>\n  To achieve our goal of powering our operations\
-                  \ with 100% renewable energy by \n  <inline color=\"#ffb91e\">2025</inline>\n\
+                  \ with 100% renewable energy by\n  <inline color=\"#ffb91e\">2025</inline>\n\
                   \  \u2014five years ahead of our original 2030 target\u2014Amazon contracts\
                   \ for renewable power from utility scale wind and solar projects that\
                   \ add clean energy to the grid. These new renewable projects support hundreds\
                   \ of jobs while providing hundreds of millions of dollars of investment\
                   \ in local communities. We also may choose to support these grids through\
                   \ the purchase of environmental attributes, like Renewable Energy Certificates\
-                  \ and Guarantees of Origin, in line with our \n  <a href=\"https://sustainability.aboutamazon.com/renewable-energy-methodology.pdf\"\
+                  \ and Guarantees of Origin, in line with our\n  <a href=\"https://sustainability.aboutamazon.com/renewable-energy-methodology.pdf\"\
                   \ target=\"_self\">Renewable Energy Methodology</a>\n  .\n  <br/>\n  As\
-                  \ a result, in \n  <inline color=\"#e2ff18\">2023</inline>\n  , the electricity\
+                  \ a result, in\n  <inline color=\"#e2ff18\">2023</inline>\n  , the electricity\
                   \ consumed in the following 22 AWS Regions was attributable to 100% renewable\
                   \ energy:\n  <br/>\n  <br/>\n  <ul>\n    <li>U.S. East (Northern Virginia)</li>\n\
                   \    <li>GovCloud (U.S. East)</li>\n    <li>U.S. East (Ohio)</li>\n  \
@@ -1157,7 +1160,7 @@ dashboards:
               Visibility: VISIBLE
             Title:
               Visibility: VISIBLE
-            VisualId: 22de809c-985e-419e-8164-3f06dd52a2bf
+            VisualId: 63325141-46cd-492d-9523-03737399145e
         - GeospatialMapVisual:
             Actions: []
             ChartConfiguration:
@@ -1188,6 +1191,8 @@ dashboards:
                         ColumnName: cost
                         DataSetIdentifier: sus_geo_region_athena
                       FieldId: ea7b9711-1cfb-47ce-a7f1-2d7686890f72.cost.2.1726835267865
+              Legend:
+                Width: 122px
               Tooltip:
                 FieldBasedTooltip:
                   AggregationVisibility: HIDDEN
@@ -1220,10 +1225,10 @@ dashboards:
                     FieldValue: '2023'
               WindowOptions:
                 Bounds:
-                  East: 135.56892590498506
-                  North: 78.71456975677884
-                  South: -1.1073881303064468
-                  West: -26.8342861382701
+                  East: 117.01222459421075
+                  North: 74.87940099362609
+                  South: -1.6967648814458443
+                  West: -19.5947498632554
                 MapZoomMode: MANUAL
             ColumnHierarchies: []
             Subtitle:
@@ -1235,26 +1240,16 @@ dashboards:
                 RichText: "<visual-title>Distribution of cost by AWS Region - Coloured by\
                   \ renewable energy.\_</visual-title>"
               Visibility: VISIBLE
-            VisualId: d20563c5-d6de-42b5-9aa5-4327960abcee
+            VisualId: 900df7e0-e5ae-4a16-ba4a-ff084cab37b4
       - ContentType: INTERACTIVE
         Description: "To build a sustainable business for our customers and for the world\
           \ we all share, we\u2019re designing data centers that provide the efficient,\
           \ resilient service our customers expect while minimizing our environmental footprint\u2014\
           and theirs."
         FilterControls:
-        - RelativeDateTime:
-            DisplayOptions:
-              DateTimeFormat: YYYY/MM/DD HH:mm:ss
-              InfoIconLabelOptions:
-                Visibility: HIDDEN
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
+        - CrossSheet:
             FilterControlId: 9884e25a-602b-48b3-9f36-361073e16ec9
             SourceFilterId: 7b613744-a8f4-46db-a5b5-7aeb0da534b7
-            Title: Date Range
         - Dropdown:
             DisplayOptions:
               InfoIconLabelOptions:
@@ -1286,31 +1281,31 @@ dashboards:
                 RowSpan: 3
               - ColumnIndex: 0
                 ColumnSpan: 36
-                ElementId: 4a08ef4d-b92c-4c7f-a266-19dc78026bb2
+                ElementId: 32dfb599-195a-4f32-8723-7cbc2af1ee4c
                 ElementType: VISUAL
                 RowIndex: 3
                 RowSpan: 10
               - ColumnIndex: 0
                 ColumnSpan: 36
-                ElementId: 64056ade-d211-4376-a716-9264f3a30dd8
+                ElementId: ac891da8-cdde-47bc-80cc-df5be694ecf6
                 ElementType: VISUAL
                 RowIndex: 13
                 RowSpan: 9
               - ColumnIndex: 0
                 ColumnSpan: 18
-                ElementId: 848e0d1d-5bff-4e38-a441-c5982c298915
+                ElementId: 0fa0ed41-e258-40b3-944c-5cb0c4f14067
                 ElementType: VISUAL
                 RowIndex: 22
                 RowSpan: 7
               - ColumnIndex: 18
                 ColumnSpan: 18
-                ElementId: 7b860165-77b2-4393-855a-06333f4d5494
+                ElementId: a49acb3a-687c-4684-9da7-cf82aa56c8ba
                 ElementType: VISUAL
                 RowIndex: 22
                 RowSpan: 7
               - ColumnIndex: 0
                 ColumnSpan: 18
-                ElementId: edfab82d-73a9-4f40-9171-40852720d8ab
+                ElementId: 2a1a0815-a687-4b91-a2e3-969e38c3fa2d
                 ElementType: VISUAL
                 RowIndex: 29
                 RowSpan: 7
@@ -1388,7 +1383,7 @@ dashboards:
                 ElementType: FILTER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
-        SheetId: 8e8cac4d-8d13-4cf2-8ca2-5e3de093e26a
+        SheetId: f53c1e71-6dd7-4fb3-9e64-9bed5f908ae1
         TextBoxes:
         - Content: |-
             <text-box>
@@ -1465,13 +1460,13 @@ dashboards:
                         DataSetIdentifier: sus_compute_ec2
                       DateGranularity: WEEK
                       FieldId: ab737a73-894c-4495-b12d-bf17cfb6b935.line_item_usage_start_date.0.1700238101260
-                      HierarchyId: ab737a73-894c-4495-b12d-bf17cfb6b935.line_item_usage_start_date.0.1700238101260
+                      HierarchyId: 898cb8bb-eeaa-4936-b354-687172474125
                   Colors:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: Processor Type
+                        ColumnName: account_name
                         DataSetIdentifier: sus_compute_ec2
-                      FieldId: b7e46fd5-313a-4872-9257-9e7c6872f839.2.1700239237143
+                      FieldId: 4d22feb2-2623-4113-a230-ee69aa825fd3.account_name.1.1742546726309
                   Values: []
               Legend:
                 Title:
@@ -1497,7 +1492,7 @@ dashboards:
                       FieldId: ab737a73-894c-4495-b12d-bf17cfb6b935.line_item_usage_start_date.0.1700238101260
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: b7e46fd5-313a-4872-9257-9e7c6872f839.2.1700239237143
+                      FieldId: 4d22feb2-2623-4113-a230-ee69aa825fd3.account_name.1.1742546726309
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
@@ -1506,7 +1501,8 @@ dashboards:
                 Visibility: HIDDEN
             ColumnHierarchies:
             - DateTimeHierarchy:
-                HierarchyId: ab737a73-894c-4495-b12d-bf17cfb6b935.line_item_usage_start_date.0.1700238101260
+                DrillDownFilters: []
+                HierarchyId: 898cb8bb-eeaa-4936-b354-687172474125
             Subtitle:
               FormatText:
                 RichText: |-
@@ -1524,7 +1520,7 @@ dashboards:
                     . Select account/ tag on instance family graph to filter.
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: edfab82d-73a9-4f40-9171-40852720d8ab
+            VisualId: 2a1a0815-a687-4b91-a2e3-969e38c3fa2d
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -1549,7 +1545,7 @@ dashboards:
                         DataSetIdentifier: sus_compute_ec2
                       DateGranularity: WEEK
                       FieldId: ab737a73-894c-4495-b12d-bf17cfb6b935.line_item_usage_start_date.0.1700238101260
-                      HierarchyId: ab737a73-894c-4495-b12d-bf17cfb6b935.line_item_usage_start_date.0.1700238101260
+                      HierarchyId: 1b40e723-77e0-4bc0-8df4-86a881e1f878
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -1599,7 +1595,8 @@ dashboards:
                 Visibility: HIDDEN
             ColumnHierarchies:
             - DateTimeHierarchy:
-                HierarchyId: ab737a73-894c-4495-b12d-bf17cfb6b935.line_item_usage_start_date.0.1700238101260
+                DrillDownFilters: []
+                HierarchyId: 1b40e723-77e0-4bc0-8df4-86a881e1f878
             Subtitle:
               FormatText:
                 RichText: |-
@@ -1617,7 +1614,7 @@ dashboards:
                     . Select account/ tag on instance family graph to filter.
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 7b860165-77b2-4393-855a-06333f4d5494
+            VisualId: a49acb3a-687c-4684-9da7-cf82aa56c8ba
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -1706,7 +1703,7 @@ dashboards:
                   \ AWS Lambda, AWS Fargate on Amazon EKS/ Amazon ECS)</b>\n  \_by account/\
                   \ tag.\n</visual-title>"
               Visibility: VISIBLE
-            VisualId: 4a08ef4d-b92c-4c7f-a266-19dc78026bb2
+            VisualId: 32dfb599-195a-4f32-8723-7cbc2af1ee4c
         - BarChartVisual:
             Actions:
             - ActionOperations:
@@ -1717,9 +1714,9 @@ dashboards:
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisuals:
-                      - edfab82d-73a9-4f40-9171-40852720d8ab
-                      - 7b860165-77b2-4393-855a-06333f4d5494
-                      - 848e0d1d-5bff-4e38-a441-c5982c298915
+                      - 2a1a0815-a687-4b91-a2e3-969e38c3fa2d
+                      - a49acb3a-687c-4684-9da7-cf82aa56c8ba
+                      - 0fa0ed41-e258-40b3-944c-5cb0c4f14067
               CustomActionId: 065f054a-6628-4d25-97ed-71569be54d84
               Name: Action 1
               Status: ENABLED
@@ -1809,7 +1806,7 @@ dashboards:
                   \  \_by account/ tag. Select account/ tag here to filter visuals by.\n\
                   </visual-title>"
               Visibility: VISIBLE
-            VisualId: 64056ade-d211-4376-a716-9264f3a30dd8
+            VisualId: ac891da8-cdde-47bc-80cc-df5be694ecf6
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -1834,7 +1831,7 @@ dashboards:
                         DataSetIdentifier: sus_compute_ec2
                       DateGranularity: WEEK
                       FieldId: ab737a73-894c-4495-b12d-bf17cfb6b935.line_item_usage_start_date.0.1700238101260
-                      HierarchyId: ab737a73-894c-4495-b12d-bf17cfb6b935.line_item_usage_start_date.0.1700238101260
+                      HierarchyId: 85b1cbd5-12bd-42f5-89cf-860355143d8d
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -1885,7 +1882,8 @@ dashboards:
                 Visibility: HIDDEN
             ColumnHierarchies:
             - DateTimeHierarchy:
-                HierarchyId: ab737a73-894c-4495-b12d-bf17cfb6b935.line_item_usage_start_date.0.1700238101260
+                DrillDownFilters: []
+                HierarchyId: 85b1cbd5-12bd-42f5-89cf-860355143d8d
             Subtitle:
               FormatText:
                 RichText: |-
@@ -1903,7 +1901,7 @@ dashboards:
                     . Select account/ tag on instance family graph to filter.
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 848e0d1d-5bff-4e38-a441-c5982c298915
+            VisualId: 0fa0ed41-e258-40b3-944c-5cb0c4f14067
       - ContentType: INTERACTIVE
         FilterControls:
         - RelativeDateTime:
@@ -1950,25 +1948,25 @@ dashboards:
                 RowSpan: 5
               - ColumnIndex: 0
                 ColumnSpan: 18
-                ElementId: ac6ae3b9-fb64-4072-9f99-c10a150a3c02
+                ElementId: 3a2786de-3c98-4233-8b05-6eefe3371db5
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 9
               - ColumnIndex: 18
                 ColumnSpan: 18
-                ElementId: 1af2659b-934b-460c-b6b5-c248b2387817
+                ElementId: 7bb597ea-b966-4b83-9680-a68733f6707a
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 9
               - ColumnIndex: 0
                 ColumnSpan: 18
-                ElementId: d3e13b7d-fe5f-479e-b8b9-62bd0d965145
+                ElementId: e2fb846a-1509-4437-bb44-fa3f53238488
                 ElementType: VISUAL
                 RowIndex: 14
                 RowSpan: 10
               - ColumnIndex: 18
                 ColumnSpan: 18
-                ElementId: e4a0c828-69df-47ab-b597-b8389177fc0e
+                ElementId: 53e33142-0c45-4371-b48a-10107bbb5d43
                 ElementType: VISUAL
                 RowIndex: 14
                 RowSpan: 10
@@ -2039,7 +2037,7 @@ dashboards:
                 ElementId: 554e1afc-a5b6-47e7-a14d-f5c8dc88a669
                 ElementType: FILTER_CONTROL
                 RowSpan: 1
-        SheetId: bd74ef4d-0d98-4a1a-97bf-59a5352241ff
+        SheetId: f672a1e2-ddeb-49b9-b89f-2880d60fa7ed
         TextBoxes:
         - Content: "<text-box>\n  <inline font-size=\"20px\">\n    <b>Storage</b>\n  </inline>\n\
             \  <br/>\n  <br/>\n  Implement data management practices to reduce the provisioned\
@@ -2107,7 +2105,7 @@ dashboards:
                         DataSetIdentifier: sus_storage_athena
                       DateGranularity: WEEK
                       FieldId: 3bf588fa-4b55-4746-b422-1799d4cb51ff.line_item_usage_start_date.1.1683546405166
-                      HierarchyId: 3bf588fa-4b55-4746-b422-1799d4cb51ff.line_item_usage_start_date.1.1683546405166
+                      HierarchyId: 09d7891d-e378-45a9-ba0e-30c0fa68a33e
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -2160,7 +2158,8 @@ dashboards:
                 Visibility: HIDDEN
             ColumnHierarchies:
             - DateTimeHierarchy:
-                HierarchyId: 3bf588fa-4b55-4746-b422-1799d4cb51ff.line_item_usage_start_date.1.1683546405166
+                DrillDownFilters: []
+                HierarchyId: 09d7891d-e378-45a9-ba0e-30c0fa68a33e
             Subtitle:
               FormatText:
                 RichText: |-
@@ -2174,7 +2173,7 @@ dashboards:
                 RichText: <visual-title>EBS Storge usage by Volume Type (Can drill from
                   graph on left)</visual-title>
               Visibility: VISIBLE
-            VisualId: 1af2659b-934b-460c-b6b5-c248b2387817
+            VisualId: 7bb597ea-b966-4b83-9680-a68733f6707a
         - BarChartVisual:
             Actions:
             - ActionOperations:
@@ -2276,7 +2275,7 @@ dashboards:
                 RichText: <visual-title>EBS Storage GB per month, split by Volume Type.
                   Select Workload to drill to volume  type on right</visual-title>
               Visibility: VISIBLE
-            VisualId: ac6ae3b9-fb64-4072-9f99-c10a150a3c02
+            VisualId: 3a2786de-3c98-4233-8b05-6eefe3371db5
         - BarChartVisual:
             Actions:
             - ActionOperations:
@@ -2285,9 +2284,9 @@ dashboards:
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisuals:
-                      - 1af2659b-934b-460c-b6b5-c248b2387817
-                      - ac6ae3b9-fb64-4072-9f99-c10a150a3c02
-                      - e4a0c828-69df-47ab-b597-b8389177fc0e
+                      - 7bb597ea-b966-4b83-9680-a68733f6707a
+                      - 3a2786de-3c98-4233-8b05-6eefe3371db5
+                      - 53e33142-0c45-4371-b48a-10107bbb5d43
               CustomActionId: b2f051f9-8c6a-4448-bace-1e9759d9543f
               Name: Action 1
               Status: ENABLED
@@ -2372,7 +2371,7 @@ dashboards:
                 RichText: <visual-title>S3 Storage GB per month, split by S3 Storage Classes.
                   Select Workload to drill to volume  type on right</visual-title>
               Visibility: VISIBLE
-            VisualId: d3e13b7d-fe5f-479e-b8b9-62bd0d965145
+            VisualId: e2fb846a-1509-4437-bb44-fa3f53238488
         - LineChartVisual:
             Actions:
             - ActionOperations:
@@ -2399,7 +2398,7 @@ dashboards:
                         DataSetIdentifier: sus_s3_storage_all
                       DateGranularity: WEEK
                       FieldId: 79a028a3-aae7-4f70-8f72-e654a6bf1464.usage_date.2.1683546603083
-                      HierarchyId: 79a028a3-aae7-4f70-8f72-e654a6bf1464.usage_date.2.1683546603083
+                      HierarchyId: 02b947e0-4bc1-4348-88b8-47c86e7af193
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -2457,7 +2456,8 @@ dashboards:
               Type: STACKED_AREA
             ColumnHierarchies:
             - DateTimeHierarchy:
-                HierarchyId: 79a028a3-aae7-4f70-8f72-e654a6bf1464.usage_date.2.1683546603083
+                DrillDownFilters: []
+                HierarchyId: 02b947e0-4bc1-4348-88b8-47c86e7af193
             Subtitle:
               FormatText:
                 RichText: |-
@@ -2471,7 +2471,7 @@ dashboards:
                 RichText: <visual-title>S3 usage by S3 Storage Classes in GB (Can drill
                   down into workload using graph on the left)</visual-title>
               Visibility: VISIBLE
-            VisualId: e4a0c828-69df-47ab-b597-b8389177fc0e
+            VisualId: 53e33142-0c45-4371-b48a-10107bbb5d43
       - ContentType: INTERACTIVE
         FilterControls:
         - RelativeDateTime:
@@ -2518,13 +2518,13 @@ dashboards:
                 RowSpan: 9
               - ColumnIndex: 4
                 ColumnSpan: 16
-                ElementId: 2473bf4d-9072-4c4c-8aff-16120eed2541
+                ElementId: 02ab71cd-95fe-4ce1-889a-403a4157e210
                 ElementType: VISUAL
                 RowIndex: 0
                 RowSpan: 9
               - ColumnIndex: 20
                 ColumnSpan: 16
-                ElementId: ee42374c-ebb5-4d34-a7a8-8a886b990c60
+                ElementId: 3300eeeb-541e-4071-b6de-f912d2eba711
                 ElementType: VISUAL
                 RowIndex: 0
                 RowSpan: 9
@@ -2536,13 +2536,13 @@ dashboards:
                 RowSpan: 5
               - ColumnIndex: 0
                 ColumnSpan: 18
-                ElementId: ed5f3ce1-b586-4175-8500-ab4fe8e0ad5f
+                ElementId: a39c99cd-0be0-496f-ada0-bd101bc70bfe
                 ElementType: VISUAL
                 RowIndex: 14
                 RowSpan: 9
               - ColumnIndex: 18
                 ColumnSpan: 18
-                ElementId: 4d10dd70-e006-45f3-8a9c-a8056a574590
+                ElementId: 6ce502f2-57d1-4ce0-b015-ee64812897cf
                 ElementType: VISUAL
                 RowIndex: 14
                 RowSpan: 9
@@ -2616,7 +2616,7 @@ dashboards:
                 ElementId: a8b04538-0d3d-4963-8242-03c294342c8d
                 ElementType: FILTER_CONTROL
                 RowSpan: 1
-        SheetId: 79117f56-7653-4ad4-a5ed-2306ad69a91e
+        SheetId: 6f379d1e-3b60-4353-8271-1bb54394e233
         TextBoxes:
         - Content: |-
             <text-box>
@@ -2768,7 +2768,7 @@ dashboards:
                     <parameter>${GroupByPara}</parameter>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 2473bf4d-9072-4c4c-8aff-16120eed2541
+            VisualId: 02ab71cd-95fe-4ce1-889a-403a4157e210
         - LineChartVisual:
             Actions:
             - ActionOperations:
@@ -2794,7 +2794,7 @@ dashboards:
                         ColumnName: line_item_usage_start_date
                         DataSetIdentifier: sus_network
                       FieldId: d8a05f09-6cb3-40e0-b9c8-482512b1727a.line_item_usage_start_date.2.1684932783927
-                      HierarchyId: d8a05f09-6cb3-40e0-b9c8-482512b1727a.line_item_usage_start_date.2.1684932783927
+                      HierarchyId: c31119fd-0e43-4707-bc01-c095126b4fd9
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -2843,7 +2843,8 @@ dashboards:
                 Visibility: HIDDEN
             ColumnHierarchies:
             - DateTimeHierarchy:
-                HierarchyId: d8a05f09-6cb3-40e0-b9c8-482512b1727a.line_item_usage_start_date.2.1684932783927
+                DrillDownFilters: []
+                HierarchyId: c31119fd-0e43-4707-bc01-c095126b4fd9
             Subtitle:
               FormatText:
                 RichText: |-
@@ -2856,7 +2857,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Data Transfer by workload over time</visual-title>
               Visibility: VISIBLE
-            VisualId: ee42374c-ebb5-4d34-a7a8-8a886b990c60
+            VisualId: 3300eeeb-541e-4071-b6de-f912d2eba711
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -2873,7 +2874,7 @@ dashboards:
                         DataSetIdentifier: sus_idle_natgw
                       DateGranularity: MONTH
                       FieldId: 9ccc7eca-99c4-46a1-bf9d-08c4a2a5ab01.2.1685022969410
-                      HierarchyId: 9ccc7eca-99c4-46a1-bf9d-08c4a2a5ab01.2.1685022969410
+                      HierarchyId: 3aea5d35-2407-482c-b59a-181cba671d2e
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -2926,14 +2927,15 @@ dashboards:
                   CustomLabel: Usage
             ColumnHierarchies:
             - DateTimeHierarchy:
-                HierarchyId: 9ccc7eca-99c4-46a1-bf9d-08c4a2a5ab01.2.1685022969410
+                DrillDownFilters: []
+                HierarchyId: 3aea5d35-2407-482c-b59a-181cba671d2e
             Subtitle:
               Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: <visual-title>Idle NAT Gateways - (No data going through them)</visual-title>
               Visibility: VISIBLE
-            VisualId: ed5f3ce1-b586-4175-8500-ab4fe8e0ad5f
+            VisualId: a39c99cd-0be0-496f-ada0-bd101bc70bfe
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -2958,7 +2960,7 @@ dashboards:
                         DataSetIdentifier: sus_idle_elb
                       DateGranularity: MONTH
                       FieldId: 16f9dbb4-1845-488b-9382-dba4fe06a027.bill_billing_period_start_date.0.1685016586619
-                      HierarchyId: 16f9dbb4-1845-488b-9382-dba4fe06a027.bill_billing_period_start_date.0.1685016586619
+                      HierarchyId: 148df59c-ae4f-4a5d-ae31-e3eef0f58696
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -3011,7 +3013,8 @@ dashboards:
                   CustomLabel: Usage
             ColumnHierarchies:
             - DateTimeHierarchy:
-                HierarchyId: 16f9dbb4-1845-488b-9382-dba4fe06a027.bill_billing_period_start_date.0.1685016586619
+                DrillDownFilters: []
+                HierarchyId: 148df59c-ae4f-4a5d-ae31-e3eef0f58696
             Subtitle:
               Visibility: VISIBLE
             Title:
@@ -3019,39 +3022,12 @@ dashboards:
                 RichText: <visual-title>Idle Elastic Load Balancers - (Little traffic over
                   montly period)</visual-title>
               Visibility: VISIBLE
-            VisualId: 4d10dd70-e006-45f3-8a9c-a8056a574590
+            VisualId: 6ce502f2-57d1-4ce0-b015-ee64812897cf
       - ContentType: INTERACTIVE
         FilterControls:
-        - RelativeDateTime:
-            DisplayOptions:
-              DateTimeFormat: YYYY/MM/DD HH:mm:ss
-              InfoIconLabelOptions:
-                Visibility: HIDDEN
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            FilterControlId: f5270920-b7c3-48a4-8b28-1313c9f31ece
-            SourceFilterId: 80c1db3c-7046-4887-b5cd-429be83aa953
-            Title: Date Range
-        - List:
-            DisplayOptions:
-              InfoIconLabelOptions:
-                Visibility: HIDDEN
-              SearchOptions:
-                Visibility: HIDDEN
-              SelectAllOptions:
-                Visibility: HIDDEN
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            FilterControlId: beaf3a1b-a886-4357-bea5-f6c4fc732618
-            SourceFilterId: 907d404c-c218-41c8-b8d7-e3041fb2230b
-            Title: Include
-            Type: MULTI_SELECT
+        - CrossSheet:
+            FilterControlId: d4e5894d-fb19-4968-9e06-b9485c5eda28
+            SourceFilterId: 6c80c8d1-a7bc-4f45-bdb4-6f46bdc2a7d6
         - Dropdown:
             DisplayOptions:
               InfoIconLabelOptions:
@@ -3063,8 +3039,8 @@ dashboards:
                   FontSize:
                     Relative: MEDIUM
                 Visibility: VISIBLE
-            FilterControlId: a1c215fe-e377-45f7-b2fd-8277b7b1d69a
-            SourceFilterId: 4dc7a6e5-19a2-433d-a22f-fb078b17f46a
+            FilterControlId: 1e2f3a1b-45a9-4ae6-b150-75298a4dfb44
+            SourceFilterId: e91cbb06-a972-4743-81ea-ee89edd2c14b
             Title: Account ID
             Type: MULTI_SELECT
         - Dropdown:
@@ -3078,16 +3054,31 @@ dashboards:
                   FontSize:
                     Relative: MEDIUM
                 Visibility: VISIBLE
-            FilterControlId: 225eba72-8347-420f-941c-aab825887c44
-            SourceFilterId: c51f5f0b-5f99-4d7f-9bfc-1419796a6341
-            Title: Management Account
+            FilterControlId: 3c0844d2-1274-4ba5-b661-6674277b6f20
+            SourceFilterId: a41ac62f-7ed7-45a5-810d-b449c3d0eec2
+            Title: Management Account ID
             Type: MULTI_SELECT
+        - Dropdown:
+            DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
+              SelectAllOptions:
+                Visibility: HIDDEN
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            FilterControlId: a3064b0c-41ec-4d3f-8648-9e1f113873c3
+            SourceFilterId: 08d7cdf2-a43e-4187-ace2-98557ebfee3e
+            Title: Methodology Version
+            Type: SINGLE_SELECT
         Layouts:
         - Configuration:
             GridLayout:
               CanvasSizeOptions:
                 ScreenCanvasSizeOptions:
-                  OptimizedViewPortWidth: 1280px
+                  OptimizedViewPortWidth: 1920px
                   ResizeOption: FIXED
               Elements:
               - ColumnIndex: 0
@@ -3095,93 +3086,590 @@ dashboards:
                 ElementId: a59bf304-620c-43dd-b6f5-0f724d15b98b
                 ElementType: TEXT_BOX
                 RowIndex: 0
-                RowSpan: 5
+                RowSpan: 2
               - ColumnIndex: 0
                 ColumnSpan: 36
-                ElementId: 1dd99e6a-ddd4-4bf0-b112-f20fc1d12646
+                ElementId: 5ec23d54-4592-4cd0-8497-5a7ef33b5513
                 ElementType: VISUAL
-                RowIndex: 5
+                RowIndex: 2
                 RowSpan: 12
               - ColumnIndex: 0
-                ColumnSpan: 19
-                ElementId: 6695e917-765c-4d42-b8fe-6b9a1982938f
-                ElementType: TEXT_BOX
-                RowIndex: 17
-                RowSpan: 4
-              - ColumnIndex: 19
-                ColumnSpan: 17
-                ElementId: beaf3a1b-a886-4357-bea5-f6c4fc732618
-                ElementType: FILTER_CONTROL
-                RowIndex: 17
-                RowSpan: 4
-              - ColumnIndex: 0
                 ColumnSpan: 36
-                ElementId: a31027d5-1668-4967-9524-7d426d4bbad8
+                ElementId: 72c28301-3669-4f4c-828e-8610301f7bca
                 ElementType: VISUAL
-                RowIndex: 21
+                RowIndex: 14
                 RowSpan: 12
               - ColumnIndex: 0
                 ColumnSpan: 18
-                ElementId: 4839ac58-4787-4633-b1eb-5a0cd7dff0b5
+                ElementId: fb6e5439-1148-4e0e-aaf3-860b5908f1ac
                 ElementType: VISUAL
-                RowIndex: 33
+                RowIndex: 26
                 RowSpan: 12
               - ColumnIndex: 18
                 ColumnSpan: 18
-                ElementId: 883dc4b7-7e87-4a7b-bc5d-cfb979ba6b61
+                ElementId: 21a6daac-7746-4635-a1f0-6b4ed1d4efbb
                 ElementType: VISUAL
-                RowIndex: 33
+                RowIndex: 26
                 RowSpan: 12
               - ColumnIndex: 0
                 ColumnSpan: 36
-                ElementId: bab683bc-a3db-4d13-82f9-f956d88cd178
+                ElementId: 932ce662-9ac9-4700-ad45-c6da8b2da5c5
                 ElementType: VISUAL
-                RowIndex: 45
+                RowIndex: 38
                 RowSpan: 12
-        Name: AWS Customer Carbon Footprint Tool Data
-        SheetId: e5a60f56-b9b7-40e5-91aa-987b5f70acf3
+              - ColumnIndex: 0
+                ColumnSpan: 36
+                ElementId: 5d35488e-99d3-4c1a-b049-14b7241880b0
+                ElementType: VISUAL
+                RowIndex: 50
+                RowSpan: 13
+              - ColumnIndex: 0
+                ColumnSpan: 36
+                ElementId: 5f12bb37-8b9a-42c3-bd75-d33b56f7c43d
+                ElementType: VISUAL
+                RowIndex: 63
+                RowSpan: 12
+        Name: Carbon Emissions
+        ParameterControls:
+        - Dropdown:
+            DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
+              SelectAllOptions:
+                Visibility: HIDDEN
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            ParameterControlId: 34357347-a949-47f0-a449-89b6f67d32c7
+            SelectableValues:
+              Values:
+              - location-based method
+              - market-based method
+            SourceParameterName: scope2Method
+            Title: Scope 2 Method
+            Type: SINGLE_SELECT
+        SheetControlLayouts:
+        - Configuration:
+            GridLayout:
+              Elements:
+              - ColumnSpan: 2
+                ElementId: d4e5894d-fb19-4968-9e06-b9485c5eda28
+                ElementType: FILTER_CONTROL
+                RowSpan: 1
+              - ColumnSpan: 2
+                ElementId: 1e2f3a1b-45a9-4ae6-b150-75298a4dfb44
+                ElementType: FILTER_CONTROL
+                RowSpan: 1
+              - ColumnSpan: 2
+                ElementId: 3c0844d2-1274-4ba5-b661-6674277b6f20
+                ElementType: FILTER_CONTROL
+                RowSpan: 1
+              - ColumnSpan: 2
+                ElementId: a3064b0c-41ec-4d3f-8648-9e1f113873c3
+                ElementType: FILTER_CONTROL
+                RowSpan: 1
+              - ColumnSpan: 2
+                ElementId: 34357347-a949-47f0-a449-89b6f67d32c7
+                ElementType: PARAMETER_CONTROL
+                RowSpan: 1
+        SheetId: 156ba9c5-51b9-43b7-8afe-5bff0eed39f8
         TextBoxes:
-        - Content: "<text-box>\n  <inline font-size=\"20px\">\n    <b>AWS Customer Carbon\
-            \ Footprint Tool</b>\n  </inline>\n  <br/>\n  <br/>\n  You can use the\n  <a\
-            \ href=\"https://aws.amazon.com/aws-cost-management/aws-customer-carbon-footprint-tool/\"\
-            \ target=\"_blank\">\_AWS Customer Carbon Footprint Tool\_</a>\n  (CCFT) to view\
+        - Content: "<text-box>\n  <b>Carbon Emissions Data Export</b>\n  <br/>\n  <br/>\n\
+            \  You can use the\n  <a href=\"https://aws.amazon.com/aws-cost-management/aws-customer-carbon-footprint-tool/\"\
+            \ target=\"_blank\">\_Customer Carbon Footprint Tool\_</a>\n  (CCFT) to view\
             \ estimates of the carbon emissions associated with your AWS products and services.\n\
-            \  <br/>\n  These visuals show data from the AWS Customer Carbon Footprint Tool,\
-            \ made available through the\n  <a href=\"https://github.com/aws-samples/experimental-programmatic-access-ccft\"\
-            \ target=\"_blank\">\_experimental programmatic access</a>\n  . To learn more\
-            \ about the methodology of the customer carbon footprint tool, check out the\n\
-            \  <a href=\"https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/what-is-ccft.html\
-            \ \" target=\"_blank\">\_documentation</a>\n  .\n  <br/>\n  <br/>\n  The default\
-            \ deployment of the CCFT graphs below is designed to return\n  <inline color=\"\
-            #fb0707\">\_No Data</inline>\n  . In order to view data, you must deploy the\n\
-            \  <a href=\"https://github.com/aws-samples/experimental-programmatic-access-ccft\"\
-            \ target=\"_blank\">\_experimental programmatic access</a>\n  , and update the\
-            \ Amazon Athena views as documented in the\n  <a href=\"https://catalog.workshops.aws/well-architected-sustainability/en-US/5-process-and-culture/cur-reports-as-efficiency-reports/4-install-sus-dashboard\"\
-            \ target=\"_blank\">\_Sustainability Proxy Metrics deployment guide</a>\n  .\n\
-            </text-box>"
+            \  <br/>\n  These visuals show data from the Customer Carbon Footprint Tool,\
+            \ made available through the\n  <a href=\"https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-carbon-emissions.html\"\
+            \ target=\"_blank\">\_Carbon emissions Data Export</a>\n  . To learn more about\
+            \ the methodology of the customer carbon footprint tool, check out the\n  <a\
+            \ href=\"https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/what-is-ccft.html\
+            \ \" target=\"_blank\">\_documentation</a>\n  .\n</text-box>"
           SheetTextBoxId: a59bf304-620c-43dd-b6f5-0f724d15b98b
-        - Content: "<text-box>\n  Total Carbon emissions (Scope 1 and Scope 2 market-based)\
-            \ and Emission savings over all selected Account IDs per month for all selected\
-            \ metrics\n  <br/>\n  <br/>\n  <inline color=\"#989595\">Select Date Range and\
-            \ Account ID's in the control on top, metrics to include on the right.</inline>\n\
-            \  <br/>\n  <br/>\n  <inline color=\"#989595\">\n    <b>Emission savings from\
-            \ AWS purchase of renewable energy</b>\n  </inline>\n  <inline color=\"#989595\"\
-            >: this number is the difference between the carbon footprint emissions calculated\
-            \ using the location-based method (LBM) and the market-based\_</inline>\n  <br/>\n\
-            \  <inline color=\"#989595\">method (MBM).</inline>\n</text-box>"
-          SheetTextBoxId: 6695e917-765c-4d42-b8fe-6b9a1982938f
         Visuals:
+        - BarChartVisual:
+            Actions: []
+            ChartConfiguration:
+              BarsArrangement: STACKED
+              CategoryAxis:
+                DataOptions:
+                  DateAxisOptions:
+                    MissingDateVisibility: HIDDEN
+                ScrollbarOptions:
+                  Visibility: HIDDEN
+                TickLabelOptions:
+                  LabelOptions:
+                    Visibility: VISIBLE
+              CategoryLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: usage_period_end
+                      DataSetIdentifier: sus_carbon_emissions
+                    FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_end.0.1742379968237
+                  CustomLabel: Usage Period
+              DataLabels:
+                Overlap: DISABLE_OVERLAP
+                Visibility: HIDDEN
+              FieldWells:
+                BarChartAggregatedFieldWells:
+                  Category:
+                  - DateDimensionField:
+                      Column:
+                        ColumnName: usage_period_end
+                        DataSetIdentifier: sus_carbon_emissions
+                      DateGranularity: MONTH
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_end.0.1742379968237
+                      FormatConfiguration:
+                        DateTimeFormat: MMM YYYY
+                        NullValueFormatConfiguration:
+                          NullString: 'null'
+                      HierarchyId: 0ef752fc-70ff-46fd-94ae-f69834368202
+                  Colors: []
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: scope2_method_total_emissions_value
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717311848
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          NumberDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 5
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+              Legend:
+                Width: 150px
+              Orientation: VERTICAL
+              SortConfiguration:
+                CategoryItemsLimit:
+                  OtherCategories: INCLUDE
+                CategorySort:
+                - FieldSort:
+                    Direction: ASC
+                    FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717311848
+                ColorItemsLimit:
+                  OtherCategories: INCLUDE
+                SmallMultiplesLimitConfiguration:
+                  OtherCategories: INCLUDE
+              Tooltip:
+                FieldBasedTooltip:
+                  AggregationVisibility: HIDDEN
+                  TooltipFields:
+                  - FieldTooltipItem:
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_end.0.1742379968237
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717311848
+                      Visibility: VISIBLE
+                  TooltipTitleType: PRIMARY_VALUE
+                SelectedTooltipType: DETAILED
+                TooltipVisibility: VISIBLE
+              ValueLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: scope2_method_total_emissions_value
+                      DataSetIdentifier: sus_carbon_emissions
+                    FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717311848
+                  CustomLabel: Emissions in MTCO2e
+            ColumnHierarchies:
+            - DateTimeHierarchy:
+                DrillDownFilters: []
+                HierarchyId: 0ef752fc-70ff-46fd-94ae-f69834368202
+            Subtitle:
+              FormatText:
+                RichText: <visual-subtitle>Select Scope 2 method (market- or location-based)
+                  in the control on top</visual-subtitle>
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: |-
+                  <visual-title>
+                    <inline font-size="14px">
+                      <b>Total Carbon Emissions (Scope 1 and Scope 2) over all selected Account IDs per month</b>
+                    </inline>
+                  </visual-title>
+              Visibility: VISIBLE
+            VisualId: 5ec23d54-4592-4cd0-8497-5a7ef33b5513
+        - BarChartVisual:
+            Actions:
+            - ActionOperations:
+              - FilterOperation:
+                  SelectedFieldsConfiguration:
+                    SelectedFields:
+                    - c76d8008-4ede-425f-8e40-fc2705e176c2.region_code.2.1742380127973
+                  TargetVisualsConfiguration:
+                    SameSheetTargetVisualConfiguration:
+                      TargetVisualOptions: ALL_VISUALS
+              CustomActionId: 5ee35a11-5ce9-456d-8382-2db10131e861
+              Name: Action 1
+              Status: ENABLED
+              Trigger: DATA_POINT_CLICK
+            ChartConfiguration:
+              BarsArrangement: STACKED
+              CategoryLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: calc_account_name
+                      DataSetIdentifier: sus_carbon_emissions
+                    FieldId: 92b3fd72-954d-4f94-a85c-05325e2a066e.2.1751617984798
+                  CustomLabel: Account Name
+              DataLabels:
+                Overlap: DISABLE_OVERLAP
+                Visibility: HIDDEN
+              FieldWells:
+                BarChartAggregatedFieldWells:
+                  Category:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: calc_account_name
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: 92b3fd72-954d-4f94-a85c-05325e2a066e.2.1751617984798
+                  Colors:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: region_code
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.region_code.2.1742380127973
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: scope2_method_total_emissions_value
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717335310
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          NumberDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 5
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+              Legend:
+                Width: 137px
+              Orientation: HORIZONTAL
+              SortConfiguration:
+                CategoryItemsLimit:
+                  OtherCategories: INCLUDE
+                CategorySort:
+                - FieldSort:
+                    Direction: DESC
+                    FieldId: 92b3fd72-954d-4f94-a85c-05325e2a066e.2.1751617984798
+                ColorItemsLimit:
+                  OtherCategories: INCLUDE
+                SmallMultiplesLimitConfiguration:
+                  OtherCategories: INCLUDE
+              Tooltip:
+                FieldBasedTooltip:
+                  AggregationVisibility: HIDDEN
+                  TooltipFields:
+                  - FieldTooltipItem:
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.region_code.2.1742380127973
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717335310
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 92b3fd72-954d-4f94-a85c-05325e2a066e.2.1751617984798
+                      Visibility: VISIBLE
+                  TooltipTitleType: PRIMARY_VALUE
+                SelectedTooltipType: DETAILED
+                TooltipVisibility: VISIBLE
+              ValueLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: scope2_method_total_emissions_value
+                      DataSetIdentifier: sus_carbon_emissions
+                    FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717335310
+                  CustomLabel: Emissions in MTCO2e
+            ColumnHierarchies: []
+            Subtitle:
+              FormatText:
+                RichText: <visual-subtitle>Click on the region to filter all other graphs
+                  by that region</visual-subtitle>
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: |-
+                  <visual-title>
+                    <inline font-size="14px">
+                      <b>Carbon Emissions (Scope 1 and Scope 2) per account ID and region</b>
+                    </inline>
+                  </visual-title>
+              Visibility: VISIBLE
+            VisualId: 72c28301-3669-4f4c-828e-8610301f7bca
+        - BarChartVisual:
+            Actions:
+            - ActionOperations:
+              - FilterOperation:
+                  SelectedFieldsConfiguration:
+                    SelectedFields:
+                    - c76d8008-4ede-425f-8e40-fc2705e176c2.product_code.2.1742380231427
+                  TargetVisualsConfiguration:
+                    SameSheetTargetVisualConfiguration:
+                      TargetVisuals:
+                      - 5ec23d54-4592-4cd0-8497-5a7ef33b5513
+                      - 72c28301-3669-4f4c-828e-8610301f7bca
+                      - 21a6daac-7746-4635-a1f0-6b4ed1d4efbb
+                      - 932ce662-9ac9-4700-ad45-c6da8b2da5c5
+              CustomActionId: 9560a83c-4475-4540-9b25-305729e5017d
+              Name: Action 1
+              Status: ENABLED
+              Trigger: DATA_POINT_CLICK
+            ChartConfiguration:
+              BarsArrangement: STACKED
+              CategoryAxis:
+                ScrollbarOptions:
+                  Visibility: HIDDEN
+              CategoryLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: usage_period_start
+                      DataSetIdentifier: sus_carbon_emissions
+                    FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_start.0.1742380220073
+                  CustomLabel: Usage Period
+              DataLabels:
+                Overlap: DISABLE_OVERLAP
+                Visibility: HIDDEN
+              FieldWells:
+                BarChartAggregatedFieldWells:
+                  Category:
+                  - DateDimensionField:
+                      Column:
+                        ColumnName: usage_period_start
+                        DataSetIdentifier: sus_carbon_emissions
+                      DateGranularity: MONTH
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_start.0.1742380220073
+                      FormatConfiguration:
+                        DateTimeFormat: MMM YYYY
+                        NullValueFormatConfiguration:
+                          NullString: 'null'
+                      HierarchyId: b56cffa4-283c-4002-990f-108666c1792d
+                  Colors:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_code
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.product_code.2.1742380231427
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: scope2_method_total_emissions_value
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717502293
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          NumberDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 5
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+              Legend:
+                Width: 118px
+              Orientation: VERTICAL
+              SortConfiguration:
+                CategoryItemsLimit:
+                  OtherCategories: INCLUDE
+                CategorySort:
+                - FieldSort:
+                    Direction: ASC
+                    FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_start.0.1742380220073
+                ColorItemsLimit:
+                  OtherCategories: INCLUDE
+                SmallMultiplesLimitConfiguration:
+                  OtherCategories: INCLUDE
+              Tooltip:
+                FieldBasedTooltip:
+                  AggregationVisibility: HIDDEN
+                  TooltipFields:
+                  - FieldTooltipItem:
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_start.0.1742380220073
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.product_code.2.1742380231427
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717502293
+                      Visibility: VISIBLE
+                  TooltipTitleType: PRIMARY_VALUE
+                SelectedTooltipType: DETAILED
+                TooltipVisibility: VISIBLE
+              ValueLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: scope2_method_total_emissions_value
+                      DataSetIdentifier: sus_carbon_emissions
+                    FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717502293
+                  CustomLabel: Emissions in MTCO2e
+            ColumnHierarchies:
+            - DateTimeHierarchy:
+                DrillDownFilters: []
+                HierarchyId: b56cffa4-283c-4002-990f-108666c1792d
+            Subtitle:
+              FormatText:
+                RichText: |-
+                  <visual-subtitle>
+                    <inline font-size="14px">Click on the product to filter all other graphs by that product</inline>
+                  </visual-subtitle>
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: |-
+                  <visual-title>
+                    <inline font-size="14px">
+                      <b>Carbon emissions per product per month</b>
+                    </inline>
+                  </visual-title>
+              Visibility: VISIBLE
+            VisualId: fb6e5439-1148-4e0e-aaf3-860b5908f1ac
+        - BarChartVisual:
+            Actions:
+            - ActionOperations:
+              - FilterOperation:
+                  SelectedFieldsConfiguration:
+                    SelectedFields:
+                    - c76d8008-4ede-425f-8e40-fc2705e176c2.region_code.2.1742380361975
+                  TargetVisualsConfiguration:
+                    SameSheetTargetVisualConfiguration:
+                      TargetVisualOptions: ALL_VISUALS
+              CustomActionId: c1acce44-d88f-4bdd-9b95-e16655097ca5
+              Name: Action 1
+              Status: ENABLED
+              Trigger: DATA_POINT_CLICK
+            ChartConfiguration:
+              BarsArrangement: STACKED
+              CategoryAxis:
+                ScrollbarOptions:
+                  Visibility: HIDDEN
+              CategoryLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: usage_period_start
+                      DataSetIdentifier: sus_carbon_emissions
+                    FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_start.0.1742380326018
+                  CustomLabel: Usage Period
+              DataLabels:
+                Overlap: DISABLE_OVERLAP
+                Visibility: HIDDEN
+              FieldWells:
+                BarChartAggregatedFieldWells:
+                  Category:
+                  - DateDimensionField:
+                      Column:
+                        ColumnName: usage_period_start
+                        DataSetIdentifier: sus_carbon_emissions
+                      DateGranularity: MONTH
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_start.0.1742380326018
+                      FormatConfiguration:
+                        DateTimeFormat: MMM YYYY
+                        NullValueFormatConfiguration:
+                          NullString: 'null'
+                      HierarchyId: c3f99ab6-15b2-4907-bc8e-b567bd0a0636
+                  Colors:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: region_code
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.region_code.2.1742380361975
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: scope2_method_total_emissions_value
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717515372
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          NumberDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 5
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+              Legend:
+                Width: 132px
+              Orientation: VERTICAL
+              SortConfiguration:
+                CategoryItemsLimit:
+                  OtherCategories: INCLUDE
+                CategorySort:
+                - FieldSort:
+                    Direction: ASC
+                    FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_start.0.1742380326018
+                ColorItemsLimit:
+                  OtherCategories: INCLUDE
+                SmallMultiplesLimitConfiguration:
+                  OtherCategories: INCLUDE
+              Tooltip:
+                FieldBasedTooltip:
+                  AggregationVisibility: HIDDEN
+                  TooltipFields:
+                  - FieldTooltipItem:
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_start.0.1742380326018
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.region_code.2.1742380361975
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717515372
+                      Visibility: VISIBLE
+                  TooltipTitleType: PRIMARY_VALUE
+                SelectedTooltipType: DETAILED
+                TooltipVisibility: VISIBLE
+              ValueLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: scope2_method_total_emissions_value
+                      DataSetIdentifier: sus_carbon_emissions
+                    FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717515372
+                  CustomLabel: Emissions in MTCO2e
+            ColumnHierarchies:
+            - DateTimeHierarchy:
+                DrillDownFilters: []
+                HierarchyId: c3f99ab6-15b2-4907-bc8e-b567bd0a0636
+            Subtitle:
+              FormatText:
+                RichText: |-
+                  <visual-subtitle>
+                    <inline font-size="14px">Click on the region to filter all other graphs by that region</inline>
+                  </visual-subtitle>
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: |-
+                  <visual-title>
+                    <inline font-size="14px">
+                      <b>Carbon emissions per AWS region per month</b>
+                    </inline>
+                  </visual-title>
+              Visibility: VISIBLE
+            VisualId: 21a6daac-7746-4635-a1f0-6b4ed1d4efbb
         - SankeyDiagramVisual:
             Actions:
             - ActionOperations:
               - FilterOperation:
                   SelectedFieldsConfiguration:
                     SelectedFields:
-                    - 245db76e-b801-413a-9cbe-dbd50172abe8.regioncode.0.1710235708996
+                    - c76d8008-4ede-425f-8e40-fc2705e176c2.region_code.0.1742380657611
+                    - c76d8008-4ede-425f-8e40-fc2705e176c2.product_code.1.1742380661572
                   TargetVisualsConfiguration:
                     SameSheetTargetVisualConfiguration:
                       TargetVisualOptions: ALL_VISUALS
-              CustomActionId: 33c5b97c-75f4-4be5-a08a-377c3b8a22cd
+              CustomActionId: c92801ca-018f-4d8a-a866-ab9ec5b68516
               Name: Action 1
               Status: ENABLED
               Trigger: DATA_POINT_CLICK
@@ -3194,63 +3682,62 @@ dashboards:
                   Destination:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: paceproductcode
+                        ColumnName: product_code
                         DataSetIdentifier: sus_carbon_emissions
-                      FieldId: a76d55cc-a67b-4ff3-8097-745706bf40fe.paceproductcode.2.1720088616373
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.product_code.1.1742380661572
                   Source:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: regioncode
+                        ColumnName: region_code
                         DataSetIdentifier: sus_carbon_emissions
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.regioncode.0.1710235708996
+                      FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.region_code.0.1742380657611
                   Weight:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: mbmcarbon
+                        ColumnName: scope2_method_total_emissions_value
                         DataSetIdentifier: sus_carbon_emissions
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710235711465
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717530565
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          NumberDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 5
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
               SortConfiguration:
                 WeightSort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710235711465
+                    FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717530565
             Subtitle:
               FormatText:
-                RichText: <visual-subtitle>Select Date Range and Account ID's in the control
-                  on top</visual-subtitle>
+                RichText: |-
+                  <visual-subtitle>
+                    <inline font-size="14px">Click on the region or product to filter all other graphs by that region or product</inline>
+                  </visual-subtitle>
               Visibility: VISIBLE
             Title:
               FormatText:
-                RichText: <visual-title>Mapping of carbon emissions from geographical areas
-                  to product codes</visual-title>
+                RichText: |-
+                  <visual-title>
+                    <inline font-size="14px">Mapping of carbon emissions from AWS regions to product codes</inline>
+                  </visual-title>
               Visibility: VISIBLE
-            VisualId: bab683bc-a3db-4d13-82f9-f956d88cd178
+            VisualId: 932ce662-9ac9-4700-ad45-c6da8b2da5c5
         - BarChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFields:
-                    - 245db76e-b801-413a-9cbe-dbd50172abe8.paceproductcode.2.1710235693562
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: b9c80245-c051-4f65-965b-a7994f663517
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
+            Actions: []
             ChartConfiguration:
               BarsArrangement: STACKED
               CategoryLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: startdate
+                      ColumnName: usage_period_start
                       DataSetIdentifier: sus_carbon_emissions
-                    FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.0.1710235673445
-                  CustomLabel: Date
+                    FieldId: 6b660d29-51ed-4409-92fd-7867809b97f4.usage_period_start.1.1742995406701
+                  CustomLabel: Usage Period
               DataLabels:
                 Overlap: DISABLE_OVERLAP
                 Visibility: HIDDEN
@@ -3259,39 +3746,33 @@ dashboards:
                   Category:
                   - DateDimensionField:
                       Column:
-                        ColumnName: startdate
+                        ColumnName: usage_period_start
                         DataSetIdentifier: sus_carbon_emissions
                       DateGranularity: MONTH
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.0.1710235673445
-                      HierarchyId: 5d01bc86-6fd0-48c2-ae29-5f4f1187081a
-                  Colors:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: paceproductcode
-                        DataSetIdentifier: sus_carbon_emissions
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.paceproductcode.2.1710235693562
+                      FieldId: 6b660d29-51ed-4409-92fd-7867809b97f4.usage_period_start.1.1742995406701
                       FormatConfiguration:
+                        DateTimeFormat: MMM YYYY
                         NullValueFormatConfiguration:
                           NullString: 'null'
+                      HierarchyId: 344de0b0-0e6b-407a-a7bc-7857bbcb5162
+                  Colors: []
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: mbmcarbon
+                        ColumnName: scope2_method_total_emissions_value
                         DataSetIdentifier: sus_carbon_emissions
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710235681176
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717543453
                       FormatConfiguration:
                         FormatConfiguration:
                           NumberDisplayFormatConfiguration:
                             DecimalPlacesConfiguration:
-                              DecimalPlaces: 3
+                              DecimalPlaces: 5
                             NullValueFormatConfiguration:
                               NullString: 'null'
               Legend:
-                Title:
-                  CustomLabel: Product Code
-                Width: 100px
+                Width: 152px
               Orientation: VERTICAL
               SortConfiguration:
                 CategoryItemsLimit:
@@ -3299,7 +3780,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: ASC
-                    FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.0.1710235673445
+                    FieldId: 6b660d29-51ed-4409-92fd-7867809b97f4.usage_period_start.1.1742995406701
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
                 SmallMultiplesLimitConfiguration:
@@ -3309,13 +3790,10 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.0.1710235673445
+                      FieldId: 6b660d29-51ed-4409-92fd-7867809b97f4.usage_period_start.1.1742995406701
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710235681176
-                      Visibility: VISIBLE
-                  - FieldTooltipItem:
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.paceproductcode.2.1710235693562
+                      FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717543453
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
@@ -3324,148 +3802,38 @@ dashboards:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: mbmcarbon
+                      ColumnName: scope2_method_total_emissions_value
                       DataSetIdentifier: sus_carbon_emissions
-                    FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710235681176
-                  CustomLabel: Carbon emissions (MTCO2e)
+                    FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717543453
+                  CustomLabel: Emissions in MTCO2e
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
-                HierarchyId: 5d01bc86-6fd0-48c2-ae29-5f4f1187081a
+                HierarchyId: 344de0b0-0e6b-407a-a7bc-7857bbcb5162
             Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Select Date Range and Account ID's in the control
-                  on top</visual-subtitle>
               Visibility: VISIBLE
             Title:
               FormatText:
-                RichText: <visual-title>Carbon emissions per Product per month</visual-title>
+                RichText: |-
+                  <visual-title>
+                    <inline font-size="14px">
+                      <b>Total Carbon Emissions (Scope 1 and Scope 2) over all selected Management IDs per month</b>
+                    </inline>
+                  </visual-title>
               Visibility: VISIBLE
-            VisualId: 4839ac58-4787-4633-b1eb-5a0cd7dff0b5
-        - BarChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFields:
-                    - 245db76e-b801-413a-9cbe-dbd50172abe8.regioncode.0.1710235708996
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: 90eacd25-0f56-4265-b438-00ecd68589b0
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              BarsArrangement: STACKED
-              CategoryLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: startdate
-                      DataSetIdentifier: sus_carbon_emissions
-                    FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.2.1710235718612
-                  CustomLabel: Date
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: HIDDEN
-              FieldWells:
-                BarChartAggregatedFieldWells:
-                  Category:
-                  - DateDimensionField:
-                      Column:
-                        ColumnName: startdate
-                        DataSetIdentifier: sus_carbon_emissions
-                      DateGranularity: MONTH
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.2.1710235718612
-                      HierarchyId: 435b29fc-ceda-46cd-a0e8-932385d60580
-                  Colors:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: regioncode
-                        DataSetIdentifier: sus_carbon_emissions
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.regioncode.0.1710235708996
-                  Values:
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: SUM
-                      Column:
-                        ColumnName: mbmcarbon
-                        DataSetIdentifier: sus_carbon_emissions
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710235711465
-                      FormatConfiguration:
-                        FormatConfiguration:
-                          NumberDisplayFormatConfiguration:
-                            DecimalPlacesConfiguration:
-                              DecimalPlaces: 3
-                            NullValueFormatConfiguration:
-                              NullString: 'null'
-              Legend:
-                Title:
-                  CustomLabel: Geographical Area
-                Width: 153px
-              Orientation: VERTICAL
-              SortConfiguration:
-                CategoryItemsLimit:
-                  OtherCategories: INCLUDE
-                CategorySort:
-                - FieldSort:
-                    Direction: ASC
-                    FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.2.1710235718612
-                ColorItemsLimit:
-                  OtherCategories: INCLUDE
-                SmallMultiplesLimitConfiguration:
-                  OtherCategories: INCLUDE
-              Tooltip:
-                FieldBasedTooltip:
-                  AggregationVisibility: HIDDEN
-                  TooltipFields:
-                  - FieldTooltipItem:
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.regioncode.0.1710235708996
-                      Visibility: VISIBLE
-                  - FieldTooltipItem:
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710235711465
-                      Visibility: VISIBLE
-                  - FieldTooltipItem:
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.2.1710235718612
-                      Visibility: VISIBLE
-                  TooltipTitleType: PRIMARY_VALUE
-                SelectedTooltipType: DETAILED
-                TooltipVisibility: VISIBLE
-              ValueLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: mbmcarbon
-                      DataSetIdentifier: sus_carbon_emissions
-                    FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710235711465
-                  CustomLabel: Carbon emissions (MTCO2e)
-            ColumnHierarchies:
-            - DateTimeHierarchy:
-                DrillDownFilters: []
-                HierarchyId: 435b29fc-ceda-46cd-a0e8-932385d60580
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Select Date Range and Account ID's in the control
-                  on top</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: <visual-title>Carbon emissions per Geographical Area per month</visual-title>
-              Visibility: VISIBLE
-            VisualId: 883dc4b7-7e87-4a7b-bc5d-cfb979ba6b61
+            VisualId: 5d35488e-99d3-4c1a-b049-14b7241880b0
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
-              BarsArrangement: STACKED
+              BarsArrangement: CLUSTERED
               CategoryLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: startdate
+                      ColumnName: usage_period_start
                       DataSetIdentifier: sus_carbon_emissions
-                    FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.0.1710321714087
-                  CustomLabel: Date
+                    FieldId: c01a9a46-b2c5-4293-ad45-89532d8ff839.usage_period_start.1.1749717824028
+                  CustomLabel: Usage Period (Month)
               DataLabels:
                 Overlap: DISABLE_OVERLAP
                 Visibility: HIDDEN
@@ -3474,44 +3842,34 @@ dashboards:
                   Category:
                   - DateDimensionField:
                       Column:
-                        ColumnName: startdate
+                        ColumnName: usage_period_start
                         DataSetIdentifier: sus_carbon_emissions
-                      DateGranularity: MONTH
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.0.1710321714087
-                      HierarchyId: 1ac71bbd-11ff-405b-b05c-3adabc52ae90
-                  Colors:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: Account Name
-                        DataSetIdentifier: sus_carbon_emissions
-                      FieldId: 5bb04396-4d04-47af-89be-d996793e34a8.2.1728647136713
+                      FieldId: c01a9a46-b2c5-4293-ad45-89532d8ff839.usage_period_start.1.1749717824028
+                      HierarchyId: 299346eb-8995-4287-a01d-05509aea6be2
+                  Colors: []
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: mbmcarbon
+                        ColumnName: estimated_carbon_emissions_reduction
                         DataSetIdentifier: sus_carbon_emissions
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710321714087
+                      FieldId: f2104a02-11ee-4d9b-8998-58fe1fea7e03.0.1749717819559
                       FormatConfiguration:
                         FormatConfiguration:
                           NumberDisplayFormatConfiguration:
                             DecimalPlacesConfiguration:
-                              DecimalPlaces: 3
+                              DecimalPlaces: 5
                             NullValueFormatConfiguration:
                               NullString: 'null'
-              Legend:
-                Title:
-                  CustomLabel: Account ID
-                Width: 116px
               Orientation: VERTICAL
               SortConfiguration:
                 CategoryItemsLimit:
                   OtherCategories: INCLUDE
                 CategorySort:
                 - FieldSort:
-                    Direction: ASC
-                    FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.0.1710321714087
+                    Direction: DESC
+                    FieldId: c01a9a46-b2c5-4293-ad45-89532d8ff839.usage_period_start.1.1749717824028
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
                 SmallMultiplesLimitConfiguration:
@@ -3521,143 +3879,38 @@ dashboards:
                   AggregationVisibility: HIDDEN
                   TooltipFields:
                   - FieldTooltipItem:
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710321714087
+                      FieldId: f2104a02-11ee-4d9b-8998-58fe1fea7e03.0.1749717819559
                       Visibility: VISIBLE
                   - FieldTooltipItem:
-                      FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.startdate.0.1710321714087
-                      Visibility: VISIBLE
-                  - FieldTooltipItem:
-                      FieldId: 5bb04396-4d04-47af-89be-d996793e34a8.2.1728647136713
+                      FieldId: c01a9a46-b2c5-4293-ad45-89532d8ff839.usage_period_start.1.1749717824028
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
-              ValueAxis:
-                TickLabelOptions:
-                  LabelOptions:
-                    FontConfiguration:
-                      FontSize:
-                        Relative: MEDIUM
               ValueLabelOptions:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: mbmcarbon
+                      ColumnName: estimated_carbon_emissions_reduction
                       DataSetIdentifier: sus_carbon_emissions
-                    FieldId: 245db76e-b801-413a-9cbe-dbd50172abe8.mbmcarbon.1.1710321714087
-                  CustomLabel: Carbon emissions (MTCO2e)
+                    FieldId: f2104a02-11ee-4d9b-8998-58fe1fea7e03.0.1749717819559
+                  CustomLabel: Emissions Reduction in MTCO2e
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
-                HierarchyId: 1ac71bbd-11ff-405b-b05c-3adabc52ae90
+                HierarchyId: 299346eb-8995-4287-a01d-05509aea6be2
             Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Select Date Range and Account ID's in the control
-                  on top</visual-subtitle>
               Visibility: VISIBLE
             Title:
               FormatText:
-                RichText: <visual-title>Total Carbon emissions (Scope 1 and Scope 2 market-based)
-                  over all selected Account IDs per month</visual-title>
+                RichText: |-
+                  <visual-title>
+                    <inline font-size="14px">
+                      <b>Estimated carbon emission reduction due to AWS's renewable energy purchases</b>
+                    </inline>
+                  </visual-title>
               Visibility: VISIBLE
-            VisualId: 1dd99e6a-ddd4-4bf0-b112-f20fc1d12646
-        - BarChartVisual:
-            Actions: []
-            ChartConfiguration:
-              BarsArrangement: STACKED
-              CategoryLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: startdate
-                      DataSetIdentifier: carbon_emissions_longform
-                    FieldId: 1c4e087c-344e-4ad0-b986-aa01476f6091.startdate.1.1720689364743
-                  CustomLabel: Date
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: HIDDEN
-              FieldWells:
-                BarChartAggregatedFieldWells:
-                  Category:
-                  - DateDimensionField:
-                      Column:
-                        ColumnName: startdate
-                        DataSetIdentifier: carbon_emissions_longform
-                      DateGranularity: MONTH
-                      FieldId: 1c4e087c-344e-4ad0-b986-aa01476f6091.startdate.1.1720689364743
-                      HierarchyId: 30e1574a-81b3-40ec-85e9-9c2005dfe73b
-                  Colors:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: metric_speaking
-                        DataSetIdentifier: carbon_emissions_longform
-                      FieldId: 59bebdd6-b66d-42e8-bf7d-280860277c8b.2.1721654285868
-                  Values:
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: SUM
-                      Column:
-                        ColumnName: value
-                        DataSetIdentifier: carbon_emissions_longform
-                      FieldId: 1c4e087c-344e-4ad0-b986-aa01476f6091.value.0.1720689361709
-                      FormatConfiguration:
-                        FormatConfiguration:
-                          NumberDisplayFormatConfiguration:
-                            DecimalPlacesConfiguration:
-                              DecimalPlaces: 3
-                            NullValueFormatConfiguration:
-                              NullString: 'null'
-              Legend:
-                Height: 39px
-                Position: RIGHT
-                Title:
-                  CustomLabel: Emissions & Savings
-                Width: 335px
-              Orientation: VERTICAL
-              SortConfiguration:
-                CategoryItemsLimit:
-                  OtherCategories: INCLUDE
-                CategorySort:
-                - FieldSort:
-                    Direction: ASC
-                    FieldId: 1c4e087c-344e-4ad0-b986-aa01476f6091.startdate.1.1720689364743
-                ColorItemsLimit:
-                  OtherCategories: INCLUDE
-                SmallMultiplesLimitConfiguration:
-                  OtherCategories: INCLUDE
-              Tooltip:
-                FieldBasedTooltip:
-                  AggregationVisibility: HIDDEN
-                  TooltipFields:
-                  - FieldTooltipItem:
-                      FieldId: 1c4e087c-344e-4ad0-b986-aa01476f6091.value.0.1720689361709
-                      Visibility: VISIBLE
-                  - FieldTooltipItem:
-                      FieldId: 1c4e087c-344e-4ad0-b986-aa01476f6091.startdate.1.1720689364743
-                      Visibility: VISIBLE
-                  - FieldTooltipItem:
-                      FieldId: 59bebdd6-b66d-42e8-bf7d-280860277c8b.2.1721654285868
-                      Visibility: VISIBLE
-                  TooltipTitleType: PRIMARY_VALUE
-                SelectedTooltipType: DETAILED
-                TooltipVisibility: VISIBLE
-              ValueLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: value
-                      DataSetIdentifier: carbon_emissions_longform
-                    FieldId: 1c4e087c-344e-4ad0-b986-aa01476f6091.value.0.1720689361709
-                  CustomLabel: Carbon emissions (MTCO2e)
-            ColumnHierarchies:
-            - DateTimeHierarchy:
-                DrillDownFilters: []
-                HierarchyId: 30e1574a-81b3-40ec-85e9-9c2005dfe73b
-            Subtitle:
-              Visibility: HIDDEN
-            Title:
-              Visibility: HIDDEN
-            VisualId: a31027d5-1668-4967-9524-7d426d4bbad8
+            VisualId: 5f12bb37-8b9a-42c3-bd75-d33b56f7c43d
       - ContentType: INTERACTIVE
         Layouts:
         - Configuration:
@@ -3666,14 +3919,14 @@ dashboards:
                 ScreenCanvasSizeOptions:
                   OptimizedViewPortWidth: 1920px
               Elements:
-              - ElementId: e003c03e-fb53-4d77-b728-19d448fe178b
+              - ElementId: 454a898f-6a40-417f-946e-d95a4711f3d4
                 ElementType: VISUAL
                 Height: 272px
                 Visibility: VISIBLE
                 Width: 1792px
                 XAxisLocation: 0px
                 YAxisLocation: 0px
-              - ElementId: 43cc365e-b935-4b6a-afa9-edbca2ad2ad1
+              - ElementId: 0d89259f-86e0-48f6-a41b-4ca335f8ab8b
                 ElementType: VISUAL
                 Height: 784px
                 Visibility: VISIBLE
@@ -3681,7 +3934,7 @@ dashboards:
                 XAxisLocation: 0px
                 YAxisLocation: 272px
         Name: About
-        SheetId: 05e390e3-ff3a-4674-8b10-537aadaeb77d
+        SheetId: 0f878f38-30d3-40f8-8323-642fa0808eb5
         Visuals:
         - InsightVisual:
             Actions: []
@@ -3705,7 +3958,7 @@ dashboards:
               Visibility: VISIBLE
             Title:
               Visibility: VISIBLE
-            VisualId: e003c03e-fb53-4d77-b728-19d448fe178b
+            VisualId: 454a898f-6a40-417f-946e-d95a4711f3d4
         - InsightVisual:
             Actions: []
             DataSetIdentifier: sus_geo_region_athena
@@ -3715,7 +3968,7 @@ dashboards:
                 Narrative: "<narrative>\n  <block align=\"center\">\n    <inline font-size=\"\
                   68.8px\">Sustainability Proxy\_</inline>\n    <inline color=\"#f6f9f9\"\
                   \ font-size=\"68.8px\">Dashboard</inline>\n  </block>\n  <br/>\n  <block\
-                  \ align=\"center\">\n    <inline font-size=\"68.8px\">\n      <b>v3.2.0</b>\n\
+                  \ align=\"center\">\n    <inline font-size=\"68.8px\">\n      <b>v5.0.1</b>\n\
                   \    </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n    <inline\
                   \ font-size=\"22.4px\">\n      <b>Sustainability Dashboard Metrics Optimization\
                   \ Solution</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"\
@@ -3729,10 +3982,11 @@ dashboards:
                   \ target=\"_blank\">AWS Well-Architected Labs</a>\n    </inline>\n   \
                   \ \_and\n    <inline color=\"#61d1d6\">\n      <a href=\"https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\"\
                   \ target=\"_blank\">CID YouTube Channel</a>\n    </inline>\n  </block>\n\
-                  \  <br/>\n  <block align=\"right\">Powered by: Amazon QuickSight, Amazon Athena, Amazon\
-                  \ S3</block>\n  <br/>\n  <block align=\"right\">\n    If you wish to provide\
-                  \ feedback or report an error please email:\n    <inline color=\"#61d1d6\"\
-                  >\_</inline>\n    <inline color=\"#61d1d6\">\n      <a href=\"mailto:cloud-intelligence-dashboards@amazon.com?subject=CID%20Dashboard%20Feedback\"\
+                  \  <br/>\n  <block align=\"right\">Powered by: Amazon QuickSight, Amazon\
+                  \ Athena, Amazon S3</block>\n  <br/>\n  <block align=\"right\">\n    If\
+                  \ you wish to provide feedback or report an error please email:\n    <inline\
+                  \ color=\"#61d1d6\">\_</inline>\n    <inline color=\"#61d1d6\">\n    \
+                  \  <a href=\"mailto:cloud-intelligence-dashboards@amazon.com?subject=CID%20Dashboard%20Feedback\"\
                   \ target=\"_blank\">cloud-intelligence-dashboards@amazon.com</a>\n   \
                   \ </inline>\n  </block>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n\
                   \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n</narrative>"
@@ -3740,7 +3994,8 @@ dashboards:
               Visibility: VISIBLE
             Title:
               Visibility: VISIBLE
-            VisualId: 43cc365e-b935-4b6a-afa9-edbca2ad2ad1
+            VisualId: 0d89259f-86e0-48f6-a41b-4ca335f8ab8b
+    version: v5.0.1
 datasets:
   sus_s3_storage_all:
     data:
@@ -3751,7 +4006,7 @@ datasets:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: sus_s3_storage_all
             InputColumns:
             - Name: year
@@ -3792,18 +4047,18 @@ datasets:
               Type: INTEGER
             - Name: usage_quantity
               Type: DECIMAL
-              SubType: FLOAT
+              SubType: FIXED
             - Name: unblended_cost
               Type: DECIMAL
-              SubType: FLOAT
+              SubType: FIXED
             - Name: public_cost
               Type: DECIMAL
-              SubType: FLOAT
+              SubType: FIXED
         fe1b70ec-a568-4341-9265-db2fe41e6a13:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
             - Name: account_id
@@ -3860,6 +4115,194 @@ datasets:
       - account_map
     schedules:
     - default
+  sus_carbon_emissions:
+    data:
+      DataSetId: 6e2ba899-6fc4-4321-95cb-b332dcbd8ef5
+      Name: sus_carbon_emissions
+      PhysicalTableMap:
+        4494af6c-2a55-46c4-9e3d-20dac6d18946:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+        89bda628-8355-4af1-9282-7882fb99dead:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: sus_carbon_emissions
+            InputColumns:
+            - Name: payer_account_id
+              Type: STRING
+            - Name: usage_account_id
+              Type: STRING
+            - Name: total_mbm_emissions_value
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: total_mbm_emissions_unit
+              Type: STRING
+            - Name: total_lbm_emissions_value
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: total_lbm_emissions_unit
+              Type: STRING
+            - Name: model_version
+              Type: STRING
+            - Name: product_code
+              Type: STRING
+            - Name: usage_period_start
+              Type: DATETIME
+            - Name: usage_period_end
+              Type: DATETIME
+            - Name: last_refresh_timestamp
+              Type: DATETIME
+            - Name: region_code
+              Type: STRING
+            - Name: location
+              Type: STRING
+            - Name: source_account_id
+              Type: STRING
+            - Name: report_name
+              Type: STRING
+            - Name: carbon_model_version
+              Type: STRING
+            - Name: usage_period
+              Type: STRING
+      LogicalTableMap:
+        8768e73c-c416-440f-9d3c-2b651bcb2127:
+          Alias: Intermediate Table
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - payer_account_id
+              - usage_account_id
+              - total_mbm_emissions_value
+              - total_mbm_emissions_unit
+              - total_lbm_emissions_value
+              - total_lbm_emissions_unit
+              - model_version
+              - product_code
+              - usage_period_start
+              - usage_period_end
+              - last_refresh_timestamp
+              - region_code
+              - location
+              - source_account_id
+              - report_name
+              - carbon_model_version
+              - usage_period
+              - account_id
+              - account_name
+          Source:
+            JoinInstruction:
+              LeftOperand: c01a9a46-b2c5-4293-ad45-89532d8ff839
+              RightOperand: f4597560-835e-48b1-bf4c-bea4d71cd972
+              Type: LEFT
+              OnClause: '{usage_account_id} = {account_id}'
+        c01a9a46-b2c5-4293-ad45-89532d8ff839:
+          Alias: sus_carbon_emissions
+          Source:
+            PhysicalTableId: 89bda628-8355-4af1-9282-7882fb99dead
+        f4597560-835e-48b1-bf4c-bea4d71cd972:
+          Alias: account_map
+          Source:
+            PhysicalTableId: 4494af6c-2a55-46c4-9e3d-20dac6d18946
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - account_map
+      - sus_carbon_emissions
+    schedules:
+    - default
+  sus_compute_ec2:
+    data:
+      DataSetId: cf4c1a8b-6e9a-4cac-b2da-d82c970271e4
+      Name: sus_compute_ec2
+      PhysicalTableMap:
+        862dc931-5aeb-45bd-aa09-0560920c43f0:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: sus_compute_ec2
+            InputColumns:
+            - Name: bill_payer_account_id
+              Type: STRING
+            - Name: line_item_usage_account_id
+              Type: STRING
+            - Name: line_item_usage_start_date
+              Type: DATETIME
+            - Name: resource_tags_user_application
+              Type: STRING
+            - Name: line_item_product_code
+              Type: STRING
+            - Name: product_instance_type_family
+              Type: STRING
+            - Name: product_physical_processor
+              Type: STRING
+            - Name: tag_business_metric
+              Type: INTEGER
+            - Name: account_business_metric
+              Type: INTEGER
+            - Name: vcpu_hours
+              Type: DECIMAL
+              SubType: FIXED
+        937e5fa9-bb37-4b63-a607-f8c1d0a7ca9b:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+      LogicalTableMap:
+        49d5b0fd-0993-4374-a034-a87d662add3f:
+          Alias: Intermediate Table
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - bill_payer_account_id
+              - line_item_usage_account_id
+              - line_item_usage_start_date
+              - resource_tags_user_application
+              - line_item_product_code
+              - product_instance_type_family
+              - product_physical_processor
+              - vcpu_hours
+              - tag_business_metric
+              - account_business_metric
+              - account_id
+              - account_name
+          Source:
+            JoinInstruction:
+              LeftOperand: ab737a73-894c-4495-b12d-bf17cfb6b935
+              RightOperand: 4d22feb2-2623-4113-a230-ee69aa825fd3
+              Type: LEFT
+              OnClause: '{line_item_usage_account_id} = {account_id}'
+        4d22feb2-2623-4113-a230-ee69aa825fd3:
+          Alias: account_map
+          Source:
+            PhysicalTableId: 937e5fa9-bb37-4b63-a607-f8c1d0a7ca9b
+        ab737a73-894c-4495-b12d-bf17cfb6b935:
+          Alias: sus_compute_ec2
+          Source:
+            PhysicalTableId: 862dc931-5aeb-45bd-aa09-0560920c43f0
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - sus_compute_ec2
+      - account_map
+    schedules:
+    - default
   sus_idle_elb:
     data:
       DataSetId: 2794b73a-4469-4b9c-ba4e-d1de93460b8b
@@ -3869,7 +4312,7 @@ datasets:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
             - Name: account_id
@@ -3880,7 +4323,7 @@ datasets:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: sus_idle_elb
             InputColumns:
             - Name: bill_payer_account_id
@@ -3895,9 +4338,6 @@ datasets:
               Type: STRING
             - Name: pricing_unit
               Type: STRING
-            - Name: sum_line_item_usage_amount
-              Type: DECIMAL
-              SubType: FLOAT
             - Name: resource_tags_user_application
               Type: STRING
             - Name: tagbuskpi
@@ -3905,6 +4345,9 @@ datasets:
             - Name: accbuskpi
               Type: INTEGER
             - Name: sum_line_item_unblended_cost
+              Type: DECIMAL
+              SubType: FIXED
+            - Name: sum_line_item_usage_amount
               Type: DECIMAL
               SubType: FIXED
       LogicalTableMap:
@@ -3951,228 +4394,6 @@ datasets:
       - sus_idle_elb
     schedules:
     - default
-  sus_compute_ec2:
-    data:
-      DataSetId: cf4c1a8b-6e9a-4cac-b2da-d82c970271e4
-      Name: sus_compute_ec2
-      PhysicalTableMap:
-        862dc931-5aeb-45bd-aa09-0560920c43f0:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
-            Name: sus_compute_ec2
-            InputColumns:
-            - Name: bill_payer_account_id
-              Type: STRING
-            - Name: line_item_usage_account_id
-              Type: STRING
-            - Name: line_item_usage_start_date
-              Type: DATETIME
-            - Name: resource_tags_user_application
-              Type: STRING
-            - Name: line_item_product_code
-              Type: STRING
-            - Name: product_instance_type_family
-              Type: STRING
-            - Name: product_physical_processor
-              Type: STRING
-            - Name: vcpu_hours
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: tag_business_metric
-              Type: INTEGER
-            - Name: account_business_metric
-              Type: INTEGER
-        937e5fa9-bb37-4b63-a607-f8c1d0a7ca9b:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
-            Name: account_map
-            InputColumns:
-            - Name: account_id
-              Type: STRING
-            - Name: account_name
-              Type: STRING
-      LogicalTableMap:
-        49d5b0fd-0993-4374-a034-a87d662add3f:
-          Alias: Intermediate Table
-          DataTransforms:
-          - ProjectOperation:
-              ProjectedColumns:
-              - bill_payer_account_id
-              - line_item_usage_account_id
-              - line_item_usage_start_date
-              - resource_tags_user_application
-              - line_item_product_code
-              - product_instance_type_family
-              - product_physical_processor
-              - vcpu_hours
-              - tag_business_metric
-              - account_business_metric
-              - account_id
-              - account_name
-          Source:
-            JoinInstruction:
-              LeftOperand: ab737a73-894c-4495-b12d-bf17cfb6b935
-              RightOperand: 4d22feb2-2623-4113-a230-ee69aa825fd3
-              Type: LEFT
-              OnClause: '{line_item_usage_account_id} = {account_id}'
-        4d22feb2-2623-4113-a230-ee69aa825fd3:
-          Alias: account_map
-          Source:
-            PhysicalTableId: 937e5fa9-bb37-4b63-a607-f8c1d0a7ca9b
-        ab737a73-894c-4495-b12d-bf17cfb6b935:
-          Alias: sus_compute_ec2
-          Source:
-            PhysicalTableId: 862dc931-5aeb-45bd-aa09-0560920c43f0
-      ImportMode: SPICE
-    dependsOn:
-      views:
-      - sus_compute_ec2
-      - account_map
-    schedules:
-    - default
-  sus_carbon_emissions:
-    data:
-      DataSetId: 12419d71-ec67-4e23-bd1f-fcd7b34c82f9
-      Name: sus_carbon_emissions
-      PhysicalTableMap:
-        1dc4c009-196c-489a-970b-561bf4acef6b:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
-            Name: sus_carbon_emissions_view
-            InputColumns:
-            - Name: accountid
-              Type: STRING
-            - Name: querydate
-              Type: DATETIME
-            - Name: startdate
-              Type: DATETIME
-            - Name: mbmcarbon
-              Type: DECIMAL
-              SubType: FIXED
-            - Name: paceproductcode
-              Type: STRING
-            - Name: regioncode
-              Type: STRING
-        4e57d6b4-c367-411e-a44b-7870baa54c39:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
-            Name: account_map
-            InputColumns:
-            - Name: account_id
-              Type: STRING
-            - Name: account_name
-              Type: STRING
-      LogicalTableMap:
-        485c1f21-5a4c-46bb-9abb-5e721c34ee9a:
-          Alias: account_map
-          Source:
-            PhysicalTableId: 4e57d6b4-c367-411e-a44b-7870baa54c39
-        81a5d7b4-3f4e-4083-8cdd-06268e2b5a7b:
-          Alias: Intermediate Table
-          DataTransforms:
-          - ProjectOperation:
-              ProjectedColumns:
-              - accountid
-              - querydate
-              - startdate
-              - mbmcarbon
-              - paceproductcode
-              - regioncode
-              - account_id
-              - account_name
-          Source:
-            JoinInstruction:
-              LeftOperand: a76d55cc-a67b-4ff3-8097-745706bf40fe
-              RightOperand: 485c1f21-5a4c-46bb-9abb-5e721c34ee9a
-              Type: LEFT
-              OnClause: '{accountid} = {account_id}'
-        a76d55cc-a67b-4ff3-8097-745706bf40fe:
-          Alias: sus_carbon_emissions_view
-          Source:
-            PhysicalTableId: 1dc4c009-196c-489a-970b-561bf4acef6b
-      ImportMode: SPICE
-    dependsOn:
-      views:
-      - sus_carbon_emissions_view
-      - account_map
-    schedules:
-    - default
-  carbon_emissions_longform:
-    data:
-      DataSetId: 814f2ac6-3205-43b8-ac8b-bab4dc1c864a
-      Name: carbon_emissions_longform
-      PhysicalTableMap:
-        c58a049b-ecf8-4884-8916-2b8ec86bd941:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
-            Name: account_map
-            InputColumns:
-            - Name: account_id
-              Type: STRING
-            - Name: account_name
-              Type: STRING
-        d0ea6867-d523-452c-b6a3-7431979da256:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
-            Name: sus_carbon_emissions_longform
-            InputColumns:
-            - Name: metric
-              Type: STRING
-            - Name: value
-              Type: DECIMAL
-              SubType: FIXED
-            - Name: accountid
-              Type: STRING
-            - Name: querydate
-              Type: DATETIME
-            - Name: startdate
-              Type: DATETIME
-      LogicalTableMap:
-        1c4e087c-344e-4ad0-b986-aa01476f6091:
-          Alias: sus_carbon_emissions_longform
-          Source:
-            PhysicalTableId: d0ea6867-d523-452c-b6a3-7431979da256
-        5dc3e114-3a3d-43ff-87af-eae4d8d4cf8c:
-          Alias: account_map
-          Source:
-            PhysicalTableId: c58a049b-ecf8-4884-8916-2b8ec86bd941
-        67d16571-dce6-4ca0-a4d3-8e2cdc60bc05:
-          Alias: Intermediate Table
-          DataTransforms:
-          - ProjectOperation:
-              ProjectedColumns:
-              - metric
-              - value
-              - accountid
-              - querydate
-              - startdate
-              - account_id
-              - account_name
-          Source:
-            JoinInstruction:
-              LeftOperand: 1c4e087c-344e-4ad0-b986-aa01476f6091
-              RightOperand: 5dc3e114-3a3d-43ff-87af-eae4d8d4cf8c
-              Type: LEFT
-              OnClause: '{accountid} = {account_id}'
-      ImportMode: SPICE
-    dependsOn:
-      views:
-      - account_map
-      - sus_carbon_emissions_longform
-    schedules:
-    - default
   sus_storage_athena:
     data:
       DataSetId: af858de6-f6ef-4961-88c4-964aa1266b9a
@@ -4182,7 +4403,7 @@ datasets:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: sus_storage_athena
             InputColumns:
             - Name: bill_payer_account_id
@@ -4195,18 +4416,18 @@ datasets:
               Type: STRING
             - Name: line_item_usage_start_date
               Type: DATETIME
-            - Name: usage
-              Type: DECIMAL
-              SubType: FLOAT
             - Name: tagbuskpi
               Type: INTEGER
             - Name: accbuskpi
               Type: INTEGER
+            - Name: Usage
+              Type: DECIMAL
+              SubType: FIXED
         e7b46e3d-87cf-473e-908b-7870ffa90a32:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
             - Name: account_id
@@ -4259,7 +4480,7 @@ datasets:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: sus_geo_region_athena
             InputColumns:
             - Name: bill_payer_account_id
@@ -4327,7 +4548,7 @@ datasets:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
             - Name: account_id
@@ -4338,7 +4559,7 @@ datasets:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: sus_network
             InputColumns:
             - Name: bill_payer_account_id
@@ -4367,16 +4588,16 @@ datasets:
               Type: STRING
             - Name: line_item_line_item_description
               Type: STRING
-            - Name: usage_amount_in_tb
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: cost
-              Type: DECIMAL
-              SubType: FLOAT
             - Name: tagbuskpi
               Type: INTEGER
             - Name: accbuskpi
               Type: INTEGER
+            - Name: usage_amount_in_tb
+              Type: DECIMAL
+              SubType: FIXED
+            - Name: cost
+              Type: DECIMAL
+              SubType: FIXED
       LogicalTableMap:
         9d386b3d-9b75-4e72-b307-56678a6e8f96:
           Alias: account_map
@@ -4427,6 +4648,83 @@ datasets:
       - sus_network
     schedules:
     - default
+  sus_compute_split:
+    data:
+      DataSetId: 20912ab9-05e1-48c0-99f7-b70e68c743f0
+      Name: sus_compute_split
+      PhysicalTableMap:
+        3dd3174f-61ea-420e-8ea9-d7fb30a929ef:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: sus_compute_split
+            InputColumns:
+            - Name: bill_payer_account_id
+              Type: STRING
+            - Name: line_item_usage_account_id
+              Type: STRING
+            - Name: line_item_usage_start_date
+              Type: DATETIME
+            - Name: resource_tags_user_application
+              Type: STRING
+            - Name: line_item_product_code
+              Type: STRING
+            - Name: tag_business_metric
+              Type: INTEGER
+            - Name: account_business_metric
+              Type: INTEGER
+            - Name: vcpu_hours
+              Type: DECIMAL
+              SubType: FIXED
+        7c5b80e9-7ba4-42bd-b626-4f8500c0ef00:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+      LogicalTableMap:
+        38318059-ada4-43cd-84e7-465c830634d4:
+          Alias: Intermediate Table
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - bill_payer_account_id
+              - line_item_usage_account_id
+              - line_item_usage_start_date
+              - resource_tags_user_application
+              - line_item_product_code
+              - vcpu_hours
+              - tag_business_metric
+              - account_business_metric
+              - account_id
+              - account_name
+          Source:
+            JoinInstruction:
+              LeftOperand: 3af7087e-542f-439f-b88c-822cc9cacd3c
+              RightOperand: 3b98fdf2-4730-401d-b095-59581cce1db9
+              Type: LEFT
+              OnClause: '{line_item_usage_account_id} = {account_id}'
+        3af7087e-542f-439f-b88c-822cc9cacd3c:
+          Alias: sus_compute_split
+          Source:
+            PhysicalTableId: 3dd3174f-61ea-420e-8ea9-d7fb30a929ef
+        3b98fdf2-4730-401d-b095-59581cce1db9:
+          Alias: account_map
+          Source:
+            PhysicalTableId: 7c5b80e9-7ba4-42bd-b626-4f8500c0ef00
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - sus_compute_split
+      - account_map
+    schedules:
+    - default
   sus_idle_natgw:
     data:
       DataSetId: c8a8cb07-8d9d-4b90-9862-e2a7e1370908
@@ -4436,7 +4734,7 @@ datasets:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
             - Name: account_id
@@ -4447,7 +4745,7 @@ datasets:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
+            Schema: ${athena_database_name}
             Name: sus_idle_natgw
             InputColumns:
             - Name: bill_payer_account_id
@@ -4462,9 +4760,6 @@ datasets:
               Type: STRING
             - Name: pricing_unit
               Type: STRING
-            - Name: sum_line_item_usage_amount
-              Type: DECIMAL
-              SubType: FLOAT
             - Name: resource_tags_user_application
               Type: STRING
             - Name: sum_line_item_unblended_cost
@@ -4474,6 +4769,9 @@ datasets:
               Type: INTEGER
             - Name: accbuskpi
               Type: INTEGER
+            - Name: sum_line_item_usage_amount
+              Type: DECIMAL
+              SubType: FIXED
       LogicalTableMap:
         6663e8a1-6723-49ae-9312-b51275135aec:
           Alias: sus_idle_natgw
@@ -4516,83 +4814,6 @@ datasets:
       views:
       - account_map
       - sus_idle_natgw
-    schedules:
-    - default
-  sus_compute_split:
-    data:
-      DataSetId: 20912ab9-05e1-48c0-99f7-b70e68c743f0
-      Name: sus_compute_split
-      PhysicalTableMap:
-        3dd3174f-61ea-420e-8ea9-d7fb30a929ef:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
-            Name: sus_compute_split
-            InputColumns:
-            - Name: bill_payer_account_id
-              Type: STRING
-            - Name: line_item_usage_account_id
-              Type: STRING
-            - Name: line_item_usage_start_date
-              Type: DATETIME
-            - Name: resource_tags_user_application
-              Type: STRING
-            - Name: line_item_product_code
-              Type: STRING
-            - Name: vcpu_hours
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: tag_business_metric
-              Type: INTEGER
-            - Name: account_business_metric
-              Type: INTEGER
-        7c5b80e9-7ba4-42bd-b626-4f8500c0ef00:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: "${athena_database_name}"
-            Name: account_map
-            InputColumns:
-            - Name: account_id
-              Type: STRING
-            - Name: account_name
-              Type: STRING
-      LogicalTableMap:
-        38318059-ada4-43cd-84e7-465c830634d4:
-          Alias: Intermediate Table
-          DataTransforms:
-          - ProjectOperation:
-              ProjectedColumns:
-              - bill_payer_account_id
-              - line_item_usage_account_id
-              - line_item_usage_start_date
-              - resource_tags_user_application
-              - line_item_product_code
-              - vcpu_hours
-              - tag_business_metric
-              - account_business_metric
-              - account_id
-              - account_name
-          Source:
-            JoinInstruction:
-              LeftOperand: 3af7087e-542f-439f-b88c-822cc9cacd3c
-              RightOperand: 3b98fdf2-4730-401d-b095-59581cce1db9
-              Type: LEFT
-              OnClause: '{line_item_usage_account_id} = {account_id}'
-        3af7087e-542f-439f-b88c-822cc9cacd3c:
-          Alias: sus_compute_split
-          Source:
-            PhysicalTableId: 3dd3174f-61ea-420e-8ea9-d7fb30a929ef
-        3b98fdf2-4730-401d-b095-59581cce1db9:
-          Alias: account_map
-          Source:
-            PhysicalTableId: 7c5b80e9-7ba4-42bd-b626-4f8500c0ef00
-      ImportMode: SPICE
-    dependsOn:
-      views:
-      - sus_compute_split
-      - account_map
     schedules:
     - default
 crawlers: {}
@@ -4650,12 +4871,11 @@ views:
         (("${cur2_database}"."${cur2_table_name}" cur
       LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
       LEFT JOIN ACC_KPI_PER_DAY susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
-      WHERE ((("line_item_operation" LIKE '%Storage%') AND (("line_item_product_code" LIKE '%AmazonGlacier%') OR ("line_item_product_code" LIKE '%AmazonS3%'))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL '7' 
-      MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
+      WHERE ((("line_item_operation" LIKE '%Storage%') AND (("line_item_product_code" LIKE '%AmazonGlacier%') OR ("line_item_product_code" LIKE '%AmazonS3%'))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
       GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
     parameters:
       tag:
-        type: 'cur2.tag_and_cost_category_fields'
+        type: 'cur.tag_and_cost_category_fields'
         default: resource_tags_user_application
         description: "Enter tag name that is used to categorize workloads"
         global: True
@@ -4666,16 +4886,72 @@ views:
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".sus_buss_kpi AS
       SELECT
-        ${tag} tagValue
+        'none' tagValue
       , line_item_usage_account_id linkedAccountValue
       , line_item_usage_start_date
       , CAST(("random"() * 1000) AS int) buss
       FROM
-        "${cur2_database}"."${cur2_table_name}" cur
+         "${cur2_database}"."${cur2_table_name}" cur
       GROUP BY line_item_usage_start_date, line_item_usage_account_id, 1
+  account_map:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".account_map AS
+      SELECT DISTINCT
+        line_item_usage_account_id account_id
+      , MAX_BY(line_item_usage_account_name, line_item_usage_start_date) account_name
+      , MAX_BY(bill_payer_account_id, line_item_usage_start_date) parent_account_id
+      , MAX_BY(bill_payer_account_name, line_item_usage_start_date) parent_account_name
+      FROM
+        "${cur2_database}"."${cur2_table_name}" cur
+      GROUP BY line_item_usage_account_id
+  sus_compute_ec2:
+    dependsOn:
+      views:
+      - sus_buss_kpi
+      cur2:
+        - pricing_unit
+        - product['vcpu']
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".sus_compute_ec2 AS
+      WITH
+        tag_business_metrics AS (
+         SELECT
+           line_item_usage_start_date
+         , tagvalue
+         , SUM(buss) business_metric
+         FROM
+           "${athena_database_name}".sus_buss_kpi
+         GROUP BY line_item_usage_start_date, tagvalue
+      )
+      , acc_business_metrics AS (
+         SELECT
+           line_item_usage_start_date
+         , linkedaccountvalue
+         , SUM(buss) business_metric
+         FROM
+           "${athena_database_name}".sus_buss_kpi
+         GROUP BY line_item_usage_start_date, linkedaccountvalue
+      )
+      SELECT
+        cur.bill_payer_account_id
+      , cur.line_item_usage_account_id
+      , cur.line_item_usage_start_date
+      , ${tag} resource_tags_user_application
+      , cur.line_item_product_code
+      , (CASE WHEN ((product['instance_type_family'] IS NULL) OR (product['instance_type_family'] = '')) THEN split(product['instance_type'], '.')[1] ELSE product['instance_type_family'] END) product_instance_type_family
+      , cur.product['physical_processor'] product_physical_processor
+      , SUM((cur.line_item_usage_amount * CAST(cur.product['vcpu'] AS double))) vcpu_hours
+      , SUM(susTag.business_metric) tag_business_metric
+      , SUM(susAcc.business_metric) account_business_metric
+      FROM
+        (("${cur2_database}"."${cur2_table_name}" cur
+      LEFT JOIN tag_business_metrics susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
+      LEFT JOIN acc_business_metrics susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
+      WHERE ((((cur.product_product_family = 'Compute Instance') OR (cur.product_product_family = 'Dedicated Host')) AND (cur.line_item_product_code = 'AmazonEC2') AND (cur.line_item_operation LIKE 'RunInstances%') AND (cur.line_item_line_item_type IN ('Usage', 'SavingsPlanCoveredUsage', 'DiscountedUsage'))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7
     parameters:
       tag:
-        type: 'cur2.tag_and_cost_category_fields'
+        type: 'cur.tag_and_cost_category_fields'
         default: resource_tags_user_application
         description: "Enter tag name that is used to categorize workloads"
         global: True
@@ -4687,7 +4963,7 @@ views:
         - pricing_unit
     parameters:
       tag:
-        type: 'cur2.tag_and_cost_category_fields'
+        type: 'cur.tag_and_cost_category_fields'
         default: resource_tags_user_application
         description: "Enter tag name that is used to categorize workloads"
         global: True
@@ -4748,78 +5024,6 @@ views:
          GROUP BY line_item_resource_id, bill_billing_period_start_date, product['region'], pricing_unit, line_item_usage_account_id, bill_payer_account_id, 7
       )
       WHERE ((usage_per_resource_and_pricing_unit > 336) AND (pricing_unit_per_resource = 1))
-  sus_compute_ec2:
-    dependsOn:
-      views:
-      - sus_buss_kpi
-      cur2:
-        - pricing_unit
-        - product['vcpu']
-    data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".sus_compute_ec2 AS
-      WITH
-        tag_business_metrics AS (
-         SELECT
-           line_item_usage_start_date
-         , tagvalue
-         , SUM(buss) business_metric
-         FROM
-           "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, tagvalue
-      )
-      , acc_business_metrics AS (
-         SELECT
-           line_item_usage_start_date
-         , linkedaccountvalue
-         , SUM(buss) business_metric
-         FROM
-           "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, linkedaccountvalue
-      )
-      SELECT
-        cur.bill_payer_account_id
-      , cur.line_item_usage_account_id
-      , cur.line_item_usage_start_date
-      , ${tag} resource_tags_user_application
-      , cur.line_item_product_code
-      , (CASE WHEN ((product['instance_type_family'] IS NULL) OR (product['instance_type_family'] = '')) THEN split(product['instance_type'], '.')[1] ELSE product['instance_type_family'] END) product_instance_type_family
-      , cur.product['physical_processor'] product_physical_processor
-      , SUM((cur.line_item_usage_amount * CAST(cur.product['vcpu'] AS double))) vcpu_hours
-      , SUM(susTag.business_metric) tag_business_metric
-      , SUM(susAcc.business_metric) account_business_metric
-      FROM
-        (("${cur2_database}"."${cur2_table_name}" cur
-      LEFT JOIN tag_business_metrics susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
-      LEFT JOIN acc_business_metrics susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
-      WHERE ((((cur.product_product_family = 'Compute Instance') OR (cur.product_product_family = 'Dedicated Host')) AND (cur.line_item_product_code = 'AmazonEC2') AND (cur.line_item_operation LIKE 'RunInstances%') AND (cur.line_item_line_item_type IN ('Usage', 'SavingsPlanCoveredUsage', 'DiscountedUsage'))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7
-    parameters:
-      tag:
-        type: 'cur2.tag_and_cost_category_fields'
-        default: resource_tags_user_application
-        description: "Enter tag name that is used to categorize workloads"
-        global: True
-  sus_carbon_emissions_view:
-    data: |-
-      CREATE VIEW "${athena_database_name}".sus_carbon_emissions_view AS
-      SELECT
-        '123456789789' accountid
-      , '2024-01-01' querydate
-      , '2024-01-01' startdate
-      , 0 mbmcarbon
-      , 'no-data' paceproductcode
-      , 'no-data' regioncode
-      WHERE (1 = 0)
-  sus_carbon_emissions_longform:
-    data: |-
-      CREATE VIEW "${athena_database_name}".sus_carbon_emissions_longform AS 
-      SELECT
-        'gridmixinefficiency' metric
-      , 0 value
-      , '123456789789' accountid
-      , '2024-03-07' querydate
-      , '2020-12-01' startdate
-      WHERE (1 = 0)
   sus_storage_athena:
     dependsOn:
       views:
@@ -4828,7 +5032,7 @@ views:
         - pricing_unit
     parameters:
       tag:
-        type: 'cur2.tag_and_cost_category_fields'
+        type: 'cur.tag_and_cost_category_fields'
         default: resource_tags_user_application
         description: "Enter tag name that is used to categorize workloads"
         global: True
@@ -4908,7 +5112,7 @@ views:
          , ROW ('ap-southeast-4', 'Australia', 'Melbourne', '-37.813629', '144.963058',0)
          , ROW ('ca-west-1', 'Canada', 'Calgary', '51.048615', '-114.070847',0)
          , ROW ('il-central-1', 'Israel', 'Tel Aviv', '32.085300', '34.781769',0)
-         , ROW ('il-central-1', 'Middle East' , 'UAE', '25.276987', '55.296249',0)
+         , ROW ('me-central-1', 'Middle East' , 'UAE', '25.276987', '55.296249',0)
       )  ignored_table_name (region_name, region_country, region_city, region_latitude, region_longitude, is95PercentRenewable)
   sus_geo_region_athena:
     dependsOn:
@@ -4931,6 +5135,37 @@ views:
       INNER JOIN "${athena_database_name}".sus_aws_regions ON (cur.product['region'] = sus_aws_regions.region_name))
       WHERE (((cur.product['region'] <> '') AND (cur.product['region'] <> 'global')) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
       GROUP BY 1, 2, 3, 4, 5, 6
+  sus_carbon_emissions:
+    parameters:
+        data_exports_database_name:
+          type: athena
+          query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'carbon'
+          error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+          default: cid_data_export
+          description: Database of cid data exports
+          global: True
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".sus_carbon_emissions AS
+      SELECT
+        payer_account_id
+      , usage_account_id
+      , total_mbm_emissions_value
+      , total_mbm_emissions_unit
+      , total_lbm_emissions_value
+      , total_lbm_emissions_unit
+      , model_version
+      , product_code
+      , usage_period_start
+      , usage_period_end
+      , last_refresh_timestamp
+      , region_code
+      , "location"
+      , source_account_id
+      , report_name
+      , carbon_model_version
+      , usage_period
+      FROM
+      "${data_exports_database_name}".carbon
   sus_network:
     dependsOn:
       views:
@@ -4939,7 +5174,7 @@ views:
         - pricing_unit
     parameters:
       tag:
-        type: 'cur2.tag_and_cost_category_fields'
+        type: 'cur.tag_and_cost_category_fields'
         default: resource_tags_user_application
         description: "Enter tag name that is used to categorize workloads"
         global: True
@@ -4988,81 +5223,6 @@ views:
       LEFT JOIN ACC_KPI_PER_DAY susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
       WHERE ((((line_item_line_item_type = 'Usage') AND (NOT (line_item_usage_amount = 0))) AND (((line_item_usage_type LIKE '%Bytes') AND ((((line_item_usage_type LIKE '%In%') OR (line_item_usage_type LIKE '%Out%')) OR (line_item_usage_type LIKE 'Nat%')) OR (line_item_usage_type LIKE '%Regional%'))) AND ((product_from_location = '') OR (product_from_location LIKE '%(%')))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
       GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
-  sus_compute_split:
-    dependsOn:
-      views:
-      - sus_buss_kpi
-      - sus_compute_ec2
-      cur2:
-        - pricing_unit
-    parameters:
-      tag:
-        type: 'cur2.tag_and_cost_category_fields'
-        default: resource_tags_user_application
-        description: "Enter tag name that is used to categorize workloads"
-        global: True
-    data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".sus_compute_split AS
-      WITH
-        tag_business_metrics AS (
-         SELECT
-           line_item_usage_start_date
-         , tagvalue
-         , SUM(buss) business_metric
-         FROM
-           "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, tagvalue
-      )
-      , acc_business_metrics AS (
-         SELECT
-           line_item_usage_start_date
-         , linkedaccountvalue
-         , SUM(buss) business_metric
-         FROM
-           "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, linkedaccountvalue
-      )
-      SELECT
-        cur.bill_payer_account_id
-      , cur.line_item_usage_account_id
-      , cur.line_item_usage_start_date
-      , ${tag} resource_tags_user_application
-      , cur.line_item_product_code
-      , SUM(cur.line_item_usage_amount) vcpu_hours
-      , SUM(susTag.business_metric) tag_business_metric
-      , SUM(susAcc.business_metric) account_business_metric
-      FROM
-        (("${cur2_database}"."${cur2_table_name}" cur
-      LEFT JOIN tag_business_metrics susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
-      LEFT JOIN acc_business_metrics susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
-      WHERE (((cur.line_item_usage_type LIKE '%Fargate-vCPU-Hours:perCPU') AND (cur.line_item_product_code IN ('AmazonEKS', 'AmazonECS')) AND (cur.line_item_line_item_type IN ('Usage', 'SavingsPlanCoveredUsage'))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
-      GROUP BY 1, 2, 3, 4, 5
-      UNION ALL SELECT
-        cur.bill_payer_account_id
-      , cur.line_item_usage_account_id
-      , cur.line_item_usage_start_date
-      , ${tag} resource_tags_user_application
-      , cur.line_item_product_code
-      , SUM(((cur.line_item_usage_amount / 1769) / 3600)) vcpu_hours
-      , SUM(susTag.buss) tag_business_metric
-      , SUM(susAcc.buss) account_business_metric
-      FROM
-        (("${cur2_database}"."${cur2_table_name}" cur
-      LEFT JOIN "${athena_database_name}".sus_buss_kpi susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
-      LEFT JOIN "${athena_database_name}".sus_buss_kpi susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
-      WHERE (((cur.line_item_product_code = 'AWSLambda') AND (cur.line_item_usage_type LIKE '%Lambda-GB-Second') AND (cur.line_item_line_item_type IN ('Usage', 'SavingsPlanCoveredUsage'))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
-      GROUP BY 1, 2, 3, 4, 5
-      UNION ALL SELECT
-        ec2.bill_payer_account_id
-      , ec2.line_item_usage_account_id
-      , ec2.line_item_usage_start_date
-      , ec2.resource_tags_user_application
-      , ec2.line_item_product_code
-      , ec2.vcpu_hours
-      , ec2.tag_business_metric
-      , ec2.account_business_metric
-      FROM
-        "${athena_database_name}".sus_compute_ec2 ec2
   sus_idle_natgw:
     dependsOn:
       views:
@@ -5071,7 +5231,7 @@ views:
         - pricing_unit
     parameters:
       tag:
-        type: 'cur2.tag_and_cost_category_fields'
+        type: 'cur.tag_and_cost_category_fields'
         default: resource_tags_user_application
         description: "Enter tag name that is used to categorize workloads"
         global: True
@@ -5203,7 +5363,27 @@ views:
         "${athena_database_name}".sus_compute_ec2 ec2
     parameters:
       tag:
-        type: 'cur2.tag_and_cost_category_fields'
+        type: 'cur.tag_and_cost_category_fields'
+        default: resource_tags_user_application
+        description: "Enter tag name that is used to categorize workloads"
+        global: True
+  sus_buss_kpi:
+    dependsOn:
+      cur2:
+        - pricing_unit
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".sus_buss_kpi AS
+      SELECT
+        ${tag} tagValue
+      , line_item_usage_account_id linkedAccountValue
+      , line_item_usage_start_date
+      , CAST(("random"() * 1000) AS int) buss
+      FROM
+        "${cur2_database}"."${cur2_table_name}" cur
+      GROUP BY line_item_usage_start_date, line_item_usage_account_id, 1
+    parameters:
+      tag:
+        type: 'cur.tag_and_cost_category_fields'
         default: resource_tags_user_application
         description: "Enter tag name that is used to categorize workloads"
         global: True

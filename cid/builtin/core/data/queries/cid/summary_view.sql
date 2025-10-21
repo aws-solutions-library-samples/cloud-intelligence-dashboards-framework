@@ -2,6 +2,7 @@
   SELECT
     split_part("billing_period", '-', 1) "year"
   , split_part("billing_period", '-', 2) "month"
+  , ${cur_tags_json} tags_json --replace with 
   , "bill_billing_period_start_date" "billing_period"
   , CASE
         WHEN ("date_trunc"('month',"line_item_usage_start_date")) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '3' MONTH)
@@ -94,4 +95,4 @@
     (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH))
     AND (CAST("concat"("billing_period", '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH))
     AND coalesce("line_item_operation", '') NOT IN ('EKSPod-EC2','ECSTask-EC2'))
-  GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34
+  GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35

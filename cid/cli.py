@@ -94,7 +94,6 @@ def map(ctx, **kwargs):
     """
     ctx.obj.map(**kwargs)
 
-
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
 @cid_command
@@ -140,6 +139,9 @@ def deploy(ctx, **kwargs):
      --category TEXT                       Comma separated list of categories of dashboards (ex: foundational,advanced )
      --catalog TEXT                        Comma separated list of catalog files or urls (ex: foundational,advanced )
      --theme TEXT                          A QuickSight Theme (CLASSIC|MIDNIGHT|SEASIDE|RAINIER)
+     --currency TEXT                       A currency symbol instead of default USD (USD|GBP|EUR|JPY|KRW|DKK|TWD|INR)
+     --rls TEXT                            Desired RLS status (CLEAR|ENABLED|DISABLED) Clear = No RLS configuration.
+     --rls-dataset-id TEXT                 ID of RLS Dataset that will be used
      --share-with-account  (yes|no)        Make dashboard visible to other users in the same account by default.
      """
     ctx.obj.deploy(**kwargs)
@@ -155,16 +157,19 @@ def export(ctx, **kwargs):
     Command options:
         --analysis-name              Analysis you want to share (not needed if analysis-id is provided).
         --analysis-id                ID of analysis you want to share (open analysis in browser and copy id from url)
+        --one-file (no|yes)          Default=no, if set export generates a single file if omitted (default) the dashboard will be in a separate file     
         --template-id                Template Id
         --dashboard-id               Target Dashboard Id
         --template-version           Version description vX.Y.Z
+        --taxonomy                   list of fields that export will keep as global filters. Only if these global filters exist.
         --reader-account             Account id with whom you want to share with or *
         --dashboard-export-method
                (definition|template) A method (definition=pull json definition of Analysis OR template=create QuickSight Template)
         --export-known-datasets
             (no|yes)                 If 'yes' the export will include DataSets that are already in resources file. Default = no
+        --export-tables (no|yes).    If 'yes' the export will include Tables. Default: no = only Views
         --category TEXT              The dashboards category. Default = Custom
-        --output                     A filename (.yaml)
+        --output                     A filename (.yaml) If provided an existing file it will be analyzed for default values and overridden 
     """
     ctx.obj.export(**kwargs)
 
@@ -206,6 +211,9 @@ def update(ctx, dashboard_id, force, recursive, **kwargs):
     \b
      --on-drift (show|override)            Action if a drift of view and dataset is discovered. 'override' = override drift(will destroy customization) or 'show' (default) = show a diff. In Unattended mode (without terminal on-drift will have allways override behaviour)
      --theme TEXT                          A QuickSight Theme (CLASSIC|MIDNIGHT|SEASIDE|RAINIER)
+     --currency TEXT                       A currency symbol instead of default USD (USD|GBP|EUR|JPY|KRW|DKK|TWD|INR)
+     --rls TEXT                            Desired RLS status (CLEAR|ENABLED|DISABLED) Clear = No RLS configuration.
+     --rls-dataset-id TEXT                 ID of RLS Dataset that will be used
 
     """
     ctx.obj.update(dashboard_id, force=force, recursive=recursive, **kwargs)

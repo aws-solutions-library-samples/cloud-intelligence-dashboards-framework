@@ -27,4 +27,4 @@ jobs:
       - name: Copy RSS file to S3
         run: |
           ls
-          aws s3 cp changes/cloud-intelligence-dashboards.rss s3://cid-feed/feed/cloud-intelligence-dashboards.rss
+          aws s3 cp changes/cloud-intelligence-dashboards.rss s3://cid-feed/feed/cloud-intelligence-dashboards.rss --content-type application/rss+xml

@@ -21,14 +21,6 @@
                         "Type": "STRING"
                     },
                     {
-                        "Name": "account_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "account_name",
-                        "Type": "STRING"
-                    },
-                    {
                         "Name": "resource_id",
                         "Type": "STRING"
                     },
@@ -37,24 +29,28 @@
                         "Type": "STRING"
                     },
                     {
-                        "Name": "usage_storage_gb_mo",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "usage_iops_mo",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "usage_throughput_gibps_mo",
-                        "Type": "DECIMAL"
-                    },
-                    {
                         "Name": "storage_summary",
                         "Type": "STRING"
                     },
                     {
+                        "Name": "usage_storage_gb_mo",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "usage_iops_mo",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
+                        "Name": "usage_throughput_gibps_mo",
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    },
+                    {
                         "Name": "gp2_usage_added_iops_mo",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "gp2_usage_added_throughput_gibps_mo",
@@ -62,39 +58,66 @@
                     },
                     {
                         "Name": "ebs_all_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_sc1_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_st1_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_standard_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_io1_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_io2_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_gp2_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_gp3_cost",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
                     },
                     {
                         "Name": "ebs_gp3_potential_savings",
-                        "Type": "DECIMAL"
+                        "Type": "DECIMAL",
+                        "SubType": "FLOAT"
+                    }
+                ]
+            }
+        },
+        "561b26dc-d85d-4523-a17b-939ac4f261ef": {
+            "RelationalTable": {
+                "DataSourceArn": "${athena_datasource_arn}",
+                "Catalog": "AwsDataCatalog",
+                "Schema": "${athena_database_name}",
+                "Name": "account_map",
+                "InputColumns": [
+                    {
+                        "Name": "account_id",
+                        "Type": "STRING"
+                    },
+                    {
+                        "Name": "account_name",
+                        "Type": "STRING"
                     }
                 ]
             }
@@ -103,6 +126,12 @@
     "LogicalTableMap": {
         "23c71fa5-4992-4c85-b267-07d05b4eb69b": {
             "Alias": "kpi_ebs_storage_all",
+            "Source": {
+                "PhysicalTableId": "23c71fa5-4992-4c85-b267-07d05b4eb69b"
+            }
+        },
+        "416a43b3-cd00-4bb4-b068-ac75e31a3021": {
+            "Alias": "Intermediate Table",
             "DataTransforms": [
                 {
                     "ProjectOperation": {
@@ -110,14 +139,12 @@
                             "billing_period",
                             "payer_account_id",
                             "linked_account_id",
-                            "account_id",
-                            "account_name",
                             "resource_id",
                             "volume_api_name",
+                            "storage_summary",
                             "usage_storage_gb_mo",
                             "usage_iops_mo",
                             "usage_throughput_gibps_mo",
-                            "storage_summary",
                             "gp2_usage_added_iops_mo",
                             "gp2_usage_added_throughput_gibps_mo",
                             "ebs_all_cost",
@@ -128,13 +155,26 @@
                             "ebs_io2_cost",
                             "ebs_gp2_cost",
                             "ebs_gp3_cost",
-                            "ebs_gp3_potential_savings"
+                            "ebs_gp3_potential_savings",
+                            "account_id",
+                            "account_name"
                         ]
                     }
                 }
             ],
             "Source": {
-                "PhysicalTableId": "23c71fa5-4992-4c85-b267-07d05b4eb69b"
+                "JoinInstruction": {
+                    "LeftOperand": "23c71fa5-4992-4c85-b267-07d05b4eb69b",
+                    "RightOperand": "dddd1a12-247a-4bd5-8d0d-bedefb1bd3a9",
+                    "Type": "LEFT",
+                    "OnClause": "{linked_account_id} = {account_id}"
+                }
+            }
+        },
+        "dddd1a12-247a-4bd5-8d0d-bedefb1bd3a9": {
+            "Alias": "account_map",
+            "Source": {
+                "PhysicalTableId": "561b26dc-d85d-4523-a17b-939ac4f261ef"
             }
         }
     },

@@ -1,11 +1,7 @@
 /*Replace customer_all in row 71 with your CUR table name */
 	CREATE OR REPLACE VIEW kpi_instance_all AS
 		WITH
-		-- Step 1: Add mapping view
-		map AS(SELECT *
-		FROM account_map),
-
-		-- Step 2: Add instance mapping data
+		-- Step 1: Add instance mapping data
 		instance_map AS (SELECT *
 			  FROM
 				kpi_instance_mapping),
@@ -19,6 +15,7 @@
 		   , "bill_payer_account_id" "payer_account_id"
 		   , "line_item_usage_account_id" "linked_account_id"
 		   , "line_item_resource_id" "resource_id"
+		   , ${cur_tags_json} tags_json
 		   , coalesce("line_item_line_item_type", '') "charge_type"
 		   , (CASE WHEN (coalesce("savings_plan_savings_plan_a_r_n", '') <> '') THEN 'SavingsPlan' WHEN (coalesce("reservation_reservation_a_r_n", '') <> '') THEN 'Reserved' WHEN ("line_item_usage_type" LIKE '%Spot%') THEN 'Spot' ELSE 'OnDemand' END) "purchase_option"
 		   , "line_item_product_code" "product_code"
@@ -40,7 +37,7 @@
 		   , coalesce(product['operating_system'], '') "platform"
 		   , product['tenancy'] "tenancy"
 		   , product['physical_processor'] "processor"
-		   , (CASE 
+		   , (CASE
 			WHEN (("line_item_line_item_type" LIKE '%Usage%') AND (product['physical_processor'] LIKE '%Graviton%')) THEN 'Graviton'
 			WHEN (("line_item_line_item_type" LIKE '%Usage%') AND (product['physical_processor'] LIKE '%AMD%')) THEN 'AMD'
 			WHEN line_item_product_code IN ('AmazonES','AmazonElastiCache') AND (product_instance_type LIKE '%6g%' OR product_instance_type LIKE '%7g%' OR product_instance_type LIKE '%4g%') THEN 'Graviton'
@@ -74,16 +71,16 @@
 			(CAST("concat"("billing_period", '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '3' MONTH)
 		   AND ("bill_payer_account_id" <>'')
 		   AND ("line_item_resource_id" <>'')
-		   AND ("product_servicecode" <> 'AWSDataTransfer') 
+		   AND ("product_servicecode" <> 'AWSDataTransfer')
 		   AND (coalesce("line_item_usage_type", '') NOT LIKE '%DataXfer%')
-		   AND (("line_item_line_item_type" LIKE '%Usage%') OR ("line_item_line_item_type" = 'RIFee') OR ("line_item_line_item_type" = 'SavingsPlanRecurringFee')) 
+		   AND (("line_item_line_item_type" LIKE '%Usage%') OR ("line_item_line_item_type" = 'RIFee') OR ("line_item_line_item_type" = 'SavingsPlanRecurringFee'))
 		   AND (
 					(("line_item_product_code" = 'AmazonEC2') AND (coalesce("product_instance_type", '') <> '') AND ("line_item_operation" LIKE '%RunInstances%'))
 				OR(("line_item_product_code" = 'AmazonElastiCache') AND (coalesce("product_instance_type", '') <> ''))
 				OR (("line_item_product_code" = 'AmazonES') AND (coalesce("product_instance_type", '') <> ''))
 				OR (("line_item_product_code" = 'AmazonRDS') AND (coalesce("product_instance_type", '') <> ''))
 				OR (("line_item_product_code" = 'AmazonRedshift') AND (coalesce("product_instance_type", '') <> ''))
-				OR (("line_item_product_code" = 'AmazonDynamoDB') AND ("line_item_operation" in ('CommittedThroughput','PayPerRequestThroughput')) AND (("line_item_usage_type" LIKE '%ReadCapacityUnit-Hrs%') or ("line_item_usage_type" LIKE '%WriteCapacityUnit-Hrs%')) AND (coalesce("line_item_usage_type", '') NOT LIKE '%Repl%')) 
+				OR (("line_item_product_code" = 'AmazonDynamoDB') AND ("line_item_operation" in ('CommittedThroughput','PayPerRequestThroughput')) AND (("line_item_usage_type" LIKE '%ReadCapacityUnit-Hrs%') or ("line_item_usage_type" LIKE '%WriteCapacityUnit-Hrs%')) AND (coalesce("line_item_usage_type", '') NOT LIKE '%Repl%'))
 				OR (("line_item_product_code" = 'AWSLambda') AND ("line_item_usage_type" LIKE '%Lambda-Provisioned-GB-Second%'))
 				OR (("line_item_product_code" = 'AWSLambda') AND ("line_item_usage_type" LIKE '%Lambda-GB-Second%'))
 				OR (("line_item_product_code" = 'AWSLambda') AND ("line_item_usage_type" LIKE '%Lambda-Provisioned-Concurrency%'))
@@ -93,13 +90,13 @@
 				OR ("line_item_product_code" = 'MachineLearningSavingsPlans')
 			))
 
-		   GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,17,18,19,20,21,22,23,24,25
+		   GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26
 		   )
-		SELECT  
-			cur_all.*  
-		   , CASE 
-				WHEN (product_code = 'AmazonEC2' AND lower(platform) NOT LIKE '%window%') THEN latest_graviton 
-				WHEN (product_code = 'AmazonRDS' AND database_engine in ('Aurora MySQL','Aurora PostgreSQL','MariaDB','PostgreSQL','MySQL')) THEN latest_graviton 
+		SELECT
+			cur_all.*
+		   , CASE
+				WHEN (product_code = 'AmazonEC2' AND lower(platform) NOT LIKE '%window%') THEN latest_graviton
+				WHEN (product_code = 'AmazonRDS' AND database_engine in ('Aurora MySQL','Aurora PostgreSQL','MariaDB','PostgreSQL','MySQL')) THEN latest_graviton
 				WHEN (product_code = 'AmazonES') THEN latest_graviton
 				WHEN (product_code = 'AmazonElastiCache') THEN latest_graviton
 				END "latest_graviton"
@@ -107,170 +104,166 @@
 			, latest_intel
 			, generation
 			, instance_processor
-			
-/*map*/	
-		, map.*
-	
+
 /*SageMaker - Should we change sagemaker to machine learning*/
-		   , CASE 
-				WHEN ("commit_service_group" = 'Machine Learning') THEN "adjusted_amortized_cost" ELSE 0 END "sagemaker_all_cost"	
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("commit_service_group" = 'Machine Learning') AND ("instance_type" <> '')) THEN amortized_cost ELSE 0 END "sagemaker_usage_cost"					
-		   , CASE 
+		   , CASE
+				WHEN ("commit_service_group" = 'Machine Learning') THEN "adjusted_amortized_cost" ELSE 0 END "sagemaker_all_cost"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("commit_service_group" = 'Machine Learning') AND ("instance_type" <> '')) THEN amortized_cost ELSE 0 END "sagemaker_usage_cost"
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("commit_service_group" = 'Machine Learning') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN "adjusted_amortized_cost" ELSE 0 END "sagemaker_ondemand_cost"
-		   , CASE 
-				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("commit_service_group" = 'Machine Learning')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "sagemaker_commit_savings"	
-		   , CASE 
+		   , CASE
+				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("commit_service_group" = 'Machine Learning')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "sagemaker_commit_savings"
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("commit_service_group" = 'Machine Learning') AND ("instance_type" <> '') AND ("purchase_option" = 'OnDemand')) THEN ("amortized_cost" * 2E-1) ELSE 0 END "sagemaker_commit_potential_savings"  /*Uses 20% savings estimate*/
 /*Compute SavingsPlan*/
-		   , CASE 
-				WHEN ("commit_service_group" = 'Compute')  THEN "adjusted_amortized_cost" ELSE 0 END "compute_all_cost"	
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("commit_service_group" = 'Compute')) THEN adjusted_amortized_cost ELSE 0 END "compute_usage_cost"					
-		   , CASE 
+		   , CASE
+				WHEN ("commit_service_group" = 'Compute')  THEN "adjusted_amortized_cost" ELSE 0 END "compute_all_cost"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("commit_service_group" = 'Compute')) THEN adjusted_amortized_cost ELSE 0 END "compute_usage_cost"
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("commit_service_group" = 'Compute') AND (purchase_option = 'OnDemand')) THEN "adjusted_amortized_cost" ELSE 0 END "compute_ondemand_cost"
-		   , CASE 
-				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("commit_service_group" = 'Compute')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "compute_commit_savings"	
-		   , CASE 
+		   , CASE
+				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("commit_service_group" = 'Compute')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "compute_commit_savings"
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("commit_service_group" = 'Compute') AND ("purchase_option" = 'OnDemand')) THEN ("amortized_cost" * 2E-1) ELSE 0 END "compute_commit_potential_savings"  /*Uses 20% savings estimate*/
-								
-/*EC2*/			
-		   , CASE 
-				WHEN ("product_code" = 'AmazonEC2') THEN adjusted_amortized_cost ELSE 0 END ec2_all_cost	 
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%')) THEN amortized_cost ELSE 0 END ec2_usage_cost	 
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (purchase_option = 'Spot')) THEN adjusted_amortized_cost ELSE 0 END "ec2_spot_cost"				
-		   , CASE 
+
+/*EC2*/
+		   , CASE
+				WHEN ("product_code" = 'AmazonEC2') THEN adjusted_amortized_cost ELSE 0 END ec2_all_cost
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%')) THEN amortized_cost ELSE 0 END ec2_usage_cost
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (purchase_option = 'Spot')) THEN adjusted_amortized_cost ELSE 0 END "ec2_spot_cost"
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (generation IN ('Previous')) AND (purchase_option <> 'Spot') AND (purchase_option <> 'Reserved') AND (savings_plan_offering_type NOT LIKE '%EC2%')) THEN amortized_cost ELSE 0 END "ec2_previous_generation_cost"
-		   , CASE 
+		   , CASE
 				WHEN ("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%')
 				AND (lower(platform) NOT LIKE '%window%')
 				AND ((adjusted_processor = 'Graviton')
-				OR (((purchase_option = 'OnDemand') OR (savings_plan_offering_type = 'ComputeSavingsPlans')) AND (adjusted_processor <> 'Graviton') AND (latest_graviton <> ''))) 
+				OR (((purchase_option = 'OnDemand') OR (savings_plan_offering_type = 'ComputeSavingsPlans')) AND (adjusted_processor <> 'Graviton') AND (latest_graviton <> '')))
 				 THEN amortized_cost ELSE 0 END "ec2_graviton_eligible_cost"
-		   , CASE 
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (adjusted_processor = 'Graviton')) THEN amortized_cost ELSE 0 END "ec2_graviton_cost"
-		   , CASE 
+		   , CASE
 				WHEN adjusted_processor = 'Graviton' THEN 0
 				WHEN ("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%')
 				AND ((adjusted_processor = 'AMD')
-				OR (((purchase_option = 'OnDemand') OR (savings_plan_offering_type = 'ComputeSavingsPlans')) AND (adjusted_processor <> 'AMD') AND (latest_amd <> ''))) 
+				OR (((purchase_option = 'OnDemand') OR (savings_plan_offering_type = 'ComputeSavingsPlans')) AND (adjusted_processor <> 'AMD') AND (latest_amd <> '')))
 				THEN amortized_cost ELSE 0 END "ec2_amd_eligible_cost"
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (instance_processor = 'AMD')) THEN amortized_cost ELSE 0 END "ec2_amd_cost"		
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (purchase_option <> 'Spot') AND (purchase_option <> 'Reserved') AND (savings_plan_offering_type NOT LIKE '%EC2%')) THEN (adjusted_amortized_cost * 5.5E-1) ELSE 0 END "ec2_spot_potential_savings"  /*Uses 55% savings estimate*/ 
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (purchase_option = 'Spot')) THEN (adjusted_amortized_cost -amortized_cost) ELSE 0 END "ec2_spot_savings" 		
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (generation IN ('Previous')) AND (purchase_option <> 'Spot') AND (purchase_option <> 'Reserved') AND (savings_plan_offering_type NOT LIKE '%EC2%')) THEN (amortized_cost * 5E-2) ELSE 0 END "ec2_previous_generation_potential_savings"  /*Uses 5% savings estimate*/ 
-		   , CASE 
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (instance_processor = 'AMD')) THEN amortized_cost ELSE 0 END "ec2_amd_cost"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (purchase_option <> 'Spot') AND (purchase_option <> 'Reserved') AND (savings_plan_offering_type NOT LIKE '%EC2%')) THEN (adjusted_amortized_cost * 5.5E-1) ELSE 0 END "ec2_spot_potential_savings"  /*Uses 55% savings estimate*/
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (purchase_option = 'Spot')) THEN (adjusted_amortized_cost -amortized_cost) ELSE 0 END "ec2_spot_savings"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (generation IN ('Previous')) AND (purchase_option <> 'Spot') AND (purchase_option <> 'Reserved') AND (savings_plan_offering_type NOT LIKE '%EC2%')) THEN (amortized_cost * 5E-2) ELSE 0 END "ec2_previous_generation_potential_savings"  /*Uses 5% savings estimate*/
+		   , CASE
 				WHEN ("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (lower(platform) NOT LIKE '%window%') AND (((purchase_option = 'OnDemand') OR (savings_plan_offering_type = 'ComputeSavingsPlans')) AND (adjusted_processor <> 'Graviton') AND (latest_graviton <> '') AND adjusted_processor <> 'AMD') THEN (amortized_cost * 2E-1)
-				WHEN ("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (lower(platform) NOT LIKE '%window%') AND (((purchase_option = 'OnDemand') OR (savings_plan_offering_type = 'ComputeSavingsPlans')) AND (adjusted_processor <> 'Graviton') AND (latest_graviton <> '') AND adjusted_processor = 'AMD') THEN (amortized_cost * 1E-1) ELSE 0 END "ec2_graviton_potential_savings"  /*Uses 20% savings estimate for intel and 10% for AMD*/ 				
-		   , CASE 
+				WHEN ("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (lower(platform) NOT LIKE '%window%') AND (((purchase_option = 'OnDemand') OR (savings_plan_offering_type = 'ComputeSavingsPlans')) AND (adjusted_processor <> 'Graviton') AND (latest_graviton <> '') AND adjusted_processor = 'AMD') THEN (amortized_cost * 1E-1) ELSE 0 END "ec2_graviton_potential_savings"  /*Uses 20% savings estimate for intel and 10% for AMD*/
+		   , CASE
 				WHEN ("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonEC2') AND ("instance_type" <> '') AND ("operation" LIKE '%RunInstances%') AND (((purchase_option = 'OnDemand') OR (savings_plan_offering_type = 'ComputeSavingsPlans')) AND (adjusted_processor <> 'Graviton') AND (latest_amd <> '') AND adjusted_processor <> 'AMD') THEN (amortized_cost * 1E-1) ELSE 0 END "ec2_amd_potential_savings"  /*Uses 10% savings estimate for intel and 0% for Graviton*/
 /*RDS*/
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS') AND ("instance_type" <> '')) THEN adjusted_amortized_cost ELSE 0 END "rds_all_cost"	 
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN adjusted_amortized_cost ELSE 0 END "rds_ondemand_cost"				
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS') AND (adjusted_processor = 'Graviton')) THEN amortized_cost 
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS') AND ("instance_type" <> '')) THEN adjusted_amortized_cost ELSE 0 END "rds_all_cost"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN adjusted_amortized_cost ELSE 0 END "rds_ondemand_cost"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS') AND (adjusted_processor = 'Graviton')) THEN amortized_cost
 				WHEN (("charge_type" = 'Usage') AND ("product_code" = 'AmazonRDS') AND ("instance_type" <> '') AND (database_engine in ('Aurora MySQL','Aurora PostgreSQL','MariaDB','PostgreSQL','MySQL')) AND (adjusted_processor <> 'Graviton')  AND (latest_graviton <> '')) THEN amortized_cost ELSE 0 END "rds_graviton_eligible_cost"
-		   , CASE 
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS') AND ("instance_type" <> '') AND (database_engine in ('Aurora MySQL','Aurora PostgreSQL','MariaDB','PostgreSQL','MySQL')) AND (adjusted_processor = 'Graviton')) THEN amortized_cost ELSE 0 END "rds_graviton_cost"
-		   , CASE 
-				WHEN ("charge_type" NOT LIKE '%Usage%') THEN 0 
-				WHEN ("product_code" <> 'AmazonRDS') THEN 0 
-				WHEN (adjusted_processor = 'Graviton') THEN 0 
-				WHEN (latest_graviton = '') THEN 0 
-				WHEN ((latest_graviton <> '') AND purchase_option = 'OnDemand' AND (database_engine in ('Aurora MySQL','Aurora PostgreSQL','MariaDB','PostgreSQL','MySQL'))) THEN (amortized_cost * 1E-1) ELSE 0 END "rds_graviton_potential_savings"  /*Uses 10% savings estimate*/	
-		   , CASE 
-				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("product_code" = 'AmazonRDS')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "rds_commit_savings"	
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN (amortized_cost * 2E-1) ELSE 0 END "rds_commit_potential_savings"  /*Uses 20% savings estimate*/ 				
+		   , CASE
+				WHEN ("charge_type" NOT LIKE '%Usage%') THEN 0
+				WHEN ("product_code" <> 'AmazonRDS') THEN 0
+				WHEN (adjusted_processor = 'Graviton') THEN 0
+				WHEN (latest_graviton = '') THEN 0
+				WHEN ((latest_graviton <> '') AND purchase_option = 'OnDemand' AND (database_engine in ('Aurora MySQL','Aurora PostgreSQL','MariaDB','PostgreSQL','MySQL'))) THEN (amortized_cost * 1E-1) ELSE 0 END "rds_graviton_potential_savings"  /*Uses 10% savings estimate*/
+		   , CASE
+				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("product_code" = 'AmazonRDS')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "rds_commit_savings"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN (amortized_cost * 2E-1) ELSE 0 END "rds_commit_potential_savings"  /*Uses 20% savings estimate*/
 			, (CASE WHEN (((("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS')) AND ("instance_type" <> '')) AND (database_engine IN ('Oracle'))) THEN adjusted_amortized_cost ELSE 0 END) "rds_oracle_cost"
 			, (CASE WHEN (((("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRDS')) AND ("instance_type" <> '')) AND (database_engine IN ('SQL Server'))) THEN adjusted_amortized_cost ELSE 0 END) "rds_sql_server_cost"
-		
-/*ElastiCache*/			
-		   , CASE 
-				WHEN ("product_code" = 'AmazonElastiCache') THEN adjusted_amortized_cost ELSE 0 END "elasticache_all_cost"	 
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '')) THEN amortized_cost ELSE 0 END "elasticache_usage_cost"	 				
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN adjusted_amortized_cost ELSE 0 END "elasticache_ondemand_cost"		
-		   , CASE 
-				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("product_code" = 'AmazonElastiCache')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "elasticache_commit_savings"	
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN (amortized_cost * 2E-1) ELSE 0 END "elasticache_commit_potential_savings"  /*Uses 20% savings estimate*/ 				
-		   , CASE 
-				WHEN (("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '') AND (adjusted_processor = 'Graviton')) THEN amortized_cost	
+
+/*ElastiCache*/
+		   , CASE
+				WHEN ("product_code" = 'AmazonElastiCache') THEN adjusted_amortized_cost ELSE 0 END "elasticache_all_cost"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '')) THEN amortized_cost ELSE 0 END "elasticache_usage_cost"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN adjusted_amortized_cost ELSE 0 END "elasticache_ondemand_cost"
+		   , CASE
+				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("product_code" = 'AmazonElastiCache')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "elasticache_commit_savings"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN (amortized_cost * 2E-1) ELSE 0 END "elasticache_commit_potential_savings"  /*Uses 20% savings estimate*/
+		   , CASE
+				WHEN (("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '') AND (adjusted_processor = 'Graviton')) THEN amortized_cost
 				WHEN (("charge_type" = 'Usage') AND ("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '') AND (latest_graviton <> '')) THEN amortized_cost ELSE 0 END "elasticache_graviton_eligible_cost"
-		   , CASE 
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '') AND (instance_processor = 'Graviton')) THEN amortized_cost ELSE 0 END "elasticache_graviton_cost"
-		   , CASE 
+		   , CASE
 				WHEN (adjusted_processor = 'Graviton') THEN 0
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '') AND (latest_graviton <> ''))  THEN (amortized_cost * 5E-2) ELSE 0 END "elasticache_graviton_potential_savings"  /*Uses 5% savings estimate*/ 
-/*opensearch*/			
-		   , CASE 
-				WHEN ("product_code" = 'AmazonES') THEN adjusted_amortized_cost ELSE 0 END "opensearch_all_cost"	
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonES') AND ("instance_type" <> '')) THEN amortized_cost ELSE 0 END "opensearch_usage_cost"					
-		   , CASE 
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonElastiCache') AND ("instance_type" <> '') AND (latest_graviton <> ''))  THEN (amortized_cost * 5E-2) ELSE 0 END "elasticache_graviton_potential_savings"  /*Uses 5% savings estimate*/
+/*opensearch*/
+		   , CASE
+				WHEN ("product_code" = 'AmazonES') THEN adjusted_amortized_cost ELSE 0 END "opensearch_all_cost"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonES') AND ("instance_type" <> '')) THEN amortized_cost ELSE 0 END "opensearch_usage_cost"
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonES') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN adjusted_amortized_cost ELSE 0 END "opensearch_ondemand_cost"
-		   , CASE 
-				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("product_code" = 'AmazonES')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "opensearch_commit_savings"	
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonES') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN (amortized_cost * 2E-1) ELSE 0 END "opensearch_commit_potential_savings"  /*Uses 20% savings estimate*/ 
-		   , CASE 
-				WHEN (("product_code" = 'AmazonES') AND ("instance_type" <> '') AND (adjusted_processor = 'Graviton')) THEN amortized_cost		
+		   , CASE
+				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("product_code" = 'AmazonES')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "opensearch_commit_savings"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonES') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN (amortized_cost * 2E-1) ELSE 0 END "opensearch_commit_potential_savings"  /*Uses 20% savings estimate*/
+		   , CASE
+				WHEN (("product_code" = 'AmazonES') AND ("instance_type" <> '') AND (adjusted_processor = 'Graviton')) THEN amortized_cost
 				WHEN (("charge_type" = 'Usage') AND ("product_code" = 'AmazonES') AND ("instance_type" <> '') AND (latest_graviton <> '')) THEN amortized_cost ELSE 0 END "opensearch_graviton_eligible_cost"
-		   , CASE 
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonES') AND ("instance_type" <> '') AND (adjusted_processor = 'Graviton')) THEN amortized_cost ELSE 0 END "opensearch_graviton_cost"
-		   , CASE 
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonES') AND ("instance_type" <> '') AND (adjusted_processor = 'Graviton')) THEN 0
 				WHEN (("charge_type" = 'Usage') AND ("product_code" = 'AmazonES') AND ("instance_type" <> '') AND (latest_graviton <> '')) THEN (amortized_cost * 5E-2)
-				ELSE 0 END "opensearch_graviton_potential_savings"  /*Uses 5% savings estimate*/ 				
-/*Redshift*/			
-		   , CASE 
-				WHEN ("product_code" = 'AmazonRedshift') THEN adjusted_amortized_cost ELSE 0 END "redshift_all_cost"	
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRedshift') AND ("instance_type" <> '')) THEN amortized_cost ELSE 0 END "redshift_usage_cost"					
-		   , CASE 
+				ELSE 0 END "opensearch_graviton_potential_savings"  /*Uses 5% savings estimate*/
+/*Redshift*/
+		   , CASE
+				WHEN ("product_code" = 'AmazonRedshift') THEN adjusted_amortized_cost ELSE 0 END "redshift_all_cost"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRedshift') AND ("instance_type" <> '')) THEN amortized_cost ELSE 0 END "redshift_usage_cost"
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRedshift') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN adjusted_amortized_cost ELSE 0 END "redshift_ondemand_cost"
-		   , CASE 
-				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("product_code" = 'AmazonRedshift')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "redshift_commit_savings"	
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRedshift') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN (amortized_cost * 2E-1) ELSE 0 END "redshift_commit_potential_savings"  /*Uses 20% savings estimate*/ 
-/*DynamoDB*/			
-		   , CASE 
-				WHEN ("product_code" = 'AmazonDynamoDB') THEN "adjusted_amortized_cost" ELSE 0 END "dynamodb_all_cost"	
-		   , CASE 
-				WHEN ("charge_type" LIKE '%Usage%') AND ("commit_service_group" = 'DynamoDB') THEN "adjusted_amortized_cost" ELSE 0 END "dynamodb_committed_cost"					
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonDynamoDB')) THEN amortized_cost ELSE 0 END "dynamodb_usage_cost"								
-		   , CASE 
+		   , CASE
+				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("product_code" = 'AmazonRedshift')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "redshift_commit_savings"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonRedshift') AND ("instance_type" <> '') AND (purchase_option = 'OnDemand')) THEN (amortized_cost * 2E-1) ELSE 0 END "redshift_commit_potential_savings"  /*Uses 20% savings estimate*/
+/*DynamoDB*/
+		   , CASE
+				WHEN ("product_code" = 'AmazonDynamoDB') THEN "adjusted_amortized_cost" ELSE 0 END "dynamodb_all_cost"
+		   , CASE
+				WHEN ("charge_type" LIKE '%Usage%') AND ("commit_service_group" = 'DynamoDB') THEN "adjusted_amortized_cost" ELSE 0 END "dynamodb_committed_cost"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AmazonDynamoDB')) THEN amortized_cost ELSE 0 END "dynamodb_usage_cost"
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND  ("commit_service_group" = 'DynamoDB') AND ("purchase_option" = 'OnDemand')) THEN "adjusted_amortized_cost" ELSE 0 END "dynamodb_ondemand_cost"
-		   , CASE 
-				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("commit_service_group" = 'DynamoDB')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "dynamodb_commit_savings"	
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND  ("commit_service_group" = 'DynamoDB') AND (purchase_option = 'OnDemand')) THEN (amortized_cost * 2E-1) ELSE 0 END "dynamodb_commit_potential_savings"  /*Uses 20% savings estimate*/ 
-/*Lambda*/	
-		   , CASE 
-				WHEN ("product_code" = 'AWSLambda') THEN "adjusted_amortized_cost" ELSE 0 END "lambda_all_cost"	
-		   , CASE 
+		   , CASE
+				WHEN (("purchase_option" in ('Reserved','SavingsPlan')) AND ("commit_service_group" = 'DynamoDB')) THEN ("adjusted_amortized_cost" - "amortized_cost") ELSE 0 END "dynamodb_commit_savings"
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND  ("commit_service_group" = 'DynamoDB') AND (purchase_option = 'OnDemand')) THEN (amortized_cost * 2E-1) ELSE 0 END "dynamodb_commit_potential_savings"  /*Uses 20% savings estimate*/
+/*Lambda*/
+		   , CASE
+				WHEN ("product_code" = 'AWSLambda') THEN "adjusted_amortized_cost" ELSE 0 END "lambda_all_cost"
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AWSLambda')) THEN amortized_cost ELSE 0 END "lambda_usage_cost"
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND("product_code" = 'AWSLambda') AND (adjusted_processor = 'Graviton')) THEN amortized_cost		
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND("product_code" = 'AWSLambda') AND (adjusted_processor = 'Graviton')) THEN amortized_cost
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AWSLambda')) THEN amortized_cost ELSE 0 END "lambda_graviton_eligible_cost"
-		   , CASE 
+		   , CASE
 				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AWSLambda') AND (adjusted_processor = 'Graviton')) THEN amortized_cost ELSE 0 END "lambda_graviton_cost"
-		   , CASE 
-				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AWSLambda') AND (adjusted_processor <> 'Graviton')) THEN amortized_cost*.2 ELSE 0 END "lambda_graviton_potential_savings"  /*Uses 20% savings estimate*/ 		
-		
-		FROM 
+		   , CASE
+				WHEN (("charge_type" LIKE '%Usage%') AND ("product_code" = 'AWSLambda') AND (adjusted_processor <> 'Graviton')) THEN amortized_cost*.2 ELSE 0 END "lambda_graviton_potential_savings"  /*Uses 20% savings estimate*/
+
+		FROM
 			cur_all cur_all
-			LEFT JOIN instance_map ON (instance_map.product = product_code AND instance_map.family = instance_type_family) 
-			LEFT JOIN map ON map.account_id= linked_account_id 
-		  
+			LEFT JOIN instance_map ON (instance_map.product = product_code AND instance_map.family = instance_type_family)
+

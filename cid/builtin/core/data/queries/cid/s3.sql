@@ -2,6 +2,7 @@ CREATE OR REPLACE VIEW "s3_view" AS
 SELECT DISTINCT 
     split_part("billing_period", '-', 1) "year",
     split_part("billing_period", '-', 2) "month",
+    ${cur_tags_json} tags_json, --replace with
     "bill_billing_period_start_date" "billing_period",
     "date_trunc"('day', "line_item_usage_start_date") "usage_date",
     "bill_payer_account_id" "payer_account_id",
@@ -53,4 +54,5 @@ GROUP BY 1,
     9,
     10,
     11,
-    12
+    12,
+    13

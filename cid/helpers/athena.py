@@ -137,7 +137,8 @@ class Athena(CidBase):
                 param_name='athena-workgroup',
                 message="Select Amazon Athena workgroup to use",
                 choices=[wgr['Name'] for wgr in workgroups],
-                default=default_workgroup
+                default=default_workgroup,
+                fuzzy=False,
             )
             if ' (create new)' in selected_workgroup:
                 selected_workgroup = selected_workgroup.replace(' (create new)', '')
@@ -281,16 +282,18 @@ class Athena(CidBase):
         logger.debug(f'WorkGroups: {result.get("WorkGroups")}')
         return result.get('WorkGroups')
 
-    def get_table_metadata(self, table_name: str, database_name: str=None) -> dict:
-        table_metadata = self._metadata.get(table_name)
-        params = {
-            'CatalogName': self.CatalogName,
-            'DatabaseName': database_name or self.DatabaseName,
-            'TableName': table_name
-        }
+    def get_table_metadata(self, table_name: str, database_name: str=None, no_cache: bool=False) -> dict:
+        table_metadata = None
+        if not no_cache:
+            table_metadata = self._metadata.get(table_name)
         if not table_metadata:
+            params = {
+                'CatalogName': self.CatalogName,
+                'DatabaseName': database_name or self.DatabaseName,
+                'TableName': table_name,
+            }
             table_metadata = self.client.get_table_metadata(**params).get('TableMetadata')
-            self._metadata.update({table_name: table_metadata})
+            self._metadata[table_name] = table_metadata
 
         return table_metadata
 
@@ -347,7 +350,8 @@ class Athena(CidBase):
 
     def get_query_results(self, query_id):
         """ Get Query Results """
-        return self.client.get_query_results(QueryExecutionId=query_id)
+        paginator = self.client.get_paginator("get_query_results")
+        return paginator.paginate(QueryExecutionId=query_id).build_full_result()
 
     def parse_response_as_table(self, response, include_header=False):
         """ Return a query response as a table. """
@@ -546,6 +550,7 @@ class Athena(CidBase):
                         message=f'The existing view is different. Override?',
                         choices=['retry diff', 'proceed and override', 'keep existing', 'exit'],
                         default='retry diff',
+                        yes_choice='proceed and override',
                         fuzzy=False,
                     )
                     if choice == 'retry diff':
@@ -596,7 +601,7 @@ class Athena(CidBase):
         ''')
 
     def find_tables_with_columns(self, columns: list, database_name: str=None, catalog_name: str=None, max_items: int=10000):
-        """ This function searches a table with a given set of columns
+        """ Returns an iterator that yields only tables containing all specified columns.
         """
         iterator = self.client.get_paginator('list_table_metadata').paginate(
             DatabaseName=database_name or self.DatabaseName,
@@ -605,6 +610,9 @@ class Athena(CidBase):
                 'MaxItems': max_items, # sometimes customers can have 1'000s of tables (due to a crawler going crazy for example)
             },
         )
-        return iterator.search(f"""
-            TableMetadataList[?{' && '.join(["contains(Columns[].Name, '"+col+"' )" for col in columns])}].Name
-        """)
+        # We cannot rely on search to find directly columns as there might be Nulls. So iterating old fashion.
+        for table in iterator.search('TableMetadataList'):
+            column_names = [c['Name'] for c in table.get('Columns', [])]
+            if all([(col in column_names) for col in columns]):
+                yield table
+

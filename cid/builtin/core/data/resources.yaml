@@ -30,6 +30,10 @@ dashboards:
     versions:
       minTemplateVersion: 1
       minTemplateDescription: "v5.0.0"
+    nonTaxonomyColumns: [
+        'product_code', 'service', 'operation', 'charge_type', 'usage_type', 'reservation_a_r_n',
+        'item_description', 'pricing_unit', 'region', 'pricing_term', 'linked_account_id', 'savings_plan_a_r_n', 'tags_json'
+    ]
 
   CID:
     category: 'Foundational'
@@ -45,6 +49,10 @@ dashboards:
     versions:
       minTemplateVersion: 3
       minTemplateDescription: "v3.1.0"
+    nonTaxonomyColumns: [
+        'product_code', 'service', 'operation', 'charge_type', 'usage_type', 'reservation_a_r_n',
+        'item_description', 'pricing_unit', 'region', 'pricing_term', 'linked_account_id', 'savings_plan_a_r_n', 'tags_json'
+    ]
 
   KPI:
     category: 'Foundational'
@@ -62,18 +70,10 @@ dashboards:
     versions:
       minTemplateVersion: 9
       minTemplateDescription: "v1.2.1"
-
-  TAO:
-    category: 'Advanced'
-    name: Trusted Advisor Organizational View
-    templateId: ta-organizational-view
-    dashboardId: ta-organizational-view
-    dependsOn:
-      datasets:
-        - ta-organizational-view
-    versions:
-      minTemplateVersion: 13
-      minTemplateDescription: "v1.4.0"
+    nonTaxonomyColumns: [
+        'product_code', 'service', 'operation', 'charge_type', 'usage_type', 'reservation_a_r_n',
+        'item_description', 'pricing_unit', 'region', 'pricing_term', 'linked_account_id', 'savings_plan_a_r_n', 'tags_json'
+    ]
 
   Trends:
     category: 'Additional'
@@ -109,7 +109,7 @@ dashboards:
 datasets:
   # Shared DataSet between CUDOS, CID and KPI
   summary_view:
-    File: cid/summary_view.json
+    File: datasets/cid/summary_view.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -121,27 +121,29 @@ datasets:
       - default
   # CID dataset
   ec2_running_cost:
-    File: cid/ec2_running_cost.json
+    File: datasets/cid/ec2_running_cost.json
     dependsOn:
       dataProviders:
         - DataExports
       views:
         - ec2_running_cost
+        - account_map
     schedules:
       - default
   # CID dataset
   compute_savings_plan_eligible_spend:
-    File: cid/compute.json
+    File: datasets/cid/compute.json
     dependsOn:
       dataProviders:
         - DataExports
       views:
         - compute_savings_plan_eligible_spend
+        - account_map
     schedules:
       - default
   # CID dataset
   s3_view:
-    File: cid/s3_view.json
+    File: datasets/cid/s3_view.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -153,7 +155,7 @@ datasets:
 
   # CUDOS v4 dataset
   customer_all:
-    File: shared/customer_all.json
+    File: datasets/shared/customer_all.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -162,7 +164,7 @@ datasets:
         - customer_all
   # CUDOS v5 datasets
   hourly_view:
-    File: cudos/hourly_view.json
+    File: datasets/cudos/hourly_view.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -172,7 +174,7 @@ datasets:
     schedules:
       - default
   resource_view:
-    File: cudos/resource_view.json
+    File: datasets/cudos/resource_view.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -183,25 +185,27 @@ datasets:
       - default
   # KPI DataSets
   kpi_ebs_snap:
-    File: kpi/kpi_ebs_snap.json
+    File: datasets/kpi/kpi_ebs_snap.json
     dependsOn:
       dataProviders:
         - DataExports
       views:
         - kpi_ebs_snap
+        - account_map
     schedules:
       - default
   kpi_ebs_storage_all:
-    File: kpi/kpi_ebs_storage_all.json
+    File: datasets/kpi/kpi_ebs_storage_all.json
     dependsOn:
       dataProviders:
         - DataExports
       views:
-       - kpi_ebs_storage_all
+        - kpi_ebs_storage_all
+        - account_map
     schedules:
       - default
   kpi_instance_all:
-    File: kpi/kpi_instance_all.json
+    File: datasets/kpi/kpi_instance_all.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -210,7 +214,7 @@ datasets:
     schedules:
       - default
   kpi_s3_storage_all:
-    File: kpi/kpi_s3_storage_all.json
+    File: datasets/kpi/kpi_s3_storage_all.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -219,7 +223,7 @@ datasets:
     schedules:
       - default
   kpi_tracker:
-    File: kpi/kpi_tracker.json
+    File: datasets/kpi/kpi_tracker.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -232,7 +236,7 @@ datasets:
 
   # Trusted Advisor (TAO)
   ta-organizational-view:
-    File: tao/dataset.json
+    File: datasets/tao/dataset.json
     dependsOn:
       dataProviders:
         - DataCollection
@@ -243,7 +247,7 @@ datasets:
 
   # Trends
   daily-anomaly-detection:
-    File: trends/daily_anomaly_detection.json
+    File: datasets/trends/daily_anomaly_detection.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -252,7 +256,7 @@ datasets:
     schedules:
       - default
   monthly-anomaly-detection:
-    File: trends/monthly_anomaly_detection.json
+    File: datasets/trends/monthly_anomaly_detection.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -261,7 +265,7 @@ datasets:
     schedules:
       - default
   monthly-bill-by-account:
-    File: trends/monthly_bill_by_account.json
+    File: datasets/trends/monthly_bill_by_account.json
     dependsOn:
       dataProviders:
         - DataExports
@@ -272,7 +276,7 @@ datasets:
 
   # Compute Optimizer (CO)
   compute_optimizer_all_options:
-    File: co/dataset.json
+    File: datasets/co/dataset.json
     dependsOn:
       dataProviders:
         - DataCollection
@@ -496,8 +500,11 @@ views:
         - product['volume_type']
 
   summary_view:
-    File: cid/summary_view.sql
+    File: queries/cid/summary_view.sql
     dependsOn:
+      views:
+        - cur2_view
+      tags: json
       cur2:
         - bill_billing_entity
         - bill_billing_period_start_date
@@ -540,9 +547,18 @@ views:
         - savings_plan_total_commitment_to_date
         - savings_plan_used_commitment
 
-  ec2_running_cost:
-    File: cid/ec2_running_cost.sql
+  cur2_view:
     dependsOn:
+      cur2: True
+    data: |
+      CREATE VIEW "cur2_view" AS
+      SELECT *
+      FROM "${cur2_database}"."${cur2_table_name}"
+
+  ec2_running_cost:
+    File: queries/cid/ec2_running_cost.sql
+    dependsOn:
+      tags: json
       cur2:
         - bill_billing_period_start_date
         - bill_payer_account_id
@@ -558,8 +574,9 @@ views:
         - savings_plan_savings_plan_effective_cost
 
   compute_savings_plan_eligible_spend:
-    File: cid/compute_savings_plan_eligible_spend.sql
+    File: queries/cid/compute_savings_plan_eligible_spend.sql
     dependsOn:
+      tags: json
       cur2:
         - bill_billing_period_start_date
         - bill_payer_account_id
@@ -573,8 +590,9 @@ views:
         - product_servicecode
 
   s3_view:
-    File: cid/s3.sql
+    File: queries/cid/s3.sql
     dependsOn:
+      tags: json
       cur2:
         - bill_billing_period_start_date
         - bill_payer_account_id
@@ -591,7 +609,7 @@ views:
         - product['region']
 
   ri_sp_mapping:
-    File: cid/ri_sp_mapping.sql
+    File: queries/cid/ri_sp_mapping.sql
     dependsOn:
       cur2:
         - bill_billing_period_start_date
@@ -613,8 +631,9 @@ views:
         - savings_plan_payment_option
 
   hourly_view:
-    File: cudos/hourly_view.sql
+    File: queries/cudos/hourly_view.sql
     dependsOn:
+      tags: json
       cur2:
         - bill_billing_period_start_date
         - bill_payer_account_id
@@ -637,8 +656,9 @@ views:
         - savings_plan_savings_plan_effective_cost
 
   resource_view:
-    File: cudos/resource_view.sql
+    File: queries/cudos/resource_view.sql
     dependsOn:
+      tags: json
       cur2:
         - bill_billing_entity
         - bill_payer_account_id
@@ -676,19 +696,19 @@ views:
 
   # Trends
   daily_anomaly_detection:
-    File: trends/daily_anomaly_detection.sql
+    File: queries/trends/daily_anomaly_detection.sql
     dependsOn:
       cur2: true
       views:
         - aws_accounts
   monthly_anomaly_detection:
-    File: trends/monthly_anomaly_detection.sql
+    File: queries/trends/monthly_anomaly_detection.sql
     dependsOn:
       cur2: true
       views:
         - aws_accounts
   monthly_bill_by_account:
-    File: trends/monthly_bill_by_account.sql
+    File: queries/trends/monthly_bill_by_account.sql
     dependsOn:
       cur2: true
       views:
@@ -699,60 +719,55 @@ views:
 
   # KPI Views
   kpi_instance_mapping:
-    File: kpi/first_kpi_instance_mapping_view.sql
+    File: queries/kpi/first_kpi_instance_mapping_view.sql
 
   kpi_ebs_snap:
-    File: kpi/kpi_ebs_snap_view.sql
+    File: queries/kpi/kpi_ebs_snap_view.sql
     dependsOn:
       cur2: true
-      views:
-        - account_map
-
+      tags: json
   kpi_ebs_storage_all:
-    File: kpi/kpi_ebs_storage_view.sql
+    File: queries/kpi/kpi_ebs_storage_view.sql
     dependsOn:
       cur2: true
-      views:
-        - account_map
+      tags: json
 
   kpi_instance_all:
-    File: kpi/kpi_instance_all_view.sql
+    File: queries/kpi/kpi_instance_all_view.sql
     dependsOn:
       cur2: true
+      tags: json
       views:
-        - account_map
         - kpi_instance_mapping
 
   kpi_s3_storage_all:
-      File: kpi/kpi_s3_storage_view.sql
-      dependsOn:
-        cur2: true
-        views:
-          - account_map
-
+    File: queries/kpi/kpi_s3_storage_view.sql
+    dependsOn:
+      cur2: true
+      tags: json
 
   kpi_tracker:
-      File: kpi/last_kpi_tracker_view.sql
-      dependsOn:
-        cur2: true
-        views:
-          - account_map
-          - kpi_ebs_snap
-          - kpi_ebs_storage_all
-          - kpi_instance_all
-          - kpi_s3_storage_all
-          - summary_view
+    File: queries/kpi/last_kpi_tracker_view.sql
+    dependsOn:
+      cur2: true
+      tags: json
+      views:
+        - kpi_ebs_snap
+        - kpi_ebs_storage_all
+        - kpi_instance_all
+        - kpi_s3_storage_all
+        - summary_view
 
   # Trusted Advisor (TAO)
   ta_organizational_view_reports:
     type: Glue_Table
-    File: tao/glue_table.json
+    File: queries/tao/glue_table.json
     parameters:
       s3FolderPath:
         default: 's3://cid-data-{account_id}/trusted-advisor/trusted-advisor-data'
         description: Trusted Advisor Organization View report S3 path
   ta_org_view:
-    File: tao/ta_org_view.sql
+    File: queries/tao/ta_org_view.sql
     dependsOn:
       views:
         - ta_organizational_view_reports
@@ -760,7 +775,7 @@ views:
   # Compute Optimizer (CO)
   compute_optimizer_ec2_instance_lines:
     type: Glue_Table
-    File: co/ec2_instance.json
+    File: queries/co/ec2_instance.json
     parameters:
       s3FolderPath:
         default: 's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_ec2_instance'
@@ -768,7 +783,7 @@ views:
 
   compute_optimizer_rds_instance_lines:
     type: Glue_Table
-    File: co/rds_database.json
+    File: queries/co/rds_database.json
     parameters:
       s3FolderPath:
         default: 's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_rds_database'
@@ -776,7 +791,7 @@ views:
 
   compute_optimizer_ecs_service_lines:
     type: Glue_Table
-    File: co/ecs_service.json
+    File: queries/co/ecs_service.json
     parameters:
       s3FolderPath:
         default: 's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_ecs_service'
@@ -784,7 +799,7 @@ views:
 
   compute_optimizer_auto_scale_lines:
     type: Glue_Table
-    File: co/auto_scale.json
+    File: queries/co/auto_scale.json
     parameters:
       s3FolderPath:
         default: 's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_auto_scale'
@@ -792,7 +807,7 @@ views:
 
   compute_optimizer_ebs_volume_lines:
     type: Glue_Table
-    File: co/ebs_volume.json
+    File: queries/co/ebs_volume.json
     parameters:
       s3FolderPath:
         default: 's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_ebs_volume'
@@ -800,56 +815,84 @@ views:
 
   compute_optimizer_lambda_lines:
     type: Glue_Table
-    File: co/lambda.json
+    File: queries/co/lambda.json
     parameters:
       s3FolderPath:
         default: 's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_lambda'
         description: Compute Optimizer Lambda report S3 path
 
+  compute_optimizer_license_lines:
+    type: Glue_Table
+    File: queries/co/license.json
+    parameters:
+      s3FolderPath:
+        default: 's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_license'
+        description: Compute Optimizer license report S3 path
+
+  compute_optimizer_idle_lines:
+    type: Glue_Table
+    File: queries/co/idle.json
+    parameters:
+      s3FolderPath:
+        default: 's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_idle'
+        description: Compute Optimizer idle report S3 path
+
   compute_optimizer_ec2_instance_options:
-    File: co/ec2_instance_options.sql
+    File: queries/co/ec2_instance_options.sql
     dependsOn:
       views:
         - compute_optimizer_ec2_instance_lines
 
   compute_optimizer_auto_scale_options:
-    File: co/auto_scale_options.sql
+    File: queries/co/auto_scale_options.sql
     dependsOn:
       views:
         - compute_optimizer_auto_scale_lines
 
   compute_optimizer_ebs_volume_options:
-    File: co/ebs_volume_options.sql
+    File: queries/co/ebs_volume_options.sql
     dependsOn:
       views:
         - compute_optimizer_ebs_volume_lines
 
   compute_optimizer_lambda_options:
-    File: co/lambda_options.sql
+    File: queries/co/lambda_options.sql
     dependsOn:
       views:
         - compute_optimizer_lambda_lines
 
   compute_optimizer_rds_storage_options:
-    File: co/rds_storage_options.sql
+    File: queries/co/rds_storage_options.sql
     dependsOn:
       views:
         - compute_optimizer_rds_instance_lines
 
   compute_optimizer_rds_instance_options:
-    File: co/rds_instance_options.sql
+    File: queries/co/rds_instance_options.sql
     dependsOn:
       views:
         - compute_optimizer_rds_instance_lines
 
   compute_optimizer_ecs_service_options:
-    File: co/ecs_service_options.sql
+    File: queries/co/ecs_service_options.sql
     dependsOn:
       views:
         - compute_optimizer_ecs_service_lines
 
+  compute_optimizer_license_options:
+    File: queries/co/license_options.sql
+    dependsOn:
+      views:
+        - compute_optimizer_license_lines
+
+  compute_optimizer_idle_options:
+    File: queries/co/idle_options.sql
+    dependsOn:
+      views:
+        - compute_optimizer_idle_lines
+
   compute_optimizer_all_options:
-    File: co/all_options.sql
+    File: queries/co/all_options.sql
     dependsOn:
       views:
         - compute_optimizer_ec2_instance_options
@@ -859,30 +902,32 @@ views:
         - compute_optimizer_rds_instance_options
         - compute_optimizer_rds_storage_options
         - compute_optimizer_ecs_service_options
+        - compute_optimizer_license_options
+        - compute_optimizer_idle_options
 
   # Shared views
   account_map:
-    File: shared/account_map.sql
+    File: queries/shared/account_map.sql
   business_units_map:
-    File: shared/business_units_map.sql
+    File: queries/shared/business_units_map.sql
   aws_accounts:
-    File: shared/aws_accounts.sql
+    File: queries/shared/aws_accounts.sql
     dependsOn:
       cur2: true
   aws_regions:
-    File: shared/aws_regions.sql
+    File: queries/shared/aws_regions.sql
   aws_service_category_map:
-    File: shared/aws_service_category_map.sql
+    File: queries/shared/aws_service_category_map.sql
   payer_account_name_map:
-    File: shared/payer_account_name_map.sql
+    File: queries/shared/payer_account_name_map.sql
     dependsOn:
       views:
         - aws_accounts
   ta_descriptions:
-    File: shared/ta_descriptions.sql
+    File: queries/shared/ta_descriptions.sql
   cur:
     type: Glue_Table
-    File: shared/cur.yaml
+    File: queries/shared/cur.yaml
     crawler: cur
     parameters:
       partitions:

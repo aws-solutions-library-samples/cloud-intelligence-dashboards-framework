@@ -1,5 +1,6 @@
+# https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/cfn-templates/cid-cfn.yml
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deployment of Cloud Intelligence Dashboards v4.0.11
+Description: Deployment of Cloud Intelligence Dashboards v4.3.7 - AWS Solution SO9011
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -18,7 +19,7 @@ Metadata:
           - DeployCostIntelligenceDashboard
           - DeployKPIDashboard
       - Label:
-          default: Trusted Advisor and Compute Optimizer Dashboards. To deploy these two dashboard, you must first deploy the Optimization Data Collection Lab (https://catalog.workshops.aws/awscid/en-US/data-collection/)
+          default: Trusted Advisor and Compute Optimizer Dashboards. To deploy these two dashboard, you must first deploy the Optimization Data Collection Lab (https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html)
         Parameters:
           - OptimizationDataCollectionBucketPath
           - DeployTAODashboard
@@ -39,6 +40,9 @@ Metadata:
           - DeployCUDOSDashboard
           - DataBucketsKmsKeysArns
           - ShareDashboard
+          - DeploymentType
+          - CreateLocalAssetsBucket
+          - ReferenceAssetsBucket
       - Label:
           default: 'Legacy'
         Parameters:
@@ -98,6 +102,14 @@ Metadata:
         default: "Secondary Tag for Compute Optimizer dashboard"
       KeepLegacyCURTable:
         default: "Keep Legacy CUR Table"
+      CreateLocalAssetsBucket:
+        default: "Create Local Assets Bucket"
+      ReferenceAssetsBucket:
+        default: "Reference Assets Bucket Name"
+      DeploymentType:
+        default: "Type of Deployment - Please do not change"
+      CurrencySymbol:
+        default: "Currency Symbol"
   cfn-lint:
     config:
       ignore_checks:
@@ -186,12 +198,12 @@ Parameters:
     AllowedValues: ["yes", "no"]
   DeployTAODashboard:
     Type: String
-    Description: Deploy Trusted Advisor Organizational Dashboard (TAO) - WARNING! Before deploying this dashboard, you need Optimization Data Collection Lab to be installed first https://catalog.workshops.aws/awscid/en-US/data-collection/
+    Description: Deploy Trusted Advisor Organizational Dashboard (TAO) - WARNING! Before deploying this dashboard, you need Optimization Data Collection Lab to be installed first https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html
     Default: "no"
     AllowedValues: ["yes", "no"]
   DeployComputeOptimizerDashboard:
     Type: String
-    Description: Deploy Compute Optimizer Dashboard (COD) - WARNING! Before deploying this dashboard, you need Optimization Data Collection Lab to be installed first https://catalog.workshops.aws/awscid/en-US/data-collection/
+    Description: Deploy Compute Optimizer Dashboard (COD) - WARNING! Before deploying this dashboard, you need Optimization Data Collection Lab to be installed first https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html
     Default: "no"
     AllowedValues: ["yes", "no"]
   OptimizationDataCollectionBucketPath:
@@ -241,6 +253,45 @@ Parameters:
     Description: Choose 'yes' if you want to keep the Legacy CUR table
     Default: "no"
     AllowedValues: ["yes", "no"]
+  CreateLocalAssetsBucket:
+    Type: String
+    Description: Choose 'yes' if you want to copy reference CID Assets to a local assets buckets (for a set of regions including China and Gov it will be done automatically).
+    Default: "no"
+    AllowedValues: ["yes", "no"]
+  ReferenceAssetsBucket:
+    Type: String
+    Description: Source bucket for CID Assets to sync from.
+    Default: 'aws-managed-cost-intelligence-dashboards-us-east-1'
+  CurrencySymbol:
+    Type: String
+    Description: 'Currency Symbol. Please align with Currency of your CUR. Only supported for China region.'
+    Default: "$"
+    AllowedValues:
+      # Only currency symbols supported by QS
+      - "$" # US Dollar
+      - "£" # British Pound
+      - "€" # Euro
+      - "¥" # Japanese Yen
+      - "₩" # South Korean Won
+      - "kr" # Danish Krone
+      - "NT" # Taiwan Dollar
+      - "₹" # Indian Rupee
+      # for backward compatibility
+      - "USD" # US Dollar         $
+      - "GBP" # British Pound     £
+      - "EUR" # Euro              €
+      - "JPY" # Japanese Yen      ¥
+      - "KRW" # South Korean Won  ₩
+      - "DKK" # Danish Krone      kr
+      - "TWD" # Taiwan Dollar     NT
+      - "INR" # Indian Rupee      ₹
+  DeploymentType:
+    Type: String
+    Description: 'Internal Deployment Type'
+    Default: "Lambda"
+    AllowedValues:
+      - "Lambda"
+      - "Terraform"
 
 Conditions:
   NeedCUDOSDashboard: !Equals [ !Ref DeployCUDOSDashboard, "yes" ]
@@ -307,9 +358,22 @@ Conditions:
       - !Equals [!Ref "AWS::Region", "us-gov-east-1"]
       - !Equals [!Ref "AWS::Region", "us-gov-west-1"]
   LambdaLayerBucketPrefixIsManaged: !Equals [!Ref LambdaLayerBucketPrefix, 'aws-managed-cost-intelligence-dashboards']
+  NeedLocalAssets:
+    Fn::Or:
+      - !Equals [ !Ref CreateLocalAssetsBucket, "yes" ] #explicity requested local assets
+      - Fn::Or: # or region where CID do not have a public bucket
+        - !Equals [!Ref "AWS::Region", "af-south-1"]
+        - !Equals [!Ref "AWS::Region", "ap-southeast-3"]
+        - !Equals [!Ref "AWS::Region", "eu-central-2"]
+        - !Equals [!Ref "AWS::Region", "eu-south-1"]
+        - !Equals [!Ref "AWS::Region", "eu-south-2"]
+        - !Equals [!Ref "AWS::Region", "cn-north-1"]
+        - !Equals [!Ref "AWS::Region", "us-gov-east-1"]
+        - !Equals [!Ref "AWS::Region", "us-gov-west-1"]
 
 Mappings:
-  RegionMap: # CID has AWS managed buckets for deploy. Region must support QuickSight ( curl https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonQuickSight/current/region_index.json -s | jq '.regions | keys' )
+  RegionMap: 
+    # CID has AWS managed buckets for deploy. Region must support QuickSight ( curl https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonQuickSight/current/region_index.json -s | jq '.regions | keys' )
     ap-northeast-1: {BucketName: aws-managed-cost-intelligence-dashboards-ap-northeast-1}
     ap-northeast-2: {BucketName: aws-managed-cost-intelligence-dashboards-ap-northeast-2}
     ap-south-1:     {BucketName: aws-managed-cost-intelligence-dashboards-ap-south-1}
@@ -326,10 +390,18 @@ Mappings:
     us-east-2:      {BucketName: aws-managed-cost-intelligence-dashboards-us-east-2}
     us-west-1:      {BucketName: aws-managed-cost-intelligence-dashboards-us-west-1}
     us-west-2:      {BucketName: aws-managed-cost-intelligence-dashboards-us-west-2}
-    #todo: add af-south-1
-    #todo: add ap-southeast-3
-    #todo: add eu-south-1
-    #todo: add eu-central-2
+
+    # regions without public buckets
+    af-south-1:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
+    ap-southeast-3: {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
+    eu-central-2:   {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
+    eu-south-1:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
+    eu-south-2:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
+
+    # specific regions
+    cn-north-1:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1} # China
+    us-gov-east-1:  {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1} # GovCloud (by default must be in commercial region)
+    us-gov-west-1:  {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
 
 
 Resources:
@@ -388,7 +460,7 @@ Resources:
       FunctionName:  !Sub 'CidSpiceRefreshLambda${Suffix}'
       Role: !GetAtt SpiceRefreshExecutionRole.Arn
       Description: 'Refresh QuickSight DataSets for CID'
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 128
       Timeout: 60
@@ -548,30 +620,15 @@ Resources:
       FunctionName: !Sub CidInitialSetup-DoNotRun${Suffix}
       Role: !GetAtt 'InitLambdaExecutionRole.Arn'
       Description: "CID legacy setup"
-      Runtime: python3.11
+      Runtime: python3.13
       Handler: 'index.lambda_handler'
       Code:
         ZipFile: |
-          # This is a legacy lambda. You can delete it. This was kept to disable delete workgroup functionality.
-          import json
-          import urllib3
+          # Legacy lambda - will be deleted in next major update
+          import cfnresponse
 
           def lambda_handler(event, context):
-              url = event.get('ResponseURL')
-              json_body = json.dumps({
-                'Status': 'SUCCESS',
-                'Reason': 'legacy',
-                'PhysicalResourceId': 'keep_it_constant',
-                'StackId': event.get('StackId'),
-                'RequestId': event.get('RequestId'),
-                'LogicalResourceId': event.get('LogicalResourceId'),
-              })
-              try:
-                  http = urllib3.PoolManager()
-                  response = http.request('PUT', url, body=json_body, headers={'content-type' : '', 'content-length' : str(len(json_body))}, retries=False)
-                  print(f"Status code: {response}")
-              except Exception as exc:
-                  print("Failed sending PUT to CFN: " + str(exc))
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, 'keep_it_constant', 'legacy')
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -586,7 +643,7 @@ Resources:
       FunctionName: !Sub "CidCustomResourceFunctionInit-DoNotRun${Suffix}"
       Role: !GetAtt 'InitLambdaExecutionRole.Arn'
       Description: "Do what CFN cannot: start crawler and delete bucket with objects"
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 128
       Timeout: 600
@@ -860,7 +917,7 @@ Resources:
       Role: !GetAtt 'ProcessPathLambdaExecutionRole.Arn'
       FunctionName: !Sub "CidCustomResourceProcessPath-DoNotRun${Suffix}"
       Description: "Do what CFN cannot: process string of path"
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 128
       Timeout: 60
@@ -1716,7 +1773,7 @@ Resources:
       FunctionName: !Sub 'CidCustomResourceDashboard${Suffix}'
       Description: 'A lambda that manage create delete update of Athena views, QuickSight Datasets and dashboards using CID-CMD tool'
       Role: !GetAtt CidExecRole.Arn
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 2688
       Timeout: 300 # Time of discovery depend on number of dashboards
@@ -1753,7 +1810,7 @@ Resources:
               try:
                   dashboard = properties['Dashboard']
                   # set additional parameters from environment variables
-                  for par in 'athena_workgroup quicksight_datasource_id quicksight_datasource_role_arn athena_database glue_data_catalog cur_table_name cur_database quicksight_user account_map_source share_with_account'.split():
+                  for par in 'athena_workgroup quicksight_datasource_id quicksight_datasource_role_arn athena_database glue_data_catalog cur_table_name cur_database quicksight_user account_map_source share_with_account account_map_database_name currency_symbol'.split():
                       dashboard[par.replace('_', '-')] = dashboard.get(par.replace('_', '-'), os.environ.get(par))
                   if request_type == 'Create':
                       dash_url = deploy_dash(dashboard)
@@ -1785,7 +1842,7 @@ Resources:
                       'RequestId': event.get('RequestId'),
                       'LogicalResourceId': event.get('LogicalResourceId'),
                       'NoEcho': False,
-                      'Data': {'Reason': reason, 'DashboardURL': dash_url },
+                      'Data': {'DashboardURL': dash_url},
                   }
                   json_body = json.dumps(body)
                   print(json_body)
@@ -1817,6 +1874,7 @@ Resources:
         - !Ref CidResourceLambdaLayer
       Environment:
         Variables:
+          AWS_DEPLOYMENT_TYPE: !Ref DeploymentType
           athena_workgroup: !If [ NeedAthenaWorkgroup, !Ref MyAthenaWorkGroup, !Ref AthenaWorkgroup ]
           quicksight_datasource_id: !Select [ 1, !Split [ '/', !GetAtt CidAthenaDataSource.Arn]]
           quicksight_datasource_role_arn: !If [ NeedQuickSightDataSourceRole, !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${QuickSightDataSourceRole}", "" ]
@@ -1828,6 +1886,7 @@ Resources:
           account_map_source: 'dummy' #initial
           share_with_account: !Ref ShareDashboard
           account_map_database_name: !If [NeedDatabase, !Ref CidDatabase, !Ref DatabaseName ]
+          currency_symbol: !Ref CurrencySymbol
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -1836,6 +1895,188 @@ Resources:
           - id: 'W92'
             reason: "No need for reserved concurrency"
 
+  LocalAssetsBucket:
+    Type: AWS::S3::Bucket
+    Condition: NeedLocalAssets
+    Properties:
+      BucketName: !Sub "cid-${AWS::AccountId}-local-assets"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      AccessControl: BucketOwnerFullControl
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - W3045 #Not needed AWS::S3::BucketPolicy
+      cfn_nag:
+        rules_to_suppress:
+          - id: 'W35'
+            reason: "Data buckets would generate too much logs"
+          - id: 'W51'
+            reason: "No policy needed"
+  PullAssetsLambdaRole:
+    Type: AWS::IAM::Role
+    Condition: NeedLocalAssets
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: S3SyncPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:ListBucketVersions
+                Resource: 
+                  - !Sub 'arn:${AWS::Partition}:s3:::${ReferenceAssetsBucket}'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${ReferenceAssetsBucket}/*'
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:DeleteObjectVersion
+                  - s3:DeleteObjectVersionTagging
+                  - s3:ListBucket
+                  - s3:ListBucketVersions
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${LocalAssetsBucket}'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${LocalAssetsBucket}/*'
+
+  PullAssetsLambda:
+    Type: AWS::Lambda::Function
+    Condition: NeedLocalAssets
+    Properties:
+      FunctionName:  !Sub 'CidPullAssets${Suffix}'
+      Handler: index.handler
+      Role: !GetAtt PullAssetsLambdaRole.Arn
+      Runtime: python3.13
+      Timeout: 300
+      MemorySize: 256
+      Code:
+        ZipFile: |
+          import json
+          import logging
+          import tempfile
+          import urllib.request
+          from io import BytesIO
+          import boto3
+          import cfnresponse
+
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+
+          def handler(event, context):
+              logger.info(f'Received event: {json.dumps(event)}')
+              request_type = event['RequestType']
+              resource_props = event.get('ResourceProperties', {})
+              old_keys = event.get("OldResourceProperties", {}).get("Keys", [])
+              try:
+                  source_bucket = resource_props['SourceBucket']
+                  destination_bucket = resource_props['DestinationBucket']
+                  keys = resource_props.get('Keys', [])
+              except KeyError as e:
+                  logger.error(f"Missing required property: {e}")
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {'Error': f"Missing required property: {str(e)}"})
+                  return
+              try:
+                  if request_type == 'Create' or request_type == 'Update':
+                      sync_buckets(source_bucket, destination_bucket, keys, old_keys)
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, destination_bucket)
+                  elif request_type == 'Delete':
+                      clean_bucket(destination_bucket)
+                      cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, destination_bucket)
+                  else:
+                      raise ValueError(f"Unsupported request type: {request_type}")
+              except Exception as e:
+                  logger.error(f"Error on {request_type}: {str(e)}")
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {'Error': str(e)})
+
+          def get_content(source_bucket, key):
+              """ Download the content using public bucket to temporary file
+              """
+              object_url = f"https://{source_bucket}.s3.amazonaws.com/{key}"
+              logger.info(f"Downloading from {object_url}")
+              with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                  with urllib.request.urlopen(object_url) as response:
+                      while True:
+                          chunk = response.read(8192)
+                          if not chunk:
+                              break
+                          temp_file.write(chunk)
+                  return temp_file.name
+
+          def get_content_from_s3(source_bucket, key):
+              s3_client = boto3.client('s3')
+              with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                  s3_client.download_file(
+                      Bucket=source_bucket,
+                      Key=key,
+                      Filename=temp_file.name
+                  )
+                  return temp_file.name
+
+          def sync_buckets(source_bucket, destination_bucket, keys, old_keys):
+              """Sync contents from source bucket to destination bucket using HTTPS download and upload
+              """
+              s3_client = boto3.client('s3')
+              # Delete keys that are no longer needed
+              for key in old_keys:
+                  if key not in keys:
+                      try:
+                          s3_client.delete_object(Bucket=destination_bucket, Key=key)
+                          logger.info(f"Deleted {destination_bucket}/{key}")
+                      except Exception as e:
+                          logger.info(f"Skipping deletion of {destination_bucket}/{key}: {str(e)}")
+              # Download from public URL and upload to destination bucket
+              for key in keys:
+                  try:
+                      try:
+                          temp_file_path = get_content_from_s3(source_bucket, key)
+                      except Exception as e:
+                          logger.warning(f"Error processing {key}: {str(e)}")
+                          logger.info(f"Trying public url")
+                          temp_file_path = get_content(source_bucket, key)
+                      s3_client.upload_file(temp_file_path, destination_bucket, key)
+                      logger.info(f"Done uploading to {destination_bucket}/{key}")
+                  except Exception as e:
+                      logger.error(f"Error processing {key}: {str(e)}")
+                      raise e
+
+          def clean_bucket(bucket_name):
+              """Delete all objects in the bucket
+              """
+              boto3.resource('s3').Bucket(bucket_name).object_versions.delete()
+              logger.info(f"Done cleanup {bucket_name}")
+  SyncLocalAssets:
+    Type: Custom::BucketSync
+    Condition: NeedLocalAssets
+    Properties:
+      ServiceToken: !GetAtt PullAssetsLambda.Arn
+      SourceBucket: !Ref ReferenceAssetsBucket
+      DestinationBucket: !Ref LocalAssetsBucket
+      Keys:
+        - 'cid-resource-lambda-layer/cid-4.3.7.zip' #replace version here if needed
+
   CidResourceLambdaLayer:
     Type: AWS::Lambda::LayerVersion
     Properties:
@@ -1843,14 +2084,18 @@ Resources:
       Description: An AWS managed layer with a cid-cmd package installed
       Content:
         S3Bucket: !If
-          - LambdaLayerBucketPrefixIsManaged
-          - !FindInMap [RegionMap, !Ref 'AWS::Region', BucketName]
-          - !Sub '${LambdaLayerBucketPrefix}-${AWS::Region}' # Region added for backward compatibility
-        S3Key: 'cid-resource-lambda-layer/cid-4.0.11.zip' #replace version here if needed
+          - NeedLocalAssets
+          - !Ref SyncLocalAssets
+          - Fn::If:
+            - LambdaLayerBucketPrefixIsManaged
+            - !FindInMap [RegionMap, !Ref 'AWS::Region', BucketName]
+            - !Sub '${LambdaLayerBucketPrefix}-${AWS::Region}' # Region added for backward compatibility
+        S3Key: 'cid-resource-lambda-layer/cid-4.3.7.zip' #replace version here if needed
       CompatibleRuntimes:
         - python3.10
         - python3.11
         - python3.12
+        - python3.13
 
   CostIntelligenceDashboard:
     Type: Custom::CidDashboard
@@ -1862,6 +2107,7 @@ Resources:
       ServiceToken: !GetAtt CidExec.Arn
       Dashboard:
         dashboard-id: cost_intelligence_dashboard
+        resources: !If [IsChinaOrGovCloudRegion, 'https://aws-managed-cost-intelligence-dashboards.s3.amazonaws.com/hub/cost-intelligence/cost-intelligence.yaml', !Ref 'AWS::NoValue']
 
   CUDOSDashboard: # Legacy
     Type: Custom::CidDashboard
@@ -1902,6 +2148,7 @@ Resources:
       ServiceToken: !GetAtt CidExec.Arn
       Dashboard:
         dashboard-id: kpi_dashboard
+        resources: !If [IsChinaOrGovCloudRegion, 'https://aws-managed-cost-intelligence-dashboards.s3.amazonaws.com/hub/kpi_dashboard/kpi_dashboard.yaml', !Ref 'AWS::NoValue']
       Tags: # Hacky way to manage conditional dependencies
         - Key: IgnoreNeedCostIntelligenceDashboard
           Value: !If [NeedCostIntelligenceDashboard, !Ref CostIntelligenceDashboard, '']
@@ -1934,8 +2181,10 @@ Resources:
         view-compute-optimizer-ebs-volume-lines-s3FolderPath:   !Sub '${OptimizationDataCollectionBucketPath}/compute_optimizer/compute_optimizer_ebs_volume'
         view-compute-optimizer-auto-scale-lines-s3FolderPath:   !Sub '${OptimizationDataCollectionBucketPath}/compute_optimizer/compute_optimizer_auto_scale'
         view-compute-optimizer-ec2-instance-lines-s3FolderPath: !Sub '${OptimizationDataCollectionBucketPath}/compute_optimizer/compute_optimizer_ec2_instance'
-        view-compute-optimizer-rds-database-lines-s3FolderPath: !Sub '${OptimizationDataCollectionBucketPath}/compute_optimizer/compute_optimizer_rds_database'
-        view-compute-optimizer-ecs-service-lines-s3FolderPath: !Sub '${OptimizationDataCollectionBucketPath}/compute_optimizer_ecs_service'
+        view-compute-optimizer-rds-instance-lines-s3FolderPath: !Sub '${OptimizationDataCollectionBucketPath}/compute_optimizer/compute_optimizer_rds_database'
+        view-compute-optimizer-ecs-service-lines-s3FolderPath: !Sub '${OptimizationDataCollectionBucketPath}/compute_optimizer/compute_optimizer_ecs_service'
+        view-compute-optimizer-license-lines-s3FolderPath: !Sub '${OptimizationDataCollectionBucketPath}/compute_optimizer/compute_optimizer_license'
+        view-compute-optimizer-idle-lines-s3FolderPath: !Sub '${OptimizationDataCollectionBucketPath}/compute_optimizer/compute_optimizer_idle'
         dataset-compute-optimizer-all-options-primary-tag-name: !Sub '${PrimaryTagName}'
         dataset-compute-optimizer-all-options-secondary-tag-name: !Sub '${SecondaryTagName}'
 

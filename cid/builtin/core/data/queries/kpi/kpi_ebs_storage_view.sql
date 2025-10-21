@@ -1,19 +1,14 @@
 /*Replace customer_all in row 22 with your CUR table name */
 CREATE OR REPLACE VIEW kpi_ebs_storage_all AS
 WITH
--- Step 1: Add mapping view
-map AS(
-	SELECT *
-	FROM account_map
-),
-
--- Step 2: Filter CUR to return all EC2 EBS storage usage data
+-- Step 1: Filter CUR to return all EC2 EBS storage usage data
 ebs_all AS (
 	SELECT
 	bill_billing_period_start_date
 	, line_item_usage_start_date
 	, bill_payer_account_id
 	, line_item_usage_account_id
+	, ${cur_tags_json} tags_json
 	, line_item_resource_id
 	, product['volume_api_name'] product_volume_api_name
 	, line_item_usage_type
@@ -31,20 +26,21 @@ ebs_all AS (
 	AND line_item_usage_type LIKE '%EBS%'
 ),
 
--- Step 3: Pivot table so storage types cost and usage into separate columns
+-- Step 2: Pivot table so storage types cost and usage into separate columns
 ebs_spend AS (
 	SELECT DISTINCT
 	bill_billing_period_start_date AS billing_period
 	, date_trunc('month',line_item_usage_start_date) AS usage_date
 	, bill_payer_account_id AS payer_account_id
 	, line_item_usage_account_id AS linked_account_id
+	, tags_json
 	, line_item_resource_id AS resource_id
 	, coalesce(product_volume_api_name, '') AS volume_api_name
 	, SUM (CASE
 			WHEN (((pricing_unit = 'GB-Mo' or pricing_unit = 'GB-month') or pricing_unit = 'GB-month') AND  line_item_usage_type LIKE '%EBS:VolumeUsage%')
 			THEN  line_item_usage_amount ELSE 0 END) "usage_storage_gb_mo"
 	, SUM (CASE
-		WHEN (pricing_unit = 'IOPS-Mo' AND  line_item_usage_type LIKE '%IOPS%') THEN line_item_usage_amount 
+		WHEN (pricing_unit = 'IOPS-Mo' AND  line_item_usage_type LIKE '%IOPS%') THEN line_item_usage_amount
 		ELSE 0 END) "usage_iops_mo"
 	, SUM (CASE WHEN (pricing_unit = 'GiBps-mo' AND  line_item_usage_type LIKE '%Throughput%') THEN  line_item_usage_amount ELSE 0 END) "usage_throughput_gibps_mo"
 	, SUM (CASE WHEN ((pricing_unit = 'GB-Mo' or pricing_unit = 'GB-month') AND  line_item_usage_type LIKE '%EBS:VolumeUsage%') THEN  (line_item_unblended_cost) ELSE 0 END) "cost_storage_gb_mo"
@@ -52,7 +48,7 @@ ebs_spend AS (
 	, SUM (CASE WHEN (pricing_unit = 'GiBps-mo' AND  line_item_usage_type LIKE '%Throughput%') THEN  (line_item_unblended_cost) ELSE 0 END) "cost_throughput_gibps_mo"
 	FROM
 		ebs_all
-	GROUP BY 1, 2, 3, 4, 5,6
+	GROUP BY 1, 2, 3, 4, 5, 6, 7
 ),
 
 ebs_spend_with_unit_cost AS (
@@ -110,12 +106,12 @@ ebs_spend_with_unit_cost AS (
 	END AS "estimated_gp3_unit_cost"
 	FROM
 		ebs_spend
-),
-ebs_before_map AS (
+)
 	SELECT DISTINCT
 	billing_period
 	, payer_account_id
 	, linked_account_id
+	, tags_json
 	, resource_id
 	, volume_api_name
 	, storage_summary
@@ -126,7 +122,7 @@ ebs_before_map AS (
 	, sum(gp2_usage_added_throughput_gibps_mo) AS gp2_usage_added_throughput_gibps_mo
 	, sum(ebs_all_cost) AS ebs_all_cost
 	, sum(ebs_sc1_cost) AS ebs_sc1_cost
-	, sum(ebs_st1_cost) AS ebs_st1_cost 
+	, sum(ebs_st1_cost) AS ebs_st1_cost
 	, sum(ebs_standard_cost) AS ebs_standard_cost
 	, sum(ebs_io1_cost) AS ebs_io1_cost
 	, sum(ebs_io2_cost) AS ebs_io2_cost
@@ -147,29 +143,4 @@ ebs_before_map AS (
 		END) AS ebs_gp3_potential_savings
 FROM
 	ebs_spend_with_unit_cost
-GROUP BY 1, 2, 3, 4, 5, 6)
-SELECT DISTINCT
-	billing_period
-	, payer_account_id
-	, linked_account_id
-	, map.*
-	, resource_id
-	, volume_api_name
-	, usage_storage_gb_mo
-	, usage_iops_mo
-	, usage_throughput_gibps_mo
-	, storage_summary
-	, gp2_usage_added_iops_mo
-	, gp2_usage_added_throughput_gibps_mo
-	, ebs_all_cost
-	, ebs_sc1_cost
-	, ebs_st1_cost
-	, ebs_standard_cost
-	, ebs_io1_cost
-	, ebs_io2_cost
-	, ebs_gp2_cost
-	, ebs_gp3_cost
-	, ebs_gp3_potential_savings
-FROM
-	ebs_before_map
-	LEFT JOIN map ON map.account_id = linked_account_id
+GROUP BY 1, 2, 3, 4, 5, 6, 7

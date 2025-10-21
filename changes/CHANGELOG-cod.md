@@ -1,5 +1,8 @@
 # What's new in the Compute Optimizer Dashboard (COD)
 
+## Compute Optimizer Dashboard - v5.0.0
+* Added License and Idle Optimizer sheets
+
 ## Compute Optimizer Dashboard - v4.0.0
 * Added ECS Compute Optimizer sheets
 

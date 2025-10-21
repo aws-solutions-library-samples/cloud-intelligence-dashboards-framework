@@ -19,7 +19,8 @@ cur_table="${cur_table:-cur1}" # If variable not set or null, use default. FIXME
     --share-with-account \
     --timezone 'Europe/Paris' \
     --quicksight-datasource-id $quicksight_datasource_id \
-
+    --resource-tags '' \
+    --taxonomy 'payer_account_id,account_id,account_name' \
 
   [ "$status" -eq 0 ]
 }
@@ -65,6 +66,8 @@ cur_table="${cur_table:-cur1}" # If variable not set or null, use default. FIXME
     --timezone 'Europe/Paris' \
     --quicksight-user $quicksight_user   \
     --quicksight-datasource-id $quicksight_datasource_id \
+    --resource-tags '' \
+    --taxonomy 'payer_account_id,account_id,account_name' \
 
   [ "$status" -eq 0 ]
 }

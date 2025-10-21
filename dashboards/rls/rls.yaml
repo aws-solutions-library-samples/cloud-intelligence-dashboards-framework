@@ -1,0 +1,306 @@
+dashboards:
+  RLS:
+    dependsOn:
+      datasets:
+      - rls_dataset
+    name: RLS
+    dashboardId: cid-rls
+    category: Custom
+    version: v1.0.0
+    data: |
+      AnalysisDefaults:
+        DefaultNewSheetConfiguration:
+          InteractiveLayoutConfiguration:
+            Grid:
+              CanvasSizeOptions:
+                ScreenCanvasSizeOptions:
+                  OptimizedViewPortWidth: 1600px
+                  ResizeOption: FIXED
+          SheetContentType: INTERACTIVE
+      CalculatedFields: []
+      DataSetIdentifierDeclarations:
+      - DataSetArn: arn:aws:quicksight:::dataset/770b6f30-9498-49e2-9878-5ac9e3258b2c
+        Identifier: rls_dataset
+      FilterGroups: []
+      Options:
+        WeekStart: SUNDAY
+      ParameterDeclarations: []
+      Sheets:
+      - ContentType: INTERACTIVE
+        Layouts:
+        - Configuration:
+            GridLayout:
+              CanvasSizeOptions:
+                ScreenCanvasSizeOptions:
+                  OptimizedViewPortWidth: 1600px
+                  ResizeOption: FIXED
+              Elements:
+              - ColumnIndex: 0
+                ColumnSpan: 15
+                ElementId: 0aa39690-90fc-46bf-9175-6ba05d4156a6
+                ElementType: VISUAL
+                RowIndex: 0
+                RowSpan: 11
+        Name: Sheet 1
+        SheetId: 899b6ce7-83c3-4e6d-8611-0ed6530e6539
+        Visuals:
+        - TableVisual:
+            Actions: []
+            ChartConfiguration:
+              FieldWells:
+                TableAggregatedFieldWells:
+                  GroupBy:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: UserName
+                        DataSetIdentifier: rls_dataset
+                      FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.UserName.0.1752384777900
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: account_id
+                        DataSetIdentifier: rls_dataset
+                      FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.account_id.1.1752384782382
+                  Values: []
+              SortConfiguration: {}
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              Visibility: VISIBLE
+            VisualId: 0aa39690-90fc-46bf-9175-6ba05d4156a6
+datasets:
+  rls_dataset:
+    data:
+      DataSetId: 770b6f30-9498-49e2-9878-5ac9e3258b2c
+      Name: rls_dataset
+      PhysicalTableMap:
+        625fab9d-ce94-4690-a7bf-142b0996ddda:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: rls_dataset
+            InputColumns:
+            - Name: UserName
+              Type: STRING
+            - Name: GroupName
+              Type: STRING
+            - Name: account_id
+              Type: STRING
+            - Name: payer_id
+              Type: STRING
+      LogicalTableMap:
+        ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804:
+          Alias: rls_dataset
+          Source:
+            PhysicalTableId: 625fab9d-ce94-4690-a7bf-142b0996ddda
+      ImportMode: SPICE
+      UseAs: RLS_RULES
+    dependsOn:
+      views:
+      - rls_dataset
+    schedules:
+    - default
+crawlers: {}
+views:
+  rls_dataset:
+    dependsOn:
+      views:
+      - rls_all_permissions
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rls_dataset AS
+      SELECT
+        qs.username as "UserName"
+      , rls."group" as "GroupName"
+      , rls.account_ids account_id
+      , rls.payer_ids payer_id
+      FROM
+        (rls_all_permissions rls
+      LEFT JOIN "${data_collection_database_name}".quicksight_user_data qs ON (qs.email = rls.email))
+    parameters:
+      data_collection_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'quicksight_user_data'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
+  rls_all_permissions:
+    dependsOn:
+      views:
+      - rls_account_permissions
+      - rls_org_view
+      - rls_full_access_users
+      - rls_full_access_groups
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rls_all_permissions AS
+      WITH
+        rls_account_permissions_per_email AS (
+         SELECT
+           email
+         , '' "group"
+         , account_id
+         , '' payer_id
+         FROM
+           (rls_org_view
+         CROSS JOIN UNNEST(emails) t (email))
+      )
+      , rls_management_account_permissions_per_email AS (
+         SELECT
+           email
+         , '' "group"
+         , '' account_id
+         , account_id payer_id
+         FROM
+           (rls_org_view
+         CROSS JOIN UNNEST(emails) t (email))
+         WHERE (account_id = payer_id)
+      )
+      , rls_full_access_per_email AS (
+         SELECT
+           email
+         , '' "group"
+         , '' account_id
+         , '' payer_id
+         FROM
+           rls_full_access_users
+      )
+      , rls_account_permissions_per_group AS (
+         SELECT
+           '' email
+         , "group"
+         , account_id
+         , '' payer_id
+         FROM
+           (rls_org_view
+         CROSS JOIN UNNEST("groups") t ("group"))
+      )
+      , rls_management_account_permissions_per_group AS (
+         SELECT
+           '' email
+         , "group"
+         , '' account_id
+         , account_id payer_id
+         FROM
+           (rls_org_view
+         CROSS JOIN UNNEST("groups") t ("group"))
+         WHERE (account_id = payer_id)
+
+      )
+      , rls_full_access_per_group AS (
+         SELECT
+           "group"
+         , '' account_id
+         , '' payer_id
+         FROM
+           rls_full_access_groups
+      )
+
+      SELECT
+        email
+      , "group"
+      , ARRAY_JOIN(ARRAY_AGG(account_id) FILTER (WHERE ((account_id IS NOT NULL) AND (account_id <> ''))), ',') account_ids
+      , ARRAY_JOIN(ARRAY_AGG(payer_id) FILTER (WHERE ((payer_id IS NOT NULL) AND (payer_id <> ''))), ',') payer_ids
+      FROM
+        (
+         SELECT
+           email
+         , '' "group"
+         , account_id
+         , payer_id
+         FROM
+           rls_account_permissions_per_email
+         WHERE ((NOT (email IN (SELECT email
+      FROM
+        rls_management_account_permissions_per_email
+      ))) AND (NOT (email IN (SELECT email
+      FROM
+        rls_full_access_per_email
+      ))))
+
+      UNION ALL
+
+      SELECT
+           email
+         , '' "group"
+         , account_id
+         , payer_id
+         FROM
+           rls_management_account_permissions_per_email
+         WHERE (NOT (email IN (SELECT email
+      FROM
+        rls_full_access_per_email
+      )))
+
+      UNION ALL
+
+      SELECT
+          '' email
+         , "group"
+         , account_id
+         , payer_id
+         FROM
+           rls_account_permissions_per_group
+         WHERE ((NOT ("group" IN (SELECT "group" FROM rls_management_account_permissions_per_group)))
+         AND (NOT ("group" IN (SELECT "group" FROM rls_full_access_per_group))))
+
+      UNION ALL
+
+      SELECT
+           '' email
+         , "group"
+         , account_id
+         , payer_id
+         FROM
+           rls_management_account_permissions_per_group
+         WHERE (NOT ("group" IN (SELECT "group" FROM rls_full_access_per_group)))
+
+      UNION ALL
+
+      SELECT
+           '' email
+         , "group"
+         , account_id
+         , payer_id
+      FROM
+        rls_full_access_per_group
+
+      )
+      GROUP BY email, "group"
+  rls_org_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rls_org_view AS
+      SELECT
+        Id account_id,
+        ManagementAccountId payer_id,
+        TRY(SPLIT(FILTER(HierarchyTags, (x) -> (x.key = 'cid_users'))[1].value, ',')) "emails",
+        TRY(SPLIT(FILTER(HierarchyTags, (x) -> (x.key = 'cid_groups'))[1].value, ',')) "groups"
+      FROM
+        "${data_collection_database_name}"."organization_data"
+    parameters:
+      data_collection_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'organization_data'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
+  rls_full_access_users:
+    data: |-
+      CREATE VIEW "${athena_database_name}".rls_full_access_users AS
+      SELECT *
+      FROM
+        (
+       VALUES
+           ROW ('fulladmin1@example.com')
+         , ROW ('fulladmin2@example.com')
+      )  ignored_table_name (email)
+  rls_full_access_groups:
+    data: |-
+      CREATE VIEW "${athena_database_name}".rls_full_access_groups AS
+      SELECT *
+      FROM
+        (
+       VALUES
+           ROW ('group1')
+         , ROW ('group2')
+      )  ignored_table_name ("group")

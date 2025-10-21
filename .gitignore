@@ -58,3 +58,6 @@ venv.bak/
 #Local dev and testing files
 cfn-templates/parameters.local
 sandbox/
+*.hash
+*.zip
+.temp_dir
