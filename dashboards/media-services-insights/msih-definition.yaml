@@ -415,7 +415,7 @@ CalculatedFields:
             ),
         {product_code} = "AWSElementalMediaLive" and {is_transcode_or_idle_usage} = 1,
             concat(
-                ifelse(strlen({video_flow_direction}) > 0, "In", "Out"),
+                {video_flow_direction},
                 " : ", {video_pipeline}, " Pipe",
                 " : ", region,
                 ifelse(strlen({video_codec}) > 0, concat(" : ", {video_codec}, " Codec"), ""),
@@ -439,9 +439,9 @@ CalculatedFields:
   Name: Unit Cost per Region by Month
 - DataSetIdentifier: msih_view
   Expression: "ifelse(\n\t{charge_type} = \"Tax\", NULL,\n\tcontains({product_code},\
-    \ \"MediaLive\"),\n\t\tifelse(\n\t\t\t{charge_type} = \"RIFee\", \"Reserved\
-    \ Hours (Hrs)\",\n\t\t\toperation = \"CHANNEL_BANDWIDTH\", \"Data Transfer (GB)\"\
-    ,\n\t\t\toperation = \"CHANNEL_INPUT\", \"Input Transcoding (Hrs)\",\n\t\t\toperation\
+    \ \"MediaLive\"),\n\t\tifelse(\n\t\t\t{charge_type} = \"RIFee\", \"Reserved Hours\
+    \ (Hrs)\",\n\t\t\toperation = \"CHANNEL_BANDWIDTH\", \"Data Transfer (GB)\",\n\
+    \t\t\toperation = \"CHANNEL_INPUT\", \"Input Transcoding (Hrs)\",\n\t\t\toperation\
     \ = \"CHANNEL_OUTPUT\", \"Output Transcoding (Hrs)\",\n\t\t\toperation = \"CHANNEL_ACTIVE\"\
     , \"Output Transcoding (Hrs)\",\n\t\t\toperation = \"INACTIVE_CHANNEL\", \"Idle\
     \ Channel (Hrs)\",\n\t\t\toperation = \"INACTIVE_INPUT\", \"Idle Input (Hrs)\"\
@@ -1796,7 +1796,7 @@ FilterGroups:
         SheetId: 652661af-5b76-4855-80ee-19e261578d3f
         VisualIds:
         - 1dc2ecce-728d-4718-93b1-12417ebd7516
-  Status: ENABLED
+  Status: DISABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 26fd64f2-2b72-4215-8473-62a3a549f3f2
   Filters:
@@ -7819,7 +7819,7 @@ Sheets:
             Colors:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: Linked Account
+                  ColumnName: payer_account_id
                   DataSetIdentifier: msih_view
                 FieldId: 5e834f62-94b6-43bd-9595-633c99e85f25.3.1748993619802
                 HierarchyId: 7b3fd988-fd3b-4b29-8d0d-fb78f542440a
@@ -8498,91 +8498,91 @@ Sheets:
           ElementId: d51c35cd-d554-4639-82ec-713b929e75a6
           ElementType: TEXT_BOX
           RowIndex: 33
-          RowSpan: 4
+          RowSpan: 5
         - ColumnIndex: 29
           ColumnSpan: 7
           ElementId: 0a58170a-9870-4eab-84db-4497fb2c384b
           ElementType: FILTER_CONTROL
           RowIndex: 33
-          RowSpan: 4
+          RowSpan: 5
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 0308143d-ce59-4071-b3e6-7b2c612461e0
           ElementType: VISUAL
-          RowIndex: 37
+          RowIndex: 38
           RowSpan: 6
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: be37da6b-f80c-45ee-afd8-fc5e1fd8d0d1
           ElementType: VISUAL
-          RowIndex: 37
+          RowIndex: 38
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 3
           ElementId: 37ebf190-66d8-44b5-9a9f-067ca44bd4a5
           ElementType: PARAMETER_CONTROL
-          RowIndex: 43
+          RowIndex: 44
           RowSpan: 10
         - ColumnIndex: 3
           ColumnSpan: 33
           ElementId: e61a2c58-5441-4d79-b525-14fbaa91379e
           ElementType: VISUAL
-          RowIndex: 43
+          RowIndex: 44
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 64a2da59-9bc6-41c5-9982-3221ac2b9991
           ElementType: VISUAL
-          RowIndex: 53
+          RowIndex: 54
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 67029010-af24-429d-89aa-a920caaa7805
           ElementType: VISUAL
-          RowIndex: 63
+          RowIndex: 64
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: df48dd52-e806-4d02-a0b3-70428eb6da1f
           ElementType: VISUAL
-          RowIndex: 71
+          RowIndex: 72
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 9468c54c-3f3a-4f8a-9db5-0a7a704da488
           ElementType: VISUAL
-          RowIndex: 81
-          RowSpan: 6
+          RowIndex: 82
+          RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 2eaa808d-cf20-413f-bd26-30c9fd06a297
           ElementType: TEXT_BOX
-          RowIndex: 87
+          RowIndex: 90
           RowSpan: 2
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 3f2bab35-3767-4932-b8ea-b11eec5dcdae
           ElementType: TEXT_BOX
-          RowIndex: 89
+          RowIndex: 92
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 1dc2ecce-728d-4718-93b1-12417ebd7516
           ElementType: VISUAL
-          RowIndex: 93
-          RowSpan: 9
+          RowIndex: 96
+          RowSpan: 10
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 243d0afe-22f7-47e6-88f5-6921314e2961
           ElementType: VISUAL
-          RowIndex: 93
-          RowSpan: 9
+          RowIndex: 96
+          RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 806f73d8-230c-4deb-8a49-70a5c068e05f
           ElementType: VISUAL
-          RowIndex: 102
-          RowSpan: 6
+          RowIndex: 106
+          RowSpan: 9
   Name: MediaLive Reservation & Savings
   ParameterControls:
   - List:
@@ -8842,9 +8842,11 @@ Sheets:
       >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Median reservation\
       \ utilization is based on an accounting for each hour of the month. In some\
       \ cases a few hours of a day may reflect low utilization, which can be masked\
-      \ by the larger proportion of higher utilization. Use the threshold slider to\
-      \ inspect for reservations that potentially have brief periods of low utilization.</i>\n\
-      \      </inline>\n    </li>\n  </ul>\n</text-box>"
+      \ by the larger proportion of higher utilization.\_</i>\n      </inline>\n \
+      \   </li>\n    <li class=\"ql-indent-0\"/>\n    <li class=\"ql-indent-0\">\n\
+      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Use the threshold\
+      \ slider to inspect for reservations that potentially have brief periods of\
+      \ low utilization.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: d51c35cd-d554-4639-82ec-713b929e75a6
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"24px\">A</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"20px\">BOUT\_</inline>\n  <inline color=\"\
@@ -9359,7 +9361,7 @@ Sheets:
             Width: 212px
           - CustomLabel: Flow Direction
             FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.video_flow_direction.12.1756430011629
-            Width: 124px
+            Width: 115px
           - CustomLabel: Resolution
             FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_resolution.11.1752621853883
             Width: 84px
@@ -9521,6 +9523,10 @@ Sheets:
             Height: 25
             TextWrap: WRAP
       Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>The charts above reflect overall profile usage
+            agnostic of account. Multiple entries may appear here based on account-specific
+            opportunity.</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -9546,7 +9552,7 @@ Sheets:
                 FieldId: 199e42cb-2197-4926-bc39-0d09fd7f01c2.2.1745010252392
             ComputationId: 4e5cce2f-2dbe-4da9-b275-fa58cbc3f7dc
             Name: Top
-            ResultSize: 5
+            ResultSize: 10
             Type: TOP
             Value:
               NumericalMeasureField:
@@ -9593,7 +9599,7 @@ Sheets:
           RichText: |-
             <visual-title>
               <inline font-size="16px">
-                <b>Top net new reservation savings based on usage (aggregated accounts, last 30 days)</b>
+                <b>Top net new reservation estimated savings based on usage (aggregated accounts, last 30 days)</b>
               </inline>
             </visual-title>
         Visibility: VISIBLE
@@ -10004,12 +10010,16 @@ Sheets:
       ChartConfiguration:
         BarsArrangement: STACKED
         CategoryAxis:
-          AxisOffset: 72px
+          AxisOffset: 105px
           DataOptions:
             DateAxisOptions:
-              MissingDateVisibility: VISIBLE
+              MissingDateVisibility: HIDDEN
           ScrollbarOptions:
-            Visibility: HIDDEN
+            Visibility: VISIBLE
+            VisibleRange:
+              PercentRange:
+                From: 0.0
+                To: 100.0
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -10034,7 +10044,7 @@ Sheets:
                 Column:
                   ColumnName: reservation_end_time
                   DataSetIdentifier: msih_reservations
-                DateGranularity: MONTH
+                DateGranularity: DAY
                 FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation_end_time.2.1744986268466
                 HierarchyId: 4637c335-fcfe-4c90-9501-51d0b35928e6
             Colors:
@@ -10069,10 +10079,11 @@ Sheets:
         Legend:
           Title:
             CustomLabel: Reservation ID
-          Width: 581px
+          Width: 638px
         Orientation: VERTICAL
         SortConfiguration:
           CategoryItemsLimit:
+            ItemsLimit: 200
             OtherCategories: INCLUDE
           CategorySort:
           - FieldSort:
@@ -10477,12 +10488,8 @@ Sheets:
             TargetVisualsConfiguration:
               SameSheetTargetVisualConfiguration:
                 TargetVisuals:
-                - 8df0a038-ac09-47bc-b0cf-c3abc3ca6573
-                - e1fdaf1a-3ff9-4cf0-a452-0bf2eb28e5a9
-                - 67029010-af24-429d-89aa-a920caaa7805
-                - e61a2c58-5441-4d79-b525-14fbaa91379e
-                - fef76ed9-46a2-4d63-a99d-22030154b7d0
-                - df48dd52-e806-4d02-a0b3-70428eb6da1f
+                - 806f73d8-230c-4deb-8a49-70a5c068e05f
+                - 243d0afe-22f7-47e6-88f5-6921314e2961
         CustomActionId: 14b2847f-4511-432a-8578-b0a98f24c9e3
         Name: Action 1
         Status: ENABLED
@@ -10505,9 +10512,9 @@ Sheets:
                 AggregationFunction:
                   SimpleNumericalAggregation: SUM
                 Column:
-                  ColumnName: EML Transcoding On Demand Cost
+                  ColumnName: Estimated Potential Savings
                   DataSetIdentifier: msih_view
-                FieldId: c37a7eff-5e93-4e1a-99ed-bc06e9f2efb2.3.1744224113730
+                FieldId: b28e8983-0b79-4b0e-b294-812483f99d59.3.1761335150072
                 FormatConfiguration:
                   FormatConfiguration:
                     CurrencyDisplayFormatConfiguration:
@@ -10528,9 +10535,9 @@ Sheets:
                 AggregationFunction:
                   SimpleNumericalAggregation: SUM
                 Column:
-                  ColumnName: Cost
+                  ColumnName: EML Transcoding On Demand Cost
                   DataSetIdentifier: msih_view
-                FieldId: c92e964c-c9f2-4478-b50b-51efa3bd7b3f.3.1744206198110
+                FieldId: eb367126-c83c-4975-b2e3-8b3f1d3d437d.3.1761335228103
                 FormatConfiguration:
                   FormatConfiguration:
                     CurrencyDisplayFormatConfiguration:
@@ -10583,17 +10590,26 @@ Sheets:
                 FieldId: 1ff3cf8b-329e-41f7-8203-40ebf374224d.1.1744139933817
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: c92e964c-c9f2-4478-b50b-51efa3bd7b3f.3.1744206198110
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: c37a7eff-5e93-4e1a-99ed-bc06e9f2efb2.3.1744224113730
-                Visibility: VISIBLE
-            - FieldTooltipItem:
                 FieldId: 199e42cb-2197-4926-bc39-0d09fd7f01c2.3.1745010728440
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: b28e8983-0b79-4b0e-b294-812483f99d59.3.1761335150072
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: eb367126-c83c-4975-b2e3-8b3f1d3d437d.3.1761335228103
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
+        XAxisLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: EML Transcoding On Demand Cost
+                DataSetIdentifier: msih_view
+              FieldId: eb367126-c83c-4975-b2e3-8b3f1d3d437d.3.1761335228103
+            CustomLabel: On Demand Cost
+          Visibility: VISIBLE
         YAxisLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -10605,8 +10621,8 @@ Sheets:
       ColumnHierarchies: []
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Circle size corresponds to the current on demand
-            cost. Larger circles indicate better opportunity.</visual-subtitle>
+          RichText: <visual-subtitle>Circle size corresponds to the current estimated
+            savings opportunity</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -10797,10 +10813,6 @@ Sheets:
         CategoryAxis:
           ScrollbarOptions:
             Visibility: VISIBLE
-            VisibleRange:
-              PercentRange:
-                From: 0.0
-                To: 100.0
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -10883,7 +10895,6 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 409px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -10938,6 +10949,7 @@ Sheets:
           - 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.product_resolution.11.1744225433258
           - 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.product_frame_rate.6.1744225421138
           - 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.product_bit_rate.5.1744225415602
+          - faff24db-9601-4a15-85e1-4b264d4626c3.video_quality.14.1761333084975
           - 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation_start_time.2.1743083433946
           - 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation_end_time.3.1743083436463
           - 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.count of reservation purchased.13.1745249442721
@@ -10960,7 +10972,7 @@ Sheets:
             Width: 97px
           - CustomLabel: Codec
             FieldId: ac4c7a42-baa0-4cbf-bf62-b126f5911dbd.14.1753195265197
-            Width: 161px
+            Width: 91px
           - CustomLabel: Resolution
             FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.product_resolution.11.1744225433258
             Width: 101px
@@ -10970,6 +10982,8 @@ Sheets:
           - CustomLabel: Bit Rate
             FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.product_bit_rate.5.1744225415602
             Width: 109px
+          - CustomLabel: Quality
+            FieldId: faff24db-9601-4a15-85e1-4b264d4626c3.video_quality.14.1761333084975
           - CustomLabel: Start Time
             FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation_start_time.2.1743083433946
           - CustomLabel: End Time
@@ -11034,6 +11048,11 @@ Sheets:
                   ColumnName: video_bit_rate
                   DataSetIdentifier: msih_reservations
                 FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.product_bit_rate.5.1744225415602
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: video_quality
+                  DataSetIdentifier: msih_reservations
+                FieldId: faff24db-9601-4a15-85e1-4b264d4626c3.video_quality.14.1761333084975
             - DateDimensionField:
                 Column:
                   ColumnName: reservation_start_time
@@ -11074,8 +11093,8 @@ Sheets:
         SortConfiguration:
           RowSort:
           - FieldSort:
-              Direction: DESC
-              FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation_start_time.2.1743083433946
+              Direction: ASC
+              FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation_end_time.3.1743083436463
         TableOptions:
           HeaderStyle:
             Height: 26
@@ -11358,7 +11377,6 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 422px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -11467,7 +11485,6 @@ Sheets:
           Width: 636px
         PrimaryYAxisDisplayOptions:
           AxisOptions:
-            AxisOffset: 96px
             TickLabelOptions:
               LabelOptions:
                 FontConfiguration:
@@ -23229,8 +23246,8 @@ Sheets:
           ScrollbarOptions:
             VisibleRange:
               PercentRange:
-                From: 0.8287292817679628
-                To: 100.0
+                From: 0.0
+                To: 99.17127071823204
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -26790,7 +26807,7 @@ Sheets:
     SheetTextBoxId: 8738ed95-db68-48f4-9115-f7a8dcb618cf
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"64px\"\
       >\n      <b>Media Services Insights Hub</b>\n    </inline>\n  </block>\n  <br/>\n\
-      \  <block align=\"center\">\n    <inline font-size=\"64px\">v1.1.0</inline>\n\
+      \  <block align=\"center\">\n    <inline font-size=\"64px\">v1.1.1</inline>\n\
       \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
       >\_</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
       \ align=\"center\">\n    <inline color=\"#09add4\" font-size=\"24px\">\n   \
@@ -26813,13 +26830,13 @@ Sheets:
       right\">\n    Learn more about AWS Cloud Intelligence Dashboards (CID) on [\n\
       \    <inline color=\"#09add4\">\n      <a href=\"https://wellarchitectedlabs.com/cost/200_labs/200_cloud_intelligence/\"\
       \ target=\"_blank\">\n        <b>AWS Well-Architected Labs</b>\n      </a>\n\
-      \    </inline>\n    ] and\n    <inline color=\"#61d1d6\">\n      <a href=\"\
+      \    </inline>\n    \_] and\n    <inline color=\"#61d1d6\">\n      <a href=\"\
       https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\" target=\"_blank\"\
       >\_</a>\n    </inline>\n    [\n    <inline color=\"#09add4\">\n      <a href=\"\
       https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\" target=\"_blank\"\
-      >\n        <b>CID YouTube Channel</b>\n      </a>\n    </inline>\n    ]\n  </block>\n\
-      \  <br/>\n  <block align=\"right\">\n    <b>Powered by:</b>\n    \_Amazon QuickSight,\
-      \ Amazon Athena, Amazon S3\n  </block>\n  <br/>\n  <block align=\"right\"/>\n\
-      \  <br/>\n  <block align=\"right\"/>\n</text-box>"
+      >\n        <b>CID YouTube Channel</b>\n      </a>\n    </inline>\n    \_]\n\
+      \  </block>\n  <br/>\n  <block align=\"right\">\n    <b>Powered by:</b>\n  \
+      \  \_Amazon QuickSight, Amazon Athena, Amazon S3\n  </block>\n  <br/>\n  <block\
+      \ align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n</text-box>"
     SheetTextBoxId: a970dddd-1b1b-47d0-84c9-dceda61bb464
   Visuals: []
