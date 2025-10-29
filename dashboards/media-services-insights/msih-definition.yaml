@@ -318,7 +318,12 @@ CalculatedFields:
   Expression: operation
   Name: Operation
 - DataSetIdentifier: msih_view
-  Expression: '{payer_account_id}'
+  Expression: |-
+    ifelse(
+        ${AccountDisplayFormat} = "Name" AND strlen({payer_account_name}) > 0, {payer_account_name},
+        ${AccountDisplayFormat} = "Name (ID)", concat(ifelse(strlen({payer_account_name}) > 0, {payer_account_name}, {payer_account_id}), " (", {payer_account_id}, ")"),
+        {payer_account_id}
+    )
   Name: Payer Account
 - DataSetIdentifier: msih_view
   Expression: '{product_family}'
@@ -523,6 +528,9 @@ CalculatedFields:
     \t\t\tcontains({usage_type}, \"DataTransfer\") or contains({usage_type}, \"AWS-Out\"\
     ) or contains({usage_type}, \"CloudFront\"), 1,\n\t\t\t0\n\t\t),\n    0\n)"
   Name: is_emp_data_transfer
+- DataSetIdentifier: msih_view
+  Expression: ifelse(dateDiff({usage_date}, {last_refresh_date}, "DD") < 30, 1, 0)
+  Name: is_last_30days_collected
 - DataSetIdentifier: msih_view
   Expression: "ifelse(\n\toperation = \"CHANNEL_INPUT\" or operation = \"CHANNEL_OUTPUT\"\
     , 1,\n    contains({Usage Category}, \"Transcod\"), 1,\n    contains({Usage Category},\
@@ -763,33 +771,6 @@ FilterGroups:
         - 089831d5-6935-45bb-92ff-9be1991e2ba3
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
-  FilterGroupId: a04c0e2c-eedc-4e52-a0c9-b24147fdf55c
-  Filters:
-  - RelativeDatesFilter:
-      AnchorDateConfiguration:
-        AnchorOption: NOW
-      Column:
-        ColumnName: usage_date
-        DataSetIdentifier: msih_view
-      FilterId: 61369bab-b09b-467c-b1a7-f9c5ca51ae20
-      MinimumGranularity: DAY
-      NullOption: NON_NULLS_ONLY
-      RelativeDateType: LAST
-      RelativeDateValue: 30
-      TimeGranularity: DAY
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: b0546a34-b29a-4de1-b4e4-f29c46346119
-        VisualIds:
-        - 82851e38-dea6-4e49-a82b-b1ab79303542
-        - 089831d5-6935-45bb-92ff-9be1991e2ba3
-        - 5663c3e1-9b05-4ab5-875b-b50a590391de
-        - 850905e7-c5f9-4979-9413-59b8e930b13e
-        - 114c8fbf-f7a9-4912-b69f-460dabb7cf9e
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
   FilterGroupId: 64d17d53-635f-428f-bfcf-d6d133c41e80
   Filters:
   - CategoryFilter:
@@ -978,30 +959,6 @@ FilterGroups:
         - b2e3e126-b7db-4ad5-a679-9bbf8f7967c9
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
-  FilterGroupId: f426bf24-c67d-4aa0-8c67-dbb8d686cbac
-  Filters:
-  - RelativeDatesFilter:
-      AnchorDateConfiguration:
-        AnchorOption: NOW
-      Column:
-        ColumnName: usage_date
-        DataSetIdentifier: msih_view
-      FilterId: 433fa3af-d7e1-4f4a-b317-571cbe11d7fe
-      MinimumGranularity: DAY
-      NullOption: NON_NULLS_ONLY
-      RelativeDateType: LAST
-      RelativeDateValue: 30
-      TimeGranularity: DAY
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 00e3d4f2-02b9-4336-a8c1-94f92dd9328c
-        VisualIds:
-        - 7f306008-6e37-497b-984b-ce0501612dab
-        - 919f3d64-edff-449a-befa-ca7b7a8141f0
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
   FilterGroupId: 2380ccef-eb62-4156-8165-7afa41560c23
   Filters:
   - CategoryFilter:
@@ -1045,29 +1002,6 @@ FilterGroups:
         - 7f306008-6e37-497b-984b-ce0501612dab
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
-  FilterGroupId: 0072ca2b-b9ab-4b50-b038-1e45cc160bd0
-  Filters:
-  - RelativeDatesFilter:
-      AnchorDateConfiguration:
-        AnchorOption: NOW
-      Column:
-        ColumnName: usage_date
-        DataSetIdentifier: msih_view
-      FilterId: 7659cb98-ed8b-4b7b-9ec8-752b534b327a
-      MinimumGranularity: DAY
-      NullOption: NON_NULLS_ONLY
-      RelativeDateType: LAST
-      RelativeDateValue: 30
-      TimeGranularity: DAY
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: c08d9356-82db-44bd-b20d-c3359027ca57
-        VisualIds:
-        - 51518e2f-0734-4fc1-bdec-7677142a96c2
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
   FilterGroupId: 1d09a6bf-574e-438d-a062-8762fae1007b
   Filters:
   - RelativeDatesFilter:
@@ -1093,29 +1027,6 @@ FilterGroups:
         SheetId: 7ac1dbd7-5afe-47d3-a3dc-6df8a59829db
         VisualIds:
         - 824ed6c4-382b-4770-aa81-d9aeeeca54f2
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: 5c386b9b-df53-4c38-99a2-795de1ae42c8
-  Filters:
-  - RelativeDatesFilter:
-      AnchorDateConfiguration:
-        AnchorOption: NOW
-      Column:
-        ColumnName: usage_date
-        DataSetIdentifier: msih_view
-      FilterId: 6be1ea75-cdfc-4d2c-9f47-23158adb6254
-      MinimumGranularity: DAY
-      NullOption: NON_NULLS_ONLY
-      RelativeDateType: LAST
-      RelativeDateValue: 30
-      TimeGranularity: DAY
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 7ac1dbd7-5afe-47d3-a3dc-6df8a59829db
-        VisualIds:
-        - b1234c7c-dfeb-476a-b178-2e4fb93c365b
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 6393b3de-cc40-460b-bb29-6dbe70dcddf3
@@ -1250,29 +1161,6 @@ FilterGroups:
           MatchOperator: DOES_NOT_CONTAIN
           NullOption: NON_NULLS_ONLY
       FilterId: 0a5d8f44-c397-478f-8c67-8b3f3e2cc85a
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: ac236152-fd32-4423-8422-616ff0773fbd
-        VisualIds:
-        - 26ab76e9-5846-473c-b4c2-e77ed9fe10bc
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: 7255cba2-12f9-4e30-b9b0-7f1ccb0d5bee
-  Filters:
-  - RelativeDatesFilter:
-      AnchorDateConfiguration:
-        AnchorOption: NOW
-      Column:
-        ColumnName: usage_date
-        DataSetIdentifier: msih_view
-      FilterId: 1a0f8d8e-a0a5-4f33-be90-298ee0bbc4b8
-      MinimumGranularity: DAY
-      NullOption: NON_NULLS_ONLY
-      RelativeDateType: LAST
-      RelativeDateValue: 30
-      TimeGranularity: DAY
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
@@ -1490,30 +1378,6 @@ FilterGroups:
       - Scope: SELECTED_VISUALS
         SheetId: 7c504d5e-c0c0-4e5c-9c0e-87a0b22d47c5
         VisualIds:
-        - eadc5e0a-90e2-4c9d-80cd-50a8dfcfe895
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: ee4a9848-9513-4b8c-b317-29b3db2310f6
-  Filters:
-  - RelativeDatesFilter:
-      AnchorDateConfiguration:
-        AnchorOption: NOW
-      Column:
-        ColumnName: usage_date
-        DataSetIdentifier: msih_view
-      FilterId: e38aa4c5-a435-4870-88f9-591c16e55c76
-      MinimumGranularity: DAY
-      NullOption: NON_NULLS_ONLY
-      RelativeDateType: LAST
-      RelativeDateValue: 30
-      TimeGranularity: DAY
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 7c504d5e-c0c0-4e5c-9c0e-87a0b22d47c5
-        VisualIds:
-        - 1f34ea3c-0bed-4277-928b-8962c4029172
         - eadc5e0a-90e2-4c9d-80cd-50a8dfcfe895
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
@@ -1796,7 +1660,7 @@ FilterGroups:
         SheetId: 652661af-5b76-4855-80ee-19e261578d3f
         VisualIds:
         - 1dc2ecce-728d-4718-93b1-12417ebd7516
-  Status: DISABLED
+  Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 26fd64f2-2b72-4215-8473-62a3a549f3f2
   Filters:
@@ -3167,29 +3031,6 @@ FilterGroups:
       MatchOperator: EQUALS
       NullOption: ALL_VALUES
       Value: 1.0
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: ac236152-fd32-4423-8422-616ff0773fbd
-        VisualIds:
-        - 1d3367c8-49db-4a2c-9f0d-49a5fb4f5b2b
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: ac955ecc-fd77-469d-bda9-66cf2a055e4c
-  Filters:
-  - RelativeDatesFilter:
-      AnchorDateConfiguration:
-        AnchorOption: NOW
-      Column:
-        ColumnName: usage_date
-        DataSetIdentifier: msih_view
-      FilterId: 20f31521-7ed9-4bf6-be81-353fb74b5982
-      MinimumGranularity: DAY
-      NullOption: NON_NULLS_ONLY
-      RelativeDateType: LAST
-      RelativeDateValue: 30
-      TimeGranularity: DAY
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
@@ -5437,6 +5278,126 @@ FilterGroups:
         SheetId: 7c504d5e-c0c0-4e5c-9c0e-87a0b22d47c5
         VisualIds:
         - c0970e13-e591-4194-baa1-509893acaf10
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 08dff559-4000-4c21-971e-52ce93225cfe
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: is_last_30days_collected
+        DataSetIdentifier: msih_view
+      FilterId: 2ba4b8c2-e52a-4a18-866d-60b435141eb0
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: c08d9356-82db-44bd-b20d-c3359027ca57
+        VisualIds:
+        - 51518e2f-0734-4fc1-bdec-7677142a96c2
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 46574707-fadf-42d5-a12a-fce4687e7f91
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: is_last_30days_collected
+        DataSetIdentifier: msih_view
+      FilterId: 9dac4c09-26df-4070-971a-07abdc48b850
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: ac236152-fd32-4423-8422-616ff0773fbd
+        VisualIds:
+        - 1d3367c8-49db-4a2c-9f0d-49a5fb4f5b2b
+        - 26ab76e9-5846-473c-b4c2-e77ed9fe10bc
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 3fcd36fc-81ec-446b-9b13-035ad4594149
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: is_last_30days_collected
+        DataSetIdentifier: msih_view
+      FilterId: 22f18343-13b8-4bd7-ab9e-a3455f9be10b
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 7c504d5e-c0c0-4e5c-9c0e-87a0b22d47c5
+        VisualIds:
+        - 1f34ea3c-0bed-4277-928b-8962c4029172
+        - eadc5e0a-90e2-4c9d-80cd-50a8dfcfe895
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 77ddb729-ea2f-431c-b184-45dae4342010
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: is_last_30days_collected
+        DataSetIdentifier: msih_view
+      FilterId: ced66ac0-48ef-40d9-b1b3-54410715d307
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b0546a34-b29a-4de1-b4e4-f29c46346119
+        VisualIds:
+        - 5663c3e1-9b05-4ab5-875b-b50a590391de
+        - 82851e38-dea6-4e49-a82b-b1ab79303542
+        - 089831d5-6935-45bb-92ff-9be1991e2ba3
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: e128f115-5911-4333-b35c-7b1f687531a2
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: is_last_30days_collected
+        DataSetIdentifier: msih_view
+      FilterId: cbcc104d-c03c-42af-a758-4b39277138f4
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 7ac1dbd7-5afe-47d3-a3dc-6df8a59829db
+        VisualIds:
+        - f59c6bb6-df69-46a8-8776-080ed4be7457
+        - b1234c7c-dfeb-476a-b178-2e4fb93c365b
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 988943e3-46e8-4841-a656-243ccf3c13db
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: is_last_30days_collected
+        DataSetIdentifier: msih_view
+      FilterId: 55d6e4fa-9d25-4139-b215-2b80c1137c1d
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 00e3d4f2-02b9-4336-a8c1-94f92dd9328c
+        VisualIds:
+        - 919f3d64-edff-449a-befa-ca7b7a8141f0
+        - 7f306008-6e37-497b-984b-ce0501612dab
   Status: ENABLED
 Options: {}
 ParameterDeclarations:
@@ -7760,8 +7721,6 @@ Sheets:
         - FilterOperation:
             SelectedFieldsConfiguration:
               SelectedColumns:
-              - ColumnName: payer_account_id
-                DataSetIdentifier: msih_view
               - ColumnName: Linked Account
                 DataSetIdentifier: msih_view
               - ColumnName: region
@@ -7819,7 +7778,7 @@ Sheets:
             Colors:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: payer_account_id
+                  ColumnName: Service
                   DataSetIdentifier: msih_view
                 FieldId: 5e834f62-94b6-43bd-9595-633c99e85f25.3.1748993619802
                 HierarchyId: 7b3fd988-fd3b-4b29-8d0d-fb78f542440a
@@ -7880,7 +7839,6 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 65px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -7905,7 +7863,7 @@ Sheets:
           Columns:
           - ColumnName: Service
             DataSetIdentifier: msih_view
-          - ColumnName: payer_account_id
+          - ColumnName: Payer Account
             DataSetIdentifier: msih_view
           - ColumnName: Linked Account
             DataSetIdentifier: msih_view
@@ -7924,8 +7882,8 @@ Sheets:
         FormatText:
           RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Monthly\_\
             </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\n      <parameter>${CostModel}</parameter>\n\
-            \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_spend\
-            \ by service</b>\n  </inline>\n</visual-title>"
+            \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_spend</b>\n\
+            \  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: e72da725-1343-4d14-a6db-edcf1522018b
   - BarChartVisual:
@@ -26807,7 +26765,7 @@ Sheets:
     SheetTextBoxId: 8738ed95-db68-48f4-9115-f7a8dcb618cf
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"64px\"\
       >\n      <b>Media Services Insights Hub</b>\n    </inline>\n  </block>\n  <br/>\n\
-      \  <block align=\"center\">\n    <inline font-size=\"64px\">v1.1.1</inline>\n\
+      \  <block align=\"center\">\n    <inline font-size=\"64px\">v1.1.2</inline>\n\
       \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
       >\_</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
       \ align=\"center\">\n    <inline color=\"#09add4\" font-size=\"24px\">\n   \
