@@ -3,17 +3,18 @@ dashboards:
     dependsOn:
       datasets:
       - scad_cca_summary_view
+      - scad_cca_summary_view_data_on_eks
     name: SCAD Containers Cost Allocation
     dashboardId: scad-containers-cost-allocation
     category: Additional
     templateId: scad-containers-cost-allocation
 datasets:
-  scad_cca_summary_view:
+  scad_cca_summary_view_data_on_eks:
     data:
-      DataSetId: 12f5c7ba-2b76-40e0-b280-0aabe8ca2fbe
-      Name: scad_cca_summary_view
+      DataSetId: bf80bd57-f8ed-44dc-b9c0-50c517ca841a
+      Name: scad_cca_summary_view_data_on_eks
       PhysicalTableMap:
-        320f3b02-0ba2-4d14-b684-1a5431781f39:
+        53c5ae59-b21c-41b6-9d4e-4818f4e2a8d6:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
@@ -24,18 +25,24 @@ datasets:
               Type: STRING
             - Name: account_name
               Type: STRING
-        40065454-2867-4119-8240-618f4332aa7e:
+        67b570dd-8eb4-4623-ac3a-5ce15c6faf2c:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
             Schema: ${athena_database_name}
-            Name: scad_cca_summary_view
+            Name: scad_cca_summary_view_data_on_eks
             InputColumns:
             - Name: usage_date
               Type: DATETIME
+            - Name: cluster_arn
+              Type: STRING
             - Name: resource_id
               Type: STRING
             - Name: node_instance_id
+              Type: STRING
+            - Name: node_name
+              Type: STRING
+            - Name: availability_zone
               Type: STRING
             - Name: node_purchase_option
               Type: STRING
@@ -43,33 +50,65 @@ datasets:
               Type: STRING
             - Name: namespace
               Type: STRING
-            - Name: time_granularity
+            - Name: cat_app_kubernetes_io_name
               Type: STRING
-            - Name: year
+            - Name: cat_app_kubernetes_io_instance
               Type: STRING
-            - Name: month
+            - Name: cat_app_kubernetes_io_component
               Type: STRING
-            - Name: billing_period
-              Type: DATETIME
-            - Name: charge_type
+            - Name: cat_app_kubernetes_io_version
               Type: STRING
-            - Name: payer_account_id
+            - Name: cat_app_kubernetes_io_part_of
               Type: STRING
-            - Name: linked_account_id
+            - Name: cat_app_kubernetes_io_managed_by
               Type: STRING
-            - Name: region
+            - Name: cat_apps_kubernetes_io_pod_index
               Type: STRING
-            - Name: availability_zone
+            - Name: cat_app
               Type: STRING
-            - Name: cluster_type
+            - Name: cat_component
+              Type: STRING
+            - Name: cat_release
+              Type: STRING
+            - Name: cat_version
+              Type: STRING
+            - Name: cat_chart
+              Type: STRING
+            - Name: cat_type
+              Type: STRING
+            - Name: cat_created_by
+              Type: STRING
+            - Name: big_data_workload_type
+              Type: STRING
+            - Name: spark_app_id
+              Type: STRING
+            - Name: spark_app_name
+              Type: STRING
+            - Name: flink_app_name
+              Type: STRING
+            - Name: big_data_workload_component
+              Type: STRING
+            - Name: big_data_workload_submitted_by
+              Type: STRING
+            - Name: big_data_workload_deployed_on
+              Type: STRING
+            - Name: spark_version
+              Type: STRING
+            - Name: spark_exec_id
+              Type: STRING
+            - Name: spark_exec_resourceprofile_id
+              Type: STRING
+            - Name: spark_app_tag
+              Type: STRING
+            - Name: sparkoperator_k8s_io_submission_id
+              Type: STRING
+            - Name: emr_on_eks_virtual_cluster_id
+              Type: STRING
+            - Name: emr_on_eks_job_id
+              Type: STRING
+            - Name: emr_on_eks_internal_id
               Type: STRING
             - Name: launch_type
-              Type: STRING
-            - Name: cluster_arn
-              Type: STRING
-            - Name: cluster_name
-              Type: STRING
-            - Name: node_name
               Type: STRING
             - Name: node_vcpu
               Type: DECIMAL
@@ -92,19 +131,35 @@ datasets:
               Type: STRING
             - Name: node_physical_processor
               Type: STRING
-            - Name: ecs_service
+            - Name: node_processor_features
+              Type: STRING
+            - Name: node_tenancy
+              Type: STRING
+            - Name: node_current_generation
+              Type: STRING
+            - Name: time_granularity
+              Type: STRING
+            - Name: year
+              Type: STRING
+            - Name: month
+              Type: STRING
+            - Name: billing_period
+              Type: DATETIME
+            - Name: charge_type
+              Type: STRING
+            - Name: payer_account_id
+              Type: STRING
+            - Name: linked_account_id
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: emr_on_eks_cost_type
+              Type: STRING
+            - Name: cluster_type
+              Type: STRING
+            - Name: cluster_name
               Type: STRING
             - Name: ecs_task_id
-              Type: STRING
-            - Name: batch_compute_environment
-              Type: STRING
-            - Name: batch_job_definition
-              Type: STRING
-            - Name: batch_job_definition_name
-              Type: STRING
-            - Name: batch_job_definition_revision
-              Type: STRING
-            - Name: batch_job_queue
               Type: STRING
             - Name: controller_kind
               Type: STRING
@@ -145,7 +200,7 @@ datasets:
             - Name: max_memory_allocation_vs_memory_usage
               Type: DECIMAL
               SubType: FLOAT
-            - Name: max_gpu_allocation_vs_cpu_usage
+            - Name: max_gpu_allocation_vs_gpu_usage
               Type: DECIMAL
               SubType: FLOAT
             - Name: cpu_split_ratio
@@ -214,8 +269,30 @@ datasets:
             - Name: public_on_demand_split_unused_gpu_cost
               Type: DECIMAL
               SubType: FLOAT
+            - Name: emr_on_eks_unblended_cpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: emr_on_eks_unblended_memory_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: emr_on_eks_net_unblended_cpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: emr_on_eks_net_unblended_memory_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: emr_on_eks_public_on_demand_cpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: emr_on_eks_public_on_demand_memory_cost
+              Type: DECIMAL
+              SubType: FLOAT
       LogicalTableMap:
-        3cc8aead-25e1-425f-9025-b9b71cb4c000:
+        39c54d33-491f-4134-8584-0b8c017164bc:
+          Alias: scad_cca_summary_view_data_on_eks
+          Source:
+            PhysicalTableId: 67b570dd-8eb4-4623-ac3a-5ce15c6faf2c
+        8d4d9774-9e77-4ce6-a5d7-e2cfd6ebf182:
           Alias: Intermediate Table
           DataTransforms:
           - TagColumnOperation:
@@ -225,25 +302,44 @@ datasets:
           - ProjectOperation:
               ProjectedColumns:
               - usage_date
+              - cluster_arn
               - resource_id
               - node_instance_id
+              - node_name
+              - availability_zone
               - node_purchase_option
               - controller_name
               - namespace
-              - time_granularity
-              - year
-              - month
-              - billing_period
-              - charge_type
-              - payer_account_id
-              - linked_account_id
-              - region
-              - availability_zone
-              - cluster_type
+              - cat_app_kubernetes_io_name
+              - cat_app_kubernetes_io_instance
+              - cat_app_kubernetes_io_component
+              - cat_app_kubernetes_io_version
+              - cat_app_kubernetes_io_part_of
+              - cat_app_kubernetes_io_managed_by
+              - cat_apps_kubernetes_io_pod_index
+              - cat_app
+              - cat_component
+              - cat_release
+              - cat_version
+              - cat_chart
+              - cat_type
+              - cat_created_by
+              - big_data_workload_type
+              - spark_app_id
+              - spark_app_name
+              - flink_app_name
+              - big_data_workload_component
+              - big_data_workload_submitted_by
+              - big_data_workload_deployed_on
+              - spark_version
+              - spark_exec_id
+              - spark_exec_resourceprofile_id
+              - spark_app_tag
+              - sparkoperator_k8s_io_submission_id
+              - emr_on_eks_virtual_cluster_id
+              - emr_on_eks_job_id
+              - emr_on_eks_internal_id
               - launch_type
-              - cluster_arn
-              - cluster_name
-              - node_name
               - node_vcpu
               - node_memory_gib
               - node_gpu
@@ -253,13 +349,21 @@ datasets:
               - node_os
               - node_physical_processor_family
               - node_physical_processor
-              - ecs_service
+              - node_processor_features
+              - node_tenancy
+              - node_current_generation
+              - time_granularity
+              - year
+              - month
+              - billing_period
+              - charge_type
+              - payer_account_id
+              - linked_account_id
+              - region
+              - emr_on_eks_cost_type
+              - cluster_type
+              - cluster_name
               - ecs_task_id
-              - batch_compute_environment
-              - batch_job_definition
-              - batch_job_definition_name
-              - batch_job_definition_revision
-              - batch_job_queue
               - controller_kind
               - deployment
               - daemonset
@@ -276,7 +380,7 @@ datasets:
               - memory_usage
               - max_cpu_allocation_vs_cpu_usage
               - max_memory_allocation_vs_memory_usage
-              - max_gpu_allocation_vs_cpu_usage
+              - max_gpu_allocation_vs_gpu_usage
               - cpu_split_ratio
               - memory_split_ratio
               - gpu_split_ratio
@@ -299,6 +403,436 @@ datasets:
               - public_on_demand_split_unused_cpu_cost
               - public_on_demand_split_unused_memory_cost
               - public_on_demand_split_unused_gpu_cost
+              - emr_on_eks_unblended_cpu_cost
+              - emr_on_eks_unblended_memory_cost
+              - emr_on_eks_net_unblended_cpu_cost
+              - emr_on_eks_net_unblended_memory_cost
+              - emr_on_eks_public_on_demand_cpu_cost
+              - emr_on_eks_public_on_demand_memory_cost
+              - account_id
+              - account_name
+          Source:
+            JoinInstruction:
+              LeftOperand: 39c54d33-491f-4134-8584-0b8c017164bc
+              RightOperand: db8c2367-0b1f-49dd-b4e2-d085d5e72915
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+        db8c2367-0b1f-49dd-b4e2-d085d5e72915:
+          Alias: account_map
+          Source:
+            PhysicalTableId: 53c5ae59-b21c-41b6-9d4e-4818f4e2a8d6
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - account_map
+      - scad_cca_summary_view_data_on_eks
+    schedules:
+    - default
+  scad_cca_summary_view:
+    data:
+      DataSetId: 12f5c7ba-2b76-40e0-b280-0aabe8ca2fbe
+      Name: scad_cca_summary_view
+      PhysicalTableMap:
+        320f3b02-0ba2-4d14-b684-1a5431781f39:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+        40065454-2867-4119-8240-618f4332aa7e:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: scad_cca_summary_view
+            InputColumns:
+            - Name: usage_date
+              Type: DATETIME
+            - Name: cluster_arn
+              Type: STRING
+            - Name: resource_id
+              Type: STRING
+            - Name: node_instance_id
+              Type: STRING
+            - Name: node_name
+              Type: STRING
+            - Name: availability_zone
+              Type: STRING
+            - Name: node_purchase_option
+              Type: STRING
+            - Name: controller_name
+              Type: STRING
+            - Name: namespace
+              Type: STRING
+            - Name: usage_type
+              Type: STRING
+            - Name: operation
+              Type: STRING
+            - Name: cat_app_kubernetes_io_name
+              Type: STRING
+            - Name: cat_app_kubernetes_io_instance
+              Type: STRING
+            - Name: cat_app_kubernetes_io_component
+              Type: STRING
+            - Name: cat_app_kubernetes_io_version
+              Type: STRING
+            - Name: cat_app_kubernetes_io_part_of
+              Type: STRING
+            - Name: cat_app_kubernetes_io_managed_by
+              Type: STRING
+            - Name: cat_apps_kubernetes_io_pod_index
+              Type: STRING
+            - Name: cat_app
+              Type: STRING
+            - Name: cat_component
+              Type: STRING
+            - Name: cat_release
+              Type: STRING
+            - Name: cat_version
+              Type: STRING
+            - Name: cat_chart
+              Type: STRING
+            - Name: cat_type
+              Type: STRING
+            - Name: cat_created_by
+              Type: STRING
+            - Name: launch_type
+              Type: STRING
+            - Name: node_vcpu
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: node_memory_gib
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: node_gpu
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: node_instance_type
+              Type: STRING
+            - Name: node_instance_family
+              Type: STRING
+            - Name: node_instance_type_family
+              Type: STRING
+            - Name: node_os
+              Type: STRING
+            - Name: node_physical_processor_family
+              Type: STRING
+            - Name: node_physical_processor
+              Type: STRING
+            - Name: node_processor_features
+              Type: STRING
+            - Name: node_tenancy
+              Type: STRING
+            - Name: node_current_generation
+              Type: STRING
+            - Name: database_engine
+              Type: STRING
+            - Name: ecs_service
+              Type: STRING
+            - Name: batch_compute_environment
+              Type: STRING
+            - Name: batch_job_definition
+              Type: STRING
+            - Name: batch_job_definition_name
+              Type: STRING
+            - Name: batch_job_definition_revision
+              Type: STRING
+            - Name: batch_job_queue
+              Type: STRING
+            - Name: charge_type
+              Type: STRING
+            - Name: item_description
+              Type: STRING
+            - Name: workload_type
+              Type: STRING
+            - Name: time_granularity
+              Type: STRING
+            - Name: year
+              Type: STRING
+            - Name: month
+              Type: STRING
+            - Name: billing_period
+              Type: DATETIME
+            - Name: legal_entity
+              Type: STRING
+            - Name: billing_entity
+              Type: STRING
+            - Name: payer_account_id
+              Type: STRING
+            - Name: linked_account_id
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: product_code
+              Type: STRING
+            - Name: product_name
+              Type: STRING
+            - Name: product_group
+              Type: STRING
+            - Name: service
+              Type: STRING
+            - Name: product_family
+              Type: STRING
+            - Name: cluster_type
+              Type: STRING
+            - Name: cluster_name
+              Type: STRING
+            - Name: pricing_unit
+              Type: STRING
+            - Name: ecs_task_id
+              Type: STRING
+            - Name: controller_kind
+              Type: STRING
+            - Name: deployment
+              Type: STRING
+            - Name: daemonset
+              Type: STRING
+            - Name: statefulset
+              Type: STRING
+            - Name: replicaset
+              Type: STRING
+            - Name: job
+              Type: STRING
+            - Name: replication_controller
+              Type: STRING
+            - Name: pod_name
+              Type: STRING
+            - Name: pod_uid
+              Type: STRING
+            - Name: cpu_allocation
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: memory_allocation
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: gpu_allocation
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cpu_usage
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: memory_usage
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: max_cpu_allocation_vs_cpu_usage
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: max_memory_allocation_vs_memory_usage
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: max_gpu_allocation_vs_gpu_usage
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cpu_split_ratio
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: memory_split_ratio
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: gpu_split_ratio
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: usage_quantity
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: amortized_split_cpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: amortized_split_memory_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: amortized_split_gpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: amortized_split_unused_cpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: amortized_split_unused_memory_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: amortized_split_unused_gpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: net_amortized_split_cpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: net_amortized_split_memory_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: net_amortized_split_gpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: net_amortized_split_unused_cpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: net_amortized_split_unused_memory_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: net_amortized_split_unused_gpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: public_on_demand_split_cpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: public_on_demand_split_memory_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: public_on_demand_split_gpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: public_on_demand_split_unused_cpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: public_on_demand_split_unused_memory_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: public_on_demand_split_unused_gpu_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: net_unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: amortized_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: net_amortized_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: public_on_demand_cost
+              Type: DECIMAL
+              SubType: FLOAT
+      LogicalTableMap:
+        58a475ca-a409-495a-b515-7b43b30f2841:
+          Alias: scad_cca_summary_view
+          Source:
+            PhysicalTableId: 40065454-2867-4119-8240-618f4332aa7e
+        daacc998-7a15-4919-aabd-f3258d1c3b50:
+          Alias: Intermediate Table
+          DataTransforms:
+          - TagColumnOperation:
+              ColumnName: region
+              Tags:
+              - ColumnGeographicRole: STATE
+          - ProjectOperation:
+              ProjectedColumns:
+              - usage_date
+              - cluster_arn
+              - resource_id
+              - node_instance_id
+              - node_name
+              - availability_zone
+              - node_purchase_option
+              - controller_name
+              - namespace
+              - usage_type
+              - operation
+              - cat_app_kubernetes_io_name
+              - cat_app_kubernetes_io_instance
+              - cat_app_kubernetes_io_component
+              - cat_app_kubernetes_io_version
+              - cat_app_kubernetes_io_part_of
+              - cat_app_kubernetes_io_managed_by
+              - cat_apps_kubernetes_io_pod_index
+              - cat_app
+              - cat_component
+              - cat_release
+              - cat_version
+              - cat_chart
+              - cat_type
+              - cat_created_by
+              - launch_type
+              - node_vcpu
+              - node_memory_gib
+              - node_gpu
+              - node_instance_type
+              - node_instance_family
+              - node_instance_type_family
+              - node_os
+              - node_physical_processor_family
+              - node_physical_processor
+              - node_processor_features
+              - node_tenancy
+              - node_current_generation
+              - database_engine
+              - ecs_service
+              - batch_compute_environment
+              - batch_job_definition
+              - batch_job_definition_name
+              - batch_job_definition_revision
+              - batch_job_queue
+              - charge_type
+              - item_description
+              - workload_type
+              - time_granularity
+              - year
+              - month
+              - billing_period
+              - legal_entity
+              - billing_entity
+              - payer_account_id
+              - linked_account_id
+              - region
+              - product_code
+              - product_name
+              - product_group
+              - service
+              - product_family
+              - cluster_type
+              - cluster_name
+              - pricing_unit
+              - ecs_task_id
+              - controller_kind
+              - deployment
+              - daemonset
+              - statefulset
+              - replicaset
+              - job
+              - replication_controller
+              - pod_name
+              - pod_uid
+              - cpu_allocation
+              - memory_allocation
+              - gpu_allocation
+              - cpu_usage
+              - memory_usage
+              - max_cpu_allocation_vs_cpu_usage
+              - max_memory_allocation_vs_memory_usage
+              - max_gpu_allocation_vs_gpu_usage
+              - cpu_split_ratio
+              - memory_split_ratio
+              - gpu_split_ratio
+              - usage_quantity
+              - amortized_split_cpu_cost
+              - amortized_split_memory_cost
+              - amortized_split_gpu_cost
+              - amortized_split_unused_cpu_cost
+              - amortized_split_unused_memory_cost
+              - amortized_split_unused_gpu_cost
+              - net_amortized_split_cpu_cost
+              - net_amortized_split_memory_cost
+              - net_amortized_split_gpu_cost
+              - net_amortized_split_unused_cpu_cost
+              - net_amortized_split_unused_memory_cost
+              - net_amortized_split_unused_gpu_cost
+              - public_on_demand_split_cpu_cost
+              - public_on_demand_split_memory_cost
+              - public_on_demand_split_gpu_cost
+              - public_on_demand_split_unused_cpu_cost
+              - public_on_demand_split_unused_memory_cost
+              - public_on_demand_split_unused_gpu_cost
+              - unblended_cost
+              - net_unblended_cost
+              - amortized_cost
+              - net_amortized_cost
+              - public_on_demand_cost
               - account_id
               - account_name
           Source:
@@ -307,10 +841,6 @@ datasets:
               RightOperand: e45f1760-362a-4f7c-a3b1-354efa148c5d
               Type: LEFT
               OnClause: '{linked_account_id} = {account_id}'
-        58a475ca-a409-495a-b515-7b43b30f2841:
-          Alias: scad_cca_summary_view
-          Source:
-            PhysicalTableId: 40065454-2867-4119-8240-618f4332aa7e
         e45f1760-362a-4f7c-a3b1-354efa148c5d:
           Alias: account_map
           Source:
@@ -325,6 +855,328 @@ datasets:
 crawlers: {}
 views:
   scad_cca_summary_view:
+    dependsOn:
+      cur2:
+      - bill_billing_entity
+      - bill_billing_period_start_date
+      - bill_payer_account_id
+      - identity_time_interval
+      - line_item_availability_zone
+      - line_item_legal_entity
+      - line_item_line_item_description
+      - line_item_line_item_type
+      - line_item_operation
+      - line_item_product_code
+      - line_item_resource_id
+      - line_item_unblended_cost
+      - line_item_usage_account_id
+      - line_item_usage_amount
+      - line_item_usage_start_date
+      - line_item_usage_type
+      - pricing_public_on_demand_cost
+      - pricing_unit
+      - product
+      - product_instance_type
+      - product_product_family
+      - product_servicecode
+      - reservation_effective_cost
+      - reservation_reservation_a_r_n
+      - reservation_unused_amortized_upfront_fee_for_billing_period
+      - reservation_unused_recurring_fee
+      - resource_tags
+      - savings_plan_savings_plan_a_r_n
+      - savings_plan_savings_plan_effective_cost
+      - savings_plan_total_commitment_to_date
+      - savings_plan_used_commitment
+      - split_line_item_parent_resource_id
+      - split_line_item_reserved_usage
+      - split_line_item_actual_usage
+      - split_line_item_split_usage
+      - split_line_item_split_usage_ratio
+      - split_line_item_split_cost
+      - split_line_item_unused_cost
+      - split_line_item_net_split_cost
+      - split_line_item_net_unused_cost
+      - split_line_item_public_on_demand_split_cost
+      - split_line_item_public_on_demand_unused_cost
+      - line_item_net_unblended_cost
+      - product_instance_family
+      - reservation_net_effective_cost
+      - reservation_net_unused_amortized_upfront_fee_for_billing_period
+      - reservation_net_unused_recurring_fee
+      - savings_plan_net_savings_plan_effective_cost
+      - billing_period
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".scad_cca_summary_view AS
+      SELECT
+        (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN "t_scad_cca"."line_item_usage_start_date" WHEN (DATE_TRUNC('month', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '3' MONTH)) THEN DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") ELSE DATE_TRUNC('month', "t_scad_cca"."line_item_usage_start_date") END) "usage_date"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" = 'EKSPod-EC2') THEN CONCAT(REPLACE(SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 1), 'pod', 'cluster'), '/', SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 2)) ELSE CONCAT(REPLACE(SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 1), 'task', 'cluster'), '/', SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 2)) END) "cluster_arn"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN "t_scad_cca"."line_item_resource_id" ELSE null END) "resource_id"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_scad_cca"."split_line_item_parent_resource_id", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_scad_cca"."split_line_item_parent_resource_id" END) ELSE 'Non-EC2-Workload' END) ELSE null END) "node_instance_id"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN "t_scad_cca"."resource_tags"['aws_eks_node'] ELSE 'Non-EKS-Workload' END) ELSE null END) "node_name"
+      , (CASE WHEN (("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) AND (COALESCE("t_scad_cca"."line_item_availability_zone", '') <> '')) THEN "t_scad_cca"."line_item_availability_zone" WHEN (("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) AND (COALESCE("t_scad_cca"."line_item_availability_zone", '') = '')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."line_item_availability_zone", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."line_item_availability_zone" END) ELSE 'Non-EC2-Workload' END) "availability_zone"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."purchase_option", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."purchase_option" END) ELSE (CASE WHEN ("t_scad_cca"."savings_plan_savings_plan_a_r_n" <> '') THEN 'Savings Plans' WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Spot%') THEN 'Spot' ELSE 'On-Demand' END) END) "node_purchase_option"
+      , (CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_name'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_name'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' ELSE "t_scad_cca"."resource_tags"['aws_eks_workload_name'] END) "controller_name"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 3) ELSE 'Non-EKS-Workload' END) "namespace"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" = 'EKSPod-EC2') THEN 'EKS Pods on EC2' WHEN ("t_scad_cca"."line_item_operation" = 'ECSTask-EC2') THEN 'ECS Tasks on EC2' WHEN ("t_scad_cca"."line_item_operation" = 'FargatePod') THEN 'EKS Pods on Fargate' WHEN ("t_scad_cca"."line_item_operation" = 'FargateTask') THEN 'ECS Tasks on Fargate' ELSE "line_item_usage_type" END) "usage_type"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" = 'EKSPod-EC2') THEN 'EKS Pods on EC2' WHEN ("t_scad_cca"."line_item_operation" = 'ECSTask-EC2') THEN 'ECS Tasks on EC2' WHEN ("t_scad_cca"."line_item_operation" = 'FargatePod') THEN 'EKS Pods on Fargate' WHEN ("t_scad_cca"."line_item_operation" = 'FargateTask') THEN 'ECS Tasks on Fargate' ELSE "line_item_operation" END) "operation"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_name'], 'No K8s label/AWS tag key: app.kubernetes.io/name') "cat_app_kubernetes_io_name"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_instance'], 'No K8s label/AWS tag key: app.kubernetes.io/instance') "cat_app_kubernetes_io_instance"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_component'], 'No K8s label/AWS tag key: app.kubernetes.io/component') "cat_app_kubernetes_io_component"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_version'], 'No K8s label/AWS tag key: app.kubernetes.io/version') "cat_app_kubernetes_io_version"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_part_of'], 'No K8s label/AWS tag key: app.kubernetes.io/part-of') "cat_app_kubernetes_io_part_of"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_managed_by'], 'No K8s label/AWS tag key: app.kubernetes.io/managed-by') "cat_app_kubernetes_io_managed_by"
+      , COALESCE("resource_tags"['user_apps_kubernetes_io_pod_index'], 'No K8s label/AWS tag key: apps.kubernetes.io/pod-index') "cat_apps_kubernetes_io_pod_index"
+      , COALESCE("resource_tags"['user_app'], 'No K8s label/AWS tag key: app') "cat_app"
+      , COALESCE("resource_tags"['user_component'], 'No K8s label/AWS tag key: component') "cat_component"
+      , COALESCE("resource_tags"['user_release'], 'No K8s label/AWS tag key: release') "cat_release"
+      , COALESCE("resource_tags"['user_version'], 'No K8s label/AWS tag key: version') "cat_version"
+      , COALESCE("resource_tags"['user_chart'], 'No K8s label/AWS tag key: chart') "cat_chart"
+      , COALESCE("resource_tags"['user_type'], 'No K8s label/AWS tag key: type') "cat_type"
+      , COALESCE("resource_tags"['user_created_by'], 'No K8s label/AWS tag key: created-by') "cat_created_by"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN 'EC2' ELSE 'Fargate' END) "launch_type"
+      , "t_ec2_compute_instances"."product_vcpu" "node_vcpu"
+      , "t_ec2_compute_instances"."product_memory" "node_memory_gib"
+      , "t_ec2_compute_instances"."product_gpu" "node_gpu"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_instance_type", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_instance_type" END) ELSE 'Non-EC2-Workload' END) "node_instance_type"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_instance_family", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_instance_family" END) ELSE 'Non-EC2-Workload' END) "node_instance_family"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_instance_type_family", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_instance_type_family" END) ELSE 'Non-EC2-Workload' END) "node_instance_type_family"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_operating_system", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_operating_system" END) ELSE 'Non-EC2-Workload' END) "node_os"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."physical_processor_family", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."physical_processor_family" END) ELSE 'Non-EC2-Workload' END) "node_physical_processor_family"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."physical_processor", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."physical_processor" END) ELSE 'Non-EC2-Workload' END) "node_physical_processor"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_processor_features", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_processor_features" END) ELSE 'Non-EC2-Workload' END) "node_processor_features"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_tenancy", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_tenancy" END) ELSE 'Non-EC2-Workload' END) "node_tenancy"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_current_generation", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_current_generation" END) ELSE 'Non-EC2-Workload' END) "node_current_generation"
+      , null "database_engine"
+      , (CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_ecs_service_name'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'No ECS Service' WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN 'Non-ECS-Workload' ELSE "t_scad_cca"."resource_tags"['aws_ecs_service_name'] END) "ecs_service"
+      , (CASE WHEN ((("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) AND (COALESCE("t_scad_cca"."resource_tags"['aws_batch_compute_environment'], '') = '')) OR (("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) AND (COALESCE("t_scad_cca"."resource_tags"['user_environment'], '') = ''))) THEN 'Non-Batch-Workload' ELSE (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) THEN "t_scad_cca"."resource_tags"['aws_batch_compute_environment'] ELSE "t_scad_cca"."resource_tags"['user_environment'] END) END) "batch_compute_environment"
+      , (CASE WHEN ((("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) AND (COALESCE("t_scad_cca"."resource_tags"['aws_batch_job_definition'], '') = '')) OR ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Non-Batch-Workload' ELSE "t_scad_cca"."resource_tags"['aws_batch_job_definition'] END) "batch_job_definition"
+      , (CASE WHEN ((("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) AND (COALESCE("t_scad_cca"."resource_tags"['aws_batch_job_definition'], '') = '')) OR ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Non-Batch-Workload' ELSE SPLIT_PART("t_scad_cca"."resource_tags"['aws_batch_job_definition'], ':', 1) END) "batch_job_definition_name"
+      , (CASE WHEN ((("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) AND (COALESCE("t_scad_cca"."resource_tags"['aws_batch_job_definition'], '') = '')) OR ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Non-Batch-Workload' ELSE SPLIT_PART("t_scad_cca"."resource_tags"['aws_batch_job_definition'], ':', 2) END) "batch_job_definition_revision"
+      , (CASE WHEN ((("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) AND (COALESCE("t_scad_cca"."resource_tags"['aws_batch_job_queue'], '') = '')) OR ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Non-Batch-Workload' ELSE "t_scad_cca"."resource_tags"['aws_batch_job_queue'] END) "batch_job_queue"
+      , "line_item_line_item_type" "charge_type"
+      , "line_item_line_item_description" "item_description"
+      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN 'EKS Pods' ELSE 'ECS Tasks' END)) "workload_type"
+      , ARBITRARY((CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN 'hourly' WHEN (DATE_TRUNC('month', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '3' MONTH)) THEN 'daily' ELSE 'monthly' END)) "time_granularity"
+      , ARBITRARY(SPLIT_PART("t_scad_cca"."billing_period", '-', 1)) "year"
+      , ARBITRARY(SPLIT_PART("t_scad_cca"."billing_period", '-', 2)) "month"
+      , ARBITRARY("t_scad_cca"."bill_billing_period_start_date") "billing_period"
+      , ARBITRARY("line_item_legal_entity") "legal_entity"
+      , ARBITRARY("bill_billing_entity") "billing_entity"
+      , ARBITRARY("t_scad_cca"."bill_payer_account_id") "payer_account_id"
+      , ARBITRARY("t_scad_cca"."line_item_usage_account_id") "linked_account_id"
+      , ARBITRARY("t_scad_cca"."product"['region']) "region"
+      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" = 'EKSPod-EC2') THEN 'EKS Pods on EC2' WHEN ("t_scad_cca"."line_item_operation" = 'ECSTask-EC2') THEN 'ECS Tasks on EC2' WHEN ("t_scad_cca"."line_item_operation" = 'FargatePod') THEN 'EKS Pods on Fargate' WHEN ("t_scad_cca"."line_item_operation" = 'FargateTask') THEN 'ECS Tasks on Fargate' ELSE "line_item_product_code" END)) "product_code"
+      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" = 'EKSPod-EC2') THEN 'EKS Pods on EC2' WHEN ("t_scad_cca"."line_item_operation" = 'ECSTask-EC2') THEN 'ECS Tasks on EC2' WHEN ("t_scad_cca"."line_item_operation" = 'FargatePod') THEN 'EKS Pods on Fargate' WHEN ("t_scad_cca"."line_item_operation" = 'FargateTask') THEN 'ECS Tasks on Fargate' ELSE "product"['product_name'] END)) "product_name"
+      , ARBITRARY("product"['group']) "product_group"
+      , ARBITRARY((CASE WHEN (("bill_billing_entity" = 'AWS Marketplace') AND (NOT ("line_item_line_item_type" LIKE '%Discount%'))) THEN "product"['product_name'] WHEN ("product_servicecode" = '') THEN "line_item_product_code" ELSE "product_servicecode" END)) "service"
+      , ARBITRARY("product_product_family") "product_family"
+      , ARBITRARY(UPPER(SPLIT_PART("t_scad_cca"."line_item_resource_id", ':', 3))) "cluster_type"
+      , ARBITRARY(SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 2)) "cluster_name"
+      , ARBITRARY(null) "pricing_unit"
+      , ARBITRARY((CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) THEN SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 3) ELSE 'Non-ECS-Workload' END) ELSE null END)) "ecs_task_id"
+      , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' ELSE "t_scad_cca"."resource_tags"['aws_eks_workload_type'] END)) "controller_kind"
+      , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'ReplicaSet') THEN "t_scad_cca"."resource_tags"['aws_eks_deployment'] ELSE 'Non-Deployment-Workload' END)) "deployment"
+      , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'DaemonSet') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-DaemonSet-Workload' END)) "daemonset"
+      , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'StatefulSet') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-StatefulSet-Workload' END)) "statefulset"
+      , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'ReplicaSet') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-ReplicaSet-Workload' END)) "replicaset"
+      , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'Job') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-Job-Workload' END)) "job"
+      , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'ReplicationController') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-ReplicationController-Workload' END)) "replication_controller"
+      , ARBITRARY((CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 4) ELSE 'Non-EKS-Workload' END) ELSE null END)) "pod_name"
+      , ARBITRARY((CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 5) ELSE 'Non-EKS-Workload' END) ELSE null END)) "pod_uid"
+      , MAX((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU')) THEN "t_scad_cca"."split_line_item_reserved_usage" ELSE 0E0 END)) "cpu_allocation"
+      , MAX((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours')) THEN "t_scad_cca"."split_line_item_reserved_usage" ELSE 0E0 END)) "memory_allocation"
+      , MAX((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN "t_scad_cca"."split_line_item_reserved_usage" ELSE 0E0 END)) "gpu_allocation"
+      , (AVG((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU')) THEN "t_scad_cca"."split_line_item_actual_usage" ELSE 0E0 END)) * 2) "cpu_usage"
+      , (AVG((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours')) THEN "t_scad_cca"."split_line_item_actual_usage" ELSE 0E0 END)) * 2) "memory_usage"
+      , (AVG((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) THEN "t_scad_cca"."split_line_item_split_usage" ELSE 0E0 END)) * 2) "max_cpu_allocation_vs_cpu_usage"
+      , (AVG((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) THEN "t_scad_cca"."split_line_item_split_usage" ELSE 0E0 END)) * 2) "max_memory_allocation_vs_memory_usage"
+      , (AVG((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN "t_scad_cca"."split_line_item_split_usage" ELSE 0E0 END)) * 2) "max_gpu_allocation_vs_gpu_usage"
+      , MAX((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) THEN "t_scad_cca"."split_line_item_split_usage_ratio" ELSE 0E0 END)) "cpu_split_ratio"
+      , MAX((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) THEN "t_scad_cca"."split_line_item_split_usage_ratio" ELSE 0E0 END)) "memory_split_ratio"
+      , MAX((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN "t_scad_cca"."split_line_item_split_usage_ratio" ELSE 0E0 END)) "gpu_split_ratio"
+      , SUM(("t_scad_cca"."line_item_usage_amount" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount"))) "usage_quantity"
+      , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) THEN ("t_scad_cca"."split_line_item_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') THEN (CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) ELSE 0E0 END)) "amortized_split_cpu_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) THEN ("t_scad_cca"."split_line_item_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours') THEN (CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) ELSE 0E0 END)) "amortized_split_memory_cost"
+      , SUM((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN ("t_scad_cca"."split_line_item_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "amortized_split_gpu_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) THEN ("t_scad_cca"."split_line_item_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "amortized_split_unused_cpu_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) THEN ("t_scad_cca"."split_line_item_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "amortized_split_unused_memory_cost"
+      , SUM((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN ("t_scad_cca"."split_line_item_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "amortized_split_unused_gpu_cost"
+      , SUM((CASE WHEN ((("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) AND (COALESCE("t_scad_cca"."split_line_item_net_split_cost", 0E0) > 0E0)) THEN ("t_scad_cca"."split_line_item_net_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN ((("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) AND (COALESCE("t_scad_cca"."split_line_item_net_split_cost", 0E0) = 0E0)) THEN ("t_scad_cca"."split_line_item_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') AND (COALESCE("t_scad_cca"."line_item_net_unblended_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_net_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_net_unblended_cost" END) WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') AND (COALESCE("t_scad_cca"."line_item_net_unblended_cost", 0E0) = 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) ELSE 0E0 END)) "net_amortized_split_cpu_cost"
+      , SUM((CASE WHEN ((("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) AND (COALESCE("t_scad_cca"."split_line_item_net_split_cost", 0E0) > 0E0)) THEN ("t_scad_cca"."split_line_item_net_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN ((("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) AND (COALESCE("t_scad_cca"."split_line_item_net_split_cost", 0E0) = 0E0)) THEN ("t_scad_cca"."split_line_item_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours') AND (COALESCE("t_scad_cca"."line_item_net_unblended_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_net_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_net_unblended_cost" END) WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours') AND (COALESCE("t_scad_cca"."line_item_net_unblended_cost", 0E0) = 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) ELSE 0E0 END)) "net_amortized_split_memory_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') AND (COALESCE("t_scad_cca"."split_line_item_net_split_cost", 0E0) > 0E0)) THEN ("t_scad_cca"."split_line_item_net_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') AND (COALESCE("t_scad_cca"."split_line_item_net_split_cost", 0E0) = 0E0)) THEN ("t_scad_cca"."split_line_item_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "net_amortized_split_gpu_cost"
+      , SUM((CASE WHEN ((("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) AND (COALESCE("t_scad_cca"."split_line_item_net_unused_cost", 0E0) > 0E0)) THEN ("t_scad_cca"."split_line_item_net_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN ((("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) AND (COALESCE("t_scad_cca"."split_line_item_net_unused_cost", 0E0) = 0E0)) THEN ("t_scad_cca"."split_line_item_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "net_amortized_split_unused_cpu_cost"
+      , SUM((CASE WHEN ((("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) AND (COALESCE("t_scad_cca"."split_line_item_net_unused_cost", 0E0) > 0E0)) THEN ("t_scad_cca"."split_line_item_net_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN ((("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) AND (COALESCE("t_scad_cca"."split_line_item_net_unused_cost", 0E0) = 0E0)) THEN ("t_scad_cca"."split_line_item_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "net_amortized_split_unused_memory_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') AND (COALESCE("t_scad_cca"."split_line_item_net_unused_cost", 0E0) > 0E0)) THEN ("t_scad_cca"."split_line_item_net_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') AND (COALESCE("t_scad_cca"."split_line_item_net_unused_cost", 0E0) = 0E0)) THEN ("t_scad_cca"."split_line_item_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "net_amortized_split_unused_gpu_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) THEN ("t_scad_cca"."split_line_item_public_on_demand_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Spot%') THEN "t_scad_cca"."line_item_unblended_cost" ELSE "t_scad_cca"."pricing_public_on_demand_cost" END) ELSE 0E0 END)) "public_on_demand_split_cpu_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) THEN ("t_scad_cca"."split_line_item_public_on_demand_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours') THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Spot%') THEN "t_scad_cca"."line_item_unblended_cost" ELSE "t_scad_cca"."pricing_public_on_demand_cost" END) ELSE 0E0 END)) "public_on_demand_split_memory_cost"
+      , SUM((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN ("t_scad_cca"."split_line_item_public_on_demand_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "public_on_demand_split_gpu_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) THEN ("t_scad_cca"."split_line_item_public_on_demand_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "public_on_demand_split_unused_cpu_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) THEN ("t_scad_cca"."split_line_item_public_on_demand_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "public_on_demand_split_unused_memory_cost"
+      , SUM((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN ("t_scad_cca"."split_line_item_public_on_demand_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "public_on_demand_split_unused_gpu_cost"
+      , SUM(0) "unblended_cost"
+      , SUM(0) "net_unblended_cost"
+      , SUM(0) "amortized_cost"
+      , SUM(0) "net_amortized_cost"
+      , SUM(0) "public_on_demand_cost"
+      FROM
+        (("${cur2_database}"."${cur2_table_name}" "t_scad_cca"
+      LEFT JOIN (
+         SELECT
+           "identity_time_interval"
+         , "line_item_resource_id"
+         , SUM("line_item_usage_amount") "line_item_usage_amount"
+         FROM
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE (("line_item_operation" LIKE '%RunInstances%') AND ("product_product_family" LIKE '%Compute Instance%') AND ("line_item_line_item_type" IN ('DiscountedUsage', 'SavingsPlanCoveredUsage', 'Usage')) AND ((current_date - INTERVAL  '6' MONTH) <= "line_item_usage_start_date"))
+         GROUP BY 1, 2
+      )  "t_ec2_compute_instances_sum_quantity" ON (("t_scad_cca"."split_line_item_parent_resource_id" = "t_ec2_compute_instances_sum_quantity"."line_item_resource_id") AND ("t_scad_cca"."identity_time_interval" = "t_ec2_compute_instances_sum_quantity"."identity_time_interval")))
+      LEFT JOIN (
+         SELECT
+           "identity_time_interval"
+         , "line_item_resource_id"
+         , (CASE WHEN ("savings_plan_savings_plan_a_r_n" <> '') THEN 'Savings Plans' WHEN ("reservation_reservation_a_r_n" <> '') THEN 'Reserved Instances' WHEN ("line_item_usage_type" LIKE '%Spot%') THEN 'Spot' ELSE 'On-Demand' END) "purchase_option"
+         , "product_instance_type" "product_instance_type"
+         , "product"['instance_type_family'] "product_instance_type_family"
+         , "product_instance_family" "product_instance_family"
+         , CAST("product"['vcpu'] AS DOUBLE) "product_vcpu"
+         , CAST(SPLIT_PART("product"['memory'], ' ', 1) AS DOUBLE) "product_memory"
+         , CAST(SPLIT_PART("product"['gpu'], ' ', 1) AS DOUBLE) "product_gpu"
+         , "product"['operating_system'] "product_operating_system"
+         , (CASE WHEN ("product"['physical_processor'] LIKE '%Intel%') THEN 'Intel' WHEN ("product"['physical_processor'] LIKE '%AMD%') THEN 'AMD' WHEN ("product"['physical_processor'] LIKE '%Graviton%') THEN 'Graviton' WHEN ("product"['physical_processor'] LIKE '%Apple%') THEN 'Apple' WHEN ("product"['physical_processor'] LIKE '%Variable%') THEN 'Variable' ELSE "product"['physical_processor'] END) "physical_processor_family"
+         , "product"['physical_processor'] "physical_processor"
+         , "product"['processor_features'] "product_processor_features"
+         , "product"['tenancy'] "product_tenancy"
+         , "product"['current_generation'] "product_current_generation"
+         , ARBITRARY("line_item_availability_zone") "line_item_availability_zone"
+         , SUM("line_item_usage_amount") "line_item_usage_amount"
+         FROM
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE (("line_item_operation" LIKE '%RunInstances%') AND ("product_product_family" LIKE '%Compute Instance%') AND ("line_item_line_item_type" IN ('DiscountedUsage', 'SavingsPlanCoveredUsage', 'Usage')) AND ((current_date - INTERVAL  '6' MONTH) <= "line_item_usage_start_date"))
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+      )  "t_ec2_compute_instances" ON (("t_scad_cca"."split_line_item_parent_resource_id" = "t_ec2_compute_instances"."line_item_resource_id") AND ("t_scad_cca"."identity_time_interval" = "t_ec2_compute_instances"."identity_time_interval")))
+      WHERE (((("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) AND (NOT ((COALESCE("t_scad_cca"."split_line_item_parent_resource_id", '') = '') AND ("split_line_item_split_cost" = 0E0)))) OR ((("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') OR ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours')) AND ("t_scad_cca"."line_item_line_item_type" IN ('SavingsPlanCoveredUsage', 'Usage')))) AND ((current_date - INTERVAL  '6' MONTH) <= "t_scad_cca"."line_item_usage_start_date"))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47
+      UNION ALL SELECT
+        (CASE WHEN (DATE_TRUNC('day', "line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN "line_item_usage_start_date" WHEN (DATE_TRUNC('month', "line_item_usage_start_date") >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '3' MONTH)) THEN DATE_TRUNC('day', "line_item_usage_start_date") ELSE DATE_TRUNC('month', "line_item_usage_start_date") END) "usage_date"
+      , null "cluster_arn"
+      , (CASE WHEN (DATE_TRUNC('day', "line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN "line_item_resource_id" ELSE null END) "resource_id"
+      , null "node_instance_id"
+      , null "node_name"
+      , "line_item_availability_zone" "availability_zone"
+      , (CASE WHEN ("savings_plan_savings_plan_a_r_n" <> '') THEN 'Savings Plans' WHEN ("reservation_reservation_a_r_n" <> '') THEN 'Reserved Instances' WHEN ("line_item_usage_type" LIKE '%Spot%') THEN 'Spot' ELSE 'On-Demand' END) "purchase_option"
+      , null "controller_name"
+      , null "namespace"
+      , "line_item_usage_type" "usage_type"
+      , "line_item_operation" "operation"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_name'], 'No K8s label/AWS tag key: app.kubernetes.io/name') "cat_app_kubernetes_io_name"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_instance'], 'No K8s label/AWS tag key: app.kubernetes.io/instance') "cat_app_kubernetes_io_instance"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_component'], 'No K8s label/AWS tag key: app.kubernetes.io/component') "cat_app_kubernetes_io_component"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_version'], 'No K8s label/AWS tag key: app.kubernetes.io/version') "cat_app_kubernetes_io_version"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_part_of'], 'No K8s label/AWS tag key: app.kubernetes.io/part-of') "cat_app_kubernetes_io_part_of"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_managed_by'], 'No K8s label/AWS tag key: app.kubernetes.io/managed-by') "cat_app_kubernetes_io_managed_by"
+      , COALESCE("resource_tags"['user_apps_kubernetes_io_pod_index'], 'No K8s label/AWS tag key: apps.kubernetes.io/pod-index') "cat_apps_kubernetes_io_pod_index"
+      , COALESCE("resource_tags"['user_app'], 'No K8s label/AWS tag key: app') "cat_app"
+      , COALESCE("resource_tags"['user_component'], 'No K8s label/AWS tag key: component') "cat_component"
+      , COALESCE("resource_tags"['user_release'], 'No K8s label/AWS tag key: release') "cat_release"
+      , COALESCE("resource_tags"['user_version'], 'No K8s label/AWS tag key: version') "cat_version"
+      , COALESCE("resource_tags"['user_chart'], 'No K8s label/AWS tag key: chart') "cat_chart"
+      , COALESCE("resource_tags"['user_type'], 'No K8s label/AWS tag key: type') "cat_type"
+      , COALESCE("resource_tags"['user_created_by'], 'No K8s label/AWS tag key: created-by') "cat_created_by"
+      , null "launch_type"
+      , TRY_CAST("product"['vcpu'] AS DOUBLE) "vcpu_amount"
+      , TRY_CAST("product"['memory'] AS DOUBLE) "memory_amount"
+      , TRY_CAST("product"['gpu'] AS DOUBLE) "gpu_amount"
+      , "product_instance_type" "instance_type"
+      , "product_instance_family" "instance_family"
+      , "product"['instance_type_family'] "instance_type_family"
+      , "product"['operating_system'] "os"
+      , (CASE WHEN ("product"['physical_processor'] LIKE '%Intel%') THEN 'Intel' WHEN ("product"['physical_processor'] LIKE '%AMD%') THEN 'AMD' WHEN ("product"['physical_processor'] LIKE '%Graviton%') THEN 'Graviton' WHEN ("product"['physical_processor'] LIKE '%Apple%') THEN 'Apple' END) "physical_processor_family"
+      , "product"['physical_processor'] "physical_processor"
+      , "product"['processor_features'] "processor_features"
+      , "product"['tenancy'] "tenancy"
+      , "product"['current_generation'] "current_generation"
+      , "product"['database_engine'] "database_engine"
+      , null "ecs_service"
+      , null "batch_compute_environment"
+      , null "batch_job_definition"
+      , null "batch_job_definition_name"
+      , null "batch_job_definition_revision"
+      , null "batch_job_queue"
+      , "line_item_line_item_type" "charge_type"
+      , "line_item_line_item_description" "item_description"
+      , ARBITRARY('Other AWS Services') "workload_type"
+      , ARBITRARY((CASE WHEN (DATE_TRUNC('day', "line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN 'hourly' WHEN (DATE_TRUNC('month', "line_item_usage_start_date") >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '3' MONTH)) THEN 'daily' ELSE 'monthly' END)) "time_granularity"
+      , ARBITRARY(SPLIT_PART("billing_period", '-', 1)) "year"
+      , ARBITRARY(SPLIT_PART("billing_period", '-', 2)) "month"
+      , ARBITRARY("bill_billing_period_start_date") "billing_period"
+      , ARBITRARY("line_item_legal_entity") "legal_entity"
+      , ARBITRARY("bill_billing_entity") "billing_entity"
+      , ARBITRARY("bill_payer_account_id") "payer_account_id"
+      , ARBITRARY("line_item_usage_account_id") "linked_account_id"
+      , ARBITRARY("product"['region']) "region"
+      , ARBITRARY("line_item_product_code") "product_code"
+      , ARBITRARY("product"['product_name']) "product_name"
+      , ARBITRARY("product"['group']) "product_group"
+      , ARBITRARY((CASE WHEN (("bill_billing_entity" = 'AWS Marketplace') AND (NOT ("line_item_line_item_type" LIKE '%Discount%'))) THEN "product"['product_name'] WHEN ("product_servicecode" = '') THEN "line_item_product_code" ELSE "product_servicecode" END)) "service"
+      , ARBITRARY("product_product_family") "product_family"
+      , ARBITRARY(null) "cluster_type"
+      , ARBITRARY(null) "cluster_name"
+      , ARBITRARY("pricing_unit") "pricing_unit"
+      , ARBITRARY(null) "ecs_task_id"
+      , ARBITRARY(null) "controller_kind"
+      , ARBITRARY(null) "deployment"
+      , ARBITRARY(null) "daemonset"
+      , ARBITRARY(null) "statefulset"
+      , ARBITRARY(null) "replicaset"
+      , ARBITRARY(null) "job"
+      , ARBITRARY(null) "replication_controller"
+      , ARBITRARY(null) "pod_name"
+      , ARBITRARY(null) "pod_uid"
+      , MAX(0) "cpu_allocation"
+      , MAX(0) "memory_allocation"
+      , MAX(0) "gpu_allocation"
+      , AVG(0) "cpu_usage"
+      , AVG(0) "memory_usage"
+      , AVG(0) "max_cpu_allocation_vs_cpu_usage"
+      , AVG(0) "max_memory_allocation_vs_memory_usage"
+      , AVG(0) "max_gpu_allocation_vs_cpu_usage"
+      , MAX(0) "cpu_split_ratio"
+      , MAX(0) "memory_split_ratio"
+      , MAX(0) "gpu_split_ratio"
+      , SUM("line_item_usage_amount") "usage_quantity"
+      , SUM(0) "amortized_split_cpu_cost"
+      , SUM(0) "amortized_split_memory_cost"
+      , SUM(0) "amortized_split_gpu_cost"
+      , SUM(0) "amortized_split_unused_cpu_cost"
+      , SUM(0) "amortized_split_unused_memory_cost"
+      , SUM(0) "amortized_split_unused_gpu_cost"
+      , SUM(0) "net_amortized_split_cpu_cost"
+      , SUM(0) "net_amortized_split_memory_cost"
+      , SUM(0) "net_amortized_split_gpu_cost"
+      , SUM(0) "net_amortized_split_unused_cpu_cost"
+      , SUM(0) "net_amortized_split_unused_memory_cost"
+      , SUM(0) "net_amortized_split_unused_gpu_cost"
+      , SUM(0) "public_on_demand_split_cpu_cost"
+      , SUM(0) "public_on_demand_split_memory_cost"
+      , SUM(0) "public_on_demand_split_gpu_cost"
+      , SUM(0) "public_on_demand_split_unused_cpu_cost"
+      , SUM(0) "public_on_demand_split_unused_memory_cost"
+      , SUM(0) "public_on_demand_split_unused_gpu_cost"
+      , SUM("line_item_unblended_cost") "unblended_cost"
+      , SUM("line_item_net_unblended_cost") "net_unblended_cost"
+      , SUM((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost" WHEN ("line_item_line_item_type" = 'SavingsPlanRecurringFee') THEN ("savings_plan_total_commitment_to_date" - "savings_plan_used_commitment") WHEN ("line_item_line_item_type" = 'SavingsPlanNegation') THEN 0 WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN 0 WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_effective_cost" WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee") WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0 ELSE "line_item_unblended_cost" END)) "amortized_cost"
+      , SUM((CASE WHEN (COALESCE("line_item_net_unblended_cost", 0) > 0) THEN (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_net_savings_plan_effective_cost" WHEN ("line_item_line_item_type" = 'SavingsPlanRecurringFee') THEN ("savings_plan_total_commitment_to_date" - "savings_plan_used_commitment") WHEN ("line_item_line_item_type" = 'SavingsPlanNegation') THEN 0 WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN 0 WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_net_effective_cost" WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_net_unused_amortized_upfront_fee_for_billing_period" + "reservation_net_unused_recurring_fee") WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0 ELSE "line_item_net_unblended_cost" END) ELSE (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost" WHEN ("line_item_line_item_type" = 'SavingsPlanRecurringFee') THEN ("savings_plan_total_commitment_to_date" - "savings_plan_used_commitment") WHEN ("line_item_line_item_type" = 'SavingsPlanNegation') THEN 0 WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN 0 WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_effective_cost" WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee") WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0 ELSE "line_item_unblended_cost" END) END)) "met_amortized_cost"
+      , SUM((CASE WHEN ("line_item_line_item_type" <> 'SavingsPlanNegation') THEN "pricing_public_on_demand_cost" ELSE 0 END)) "public_on_demand_cost"
+      FROM
+        "${cur2_database}"."${cur2_table_name}"
+      WHERE (((current_date - INTERVAL  '6' MONTH) <= "line_item_usage_start_date") AND ((COALESCE("resource_tags"['user_app_kubernetes_io_name'], '') <> '') OR (COALESCE("resource_tags"['user_app_kubernetes_io_instance'], '') <> '') OR (COALESCE("resource_tags"['user_app_kubernetes_io_component'], '') <> '') OR (COALESCE("resource_tags"['user_app_kubernetes_io_version'], '') <> '') OR (COALESCE("resource_tags"['user_app_kubernetes_io_part_of'], '') <> '') OR (COALESCE("resource_tags"['user_app_kubernetes_io_managed_by'], '') <> '') OR (COALESCE("resource_tags"['user_apps_kubernetes_io_pod_index'], '') <> '') OR (COALESCE("resource_tags"['user_app'], '') <> '') OR (COALESCE("resource_tags"['user_component'], '') <> '') OR (COALESCE("resource_tags"['user_release'], '') <> '') OR (COALESCE("resource_tags"['user_version'], '') <> '') OR (COALESCE("resource_tags"['user_chart'], '') <> '') OR (COALESCE("resource_tags"['user_type'], '') <> '') OR (COALESCE("resource_tags"['user_created_by'], '') <> '')) AND (NOT ("line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2', 'FargatePod', 'FargateTask'))) AND (NOT ("line_item_product_code" IN ('AmazonEKS', 'AmazonECS'))) AND (NOT ("line_item_resource_id" IN (SELECT DISTINCT "split_line_item_parent_resource_id"
+      FROM
+        "${cur2_database}"."${cur2_table_name}"
+      WHERE ((("line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) AND (NOT ((COALESCE("split_line_item_parent_resource_id", '') = '') AND ("split_line_item_split_cost" = 0E0)))) AND ((current_date - INTERVAL  '6' MONTH) <= "line_item_usage_start_date"))
+      ))))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47
+  scad_cca_summary_view_data_on_eks:
     dependsOn:
       cur2:
       - bill_billing_period_start_date
@@ -363,14 +1215,59 @@ views:
       - savings_plan_net_savings_plan_effective_cost
       - billing_period
     data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".scad_cca_summary_view AS
+      CREATE OR REPLACE VIEW "${athena_database_name}".scad_cca_summary_view_data_on_eks AS
       SELECT
         (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN "t_scad_cca"."line_item_usage_start_date" WHEN (DATE_TRUNC('month', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '3' MONTH)) THEN DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") ELSE DATE_TRUNC('month', "t_scad_cca"."line_item_usage_start_date") END) "usage_date"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" = 'EKSPod-EC2') THEN CONCAT(REPLACE(SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 1), 'pod', 'cluster'), '/', SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 2)) ELSE CONCAT(REPLACE(SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 1), 'task', 'cluster'), '/', SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 2)) END) "cluster_arn"
       , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN "t_scad_cca"."line_item_resource_id" ELSE null END) "resource_id"
-      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_scad_cca"."split_line_item_parent_resource_id", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_scad_cca"."split_line_item_parent_resource_id" END) ELSE 'Non-EC2-Workload' END) "node_instance_id"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_scad_cca"."split_line_item_parent_resource_id", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_scad_cca"."split_line_item_parent_resource_id" END) ELSE 'Non-EC2-Workload' END) ELSE null END) "node_instance_id"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN "t_scad_cca"."resource_tags"['aws_eks_node'] ELSE 'Non-EKS-Workload' END) ELSE null END) "node_name"
+      , (CASE WHEN (("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) AND (COALESCE("t_scad_cca"."line_item_availability_zone", '') <> '')) THEN "t_scad_cca"."line_item_availability_zone" WHEN (("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) AND (COALESCE("t_scad_cca"."line_item_availability_zone", '') = '')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."line_item_availability_zone", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."line_item_availability_zone" END) ELSE 'Non-EC2-Workload' END) "availability_zone"
       , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."purchase_option", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."purchase_option" END) ELSE (CASE WHEN ("t_scad_cca"."savings_plan_savings_plan_a_r_n" <> '') THEN 'Savings Plans' WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Spot%') THEN 'Spot' ELSE 'On-Demand' END) END) "node_purchase_option"
       , (CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_name'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_name'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' ELSE "t_scad_cca"."resource_tags"['aws_eks_workload_name'] END) "controller_name"
       , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 3) ELSE 'Non-EKS-Workload' END) "namespace"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_name'], 'No K8s label/AWS tag key: app.kubernetes.io/name') "cat_app_kubernetes_io_name"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_instance'], 'No K8s label/AWS tag key: app.kubernetes.io/instance') "cat_app_kubernetes_io_instance"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_component'], 'No K8s label/AWS tag key: app.kubernetes.io/component') "cat_app_kubernetes_io_component"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_version'], 'No K8s label/AWS tag key: app.kubernetes.io/version') "cat_app_kubernetes_io_version"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_part_of'], 'No K8s label/AWS tag key: app.kubernetes.io/part-of') "cat_app_kubernetes_io_part_of"
+      , COALESCE("resource_tags"['user_app_kubernetes_io_managed_by'], 'No K8s label/AWS tag key: app.kubernetes.io/managed-by') "cat_app_kubernetes_io_managed_by"
+      , COALESCE("resource_tags"['user_apps_kubernetes_io_pod_index'], 'No K8s label/AWS tag key: apps.kubernetes.io/pod-index') "cat_apps_kubernetes_io_pod_index"
+      , COALESCE("resource_tags"['user_app'], 'No K8s label/AWS tag key: app') "cat_app"
+      , COALESCE("resource_tags"['user_component'], 'No K8s label/AWS tag key: component') "cat_component"
+      , COALESCE("resource_tags"['user_release'], 'No K8s label/AWS tag key: release') "cat_release"
+      , COALESCE("resource_tags"['user_version'], 'No K8s label/AWS tag key: version') "cat_version"
+      , COALESCE("resource_tags"['user_chart'], 'No K8s label/AWS tag key: chart') "cat_chart"
+      , COALESCE("resource_tags"['user_type'], 'No K8s label/AWS tag key: type') "cat_type"
+      , COALESCE("resource_tags"['user_created_by'], 'No K8s label/AWS tag key: created-by') "cat_created_by"
+      , (CASE WHEN (((COALESCE("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) OR (COALESCE("resource_tags"['user_spark_app_selector'], '') <> '')) THEN 'Spark' WHEN ("resource_tags"['user_type'] = 'flink-native-kubernetes') THEN 'Flink' ELSE 'Non-Spark/Flink-Workload' END) "big_data_workload_type"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN (((COALESCE("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) OR (COALESCE("resource_tags"['user_spark_app_selector'], '') <> '')) THEN (CASE WHEN (COALESCE("t_spark_app_info"."user_spark_app_selector", '') <> '') THEN "t_spark_app_info"."user_spark_app_selector" ELSE COALESCE("resource_tags"['user_spark_app_selector'], 'Spark app selector label not found') END) ELSE 'Non-Spark-Workload' END) ELSE null END) "spark_app_id"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN (((COALESCE("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) OR (COALESCE("resource_tags"['user_spark_app_selector'], '') <> '')) THEN (CASE WHEN (COALESCE("t_spark_app_info"."user_spark_app_name", '') <> '') THEN "t_spark_app_info"."user_spark_app_name" ELSE COALESCE("resource_tags"['user_spark_app_name'], 'Spark app name label not found') END) ELSE 'Non-Spark-Workload' END) ELSE null END) "spark_app_name"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("resource_tags"['user_type'] = 'flink-native-kubernetes') THEN (CASE WHEN (COALESCE("resource_tags"['user_app'], '') <> '') THEN "resource_tags"['user_app'] ELSE 'Unknown' END) ELSE 'Non-Flink-Workload' END) ELSE null END) "flink_app_name"
+      , (CASE WHEN ("resource_tags"['user_emr_containers_amazonaws_com_component'] = 'job.submitter') THEN 'EMR on EKS Job Submitter' WHEN (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_component'], "resource_tags"['user_component']) LIKE '%jobmanager') THEN 'Flink JobManager' WHEN (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_component'], "resource_tags"['user_component']) LIKE '%taskmanager') THEN 'Flink TaskManager' WHEN ("resource_tags"['user_spark_role'] = 'driver') THEN 'Spark Driver' WHEN ("resource_tags"['user_spark_role'] = 'executor') THEN 'Spark Executor' ELSE 'Non-Spark/Flink-Workload' END) "big_data_workload_component"
+      , (CASE WHEN ("resource_tags"['user_emr_containers_amazonaws_com_resource_type'] = 'job.run') THEN 'EMR on EKS StartJobRun' WHEN ("resource_tags"['user_sparkoperator_k8s_io_launched_by_spark_operator'] = 'true') THEN 'Spark Operator' WHEN ("resource_tags"['user_created_by'] = 'livy') THEN 'Apache Livy' WHEN (COALESCE("resource_tags"['user_spark_app_selector'], '') <> '') THEN 'Spark Submit' WHEN ("t_emr_on_eks_cost"."line_item_resource_id" LIKE '%flinkoperators%') THEN 'Flink Operator' WHEN ("t_emr_on_eks_cost"."line_item_resource_id" LIKE '%flinkruns%') THEN 'Flink Run' WHEN ("resource_tags"['user_type'] = 'flink-native-kubernetes') THEN 'Flink Operator or Flink Run' ELSE 'Non-Spark/Flink-Workload' END) "big_data_workload_submitted_by"
+      , (CASE WHEN (((COALESCE("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) OR (COALESCE("resource_tags"['user_eks_subscription_amazonaws_com_emr_internal_id'], '') <> '')) THEN 'EMR on EKS' ELSE 'EKS' END) "big_data_workload_deployed_on"
+      , (CASE WHEN (((COALESCE("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) OR (COALESCE("resource_tags"['user_spark_app_selector'], '') <> '')) THEN (CASE WHEN (COALESCE("t_spark_app_info"."user_spark_version", '') <> '') THEN "t_spark_app_info"."user_spark_version" ELSE COALESCE("resource_tags"['user_spark_version'], 'Spark version label not found') END) ELSE 'Non-Spark-Workload' END) "spark_version"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN COALESCE("resource_tags"['user_spark_exec_id'], 'Non-Spark-Executor-Workload') ELSE null END) "spark_exec_id"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN COALESCE("resource_tags"['user_spark_exec_resourceprofile_id'], 'Non-Spark-Executor-Workload') ELSE null END) "spark_exec_resourceprofile_id"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN COALESCE("resource_tags"['user_spark_app_tag'], 'Spark app tag label not found') ELSE null END) "spark_app_tag"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN COALESCE("resource_tags"['user_sparkoperator_k8s_io_submission_id'], 'Not submitted by Spark Operator') ELSE null END) "sparkoperator_k8s_io_submission_id"
+      , COALESCE("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], 'Not deployed using EMR on EKS StartJobRun') "emr_on_eks_virtual_cluster_id"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN COALESCE("resource_tags"['user_emr_containers_amazonaws_com_job_id'], 'Not deployed using EMR on EKS StartJobRun') ELSE null END) "emr_on_eks_job_id"
+      , (CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN COALESCE("resource_tags"['user_eks_subscription_amazonaws_com_emr_internal_id'], 'Not deployed on EMR on EKS') ELSE null END) "emr_on_eks_internal_id"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN 'EC2' ELSE 'Fargate' END) "launch_type"
+      , "t_ec2_compute_instances"."product_vcpu" "node_vcpu"
+      , "t_ec2_compute_instances"."product_memory" "node_memory_gib"
+      , "t_ec2_compute_instances"."product_gpu" "node_gpu"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_instance_type", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_instance_type" END) ELSE 'Non-EC2-Workload' END) "node_instance_type"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_instance_family", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_instance_family" END) ELSE 'Non-EC2-Workload' END) "node_instance_family"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_instance_type_family", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_instance_type_family" END) ELSE 'Non-EC2-Workload' END) "node_instance_type_family"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_operating_system", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_operating_system" END) ELSE 'Non-EC2-Workload' END) "node_os"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."physical_processor_family", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."physical_processor_family" END) ELSE 'Non-EC2-Workload' END) "node_physical_processor_family"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."physical_processor", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."physical_processor" END) ELSE 'Non-EC2-Workload' END) "node_physical_processor"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_processor_features", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_processor_features" END) ELSE 'Non-EC2-Workload' END) "node_processor_features"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_tenancy", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_tenancy" END) ELSE 'Non-EC2-Workload' END) "node_tenancy"
+      , (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_current_generation", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_current_generation" END) ELSE 'Non-EC2-Workload' END) "node_current_generation"
       , ARBITRARY((CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN 'hourly' WHEN (DATE_TRUNC('month', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '3' MONTH)) THEN 'daily' ELSE 'monthly' END)) "time_granularity"
       , ARBITRARY(SPLIT_PART("t_scad_cca"."billing_period", '-', 1)) "year"
       , ARBITRARY(SPLIT_PART("t_scad_cca"."billing_period", '-', 2)) "month"
@@ -379,34 +1276,16 @@ views:
       , ARBITRARY("t_scad_cca"."bill_payer_account_id") "payer_account_id"
       , ARBITRARY("t_scad_cca"."line_item_usage_account_id") "linked_account_id"
       , ARBITRARY("t_scad_cca"."product"['region']) "region"
-      , ARBITRARY((CASE WHEN (("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) AND (COALESCE("t_scad_cca"."line_item_availability_zone", '') <> '')) THEN "t_scad_cca"."line_item_availability_zone" WHEN (("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) AND (COALESCE("t_scad_cca"."line_item_availability_zone", '') = '')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."line_item_availability_zone", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."line_item_availability_zone" END) ELSE 'Non-EC2-Workload' END)) "availability_zone"
+      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN 'EKS Pods' ELSE 'EMR on EKS' END)) "emr_on_eks_cost_type"
       , ARBITRARY(UPPER(SPLIT_PART("t_scad_cca"."line_item_resource_id", ':', 3))) "cluster_type"
-      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN 'EC2' ELSE 'Fargate' END)) "launch_type"
-      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" = 'EKSPod-EC2') THEN CONCAT(REPLACE(SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 1), 'pod', 'cluster'), '/', SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 2)) ELSE CONCAT(REPLACE(SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 1), 'task', 'cluster'), '/', SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 2)) END)) "cluster_arn"
       , ARBITRARY(SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 2)) "cluster_name"
-      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN "t_scad_cca"."resource_tags"['aws_eks_node'] ELSE 'Non-EKS-Workload' END)) "node_name"
-      , ARBITRARY("t_ec2_compute_instances"."product_vcpu") "node_vcpu"
-      , ARBITRARY("t_ec2_compute_instances"."product_memory") "node_memory_gib"
-      , ARBITRARY("t_ec2_compute_instances"."product_gpu") "node_gpu"
-      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_instance_type", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_instance_type" END) ELSE 'Non-EC2-Workload' END)) "node_instance_type"
-      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_instance_family", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_instance_family" END) ELSE 'Non-EC2-Workload' END)) "node_instance_family"
-      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_instance_type_family", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_instance_type_family" END) ELSE 'Non-EC2-Workload' END)) "node_instance_type_family"
-      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."product_operating_system", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."product_operating_system" END) ELSE 'Non-EC2-Workload' END)) "node_os"
-      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."physical_processor_family", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."physical_processor_family" END) ELSE 'Non-EC2-Workload' END)) "node_physical_processor_family"
-      , ARBITRARY((CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) THEN (CASE WHEN (COALESCE("t_ec2_compute_instances"."physical_processor", '') = '') THEN 'Parent Instance ID Not Found' ELSE "t_ec2_compute_instances"."physical_processor" END) ELSE 'Non-EC2-Workload' END)) "node_physical_processor"
-      , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_ecs_service_name'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'No ECS Service' WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN 'Non-ECS-Workload' ELSE "t_scad_cca"."resource_tags"['aws_ecs_service_name'] END)) "ecs_service"
       , ARBITRARY((CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) THEN SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 3) ELSE 'Non-ECS-Workload' END) ELSE null END)) "ecs_task_id"
-      , ARBITRARY((CASE WHEN ((("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) AND (COALESCE("t_scad_cca"."resource_tags"['aws_batch_compute_environment'], '') = '')) OR ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Non-Batch-Workload' ELSE "t_scad_cca"."resource_tags"['aws_batch_compute_environment'] END)) "batch_compute_environment"
-      , ARBITRARY((CASE WHEN ((("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) AND (COALESCE("t_scad_cca"."resource_tags"['aws_batch_job_definition'], '') = '')) OR ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Non-Batch-Workload' ELSE "t_scad_cca"."resource_tags"['aws_batch_job_definition'] END)) "batch_job_definition"
-      , ARBITRARY((CASE WHEN ((("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) AND (COALESCE("t_scad_cca"."resource_tags"['aws_batch_job_definition'], '') = '')) OR ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Non-Batch-Workload' ELSE SPLIT_PART("t_scad_cca"."resource_tags"['aws_batch_job_definition'], ':', 1) END)) "batch_job_definition_name"
-      , ARBITRARY((CASE WHEN ((("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) AND (COALESCE("t_scad_cca"."resource_tags"['aws_batch_job_definition'], '') = '')) OR ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Non-Batch-Workload' ELSE SPLIT_PART("t_scad_cca"."resource_tags"['aws_batch_job_definition'], ':', 2) END)) "batch_job_definition_revision"
-      , ARBITRARY((CASE WHEN ((("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask')) AND (COALESCE("t_scad_cca"."resource_tags"['aws_batch_job_queue'], '') = '')) OR ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Non-Batch-Workload' ELSE "t_scad_cca"."resource_tags"['aws_batch_job_queue'] END)) "batch_job_queue"
       , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' ELSE "t_scad_cca"."resource_tags"['aws_eks_workload_type'] END)) "controller_kind"
       , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'ReplicaSet') THEN "t_scad_cca"."resource_tags"['aws_eks_deployment'] ELSE 'Non-Deployment-Workload' END)) "deployment"
       , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'DaemonSet') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-DaemonSet-Workload' END)) "daemonset"
       , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'StatefulSet') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-StatefulSet-Workload' END)) "statefulset"
       , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'ReplicaSet') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-ReplicaSet-Workload' END)) "replicaset"
-      , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'Job') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-Job-Workload' END)) "job"
+      , ARBITRARY((CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'Job') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-Job-Workload' END) ELSE null END)) "job"
       , ARBITRARY((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod'))) THEN 'Uncontrolled Workload' WHEN ((COALESCE("t_scad_cca"."resource_tags"['aws_eks_workload_type'], '') = '') AND ("t_scad_cca"."line_item_operation" IN ('ECSTask-EC2', 'FargateTask'))) THEN 'Non-EKS-Workload' WHEN ("t_scad_cca"."resource_tags"['aws_eks_workload_type'] = 'ReplicationController') THEN "t_scad_cca"."resource_tags"['aws_eks_workload_name'] ELSE 'Non-ReplicationController-Workload' END)) "replication_controller"
       , ARBITRARY((CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 4) ELSE 'Non-EKS-Workload' END) ELSE null END)) "pod_name"
       , ARBITRARY((CASE WHEN (DATE_TRUNC('day', "t_scad_cca"."line_item_usage_start_date") >= (DATE_TRUNC('day', current_timestamp) - INTERVAL  '7' DAY)) THEN (CASE WHEN ("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'FargatePod')) THEN SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 5) ELSE 'Non-EKS-Workload' END) ELSE null END)) "pod_uid"
@@ -417,7 +1296,7 @@ views:
       , (AVG((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours')) THEN "t_scad_cca"."split_line_item_actual_usage" ELSE 0E0 END)) * 2) "memory_usage"
       , (AVG((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) THEN "t_scad_cca"."split_line_item_split_usage" ELSE 0E0 END)) * 2) "max_cpu_allocation_vs_cpu_usage"
       , (AVG((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) THEN "t_scad_cca"."split_line_item_split_usage" ELSE 0E0 END)) * 2) "max_memory_allocation_vs_memory_usage"
-      , (AVG((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN "t_scad_cca"."split_line_item_split_usage" ELSE 0E0 END)) * 2) "max_gpu_allocation_vs_cpu_usage"
+      , (AVG((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN "t_scad_cca"."split_line_item_split_usage" ELSE 0E0 END)) * 2) "max_gpu_allocation_vs_gpu_usage"
       , MAX((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) THEN "t_scad_cca"."split_line_item_split_usage_ratio" ELSE 0E0 END)) "cpu_split_ratio"
       , MAX((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) THEN "t_scad_cca"."split_line_item_split_usage_ratio" ELSE 0E0 END)) "memory_split_ratio"
       , MAX((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN "t_scad_cca"."split_line_item_split_usage_ratio" ELSE 0E0 END)) "gpu_split_ratio"
@@ -440,38 +1319,91 @@ views:
       , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-vCPU-Hours')) THEN ("t_scad_cca"."split_line_item_public_on_demand_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "public_on_demand_split_unused_cpu_cost"
       , SUM((CASE WHEN (("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') OR ("t_scad_cca"."line_item_usage_type" LIKE '%ECS-EC2-GB-Hours')) THEN ("t_scad_cca"."split_line_item_public_on_demand_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "public_on_demand_split_unused_memory_cost"
       , SUM((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-Accelerator-Hours') THEN ("t_scad_cca"."split_line_item_public_on_demand_unused_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) ELSE 0E0 END)) "public_on_demand_split_unused_gpu_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."split_line_item_split_cost" > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_unblended_cpu_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_unblended_cpu_cost" * (("t_scad_cca"."split_line_item_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) / "t_scad_split_cost_per_emr_on_eks_job"."amortized_split_cpu_cost")) ELSE 0E0 END) WHEN (((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_unblended_cpu_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') THEN ("t_emr_on_eks_cost"."emr_on_eks_unblended_cpu_cost" * ((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) / "t_scad_split_cost_per_emr_on_eks_job"."amortized_split_cpu_cost")) ELSE 0E0 END) ELSE 0E0 END)) "emr_on_eks_unblended_cpu_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."split_line_item_split_cost" > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_unblended_memory_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_unblended_memory_cost" * (("t_scad_cca"."split_line_item_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) / "t_scad_split_cost_per_emr_on_eks_job"."amortized_split_memory_cost")) ELSE 0E0 END) WHEN (((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_unblended_memory_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_unblended_memory_cost" * ((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) / "t_scad_split_cost_per_emr_on_eks_job"."amortized_split_memory_cost")) ELSE 0E0 END) ELSE 0E0 END)) "emr_on_eks_unblended_memory_cost"
+      , SUM((CASE WHEN ((COALESCE("t_scad_cca"."split_line_item_net_split_cost", 0E0) > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_net_unblended_cpu_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_net_unblended_cpu_cost" * ((COALESCE("t_scad_cca"."split_line_item_net_split_cost", 0E0) * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) / "t_scad_split_cost_per_emr_on_eks_job"."net_amortized_split_cpu_cost")) ELSE 0E0 END) WHEN (((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_net_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_net_unblended_cost" END) > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_net_unblended_cpu_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') THEN ("t_emr_on_eks_cost"."emr_on_eks_net_unblended_cpu_cost" * ((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_net_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_net_unblended_cost" END) / "t_scad_split_cost_per_emr_on_eks_job"."net_amortized_split_cpu_cost")) ELSE 0E0 END) ELSE (CASE WHEN (("t_scad_cca"."split_line_item_split_cost" > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_unblended_cpu_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_unblended_cpu_cost" * (("t_scad_cca"."split_line_item_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) / "t_scad_split_cost_per_emr_on_eks_job"."amortized_split_cpu_cost")) ELSE 0E0 END) WHEN (((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_unblended_cpu_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') THEN ("t_emr_on_eks_cost"."emr_on_eks_unblended_cpu_cost" * ((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) / "t_scad_split_cost_per_emr_on_eks_job"."amortized_split_cpu_cost")) ELSE 0E0 END) ELSE 0E0 END) END)) "emr_on_eks_net_unblended_cpu_cost"
+      , SUM((CASE WHEN ((COALESCE("t_scad_cca"."split_line_item_net_split_cost", 0E0) > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_net_unblended_memory_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_net_unblended_memory_cost" * ((COALESCE("t_scad_cca"."split_line_item_net_split_cost", 0E0) * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) / "t_scad_split_cost_per_emr_on_eks_job"."net_amortized_split_memory_cost")) ELSE 0E0 END) WHEN (((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_net_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_net_unblended_cost" END) > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_net_unblended_memory_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_net_unblended_memory_cost" * ((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_net_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_net_unblended_cost" END) / "t_scad_split_cost_per_emr_on_eks_job"."net_amortized_split_memory_cost")) ELSE 0E0 END) ELSE (CASE WHEN (("t_scad_cca"."split_line_item_split_cost" > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_unblended_memory_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_unblended_memory_cost" * (("t_scad_cca"."split_line_item_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) / "t_scad_split_cost_per_emr_on_eks_job"."amortized_split_memory_cost")) ELSE 0E0 END) WHEN (((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_unblended_memory_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_unblended_memory_cost" * ((CASE WHEN ("t_scad_cca"."line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "t_scad_cca"."savings_plan_savings_plan_effective_cost" ELSE "t_scad_cca"."line_item_unblended_cost" END) / "t_scad_split_cost_per_emr_on_eks_job"."amortized_split_memory_cost")) ELSE 0E0 END) ELSE 0E0 END) END)) "emr_on_eks_net_unblended_memory_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."split_line_item_public_on_demand_split_cost" > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_public_on_demand_cpu_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_public_on_demand_cpu_cost" * (("t_scad_cca"."split_line_item_public_on_demand_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) / "t_scad_split_cost_per_emr_on_eks_job"."public_on_demand_split_cpu_cost")) ELSE 0E0 END) WHEN (((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Spot%') THEN "t_scad_cca"."line_item_unblended_cost" ELSE "t_scad_cca"."pricing_public_on_demand_cost" END) > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_public_on_demand_cpu_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') THEN ("t_emr_on_eks_cost"."emr_on_eks_public_on_demand_cpu_cost" * ((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Spot%') THEN "t_scad_cca"."line_item_unblended_cost" ELSE "t_scad_cca"."pricing_public_on_demand_cost" END) / "t_scad_split_cost_per_emr_on_eks_job"."public_on_demand_split_cpu_cost")) ELSE 0E0 END) ELSE 0E0 END)) "emr_on_eks_public_on_demand_cpu_cost"
+      , SUM((CASE WHEN (("t_scad_cca"."split_line_item_public_on_demand_split_cost" > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_public_on_demand_memory_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_public_on_demand_memory_cost" * (("t_scad_cca"."split_line_item_public_on_demand_split_cost" * ("t_ec2_compute_instances"."line_item_usage_amount" / "t_ec2_compute_instances_sum_quantity"."line_item_usage_amount")) / "t_scad_split_cost_per_emr_on_eks_job"."public_on_demand_split_memory_cost")) ELSE 0E0 END) WHEN (((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Spot%') THEN "t_scad_cca"."line_item_unblended_cost" ELSE "t_scad_cca"."pricing_public_on_demand_cost" END) > 0E0) AND (COALESCE("t_emr_on_eks_cost"."emr_on_eks_public_on_demand_memory_cost", 0E0) > 0E0)) THEN (CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours') THEN ("t_emr_on_eks_cost"."emr_on_eks_public_on_demand_memory_cost" * ((CASE WHEN ("t_scad_cca"."line_item_usage_type" LIKE '%Spot%') THEN "t_scad_cca"."line_item_unblended_cost" ELSE "t_scad_cca"."pricing_public_on_demand_cost" END) / "t_scad_split_cost_per_emr_on_eks_job"."public_on_demand_split_memory_cost")) ELSE 0E0 END) ELSE 0E0 END)) "emr_on_eks_public_on_demand_memory_cost"
       FROM
-        (("${cur2_database}"."${cur2_table_name}" "t_scad_cca"
-      LEFT JOIN (
+        ((((("${cur2_database}"."${cur2_table_name}" "t_scad_cca"
+      INNER JOIN (
+         SELECT DISTINCT
+           "identity_time_interval"
+         , CONCAT(REPLACE(SPLIT_PART("line_item_resource_id", '/', 1), 'pod', 'cluster'), '/', SPLIT_PART("line_item_resource_id", '/', 2)) "cluster_arn"
+         , (CASE WHEN ((COALESCE("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) THEN CONCAT("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '_', "resource_tags"['user_emr_containers_amazonaws_com_job_id']) WHEN ("resource_tags"['user_type'] = 'flink-native-kubernetes') THEN "resource_tags"['user_app'] ELSE "resource_tags"['user_spark_app_selector'] END) "identifier"
+         , "resource_tags"['user_spark_app_selector'] "user_spark_app_selector"
+         , "resource_tags"['user_spark_app_name'] "user_spark_app_name"
+         , "resource_tags"['user_spark_version'] "user_spark_version"
+         FROM
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE (("line_item_operation" = 'EKSPod-EC2') AND ((("resource_tags"['user_spark_role'] = 'executor') AND (((COALESCE("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) OR (COALESCE("resource_tags"['user_spark_app_selector'], '') <> ''))) OR ("resource_tags"['user_type'] = 'flink-native-kubernetes')) AND ((current_date - INTERVAL  '3' MONTH) <= "line_item_usage_start_date"))
+      )  "t_spark_app_info" ON ((CONCAT(REPLACE(SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 1), 'pod', 'cluster'), '/', SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 2)) = "t_spark_app_info"."cluster_arn") AND ((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) THEN CONCAT("t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '_', "t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_job_id']) WHEN ("resource_tags"['user_type'] = 'flink-native-kubernetes') THEN "resource_tags"['user_app'] ELSE "t_scad_cca"."resource_tags"['user_spark_app_selector'] END) = "t_spark_app_info"."identifier") AND ("t_scad_cca"."identity_time_interval" = "t_spark_app_info"."identity_time_interval")))
+      INNER JOIN (
+         SELECT
+           "identity_time_interval"
+         , CONCAT(REPLACE(SPLIT_PART("line_item_resource_id", '/', 1), 'pod', 'cluster'), '/', SPLIT_PART("line_item_resource_id", '/', 2)) "cluster_arn"
+         , (CASE WHEN ((COALESCE("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) THEN CONCAT("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '_', "resource_tags"['user_emr_containers_amazonaws_com_job_id']) WHEN (COALESCE("resource_tags"['user_eks_subscription_amazonaws_com_emr_internal_id'], '') <> '') THEN "resource_tags"['user_eks_subscription_amazonaws_com_emr_internal_id'] ELSE '' END) "emr_on_eks_job_identifier"
+         , SUM((CASE WHEN ("line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') THEN "split_line_item_split_cost" WHEN ("line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') THEN (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost" ELSE "line_item_unblended_cost" END) ELSE 0E0 END)) "amortized_split_cpu_cost"
+         , SUM((CASE WHEN ("line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') THEN "split_line_item_split_cost" WHEN ("line_item_usage_type" LIKE '%Fargate-GB-Hours') THEN (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost" ELSE "line_item_unblended_cost" END) ELSE 0E0 END)) "amortized_split_memory_cost"
+         , SUM((CASE WHEN (("line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') AND (COALESCE("split_line_item_net_split_cost", 0E0) > 0E0)) THEN "split_line_item_net_split_cost" WHEN (("line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') AND (COALESCE("split_line_item_net_split_cost", 0E0) = 0E0)) THEN "split_line_item_split_cost" WHEN (("line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') AND (COALESCE("line_item_net_unblended_cost", 0E0) > 0E0)) THEN (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_net_savings_plan_effective_cost" ELSE "line_item_net_unblended_cost" END) WHEN (("line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') AND (COALESCE("line_item_net_unblended_cost", 0E0) = 0E0)) THEN (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost" ELSE "line_item_unblended_cost" END) ELSE 0E0 END)) "net_amortized_split_cpu_cost"
+         , SUM((CASE WHEN (("line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') AND (COALESCE("split_line_item_net_split_cost", 0E0) > 0E0)) THEN "split_line_item_net_split_cost" WHEN (("line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') AND (COALESCE("split_line_item_net_split_cost", 0E0) = 0E0)) THEN "split_line_item_split_cost" WHEN (("line_item_usage_type" LIKE '%Fargate-GB-Hours') AND (COALESCE("line_item_net_unblended_cost", 0E0) > 0E0)) THEN (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_net_savings_plan_effective_cost" ELSE "line_item_net_unblended_cost" END) WHEN (("line_item_usage_type" LIKE '%Fargate-GB-Hours') AND (COALESCE("line_item_net_unblended_cost", 0E0) = 0E0)) THEN (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost" ELSE "line_item_unblended_cost" END) ELSE 0E0 END)) "net_amortized_split_memory_cost"
+         , SUM((CASE WHEN ("line_item_usage_type" LIKE '%EKS-EC2-vCPU-Hours') THEN "split_line_item_public_on_demand_split_cost" WHEN ("line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') THEN (CASE WHEN ("line_item_usage_type" LIKE '%Spot%') THEN "line_item_unblended_cost" ELSE "pricing_public_on_demand_cost" END) ELSE 0E0 END)) "public_on_demand_split_cpu_cost"
+         , SUM((CASE WHEN ("line_item_usage_type" LIKE '%EKS-EC2-GB-Hours') THEN "split_line_item_public_on_demand_split_cost" WHEN ("line_item_usage_type" LIKE '%Fargate-GB-Hours') THEN (CASE WHEN ("line_item_usage_type" LIKE '%Spot%') THEN "line_item_unblended_cost" ELSE "pricing_public_on_demand_cost" END) ELSE 0E0 END)) "public_on_demand_split_memory_cost"
+         FROM
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE ((("line_item_operation" = 'EKSPod-EC2') OR ((("line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') OR ("line_item_usage_type" LIKE '%Fargate-GB-Hours')) AND ("line_item_line_item_type" IN ('SavingsPlanCoveredUsage', 'Usage')))) AND (((COALESCE("resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) OR (COALESCE("resource_tags"['user_eks_subscription_amazonaws_com_emr_internal_id'], '') <> '')) AND ((current_date - INTERVAL  '3' MONTH) <= "line_item_usage_start_date"))
+         GROUP BY 1, 2, 3
+      )  "t_scad_split_cost_per_emr_on_eks_job" ON ((CONCAT(REPLACE(SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 1), 'pod', 'cluster'), '/', SPLIT_PART("t_scad_cca"."line_item_resource_id", '/', 2)) = "t_scad_split_cost_per_emr_on_eks_job"."cluster_arn") AND ((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) THEN CONCAT("t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '_', "t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_job_id']) WHEN (COALESCE("t_scad_cca"."resource_tags"['user_eks_subscription_amazonaws_com_emr_internal_id'], '') <> '') THEN "t_scad_cca"."resource_tags"['user_eks_subscription_amazonaws_com_emr_internal_id'] ELSE '' END) = "t_scad_split_cost_per_emr_on_eks_job"."emr_on_eks_job_identifier") AND ("t_scad_cca"."identity_time_interval" = "t_scad_split_cost_per_emr_on_eks_job"."identity_time_interval")))
+      INNER JOIN (
+         SELECT
+           "identity_time_interval"
+         , "line_item_resource_id"
+         , (CASE WHEN ("line_item_resource_id" LIKE '%virtualclusters%') THEN CONCAT(SPLIT_PART("line_item_resource_id", '/', 3), '_', SPLIT_PART("line_item_resource_id", '/', 5)) ELSE SPLIT_PART("line_item_resource_id", '/', 3) END) "emr_on_eks_job_identifier"
+         , SUM((CASE WHEN ("line_item_usage_type" LIKE '%EMR-EKS-EC2-vCPUHours') THEN "line_item_unblended_cost" ELSE 0E0 END)) "emr_on_eks_unblended_cpu_cost"
+         , SUM((CASE WHEN ("line_item_usage_type" LIKE '%EMR-EKS-EC2-GBHours') THEN "line_item_unblended_cost" ELSE 0E0 END)) "emr_on_eks_unblended_memory_cost"
+         , SUM((CASE WHEN ("line_item_usage_type" LIKE '%EMR-EKS-EC2-vCPUHours') THEN COALESCE("line_item_net_unblended_cost", 0E0) ELSE 0E0 END)) "emr_on_eks_net_unblended_cpu_cost"
+         , SUM((CASE WHEN ("line_item_usage_type" LIKE '%EMR-EKS-EC2-GBHours') THEN COALESCE("line_item_net_unblended_cost", 0E0) ELSE 0E0 END)) "emr_on_eks_net_unblended_memory_cost"
+         , SUM((CASE WHEN ("line_item_usage_type" LIKE '%EMR-EKS-EC2-vCPUHours') THEN "pricing_public_on_demand_cost" ELSE 0E0 END)) "emr_on_eks_public_on_demand_cpu_cost"
+         , SUM((CASE WHEN ("line_item_usage_type" LIKE '%EMR-EKS-EC2-GBHours') THEN "pricing_public_on_demand_cost" ELSE 0E0 END)) "emr_on_eks_public_on_demand_memory_cost"
+         FROM
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE (("product_product_family" = 'EMR Containers') AND ("line_item_line_item_type" = 'Usage') AND ((current_date - INTERVAL  '3' MONTH) <= "line_item_usage_start_date"))
+         GROUP BY 1, 2, 3
+      )  "t_emr_on_eks_cost" ON ((SPLIT_PART("t_scad_cca"."line_item_resource_id", ':pod/', 1) = REPLACE(SPLIT_PART("t_emr_on_eks_cost"."line_item_resource_id", ':/', 1), 'emr-containers', 'eks')) AND ((CASE WHEN ((COALESCE("t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '') <> '') AND (COALESCE("t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_job_id'], '') <> '')) THEN CONCAT("t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_virtual_cluster_id'], '_', "t_scad_cca"."resource_tags"['user_emr_containers_amazonaws_com_job_id']) WHEN (COALESCE("t_scad_cca"."resource_tags"['user_eks_subscription_amazonaws_com_emr_internal_id'], '') <> '') THEN "t_scad_cca"."resource_tags"['user_eks_subscription_amazonaws_com_emr_internal_id'] ELSE '' END) = "t_emr_on_eks_cost"."emr_on_eks_job_identifier") AND ("t_scad_cca"."identity_time_interval" = "t_emr_on_eks_cost"."identity_time_interval")))
+      INNER JOIN (
          SELECT
            "identity_time_interval"
          , "line_item_resource_id"
          , SUM("line_item_usage_amount") "line_item_usage_amount"
          FROM
            "${cur2_database}"."${cur2_table_name}"
-         WHERE (("line_item_operation" LIKE '%RunInstances%') AND ("product_product_family" LIKE '%Compute Instance%') AND ("line_item_line_item_type" IN ('DiscountedUsage', 'SavingsPlanCoveredUsage', 'Usage')) AND ((current_date - INTERVAL  '6' MONTH) <= "line_item_usage_start_date"))
+         WHERE (("line_item_operation" LIKE '%RunInstances%') AND ("product_product_family" LIKE '%Compute Instance%') AND ("line_item_line_item_type" IN ('DiscountedUsage', 'SavingsPlanCoveredUsage', 'Usage')) AND ((current_date - INTERVAL  '3' MONTH) <= "line_item_usage_start_date"))
          GROUP BY 1, 2
       )  "t_ec2_compute_instances_sum_quantity" ON (("t_scad_cca"."split_line_item_parent_resource_id" = "t_ec2_compute_instances_sum_quantity"."line_item_resource_id") AND ("t_scad_cca"."identity_time_interval" = "t_ec2_compute_instances_sum_quantity"."identity_time_interval")))
-      LEFT JOIN (
+      INNER JOIN (
          SELECT
            "identity_time_interval"
          , "line_item_resource_id"
          , (CASE WHEN ("savings_plan_savings_plan_a_r_n" <> '') THEN 'Savings Plans' WHEN ("reservation_reservation_a_r_n" <> '') THEN 'Reserved Instances' WHEN ("line_item_usage_type" LIKE '%Spot%') THEN 'Spot' ELSE 'On-Demand' END) "purchase_option"
+         , "product_instance_type" "product_instance_type"
+         , "product"['instance_type_family'] "product_instance_type_family"
+         , "product_instance_family" "product_instance_family"
+         , CAST("product"['vcpu'] AS DOUBLE) "product_vcpu"
+         , CAST(SPLIT_PART("product"['memory'], ' ', 1) AS DOUBLE) "product_memory"
+         , CAST(SPLIT_PART("product"['gpu'], ' ', 1) AS DOUBLE) "product_gpu"
+         , "product"['operating_system'] "product_operating_system"
+         , (CASE WHEN ("product"['physical_processor'] LIKE '%Intel%') THEN 'Intel' WHEN ("product"['physical_processor'] LIKE '%AMD%') THEN 'AMD' WHEN ("product"['physical_processor'] LIKE '%Graviton%') THEN 'Graviton' WHEN ("product"['physical_processor'] LIKE '%Apple%') THEN 'Apple' WHEN ("product"['physical_processor'] LIKE '%Variable%') THEN 'Variable' ELSE "product"['physical_processor'] END) "physical_processor_family"
+         , "product"['physical_processor'] "physical_processor"
+         , "product"['processor_features'] "product_processor_features"
+         , "product"['tenancy'] "product_tenancy"
+         , "product"['current_generation'] "product_current_generation"
          , ARBITRARY("line_item_availability_zone") "line_item_availability_zone"
-         , ARBITRARY("product_instance_type") "product_instance_type"
-         , ARBITRARY("product"['instance_type_family']) "product_instance_type_family"
-         , ARBITRARY("product_instance_family") "product_instance_family"
-         , ARBITRARY(CAST("product"['vcpu'] AS DOUBLE)) "product_vcpu"
-         , ARBITRARY(CAST(SPLIT_PART("product"['memory'], ' ', 1) AS DOUBLE)) "product_memory"
-         , ARBITRARY(CAST(SPLIT_PART("product"['gpu'], ' ', 1) AS DOUBLE)) "product_gpu"
-         , ARBITRARY("product"['operating_system']) "product_operating_system"
-         , ARBITRARY((CASE WHEN ("product"['physical_processor'] LIKE '%Intel%') THEN 'Intel' WHEN ("product"['physical_processor'] LIKE '%AMD%') THEN 'AMD' WHEN ("product"['physical_processor'] LIKE '%Graviton%') THEN 'Graviton' WHEN ("product"['physical_processor'] LIKE '%Apple%') THEN 'Apple' END)) "physical_processor_family"
-         , ARBITRARY("product"['physical_processor']) "physical_processor"
          , SUM("line_item_usage_amount") "line_item_usage_amount"
          FROM
            "${cur2_database}"."${cur2_table_name}"
-         WHERE (("line_item_operation" LIKE '%RunInstances%') AND ("product_product_family" LIKE '%Compute Instance%') AND ("line_item_line_item_type" IN ('DiscountedUsage', 'SavingsPlanCoveredUsage', 'Usage')) AND ((current_date - INTERVAL  '6' MONTH) <= "line_item_usage_start_date"))
-         GROUP BY 1, 2, 3
+         WHERE (("line_item_operation" LIKE '%RunInstances%') AND ("product_product_family" LIKE '%Compute Instance%') AND ("line_item_line_item_type" IN ('DiscountedUsage', 'SavingsPlanCoveredUsage', 'Usage')) AND ((current_date - INTERVAL  '3' MONTH) <= "line_item_usage_start_date"))
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
       )  "t_ec2_compute_instances" ON (("t_scad_cca"."split_line_item_parent_resource_id" = "t_ec2_compute_instances"."line_item_resource_id") AND ("t_scad_cca"."identity_time_interval" = "t_ec2_compute_instances"."identity_time_interval")))
-      WHERE (((("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) AND (NOT ((COALESCE("t_scad_cca"."split_line_item_parent_resource_id", '') = '') AND ("split_line_item_split_cost" = 0E0)))) OR ((("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') OR ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours')) AND ("t_scad_cca"."line_item_line_item_type" IN ('SavingsPlanCoveredUsage', 'Usage')))) AND ((current_date - INTERVAL  '6' MONTH) <= "t_scad_cca"."line_item_usage_start_date"))
-      GROUP BY 1, 2, 3, 4, 5, 6
+      WHERE (((("t_scad_cca"."line_item_operation" IN ('EKSPod-EC2', 'ECSTask-EC2')) AND (NOT ((COALESCE("t_scad_cca"."split_line_item_parent_resource_id", '') = '') AND ("split_line_item_split_cost" = 0E0)))) OR ((("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-vCPU-Hours:perCPU') OR ("t_scad_cca"."line_item_usage_type" LIKE '%Fargate-GB-Hours')) AND ("t_scad_cca"."line_item_line_item_type" IN ('SavingsPlanCoveredUsage', 'Usage')))) AND ((current_date - INTERVAL  '3' MONTH) <= "t_scad_cca"."line_item_usage_start_date"))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
