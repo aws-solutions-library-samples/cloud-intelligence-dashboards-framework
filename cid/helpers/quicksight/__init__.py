@@ -1363,6 +1363,9 @@ class QuickSight(CidBase):
             for dataset_reference in dataset_references:
                 dataset = self.describe_dataset(dataset_reference['DataSetArn'].split('/')[-1])
                 all_columns = dataset.raw['OutputColumns']
+                if dataset.name in definition.get('nonTaxonomyDatasets', []):
+                    logger.critical(f'Skipping {dataset.name}')
+                    continue
                 logger.debug(f'{dataset_references}: {all_columns}')
                 if common_columns is None:
                     common_columns = all_columns
