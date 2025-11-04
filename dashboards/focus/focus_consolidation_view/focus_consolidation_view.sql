@@ -1,4 +1,4 @@
--- This is an example of Amazon Athena veiw for consolidation of AWS, Azure, GCP and OCI data from respective Athena tables. 
+-- This is an example of Amazon Athena view for consolidation of AWS, Azure, GCP and OCI data from respective Athena tables. 
 -- Leave unions only for FOCUS tables that you have deployed. See more https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/focus-dashboard.html#add-focus-data-from-other-cloud-providers-to-focus-dashboard.
 -- Update database and table names if you are using names different from the defaults.
 -- IMPORTANT: Null values are used in unions from some cloud providers when a column is missing in their FOCUS data. If the respective provider begins delivering the column, you need to update this view to use the actual column value instead of null. Also please raise an issue to this repository to notify us as well.
