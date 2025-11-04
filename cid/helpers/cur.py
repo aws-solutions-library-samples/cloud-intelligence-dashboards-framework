@@ -260,7 +260,7 @@ class CUR(AbstractCUR):
             res, message = self.table_is_cur(table=metadata, return_reason=True)
             if not res:
                 raise CidCritical(f'Provided cur-table-name "{table}" in database "{cur_database or self.athena.DatabaseName}" is not cur. {message}')
-            return cur_database, metadata
+            return (cur_database or self.athena.DatabaseName), metadata
 
         all_cur_tables = []
         filter_names = None
