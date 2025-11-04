@@ -1658,7 +1658,7 @@ class Cid():
         logger.debug(f'dataset {compiled_dataset.get("Name")} resource_tags = {resource_tags}')
         if cur_tags_json_required and resource_tags:
             custom_fields = {
-                name: f"parseJson(tags_json, '$.{name}')" # This syntax does not work:  $[\"{name}\"]
+                name: f"parseJson(tags_json, '$.{name.strip()}')" # This syntax does not work:  $[\"{name}\"]
                 for name in resource_tags
             }
         logger.debug(f'custom_fields = {custom_fields}')

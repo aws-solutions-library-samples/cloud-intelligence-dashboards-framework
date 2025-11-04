@@ -35,26 +35,26 @@ dashboards:
       - DataSetIdentifier: focus_resource_view
         Expression: |-
           ifelse(
-          ${momgroupby1} = 'Provider', providername,
-          ${momgroupby1} = 'Billing Account', {Billing Account},
-          ${momgroupby1} = 'Sub Account', {Sub Account},
-          ${momgroupby1} = 'Charge Category', chargecategory,
-          ${momgroupby1} = 'Service Category', servicecategory,
-          ${momgroupby1} = 'Service Name', servicename,
-          // Add ${momgroupby1}
+          ${MomGroupBy1} = 'Provider', providername,
+          ${MomGroupBy1} = 'Billing Account', {Billing Account},
+          ${MomGroupBy1} = 'Sub Account', {Sub Account},
+          ${MomGroupBy1} = 'Charge Category', chargecategory,
+          ${MomGroupBy1} = 'Service Category', servicecategory,
+          ${MomGroupBy1} = 'Service Name', servicename,
+          // Add ${MomGroupBy1}
           null
           )
         Name: MoM Group By One
       - DataSetIdentifier: focus_resource_view
         Expression: |-
           ifelse(
-          ${momgroupbytwo} = 'Provider', providername,
-          ${momgroupbytwo} = 'Billing Account', {Billing Account},
-          ${momgroupbytwo} = 'Sub Account', {Sub Account},
-          ${momgroupbytwo} = 'Charge Category', chargecategory,
-          ${momgroupbytwo} = 'Service Category', servicecategory,
-          ${momgroupbytwo} = 'Service Name', servicename,
-          // Add ${momgroupbytwo}
+          ${MomGroupByTwo} = 'Provider', providername,
+          ${MomGroupByTwo} = 'Billing Account', {Billing Account},
+          ${MomGroupByTwo} = 'Sub Account', {Sub Account},
+          ${MomGroupByTwo} = 'Charge Category', chargecategory,
+          ${MomGroupByTwo} = 'Service Category', servicecategory,
+          ${MomGroupByTwo} = 'Service Name', servicename,
+          // Add ${MomGroupByTwo}
           null
           )
         Name: MoM Group By Two
@@ -97,7 +97,7 @@ dashboards:
         Name: Effective Cost
       - DataSetIdentifier: focus_summary_view
         Expression: 1 - sum(effectivecost)/sum({List Cost amortized})
-        Name: Effective Disocount Rate
+        Name: Effective Discount Rate
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
@@ -125,26 +125,26 @@ dashboards:
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          ${momgroupby1} = 'Provider', providername,
-          ${momgroupby1} = 'Billing Account', {Billing Account},
-          ${momgroupby1} = 'Sub Account', {Sub Account},
-          ${momgroupby1} = 'Charge Category', chargecategory,
-          ${momgroupby1} = 'Service Category', servicecategory,
-          ${momgroupby1} = 'Service Name', servicename,
-          // Add ${momgroupby1}
+          ${MomGroupBy1} = 'Provider', providername,
+          ${MomGroupBy1} = 'Billing Account', {Billing Account},
+          ${MomGroupBy1} = 'Sub Account', {Sub Account},
+          ${MomGroupBy1} = 'Charge Category', chargecategory,
+          ${MomGroupBy1} = 'Service Category', servicecategory,
+          ${MomGroupBy1} = 'Service Name', servicename,
+          // Add ${MomGroupBy1}
           null
           )
         Name: MoM Group By One
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          ${momgroupbytwo} = 'Provider', providername,
-          ${momgroupbytwo} = 'Billing Account', {Billing Account},
-          ${momgroupbytwo} = 'Sub Account', {Sub Account},
-          ${momgroupbytwo} = 'Charge Category', chargecategory,
-          ${momgroupbytwo} = 'Service Category', servicecategory,
-          ${momgroupbytwo} = 'Service Name', servicename,
-          // Add ${momgroupbytwo}
+          ${MomGroupByTwo} = 'Provider', providername,
+          ${MomGroupByTwo} = 'Billing Account', {Billing Account},
+          ${MomGroupByTwo} = 'Sub Account', {Sub Account},
+          ${MomGroupByTwo} = 'Charge Category', chargecategory,
+          ${MomGroupByTwo} = 'Service Category', servicecategory,
+          ${MomGroupByTwo} = 'Service Name', servicename,
+          // Add ${MomGroupByTwo}
           null
           )
         Name: MoM Group By Two
@@ -154,12 +154,12 @@ dashboards:
       - DataSetIdentifier: focus_summary_view
         Expression: |-
           ifelse(
-          ${summary_group_by} = 'Provider', providername,
-          ${summary_group_by} = 'Charge Category', chargecategory,
-          ${summary_group_by} = 'Billing Account', {Billing Account},
-          ${summary_group_by} = 'Sub Account', {Sub Account},
-          ${summary_group_by} = 'Service Category', servicecategory,
-          // Add ${summary_group_by}
+          ${summaryGroupBy} = 'Provider', providername,
+          ${summaryGroupBy} = 'Charge Category', chargecategory,
+          ${summaryGroupBy} = 'Billing Account', {Billing Account},
+          ${summaryGroupBy} = 'Sub Account', {Sub Account},
+          ${summaryGroupBy} = 'Service Category', servicecategory,
+          // Add ${summaryGroupBy}
           providername
           )
         Name: Summary Group By
@@ -225,7 +225,7 @@ dashboards:
                   NullString: 'null'
                 NumberScale: AUTO
       - Column:
-          ColumnName: Effective Disocount Rate
+          ColumnName: Effective Discount Rate
           DataSetIdentifier: focus_summary_view
         FormatConfiguration:
           NumberFormatConfiguration:
@@ -1417,7 +1417,7 @@ dashboards:
           DefaultValues:
             StaticValues:
             - Provider
-          Name: summary_group_by
+          Name: summaryGroupBy
           ParameterValueType: SINGLE_VALUED
           ValueWhenUnset:
             ValueWhenUnsetOption: RECOMMENDED_VALUE
@@ -1433,7 +1433,7 @@ dashboards:
           DefaultValues:
             StaticValues:
             - Service Category
-          Name: momgroupby1
+          Name: MomGroupBy1
           ParameterValueType: SINGLE_VALUED
           ValueWhenUnset:
             ValueWhenUnsetOption: RECOMMENDED_VALUE
@@ -1441,7 +1441,7 @@ dashboards:
           DefaultValues:
             StaticValues:
             - Sub Account
-          Name: momgroupbytwo
+          Name: MomGroupByTwo
           ParameterValueType: SINGLE_VALUED
           ValueWhenUnset:
             ValueWhenUnsetOption: RECOMMENDED_VALUE
@@ -1627,7 +1627,7 @@ dashboards:
               - Provider
               - Service Category
               - Sub Account
-            SourceParameterName: summary_group_by
+            SourceParameterName: summaryGroupBy
             Title: Group By
             Type: SINGLE_SELECT
         - List:
@@ -1881,7 +1881,7 @@ dashboards:
                 RichText: "<visual-title>\n  <inline font-size=\"20px\">Daily\_</inline>\n\
                   \  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n \
                   \ </inline>\n  <inline font-size=\"20px\">\_per\_</inline>\n  <inline\
-                  \ font-size=\"20px\">\n    <parameter>${summary_group_by}</parameter>\n\
+                  \ font-size=\"20px\">\n    <parameter>${summaryGroupBy}</parameter>\n\
                   \  </inline>\n  <inline font-size=\"20px\">\_in\_</inline>\n  <inline\
                   \ font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n  </inline>\n\
                   </visual-title>"
@@ -1965,7 +1965,7 @@ dashboards:
                 Values:
                 - NumericalMeasureField:
                     Column:
-                      ColumnName: Effective Disocount Rate
+                      ColumnName: Effective Discount Rate
                       DataSetIdentifier: focus_summary_view
                     FieldId: 3d9b7e08-3f11-45ea-be00-bf4de6bff990.1.1718360842536
               KPIOptions:
@@ -3021,7 +3021,7 @@ dashboards:
               FormatText:
                 RichText: "<visual-title>\n  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n\
                   \  </inline>\n  <inline color=\"#ffffff\" font-size=\"20px\">\_per\_</inline>\n\
-                  \  <inline font-size=\"20px\">\n    <parameter>${summary_group_by}</parameter>\n\
+                  \  <inline font-size=\"20px\">\n    <parameter>${summaryGroupBy}</parameter>\n\
                   \  </inline>\n  <inline font-size=\"20px\">\_in\_</inline>\n  <inline\
                   \ font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n  </inline>\n\
                   </visual-title>"
@@ -3247,7 +3247,7 @@ dashboards:
               - Service Category
               - Service Name
               - Sub Account
-            SourceParameterName: momgroupby1
+            SourceParameterName: MomGroupBy1
             Title: Group By
             Type: SINGLE_SELECT
         - List:
@@ -3272,7 +3272,7 @@ dashboards:
               - Service Category
               - Service Name
               - Sub Account
-            SourceParameterName: momgroupbytwo
+            SourceParameterName: MomGroupByTwo
             Title: Group By
             Type: SINGLE_SELECT
         SheetControlLayouts:
@@ -4148,7 +4148,7 @@ dashboards:
             Title:
               FormatText:
                 RichText: "<visual-title>\n  <inline font-size=\"20px\">Effective Cost by\_\
-                  </inline>\n  <inline font-size=\"20px\">\n    <parameter>${momgroupbytwo}</parameter>\n\
+                  </inline>\n  <inline font-size=\"20px\">\n    <parameter>${MomGroupByTwo}</parameter>\n\
                   \  </inline>\n  <inline font-size=\"20px\">\_in\_</inline>\n  <inline\
                   \ font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n  </inline>\n\
                   </visual-title>"
@@ -4334,7 +4334,7 @@ dashboards:
             Title:
               FormatText:
                 RichText: "<visual-title>\n  <inline font-size=\"20px\">Effective Cost by\_\
-                  </inline>\n  <inline font-size=\"20px\">\n    <parameter>${momgroupby1}</parameter>\n\
+                  </inline>\n  <inline font-size=\"20px\">\n    <parameter>${MomGroupBy1}</parameter>\n\
                   \  </inline>\n  <inline font-size=\"20px\">\_in\_</inline>\n  <inline\
                   \ font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n  </inline>\n\
                   </visual-title>"
@@ -4497,7 +4497,7 @@ dashboards:
         - Content: "<text-box>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"\
             center\">\n    <inline font-size=\"40px\">\n      <b>FOCUS Dashboard</b>\n \
             \   </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n    <inline\
-            \ font-size=\"40px\">\n      <b>v1.0.0</b>\n    </inline>\n  </block>\n  <br/>\n\
+            \ font-size=\"40px\">\n      <b>v1.0.1</b>\n    </inline>\n  </block>\n  <br/>\n\
             \  <block align=\"center\">\n    <inline font-size=\"40px\">\n      <b>FinOps\
             \ Cost and Usage Specification Dashboard</b>\n    </inline>\n  </block>\n  <br/>\n\
             \  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n\
