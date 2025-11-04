@@ -1,5 +1,9 @@
 # What's new in FOCUS Dashboard
 
+## FOCUS Dashboard v1.0.1
+* Reverted to low case names to avoid issue when Amazon QuickSight does not process CamelCase field names on edit of DataSets.
+Recommended update via `cid-cmd update --force --recursive`
+
 ## FOCUS Dashboard v1.0.0
 * Add Taxonomy with Resource Tags
 
