@@ -2,7 +2,7 @@ import logging
 import re
 from typing import Dict
 from cid.helpers.quicksight.resource import CidQsResource
-from cid.helpers.quicksight.version import CidVersion
+from cid.helpers.quicksight.version import CidVersion, DEFAULT_VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class Definition:
         except TypeError as e:
             logger.debug(f"Could not resolve CID version. Raw version value '{self._raw_version}' does not conform to CID version format vmajor.minor.build e.g. v.1.0.1")
         
-        return CidVersion("v0.0.0")
+        return CidVersion(DEFAULT_VERSION)
     
     def resolve_version(self, raw: dict):
         about_content = []
