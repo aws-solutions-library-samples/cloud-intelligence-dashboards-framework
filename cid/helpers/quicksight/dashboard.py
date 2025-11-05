@@ -213,10 +213,15 @@ class Dashboard(CidQsResource):
     @property
     def deployed_cid_version(self):
         if self._cid_version:
-            return  self._cid_version
+            return  self._cid_version            
         tag_version = (self.qs.get_tags(self.arn) or {}).get('cid_version_tag')
-        #print(f'{self.id}: {tag_version}')
-        if tag_version:
+        
+        ## workaround for TAO and resiliencevue dashboards to ignore tag_version if it's v1.0.0 as dashboard definition was incorrectly defaulted to v1.0.0
+        if (tag_version == 'v1.0.0') and (self.id == 'ta-organizational-view' or self.id == 'resiliencevue') :
+            tag_version = None
+       
+        # v0.0.0 is default version which is set if we can't get the version. we need to ignore it
+        if tag_version and tag_version != 'v0.0.0':
             logger.trace(f'version of {self.arn} from tag = {tag_version}')
             self._cid_version = CidVersion(tag_version)
         else:
