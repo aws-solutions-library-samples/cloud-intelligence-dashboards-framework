@@ -11,13 +11,16 @@ from cid.helpers.quicksight.template import Template as CidQsTemplate
 from cid.utils import cid_print, get_yesno_parameter
 from cid.helpers.quicksight.resource import CidQsResource
 from cid.helpers.quicksight.dataset import Dataset
-from cid.helpers.quicksight.version import CidVersion
+from cid.helpers.quicksight.version import CidVersion, DEFAULT_VERSION
 
 
 logger = logging.getLogger(__name__)
 
 
 class Dashboard(CidQsResource):
+    # Dashboards with known invalid v1.0.0 tags
+    DASHBOARDS_WITH_INVALID_V1_TAGS = {'ta-organizational-view', 'resiliencevue'}
+    
     def __init__(self, raw: dict, qs=None) -> None:
         super().__init__(raw)
         # Initialize properties
@@ -212,22 +215,57 @@ class Dashboard(CidQsResource):
 
     @property
     def deployed_cid_version(self):
+        """Get the deployed CID version from tags, template, or definition."""
         if self._cid_version:
-            return  self._cid_version
-        tag_version = (self.qs.get_tags(self.arn) or {}).get('cid_version_tag')
-        #print(f'{self.id}: {tag_version}')
-        if tag_version:
-            logger.trace(f'version of {self.arn} from tag = {tag_version}')
-            self._cid_version = CidVersion(tag_version)
-        else:
-            if self.deployed_template:
-                self._cid_version = self.deployed_template.cid_version
-            elif self.deployed_definition:
-                self._cid_version = self.deployed_definition.cid_version
-            if self._cid_version:
-                logger.trace(f'setting tag of {self.arn} to cid_version_tag = {self._cid_version}')
-                self.qs.set_tags(self.arn, cid_version_tag=self._cid_version)
+            return self._cid_version
+        
+        try:
+            tag_version = self._get_version_from_tags()
+            if self._is_valid_tag_version(tag_version):
+                logger.debug(f'Using version from tag for {self.id}: {tag_version}')
+                self._cid_version = CidVersion(tag_version)
+            else:
+                self._cid_version = self._get_version_from_sources()
+                if self._cid_version:
+                    self._update_version_tag()
+        except Exception as exc:
+            logger.warning(f'Failed to determine CID version for {self.id}: {exc}')
+            self._cid_version = None
+        
         return self._cid_version
+    
+    def _get_version_from_tags(self):
+        """Extract version from dashboard tags."""
+        tags = self.qs.get_tags(self.arn) or {}
+        return tags.get('cid_version_tag')
+    
+    def _is_valid_tag_version(self, tag_version):
+        """Check if tag version is valid and not a known invalid default."""
+        if not tag_version or tag_version == DEFAULT_VERSION:
+            return False
+        
+        # v1.0.0 is invalid only for specific dashboards with incorrect defaults
+        if tag_version == 'v1.0.0' and self.id in self.DASHBOARDS_WITH_INVALID_V1_TAGS:
+            logger.debug(f'Ignoring invalid v1.0.0 tag for dashboard {self.id}')
+            return False
+        
+        return True
+    
+    def _get_version_from_sources(self):
+        """Get version from template or definition as fallback."""
+        if self.deployed_template:
+            return self.deployed_template.cid_version
+        elif self.deployed_definition:
+            return self.deployed_definition.cid_version
+        return None
+    
+    def _update_version_tag(self):
+        """Update the version tag if we found a version from other sources."""
+        try:
+            logger.debug(f'Setting version tag for {self.arn}: {self._cid_version}')
+            self.qs.set_tags(self.arn, cid_version_tag=self._cid_version)
+        except Exception as exc:
+            logger.warning(f'Failed to update version tag for {self.id}: {exc}')
 
 
     @property
