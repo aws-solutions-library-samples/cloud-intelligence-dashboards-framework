@@ -22530,7 +22530,7 @@ views:
       LEFT JOIN workspace_inventory wi ON ((split_part(cur.line_item_resource_id, '/', 2) = wi.workspaceid) AND (cur.line_item_usage_account_id = wi.accountid)))
       WHERE ((("bill_billing_period_start_date" >= date_add('month', -7, date_trunc('month', current_date))) AND (line_item_product_code = 'AmazonWorkSpaces')) OR (line_item_product_code = 'AmazonAppStream') OR (line_item_product_code = 'AWSDirectoryService'))
       GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53
-parameters:
+    parameters:
       data_collection_database_name:
         type: athena
         query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_workspaces_data'
