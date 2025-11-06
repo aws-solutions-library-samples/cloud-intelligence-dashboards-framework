@@ -8,6 +8,28 @@
     <lastBuildDate>Mon, 22 Sep 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Graviton Savings Dashboard v2.2.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/add-resilience-hub/changes/CHANGELOG-graviton-savings.md
+      </link>
+      <pubDate>Thu, 06 Nov 2025 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">8b2f9e6a-417b-4fff-ae02-db8c844991d2</guid>
+      <description>Graviton Savings Dashboard v2.2.0 - Update Release</description>
+      <content:encoded><![CDATA[
+    <div>
+      <p>
+        The <strong>Graviton Savings Dashboard (GSD)</strong> visualizes your current usage of AWS Graviton Processors and estimates potential cost savings when switching workloads to Graviton. It helps identify ideal workloads for Graviton migration through automated resource matching and data-driven visualizations.
+      </p>
+
+      <h3>New Features:</h3>
+      <ul>
+        <li><strong>Estimated Cost Savings due to performance:</strong> We've enhanced the dashboard with new features highlighting Normalized Instance Hours (NIH) analysis capabilities, allowing you to model potential savings based on both pricing benefits and compute hour reductions.</li>
+      </ul>
+    </div>
+    ]]></content:encoded>
+     </item>
+    <item>
       <title>[New Dashboard] Media Services Insights Hub v1.0.0</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/add-resilience-hub/changes/CHANGELOG-resiliencevue.md
