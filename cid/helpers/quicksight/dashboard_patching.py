@@ -33,10 +33,14 @@ def format_field_name(field_name: str, ignore_prefix: bool=False) -> str:
         assert format_field_name('tag_service') == 'Tag Service'
         assert format_field_name('ServiceCode') == 'Service Code'
     """
+    # Handle lowercase strings without underscores by inserting spaces at word boundaries (mainly for focus)
+    if field_name.islower() and '_' not in field_name:
+        field_name = re.sub( r'(zone|id|name|type|category|unit|price|cost|quantity|start|status|class|description|frequency|currency|period)$', r'_\1', field_name)
+        field_name = re.sub(r'^(availability|billing|charge|commitment|consumed|contracted|effective|invoice|list|pricing|provider|publisher|region|resource|service|sku|sub|tags)', r'\1_', field_name)
     # First, handle camelCase by inserting underscores before uppercase letters
     field_name = re.sub(r'([a-z])([A-Z])', r'\1_\2', field_name) # This converts "ServiceCode" to "Service_Code"
     field_name = field_name.lower()
-    parts = field_name.split('_')
+    parts = [part for part in field_name.split('_') if part]
     result = []
     i = 0
     while i < len(parts):

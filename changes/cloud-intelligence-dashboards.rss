@@ -5,7 +5,7 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Mon, 22 Sep 2025 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 17 Oct 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
       <title>[Update] Graviton Savings Dashboard v2.2.0</title>
@@ -29,6 +29,118 @@
     </div>
     ]]></content:encoded>
      </item>
+      <title>[Update] SCAD Containers Cost Allocation Dashboard - v4.0.0</title>
+      <link>
+       https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md#media-services-insights-hub---v112
+      </link>
+      <pubDate>Fri, 31 Oct 2025 12:00:00 GMT</pubDate>
+      <category><![CDATA[Update]]></category>
+      <guid isPermaLink="false">32d1f523-496c-4fd2-9f22-73e6a45b78c3</guid>
+      <description>SCAD Containers Cost Allocation Dashboard - v4.0.0 - Update</description>
+      <content:encoded><![CDATA[
+    <div>
+        <h2>New features:</h2>
+        
+        <p>You can now add your K8s pods labels to the Athena view and to the dashboard, and use them in visuals</p>
+        
+        <p>The Kubernetes Recommended Labels, and the labels app, chart, release, version, component, type and created-by, are included by default in the Athena view and dashboard, in the "Workloads Explorer" sheet, as group-by dimensions and filters (activating their respective cost allocation tags is required)</p>
+        
+        <h3>New "Labels/Tags Explorer" and "Data on EKS" sheets have been added to the dashboard, leveraging Kubernetes pods labels for their respective use-cases:</h3>
+        
+        <h4>Total Cost of Ownership (TCO):</h4>
+        <p>As part of the new "Labels/Tags Explorer" sheet, you can now allocate the TCO of your applications running on EKS/ECS clusters, including both the split cost and the costs of other AWS resources, through consistent labeling/tagging of the pods/tasks and AWS resources</p>
+        
+        <h4>Cost Allocation for Spark and Flink Applications Running on EKS:</h4>
+        <p>As part of the new "Data on EKS" sheet, you can now allocate costs to your Spark and Flink applications running on EKS or on EMR on EKS, using labels that are automatically applied to the pods when the jobs are submitted, and are used in the Athena view and dashboard by default</p>
+        
+    </div>
+    ]]></content:encoded>
+     </item>
+    <item>
+      <title>[Update] Media Services Insights Hub v1.1.2</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md#media-services-insights-hub---v111
+      </link>
+      <pubDate>Fri, 17 Oct 2025 12:00:00 GMT</pubDate>
+      <category><![CDATA[Update]]></category>
+      <guid isPermaLink="false">f50ec0b7-f960-400d-91f0-c42a6d44e3d0</guid>
+      <description>Media Services Insights Hub v1.1.2 - Update</description>
+      <content:encoded><![CDATA[
+    <div>
+      <p>
+        This release includes the following:
+      </p>
+      <ul>
+        <li>Filters hourly view to last 30 days relative to the last data refresh, rather than current.</li>
+        <li>Minor UI text fixes</li>
+      </ul>
+
+    </div>
+    ]]></content:encoded>
+     </item>
+
+    <item>
+      <title>[Update] Media Services Insights Hub v1.1.0</title>
+      <link>
+       https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md#media-services-insights-hub---v110
+      </link>
+      <pubDate>Fri, 17 Oct 2025 12:00:00 GMT</pubDate>
+      <category><![CDATA[Update]]></category>
+      <guid isPermaLink="false">f50ec0b7-f960-400d-91f0-c42a6d44e3d0</guid>
+      <description>Media Services Insights Hub v1.1.0 - Update</description>
+      <content:encoded><![CDATA[
+    <div>
+      <p>
+        This release includes the following
+      </p>
+            <h3>Key Tabs and Features:</h3>
+      <ul>
+        <li>Improves the performance of the main CUR query to work with very large account usage.</li>
+        <li>Corrects a filter for AEMX ingress bytes KPI</li>
+      </ul>
+
+    </div>
+    ]]></content:encoded>
+     </item>
+
+
+    <item>
+      <title>[Update] Extended Support Cost Projection - v4.0.3</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v403</link>
+      <pubDate>Thu, 09 Oct 2025 12:00:00 GMT</pubDate>
+      <category><![CDATA[Update]]></category>
+      <guid isPermaLink="false">fff64290-032b-4e87-82a0-65bef8461015</guid>
+      <description>Extended Support Cost Projection for Elasticache</description>
+      <content:encoded><![CDATA[
+          <p>
+            In this release, we have introduced projection of extended support costs for 
+            <strong>Amazon Elasticache</strong>. The dashboard provides a clear view on 
+            <strong>Elasticache</strong> clusters reaching 
+            extended support in the next <strong>3, 6, 12 months</strong>, and beyond.
+          </p>
+          
+          <p>
+            <strong>Important:</strong> This version requires the data collection version 
+            <strong>3.2.0+</strong>. Update to this version requires a forced and recursive update. 
+            If you have modified the Extended Support Cost Projection dashboard view queries, 
+            they will be overridden when the dashboard is updated. Consider backing up the existing 
+            view queries if they contain custom changes you want to keep so you can re-apply them after 
+            the update takes place.
+          </p>
+          
+          <p>
+            To update, run these commands in your CloudShell (recommended) or another terminal:
+          </p>
+          
+          <pre>
+        python3 -m ensurepip --upgrade
+        pip3 install --upgrade cid-cmd
+        cid-cmd update --dashboard-id extended-support-cost-projection --force --recursive
+          </pre>
+        ]]>
+    </content:encoded>
+    </item>
     <item>
       <title>[New Dashboard] Media Services Insights Hub v1.0.0</title>
       <link>

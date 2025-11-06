@@ -4176,7 +4176,7 @@ Sheets:
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline color=\"#23dae6\"\
       \ font-size=\"48px\">\n      <b>ResilienceVue\_</b>\n    </inline>\n  </block>\n\
       \  <br/>\n  <block align=\"center\">\n    <inline color=\"PrimaryForeground\"\
-      \ font-size=\"48px\">\n      <b>V 0.1.0</b>\n    </inline>\n  </block>\n  <br/>\n\
+      \ font-size=\"48px\">\n      <b>v0.1.0</b>\n    </inline>\n  </block>\n  <br/>\n\
       \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\">\n    <inline\
       \ color=\"PrimaryForeground\" font-size=\"24px\">\n      <b>Centralized AWS\
       \ Resilience Assessment Solution</b>\n    </inline>\n  </block>\n  <br/>\n \

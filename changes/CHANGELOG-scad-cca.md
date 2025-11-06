@@ -1,5 +1,16 @@
 # What's new in SCAD Containers Cost Allocation Dashboard
 
+## SCAD Containers Cost Allocation Dashboard - v4.0.0
+
+* New features:
+  * You can now [add your K8s pods labels](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/scad-containers-dashboard-add-labels-tags.html) to the Athena view and to the dashboard, and use them in visuals
+  * The [Kubernetes Recommended Labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/), and the labels `app`, `chart`, `release`, `version`, `component`, `type` and `created-by`, are included by default in the Athena view and dashboard, in the "Workloads Explorer" sheet, as group-by dimensions and filters ([activating their respective cost allocation tags](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/activating-tags.html) is required)
+  * New "Labels/Tags Explorer" and "Data on EKS" sheets have been added to the dashboard, leveraging Kubernetes pods labels for their respective use-cases:
+    * [Total Cost of Ownership (TCO)](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/scad-containers-dashboard-tco.html):  
+    As part of the new "Labels/Tags Explorer" sheet, you can now allocate the TCO of your applications running on EKS/ECS clusters, including both the split cost and the costs of other AWS resources, through consistent labeling/tagging of the pods/tasks and AWS resources
+    * [Cost Allocation for Spark and Flink Applications Running on EKS](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/scad-containers-dashboard-data-on-eks.html):  
+    As part of the new "Data on EKS" sheet, you can now allocate costs to your Spark and Flink applications running on EKS or on EMR on EKS, using labels that are automatically applied to the pods when the jobs are submitted, and are used in the Athena view and dashboard by default
+
 ## SCAD Containers Cost Allocation Dashboard - v3.0.1
 
 * Fixed an issue with CPU and GPU cost showing 0

@@ -10,3 +10,8 @@ The EUC dashboard offers a centralized solution for monitoring and optimizing Am
 
 ## EUC Dashboard - v1.0.0
 * Initial release
+
+## EUC Dashboard - v1.1.0
+* Fixed filters in Metric Tab
+* Removed old variables
+* Added account_Map join in euc_metric_view dataset

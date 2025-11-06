@@ -6,6 +6,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Default version used when version cannot be determined
+DEFAULT_VERSION = "v0.0.0"
+
 class CidVersion:
     """ Semantic version of dashboards in CID
     """

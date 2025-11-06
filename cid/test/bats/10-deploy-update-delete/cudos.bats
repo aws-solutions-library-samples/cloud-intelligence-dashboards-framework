@@ -13,6 +13,7 @@ cur_table="${cur_table:-cur1}" # If variable not set or null, use default. FIXME
     --dashboard-id cudos-v5 \
     --athena-database $database_name\
     --account-map-source dummy \
+    --cur-database $database_name \
     --cur-table-name $cur_table \
     --athena-workgroup primary\
     --quicksight-user $quicksight_user \
@@ -60,6 +61,7 @@ cur_table="${cur_table:-cur1}" # If variable not set or null, use default. FIXME
 @test "Update works" {
   run cid-cmd -vv --yes update --force --recursive  \
     --dashboard-id cudos-v5 \
+    --cur-database $database_name \
     --cur-table-name $cur_table \
     --athena-database $database_name\
     --athena-workgroup primary\
