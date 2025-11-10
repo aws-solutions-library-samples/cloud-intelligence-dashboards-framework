@@ -82,9 +82,11 @@ class Athena(CidBase):
 
         # check if we have a default database
         logger.info(f'athena_databases = {athena_databases}')
-        default_databases = [database for database in athena_databases if database == self.defaults.get('DatabaseName')]
+        default_database = None
         if 'cid_cur' in athena_databases:
-            default_databases = ['cid_cur']
+            default_database = ['cid_cur']
+        elif self.defaults.get('DatabaseName') in athena_databases:
+            default_database = [self.defaults.get('DatabaseName')]
 
         # Ask user
         choices = list(athena_databases)
@@ -92,9 +94,9 @@ class Athena(CidBase):
             choices.append(self.defaults.get('DatabaseName') + ' (CREATE NEW)')
         self._DatabaseName = get_parameter(
             param_name='athena-database',
-            message="Select AWS Athena database to use as default",
+            message="Select AWS Athena database to use as default for queries. " + f"Use {default_database} if not sure." if default_database else '',
             choices=choices,
-            default=default_databases[0] if default_databases else None,
+            default=default_database,
         )
         if self._DatabaseName.endswith( ' (CREATE NEW)'):
             self._DatabaseName = self.defaults.get('DatabaseName')
