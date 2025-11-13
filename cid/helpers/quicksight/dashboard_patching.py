@@ -17,10 +17,25 @@ def uuid() -> str:
     """Generate a CID-flavored UUID."""
     return 'c1d' + str(uuid4())[3:]
 
-def get_most_used_dataset(dashboard_definition: Dict[str, Any]) -> str:
-    """Get an identifier of a most used dataset."""
+def get_most_used_dataset(dashboard_definition: Dict[str, Any], sheet_name: str = None) -> str:
+    """Get an identifier of a most used dataset.
+
+    If sheet_name is provided, returns the most used dataset in that specific sheet.
+    Otherwise, returns the most used dataset in the entire dashboard.
+    """
+    if sheet_name:
+        # Find the sheet by name
+        sheet = None
+        for s in dashboard_definition.get("Sheets", []):
+            if s.get("Name") == sheet_name:
+                sheet = s
+                break
+        search_scope = sheet if sheet is not None else dashboard_definition
+    else:
+        search_scope = dashboard_definition
+
     dataset_identifiers = sorted([
-        (str(dashboard_definition).count(d["Identifier"]), d["Identifier"])
+        (str(search_scope).count(d["Identifier"]), d["Identifier"])
         for d in dashboard_definition.get("DataSetIdentifierDeclarations", [])
     ])
     return dataset_identifiers[-1][1] if dataset_identifiers else None
@@ -216,6 +231,9 @@ def add_filter_control_to_sheets(dashboard_definition: Dict[str, Any], filter_id
         if sheet.get("Name") == "About":
             continue # Skip about
 
+        # Get the most used dataset for this specific sheet
+        sheet_dataset_identifier = get_most_used_dataset(dashboard_definition, sheet.get("Name")) or dataset_identifier
+
         sheet["FilterControls"] = sheet.get("FilterControls", [])
         if not sheet.get("SheetControlLayouts"):
             sheet["SheetControlLayouts"] = [{
@@ -240,7 +258,7 @@ def add_filter_control_to_sheets(dashboard_definition: Dict[str, Any], filter_id
                         {
                             "SourceSheetControlId": control_id_,
                             "ColumnToMatch": {
-                                "DataSetIdentifier": dataset_identifier,
+                                "DataSetIdentifier": sheet_dataset_identifier,
                                 "ColumnName": field_name_,
                             }
                         }
