@@ -3291,7 +3291,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: ASC
-                    FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717311848
+                    FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_end.0.1742379968237
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
                 SmallMultiplesLimitConfiguration:
@@ -3305,6 +3305,12 @@ dashboards:
                       Visibility: VISIBLE
                   - FieldTooltipItem:
                       FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717311848
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 596df742-e4cf-4678-81ea-46e101aa1675.2.1762435134798
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 5e762219-8ae2-4ccd-aea2-0b5b56a07ba4.3.1762435137368
                       Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
@@ -3397,15 +3403,15 @@ dashboards:
               Orientation: HORIZONTAL
               SortConfiguration:
                 CategoryItemsLimit:
-                  OtherCategories: INCLUDE
+                  OtherCategories: EXCLUDE
                 CategorySort:
                 - FieldSort:
                     Direction: DESC
                     FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717335310
                 ColorItemsLimit:
-                  OtherCategories: INCLUDE
+                  OtherCategories: EXCLUDE
                 SmallMultiplesLimitConfiguration:
-                  OtherCategories: INCLUDE
+                  OtherCategories: EXCLUDE
               Tooltip:
                 FieldBasedTooltip:
                   AggregationVisibility: HIDDEN
@@ -3916,7 +3922,7 @@ dashboards:
                   OtherCategories: INCLUDE
                 CategorySort:
                 - FieldSort:
-                    Direction: DESC
+                    Direction: ASC
                     FieldId: c01a9a46-b2c5-4293-ad45-89532d8ff839.usage_period_start.1.1749717824028
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
