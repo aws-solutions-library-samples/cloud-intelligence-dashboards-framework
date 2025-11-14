@@ -5022,7 +5022,7 @@ views:
       , skupriceid
       , subaccountid
       , subaccountname
-      , Tags
+      , tags
       , billing_period
       FROM
         "${data_exports_database_name}"."focus"
