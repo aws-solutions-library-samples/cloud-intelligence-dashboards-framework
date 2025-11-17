@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import urllib
 import logging
@@ -1938,7 +1939,8 @@ class Cid():
             return "'{}'"
         logger.debug(f'selected_tag_names = {resource_tags}')
         array = ',\n                        '.join(
-            [f"('{name}', {tags_and_names[name]})"
+            # replace all special characters with _ to allow QS read from this json (QS parseJson does not like special characters)
+            [f"""('{re.sub("\W", "_", name)}', {tags_and_names[name]})"""
             for name in resource_tags]
         )
         res = f'''
