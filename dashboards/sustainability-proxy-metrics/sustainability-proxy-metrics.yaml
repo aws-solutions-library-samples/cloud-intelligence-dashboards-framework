@@ -4022,7 +4022,7 @@ dashboards:
                 Narrative: "<narrative>\n  <block align=\"center\">\n    <inline font-size=\"\
                   68.8px\">Sustainability Proxy\_</inline>\n    <inline color=\"#f6f9f9\"\
                   \ font-size=\"68.8px\">Dashboard</inline>\n  </block>\n  <br/>\n  <block\
-                  \ align=\"center\">\n    <inline font-size=\"68.8px\">\n      <b>v5.0.1</b>\n\
+                  \ align=\"center\">\n    <inline font-size=\"68.8px\">\n      <b>v6.0.0</b>\n\
                   \    </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n    <inline\
                   \ font-size=\"22.4px\">\n      <b>Sustainability Dashboard Metrics Optimization\
                   \ Solution</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"\
@@ -4049,7 +4049,7 @@ dashboards:
             Title:
               Visibility: VISIBLE
             VisualId: 0d89259f-86e0-48f6-a41b-4ca335f8ab8b
-    version: v5.0.1
+    version: v6.0.0
 datasets:
   sus_s3_storage_all:
     data:
