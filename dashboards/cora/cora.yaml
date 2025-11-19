@@ -113,7 +113,6 @@ dashboards:
               ${GroupBy} = 'Management Account Id', {source_account_id},
               ${GroupBy} = 'Source Account Id', {source_account_id},
               ${GroupBy} = 'Tag', Tag1,
-              ${GroupBy} = 'Business Unit', 'N/A',
               // Add ${GroupBy}
               'N/A'
           )
@@ -3973,7 +3972,6 @@ dashboards:
               Values:
               - Account Id
               - Account Name
-              - Business Unit
               - Management Account Id
               - Tag
             SourceParameterName: GroupBy
@@ -4960,7 +4958,6 @@ dashboards:
               Values:
               - Account Id
               - Account Name
-              - Business Unit
               - Management Account Id
               - Tag
             SourceParameterName: GroupBy
