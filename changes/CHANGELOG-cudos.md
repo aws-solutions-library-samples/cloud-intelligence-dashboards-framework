@@ -9,6 +9,7 @@
 * **Analytics**: Amazon QuickSight visuals renamed to Amazon QuickSight Suite. Improved Usage Type Group mappings and added visuals with Reader Pro and Author Pro users including 'QuickSight Suite Reader Users and Cost', 'QuickSight Suite Capacity Reader Sessions' and 'Q Questions Usage and Cost'
 * **AI/ML**: Added visuals for total AI/ML spend per service. Performance improvements for 'Bedrock Unit Cost' visual, Improved Bedrock Usage Type Group mapping, added 'Bedrock Batch Inference' as a pricing dimension to 'Amazon Bedrock spend per Pricing Model' visual, added Amazon Bedrock Agent Core under Amazon Bedrock section 
 * **Executive: Trends**: Added ability to switch trend view dimensions between Taxonomy fields, Service,  Service Category, Payer Account and Linked Account
+* **Monitoring and Observability**: Added 'Savings Opportunities by Removing Duplicate Management Event Trails' and 'Accounts and Regions with more than one trail with Management Events recording' visuals 
 * **Databases**: Fix for 'Redis Cache Instances and Serverless Cache: Cost Savings Opportunities with migration to Valkey' visual to exclude clusters which already migrated to Valkey within reporting window of 30 days
 * **Compute**: Added new visuals Compute spend per service and Compute spend per account
 * **Taxonomy Explorer**: Added Service Category dimension to Group By control
