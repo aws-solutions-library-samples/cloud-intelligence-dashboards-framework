@@ -1,0 +1,19 @@
+dashboards:
+  KPI FIX:
+    dependsOn:
+      datasets:
+      - kpi_ebs_snap
+      - kpi_ebs_storage_all
+      - kpi_instance_all
+      - kpi_s3_storage_all
+      - kpi_tracker
+      - summary_view
+    name: KPI fix
+    dashboardId: kpi
+    category: Custom
+    theme: MIDNIGHT
+    version: v2.2.1
+    file: ./KPI-definition.yaml
+datasets: {}
+crawlers: {}
+views: {}
