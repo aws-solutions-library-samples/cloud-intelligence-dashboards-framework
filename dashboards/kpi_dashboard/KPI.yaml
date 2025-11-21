@@ -1,5 +1,5 @@
 dashboards:
-  KPI FIX:
+  KPI:
     dependsOn:
       datasets:
       - kpi_ebs_snap
@@ -8,9 +8,9 @@ dashboards:
       - kpi_s3_storage_all
       - kpi_tracker
       - summary_view
-    name: KPI fix
-    dashboardId: kpi
-    category: Custom
+    name: KPI Dashboard
+    dashboardId: kpi_dashboard
+    category: Foundational
     theme: MIDNIGHT
     version: v2.2.1
     file: ./KPI-definition.yaml
