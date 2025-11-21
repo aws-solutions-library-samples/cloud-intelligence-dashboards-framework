@@ -8,6 +8,29 @@
     <lastBuildDate>Fri, 17 Oct 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] CUDOS Dashboard v5.7.0</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---570
+      </link>
+      <pubDate>Mon, 16 Dec 2024 09:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">a7f8e9d2-3c4b-5e6f-9a8b-1c2d3e4f5a6b</guid>
+      <description>CUDOS Dashboard v5.7.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Security:</strong> Added new AWS Shield and AWS Web Application Firewall section with comprehensive visuals including 'AWS Shield and AWS WAF Spend per Service', 'Shield Advanced Subscription Spend per Payer Account', 'Recommendations to consolidate Shield Advanced subscriptions', 'AWS Shield and AWS WAF Spend per Account', 'AWS Shield and AWS WAF Spend per Region', 'AWS Shield and AWS WAF Spend per Usage Type Group', 'AWS Shield and AWS WAF Detailed View', 'AWS Shield and AWS WAF Spend per Resource', 'AWS Shield and AWS WAF Resource Detailed View', 'Total Cost of Idle AWS WAF Web ACLs without Requests', and 'Idle AWS WAF Web ACLs without Requests'</li>
+    <li><strong>Analytics:</strong> Amazon QuickSight visuals renamed to Amazon QuickSight Suite. Improved Usage Type Group mappings and added visuals with Reader Pro and Author Pro users including 'QuickSight Suite Reader Users and Cost', 'QuickSight Suite Capacity Reader Sessions' and 'Q Questions Usage and Cost'</li>
+    <li><strong>Executive: RI/SP Summary:</strong> New section 'RI/SP - Unused Commitment(s) Insights' with visuals 'Monthly Unused RI/SP by Commitment Type', 'Unused RI / SP Detailed view' and 'Unused RI / SP - Commitment ARN Details'. Improved filters for 'Amortized Spend by Purchase Option' and 'Net Savings' visuals</li>
+    <li><strong>AI/ML:</strong> Added visuals for total AI/ML spend per service. Performance improvements for 'Bedrock Unit Cost' visual</li>
+    <li><strong>Executive: Trends:</strong> Added ability to switch trend view dimensions to Taxonomy fields and Service Category</li>
+    <li><strong>General:</strong> Updated Service Category mapping. Added Region filter in global controls</li>
+    <li><strong>Taxonomy Explorer:</strong> Added Service Category dimension to Group By control</li>
+  </ul>
+</div>
+    ]]></content:encoded>    
+    </item>
+    <item>
       <title>[Update] Graviton Savings Dashboard v2.2.0</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/add-resilience-hub/changes/CHANGELOG-graviton-savings.md
@@ -29,6 +52,7 @@
     </div>
     ]]></content:encoded>
      </item>
+    <item>
       <title>[Update] SCAD Containers Cost Allocation Dashboard - v4.0.0</title>
       <link>
        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md#media-services-insights-hub---v112
@@ -63,7 +87,7 @@
       </link>
       <pubDate>Fri, 17 Oct 2025 12:00:00 GMT</pubDate>
       <category><![CDATA[Update]]></category>
-      <guid isPermaLink="false">f50ec0b7-f960-400d-91f0-c42a6d44e3d0</guid>
+      <guid isPermaLink="false">b4c7d8e1-2f5a-4b9c-8e3d-1a6f9c2b5e8a</guid>
       <description>Media Services Insights Hub v1.1.2 - Update</description>
       <content:encoded><![CDATA[
     <div>
@@ -201,6 +225,7 @@ cid-cmd update --dashboard-id ta-organizational-view --recursive
         <p><strong>Security tab:</strong> AWS CloudTrail Logging check is replaced by AWS CloudTrail Management Event Logging check with improved accuracy</p>
     </div>
     ]]></content:encoded>
+    </item>
     <item>
       <title>[New Dashboard] ResilienceVue Dashboard v1.0.0</title>
       <link>
@@ -228,7 +253,8 @@ cid-cmd update --dashboard-id ta-organizational-view --recursive
       </ul>
     </div>
     ]]></content:encoded>
-     </item>  
+     </item>
+    <item>
       <title>[Update] CUDOS Dashboard v5.6.1</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-cudos.md#cudos---561
