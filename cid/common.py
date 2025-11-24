@@ -1938,9 +1938,10 @@ class Cid():
         if not resource_tags:
             return "'{}'"
         logger.debug(f'selected_tag_names = {resource_tags}')
+        pattern = r"\W"
         array = ',\n                        '.join(
             # replace all special characters with _ to allow QS read from this json (QS parseJson does not like special characters)
-            [f"""('{re.sub("\W", "_", name)}', {tags_and_names[name]})"""
+            [f"""('{re.sub(pattern, "_", name)}', {tags_and_names[name]})"""
             for name in resource_tags]
         )
         res = f'''
