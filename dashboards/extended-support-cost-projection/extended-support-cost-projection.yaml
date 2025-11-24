@@ -7735,6 +7735,7 @@ views:
             , ROW ('elasticsearch_7.7', CAST('2025-11-08' AS timestamp), CAST('2026-11-07' AS timestamp))
             , ROW ('elasticsearch_7.8', CAST('2025-11-08' AS timestamp), CAST('2026-11-07' AS timestamp))
             , ROW ('opensearch_1.0', CAST('2025-11-08' AS timestamp), CAST('2026-11-07' AS timestamp))
+            , ROW ('opensearch_1.1', CAST('2025-11-08' AS timestamp), CAST('2026-11-07' AS timestamp))
             , ROW ('opensearch_1.2', CAST('2025-11-08' AS timestamp), CAST('2026-11-07' AS timestamp))
             , ROW ('opensearch_2.3', CAST('2025-11-08' AS timestamp), CAST('2026-11-07' AS timestamp))
             , ROW ('opensearch_2.4', CAST('2025-11-08' AS timestamp), CAST('2026-11-07' AS timestamp))
