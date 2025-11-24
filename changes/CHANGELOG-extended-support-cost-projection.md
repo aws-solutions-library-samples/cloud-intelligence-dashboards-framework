@@ -17,6 +17,7 @@ cid-cmd update --dashboard-id extended-support-cost-projection --force --recursi
 - Adjusting OpenSearch view query to resolve instance normalization factor based on CUR product_instance_type instead of the instance type retrieved from inventory data. The inventory data will continue to provide the different domains available.
 - Added OpenSearch version 1.1 to release calendar.
 - Added EKS Kubernetes versions 1.33 and 1.34 to release calendar.
+- Adjusted Aurora MySQL 3 year 1 start date to 2028-05-01.
 
 ## Extended Support Cost Projection - v4.0.3
 
