@@ -7467,7 +7467,7 @@ views:
             , ROW ('postgres17', CAST('2030-03-01' AS timestamp), CAST('2032-03-01' AS timestamp), CAST('2033-02-28' AS timestamp))
             , ROW ('aurora-mysql2.11', CAST('2024-12-01' AS timestamp), null, CAST('2027-02-28' AS timestamp))
             , ROW ('aurora-mysql2.12', CAST('2024-12-01' AS timestamp), null, CAST('2027-02-28' AS timestamp))
-            , ROW ('aurora-mysql3', CAST('2027-05-01' AS timestamp), null, CAST('2029-07-31' AS timestamp))
+            , ROW ('aurora-mysql3', CAST('2028-05-01' AS timestamp), null, CAST('2029-07-31' AS timestamp))
             , ROW ('aurora-postgresql11.9', CAST('2024-04-01' AS timestamp), CAST('2026-04-01' AS timestamp), CAST('2027-03-31' AS timestamp))
             , ROW ('aurora-postgresql11.21', CAST('2024-04-01' AS timestamp), CAST('2026-04-01' AS timestamp), CAST('2027-03-31' AS timestamp))
             , ROW ('aurora-postgresql12', CAST('2025-03-01' AS timestamp), CAST('2027-03-01' AS timestamp), CAST('2028-02-29' AS timestamp))
