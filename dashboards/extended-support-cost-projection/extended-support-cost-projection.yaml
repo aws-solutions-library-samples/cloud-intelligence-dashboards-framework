@@ -7808,7 +7808,7 @@ views:
             , ROW ('us-gov-west-1', 7.8E-3)
          )
       )
-      , preprocessed_opensearch_domains (payer_id, accountid, region, domainname, domainid, engineversion, instancetype, collection_date, max_collection_date) AS (
+      , preprocessed_opensearch_domains (payer_id, accountid, region, domainname, domainid, engineversion, collection_date, max_collection_date) AS (
          SELECT DISTINCT
            payer_id
          , accountid
@@ -7816,14 +7816,13 @@ views:
          , domainname
          , domainid
          , lower(engineversion)
-         , instancetype
          , CAST("concat"("year", '-', "month", '-', "day") AS date)
          , max(CAST("concat"("year", '-', "month", '-', "day") AS date)) OVER (ORDER BY domainid ASC)
          FROM
            ${data_collection_database_name}.inventory_opensearch_domains_data
          WHERE (CAST("concat"("year", '-', "month", '-', "day") AS date) >= ("date_trunc"('day', current_date) - INTERVAL  '15' DAY))
       )
-      , sanitised_opensearch_domains (payer_id, accountid, region, domainidentifier, domainname, engineversion, instancetype, norm_factor_instance_size) AS (
+      , sanitised_opensearch_domains (payer_id, accountid, region, domainidentifier, domainname, engineversion) AS (
          SELECT DISTINCT
            payer_id
          , accountid
@@ -7831,8 +7830,6 @@ views:
          , concat('domain/', domainname)
          , domainname
          , engineversion
-         , instancetype
-         , split_part(instancetype, '.', 2)
          FROM
            preprocessed_opensearch_domains
          WHERE (collection_date = max_collection_date)
@@ -7849,7 +7846,7 @@ views:
          , osu.domainname
          , c.line_item_resource_id
          , osu.engineversion
-         , osu.instancetype
+         , c.product_instance_type
          , isnf.instance_size
          , isnf.normalization_factor
          , c.pricing_unit
@@ -7861,8 +7858,8 @@ views:
            ((("${cur2_database}"."${cur2_table_name}" c
          INNER JOIN sanitised_opensearch_domains osu ON ((c.bill_payer_account_id = osu.payer_id) AND (c.line_item_usage_account_id = osu.accountid) AND (c.product['region'] = osu.region) AND (split_part(c.line_item_resource_id, ':', 6) = osu.domainidentifier)))
          INNER JOIN account_map accmap ON (c.line_item_usage_account_id = accmap.account_id))
-         INNER JOIN instance_size_norm_factors isnf ON (osu.norm_factor_instance_size = isnf.instance_size))
-         WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND ((c.product_servicecode = 'AmazonES') AND (product_product_family = 'Amazon OpenSearch Service Instance') AND (line_item_operation = 'ESDomain')) AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage')))
+         INNER JOIN instance_size_norm_factors isnf ON (regexp_extract(c.product_instance_type, '.+?\.(.+?)\.search', 1) = isnf.instance_size))
+         WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND ((c.product_servicecode = 'AmazonES') AND (product_product_family = 'Amazon OpenSearch Service Instance') AND (line_item_operation = 'ESDomain')) AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage')) AND (NOT (c.line_item_usage_type IN ('OpenSearchExtendedSupport'))))
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
       )
       SELECT
