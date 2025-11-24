@@ -1,5 +1,23 @@
 # What's new in Extended Support Cost Projection
 
+## Extended Support Cost Projection - v4.0.4
+
+**Important:** This version requires the data collection version 3.2.0+. Update to this version requires a forced update. Since this is a major version upgrade, the `cid-cmd` tool will ask to confirm a recursive update or not. Please make sure to confirm the recursive update by answering **yes** to continue the update process and have the new Elasticache dataset and Athena view deployed for the dashboard.
+
+If you have modified the Extended Support Cost Projection dashboard visuals, these changes will be overridden when the dashboard is updated. Consider backing-up the existing dashboard by creating an analysis from it if you want to keep a reference to customised visuals so you can re-apply them after the update takes place.
+
+To update run these commands in your CloudShell (recommended) or other terminal:
+
+```
+python3 -m ensurepip --upgrade
+pip3 install --upgrade cid-cmd
+cid-cmd update --dashboard-id extended-support-cost-projection --force --recursive
+```
+
+- Adjusting OpenSearch view query to resolve instance normalization factor based on CUR product_instance_type instead of the instance type retrieved from inventory data. The inventory data will continue to provide the different domains available.
+- Added OpenSearch version 1.1 to release calendar.
+- Added EKS Kubernetes versions 1.33 and 1.34 to release calendar.
+
 ## Extended Support Cost Projection - v4.0.3
 
 **Important:** This version requires the data collection version 3.2.0+. Update to this version requires a forced update. Since this is a major version upgrade, the `cid-cmd` tool will ask to confirm a recursive update or not. Please make sure to confirm the recursive update by answering **yes** to continue the update process and have the new Elasticache dataset and Athena view deployed for the dashboard.
