@@ -55,7 +55,7 @@ class IAM(CidBase):
             return
 
         if role_name in ['aws-quicksight-service-role-v0']:
-            logger.warning(f'{role_name} is a managed role. Please manage it in QuickSight UI. Make sure that equivalent of those polices is configured: {policies_arns}')
+            logger.info(f'{role_name} is a managed role. Please manage it in QuickSight UI. Make sure that equivalent of those polices is configured: {policies_arns}')
             return
 
         try:
@@ -73,7 +73,7 @@ class IAM(CidBase):
                     )
                     logger.info(f'Attached {policy_arn} to the role {role_name}')
                 except self.client.exceptions.ClientError as exc:
-                    logger.warning(f'Unable to attach policy {policy_arn} to {role_name}: {exc}')
+                    logger.info(f'Unable to attach policy {policy_arn} to {role_name}: {exc}')
 
 
     def ensure_role_for_crawler(self, s3bucket, database, table, role_name: str='CidCmdCrawlerRole', policy_name: str="CidCmdGlueCrawlerPolicy") -> None:
