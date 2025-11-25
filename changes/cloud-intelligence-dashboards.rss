@@ -8,6 +8,26 @@
     <lastBuildDate>Fri, 17 Oct 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Extended Support Cost Projection - v4.0.4</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v404</link>
+      <pubDate>Tue, 25 Nov 2024 12:00:00 GMT</pubDate>
+      <category><![CDATA[Update]]></category>
+      <guid isPermaLink="false">a1b2c3d4-e5f6-7890-1234-567890abcdef</guid>
+      <description>Extended Support Cost Projection - v4.0.4</description>
+      <content:encoded><![CDATA[
+          <div>
+            <ul>
+              <li>Adjusting OpenSearch view query to resolve instance normalization factor based on CUR product_instance_type instead of the instance type retrieved from inventory data. The inventory data will continue to provide the different domains available.</li>
+              <li>Added OpenSearch version 1.1 to release calendar.</li>
+              <li>Added EKS Kubernetes versions 1.33 and 1.34 to release calendar.</li>
+              <li>Adjusted Aurora MySQL 3 year 1 start date to 2028-05-01.</li>
+            </ul>
+          </div>
+        ]]>
+    </content:encoded>
+    </item>
+    <item>
       <title>[Update] Graviton Savings Dashboard v3.0.0</title>
       <link>https://github.com/gurajani-aws/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-graviton-savings.md</link>
       <pubDate>Mon, 24 Nov 2025 09:00:00 GMT</pubDate>
@@ -35,7 +55,7 @@
       <link>
         https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---570
       </link>
-      <pubDate>Mon, 16 Dec 2024 09:00:00 GMT</pubDate>
+      <pubDate>Tue, 25 Nov 2024 06:00:00 GMT</pubDate>
       <category><![CDATA[Dashboard Update]]></category>
       <guid isPermaLink="false">a7f8e9d2-3c4b-5e6f-9a8b-1c2d3e4f5a6b</guid>
       <description>CUDOS Dashboard v5.7.0</description>
