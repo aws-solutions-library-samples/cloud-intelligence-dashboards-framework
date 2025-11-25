@@ -1,5 +1,19 @@
 # What's new in the Graviton Savings Dashboard
 
+## Graviton Savings Dashboard v3.0.0:
+```
+cid-cmd update --dashboard-id graviton-savings --force --recursive
+```
+* Add EC2 Analysis improvements:
+  * Performance based cost modeling with NIH reduction
+  * Graviton generation selection and savings analysis
+* Add new Graviton Mapping tab for EC2 pricing reference and cross generational mapping
+* Enable cost-allocation tag filtering functionality
+* Add new Summary tab with unified view across services
+* Extend Reserved Instance analysis for RDS, ElastiCache, and OpenSearch
+* Fix ElastiCache Valkey eligibility in savings analysis
+* Update documentation and user guides
+
 ## Graviton Savings Dashboard v2.2.0:
 ```
 cid-cmd update --dashboard-id graviton-savings --force 

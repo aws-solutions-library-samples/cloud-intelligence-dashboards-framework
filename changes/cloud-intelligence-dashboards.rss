@@ -8,6 +8,29 @@
     <lastBuildDate>Fri, 17 Oct 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Graviton Savings Dashboard v3.0.0</title>
+      <link>https://github.com/gurajani-aws/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-graviton-savings.md</link>
+      <pubDate>Mon, 24 Nov 2025 09:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">b8g9f0e3-4d5c-6f7g-0b9c-2d3e4f5g6h7c</guid>
+      <description>Graviton Savings Dashboard v3.0.0</description>
+      <content:encoded><![CDATA[
+    <div>
+      <ul>
+        <li><strong>Enhanced EC2 Analysis:</strong><br/>
+          • Added performance-based cost modeling with dynamic savings recalculation based on Normalized Instance Hours (NIH) reduction<br/>
+          • Implemented Graviton generation selection for modeling savings across different generations</li>
+        <li><strong>Graviton Mapping:</strong> Added new dedicated tab for comprehensive EC2 pricing reference and cross generational mapping</li>
+        <li><strong>Tag Integration:</strong> Enhanced filtering capabilities with support for customer-defined cost allocation tags, enabling workload-specific analysis and alignment with existing AWS cost management structure</li>
+        <li><strong>Summary View:</strong> Added new Summary tab providing consolidated view across EC2, RDS, ElastiCache, and OpenSearch services with unified savings analysis and adoption tracking</li>
+        <li><strong>Service Coverage:</strong> Extended analysis to include Reserved Instances for RDS, ElastiCache, and OpenSearch services, previously limited to On-Demand instances only</li>
+        <li><strong>Bug Fix:</strong> Corrected ElastiCache Valkey eligibility in Graviton migration analysis</li>
+        <li><strong>General:</strong> Updated documentation and user guides with new feature explanations and best practices</li>
+      </ul>
+    </div>
+      ]]></content:encoded>    
+    </item>
+    <item>
       <title>[Update] CUDOS Dashboard v5.7.0</title>
       <link>
         https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---570
