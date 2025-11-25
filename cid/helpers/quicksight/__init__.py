@@ -341,7 +341,7 @@ class QuickSight(CidBase):
             self._principal_arn = group.get('Arn')
 
         if not self._principal_arn:
-            raise CidCritical('Cannot find principal_arn. Please provide --quicksight-username or --quicksight-groupname')
+            raise CidCritical('Cannot find principal_arn. Please provide --quicksight-user or --quicksight-group')
         return self._principal_arn
 
 
