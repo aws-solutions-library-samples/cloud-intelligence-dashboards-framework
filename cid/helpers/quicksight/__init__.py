@@ -1383,7 +1383,7 @@ class QuickSight(CidBase):
                     order=True,
                 )
                 if taxonomy:
-                    create_parameters['Definition'] = add_filter_to_dashboard_definition(create_parameters['Definition'], taxonomy)
+                    create_parameters['Definition'] = add_filter_to_dashboard_definition(create_parameters['Definition'], taxonomy, taxonomy_dataset=definition.get('taxonomyDataset'))
                     create_parameters['Definition'] = patch_group_by(create_parameters['Definition'], taxonomy)
         else:
             logger.debug(f'Definition = {definition}')
