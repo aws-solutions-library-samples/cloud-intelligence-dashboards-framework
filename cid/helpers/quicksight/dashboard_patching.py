@@ -135,7 +135,7 @@ def delete_parameter_control(dashboard_definition: Dict[str, Any], parameter_nam
 
     return dashboard_definition
 
-def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], field_names: List[str]) -> Dict[str, Any]:
+def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], field_names: List[str], taxonomy_dataset: str=None ) -> Dict[str, Any]:
     """ Add a filter on the specified fields to all datasets in a QuickSight definition
 
     param dashboard_definition (dict): The QuickSight definition JSON
@@ -154,7 +154,8 @@ def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], fie
         for alternative in mapping.get(field_name.lower(), []):
             dashboard_definition = delete_parameter_control(dashboard_definition, alternative)
 
-    dataset_identifier = get_most_used_dataset(dashboard_definition)
+    dataset_identifier = taxonomy_dataset or get_most_used_dataset(dashboard_definition)
+    logger.critical(f'leading dataset = {taxonomy_dataset}')
     filter_ids = []
     # FIXME: try to do linked filter controls
     for field_name in reversed(field_names):
