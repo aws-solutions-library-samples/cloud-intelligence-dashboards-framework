@@ -155,7 +155,7 @@ def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], fie
             dashboard_definition = delete_parameter_control(dashboard_definition, alternative)
 
     dataset_identifier = taxonomy_dataset or get_most_used_dataset(dashboard_definition)
-    logger.critical(f'leading dataset = {taxonomy_dataset}')
+    logger.debug(f'leading dataset = {taxonomy_dataset}')
     filter_ids = []
     # FIXME: try to do linked filter controls
     for field_name in reversed(field_names):
