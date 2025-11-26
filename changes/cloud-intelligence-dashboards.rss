@@ -8,6 +8,72 @@
     <lastBuildDate>Fri, 17 Oct 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Extended Support Cost Projection - v4.0.4</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v404</link>
+      <pubDate>Tue, 25 Nov 2024 12:00:00 GMT</pubDate>
+      <category><![CDATA[Update]]></category>
+      <guid isPermaLink="false">a1b2c3d4-e5f6-7890-1234-567890abcdef</guid>
+      <description>Extended Support Cost Projection - v4.0.4</description>
+      <content:encoded><![CDATA[
+          <div>
+            <ul>
+              <li>Adjusting OpenSearch view query to resolve instance normalization factor based on CUR product_instance_type instead of the instance type retrieved from inventory data. The inventory data will continue to provide the different domains available.</li>
+              <li>Added OpenSearch version 1.1 to release calendar.</li>
+              <li>Added EKS Kubernetes versions 1.33 and 1.34 to release calendar.</li>
+              <li>Adjusted Aurora MySQL 3 year 1 start date to 2028-05-01.</li>
+            </ul>
+          </div>
+        ]]>
+    </content:encoded>
+    </item>
+    <item>
+      <title>[Update] Graviton Savings Dashboard v3.0.0</title>
+      <link>https://github.com/gurajani-aws/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-graviton-savings.md</link>
+      <pubDate>Mon, 24 Nov 2025 09:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">b8g9f0e3-4d5c-6f7g-0b9c-2d3e4f5g6h7c</guid>
+      <description>Graviton Savings Dashboard v3.0.0</description>
+      <content:encoded><![CDATA[
+    <div>
+      <ul>
+        <li><strong>Enhanced EC2 Analysis:</strong><br/>
+          • Added performance-based cost modeling with dynamic savings recalculation based on Normalized Instance Hours (NIH) reduction<br/>
+          • Implemented Graviton generation selection for modeling savings across different generations</li>
+        <li><strong>Graviton Mapping:</strong> Added new dedicated tab for comprehensive EC2 pricing reference and cross generational mapping</li>
+        <li><strong>Tag Integration:</strong> Enhanced filtering capabilities with support for customer-defined cost allocation tags, enabling workload-specific analysis and alignment with existing AWS cost management structure</li>
+        <li><strong>Summary View:</strong> Added new Summary tab providing consolidated view across EC2, RDS, ElastiCache, and OpenSearch services with unified savings analysis and adoption tracking</li>
+        <li><strong>Service Coverage:</strong> Extended analysis to include Reserved Instances for RDS, ElastiCache, and OpenSearch services, previously limited to On-Demand instances only</li>
+        <li><strong>Bug Fix:</strong> Corrected ElastiCache Valkey eligibility in Graviton migration analysis</li>
+        <li><strong>General:</strong> Updated documentation and user guides with new feature explanations and best practices</li>
+      </ul>
+    </div>
+      ]]></content:encoded>    
+    </item>
+    <item>
+      <title>[Update] CUDOS Dashboard v5.7.0</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---570
+      </link>
+      <pubDate>Tue, 25 Nov 2025 06:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">a7f8e9d2-3c4b-5e6f-9a8b-1c2d3e4f5a6b</guid>
+      <description>CUDOS Dashboard v5.7.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Security:</strong> Added new AWS Shield and AWS Web Application Firewall section with comprehensive visuals including 'AWS Shield and AWS WAF Spend per Service', 'Shield Advanced Subscription Spend per Payer Account', 'Recommendations to consolidate Shield Advanced subscriptions', 'AWS Shield and AWS WAF Spend per Account', 'AWS Shield and AWS WAF Spend per Region', 'AWS Shield and AWS WAF Spend per Usage Type Group', 'AWS Shield and AWS WAF Detailed View', 'AWS Shield and AWS WAF Spend per Resource', 'AWS Shield and AWS WAF Resource Detailed View', 'Total Cost of Idle AWS WAF Web ACLs without Requests', and 'Idle AWS WAF Web ACLs without Requests'</li>
+    <li><strong>Analytics:</strong> Amazon QuickSight visuals renamed to Amazon QuickSight Suite. Improved Usage Type Group mappings and added visuals with Reader Pro and Author Pro users including 'QuickSight Suite Reader Users and Cost', 'QuickSight Suite Capacity Reader Sessions' and 'Q Questions Usage and Cost'</li>
+    <li><strong>Executive: RI/SP Summary:</strong> New section 'RI/SP - Unused Commitment(s) Insights' with visuals 'Monthly Unused RI/SP by Commitment Type', 'Unused RI / SP Detailed view' and 'Unused RI / SP - Commitment ARN Details'. Improved filters for 'Amortized Spend by Purchase Option' and 'Net Savings' visuals</li>
+    <li><strong>AI/ML:</strong> Added visuals for total AI/ML spend per service. Performance improvements for 'Bedrock Unit Cost' visual</li>
+    <li><strong>Executive: Trends:</strong> Added ability to switch trend view dimensions to Taxonomy fields and Service Category</li>
+    <li><strong>General:</strong> Updated Service Category mapping. Added Region filter in global controls</li>
+    <li><strong>Taxonomy Explorer:</strong> Added Service Category dimension to Group By control</li>
+  </ul>
+</div>
+    ]]></content:encoded>    
+    </item>
+    <item>
       <title>[Update] Graviton Savings Dashboard v2.2.0</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/add-resilience-hub/changes/CHANGELOG-graviton-savings.md
@@ -29,6 +95,7 @@
     </div>
     ]]></content:encoded>
      </item>
+    <item>
       <title>[Update] SCAD Containers Cost Allocation Dashboard - v4.0.0</title>
       <link>
        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md#media-services-insights-hub---v112
@@ -63,7 +130,7 @@
       </link>
       <pubDate>Fri, 17 Oct 2025 12:00:00 GMT</pubDate>
       <category><![CDATA[Update]]></category>
-      <guid isPermaLink="false">f50ec0b7-f960-400d-91f0-c42a6d44e3d0</guid>
+      <guid isPermaLink="false">b4c7d8e1-2f5a-4b9c-8e3d-1a6f9c2b5e8a</guid>
       <description>Media Services Insights Hub v1.1.2 - Update</description>
       <content:encoded><![CDATA[
     <div>
@@ -201,6 +268,7 @@ cid-cmd update --dashboard-id ta-organizational-view --recursive
         <p><strong>Security tab:</strong> AWS CloudTrail Logging check is replaced by AWS CloudTrail Management Event Logging check with improved accuracy</p>
     </div>
     ]]></content:encoded>
+    </item>
     <item>
       <title>[New Dashboard] ResilienceVue Dashboard v1.0.0</title>
       <link>
@@ -228,7 +296,8 @@ cid-cmd update --dashboard-id ta-organizational-view --recursive
       </ul>
     </div>
     ]]></content:encoded>
-     </item>  
+     </item>
+    <item>
       <title>[Update] CUDOS Dashboard v5.6.1</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-cudos.md#cudos---561

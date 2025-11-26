@@ -24,7 +24,7 @@ dashboards:
     - savings_plan_a_r_n
     - tags_json
     file: ./CUDOS-v5-definition.yaml
-    version: v5.6.1
+    version: v5.7.0
 datasets: {}
 crawlers: {}
 views: {}

@@ -42,7 +42,19 @@ dashboards:
           ifelse(${scope2Method}="market-based method", {total_mbm_emissions_value}
           , {total_lbm_emissions_value}
           )
-        Name: scope2_method_total_emissions_value
+        Name: total_emissions_value
+      - DataSetIdentifier: sus_carbon_emissions
+        Expression: |-
+          ifelse(${scope2Method}="market-based method", {total_scope_2_mbm_emissions_value}
+          , {total_scope_2_lbm_emissions_value}
+          )
+        Name: total_scope_2_emissions_value
+      - DataSetIdentifier: sus_carbon_emissions
+        Expression: |-
+          ifelse(${scope2Method}="market-based method", {total_scope_3_mbm_emissions_value}
+          , {total_scope_3_lbm_emissions_value}
+          )
+        Name: total_scope_3_emissions_value
       - DataSetIdentifier: sus_compute_ec2
         Expression: |-
           ifelse(${GroupByPara} = 'Linked Account',
@@ -654,7 +666,7 @@ dashboards:
             Configuration:
               CustomFilterListConfiguration:
                 CategoryValues:
-                - v1.0.0
+                - v3.0.0
                 MatchOperator: CONTAINS
                 NullOption: NON_NULLS_ONLY
             FilterId: 08d7cdf2-a43e-4187-ace2-98557ebfee3e
@@ -3148,7 +3160,7 @@ dashboards:
               - location-based method
               - market-based method
             SourceParameterName: scope2Method
-            Title: Scope 2 Method
+            Title: Location/ market-based method
             Type: SINGLE_SELECT
         SheetControlLayouts:
         - Configuration:
@@ -3232,9 +3244,37 @@ dashboards:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: scope2_method_total_emissions_value
+                        ColumnName: total_scope_1_emissions_value
                         DataSetIdentifier: sus_carbon_emissions
                       FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717311848
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          NumberDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 5
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: total_scope_2_emissions_value
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: 596df742-e4cf-4678-81ea-46e101aa1675.2.1762435134798
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          NumberDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 5
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: total_scope_3_emissions_value
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: 5e762219-8ae2-4ccd-aea2-0b5b56a07ba4.3.1762435137368
                       FormatConfiguration:
                         FormatConfiguration:
                           NumberDisplayFormatConfiguration:
@@ -3251,7 +3291,7 @@ dashboards:
                 CategorySort:
                 - FieldSort:
                     Direction: ASC
-                    FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717311848
+                    FieldId: c76d8008-4ede-425f-8e40-fc2705e176c2.usage_period_end.0.1742379968237
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
                 SmallMultiplesLimitConfiguration:
@@ -3266,6 +3306,12 @@ dashboards:
                   - FieldTooltipItem:
                       FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717311848
                       Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 596df742-e4cf-4678-81ea-46e101aa1675.2.1762435134798
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 5e762219-8ae2-4ccd-aea2-0b5b56a07ba4.3.1762435137368
+                      Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
@@ -3273,7 +3319,7 @@ dashboards:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: scope2_method_total_emissions_value
+                      ColumnName: total_scope_1_emissions_value
                       DataSetIdentifier: sus_carbon_emissions
                     FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717311848
                   CustomLabel: Emissions in MTCO2e
@@ -3283,7 +3329,7 @@ dashboards:
                 HierarchyId: 0ef752fc-70ff-46fd-94ae-f69834368202
             Subtitle:
               FormatText:
-                RichText: <visual-subtitle>Select Scope 2 method (market- or location-based)
+                RichText: <visual-subtitle>Select emissions method (market- or location-based)
                   in the control on top</visual-subtitle>
               Visibility: VISIBLE
             Title:
@@ -3291,7 +3337,7 @@ dashboards:
                 RichText: |-
                   <visual-title>
                     <inline font-size="14px">
-                      <b>Total Carbon Emissions (Scope 1 and Scope 2) over all selected Account IDs per month</b>
+                      <b>Total Carbon Emissions (Scope 1, Scope 2, Scope 3) over all selected Account IDs per month in MTCO2e</b>
                     </inline>
                   </visual-title>
               Visibility: VISIBLE
@@ -3342,7 +3388,7 @@ dashboards:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: scope2_method_total_emissions_value
+                        ColumnName: total_emissions_value
                         DataSetIdentifier: sus_carbon_emissions
                       FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717335310
                       FormatConfiguration:
@@ -3357,15 +3403,15 @@ dashboards:
               Orientation: HORIZONTAL
               SortConfiguration:
                 CategoryItemsLimit:
-                  OtherCategories: INCLUDE
+                  OtherCategories: EXCLUDE
                 CategorySort:
                 - FieldSort:
                     Direction: DESC
-                    FieldId: 92b3fd72-954d-4f94-a85c-05325e2a066e.2.1751617984798
+                    FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717335310
                 ColorItemsLimit:
-                  OtherCategories: INCLUDE
+                  OtherCategories: EXCLUDE
                 SmallMultiplesLimitConfiguration:
-                  OtherCategories: INCLUDE
+                  OtherCategories: EXCLUDE
               Tooltip:
                 FieldBasedTooltip:
                   AggregationVisibility: HIDDEN
@@ -3386,7 +3432,7 @@ dashboards:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: scope2_method_total_emissions_value
+                      ColumnName: total_emissions_value
                       DataSetIdentifier: sus_carbon_emissions
                     FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717335310
                   CustomLabel: Emissions in MTCO2e
@@ -3401,7 +3447,7 @@ dashboards:
                 RichText: |-
                   <visual-title>
                     <inline font-size="14px">
-                      <b>Carbon Emissions (Scope 1 and Scope 2) per account ID and region</b>
+                      <b>Carbon Emissions (Scope 1, Scope 2, Scope 3) per account ID and region</b>
                     </inline>
                   </visual-title>
               Visibility: VISIBLE
@@ -3465,7 +3511,7 @@ dashboards:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: scope2_method_total_emissions_value
+                        ColumnName: total_emissions_value
                         DataSetIdentifier: sus_carbon_emissions
                       FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717502293
                       FormatConfiguration:
@@ -3509,7 +3555,7 @@ dashboards:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: scope2_method_total_emissions_value
+                      ColumnName: total_emissions_value
                       DataSetIdentifier: sus_carbon_emissions
                     FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717502293
                   CustomLabel: Emissions in MTCO2e
@@ -3589,7 +3635,7 @@ dashboards:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: scope2_method_total_emissions_value
+                        ColumnName: total_emissions_value
                         DataSetIdentifier: sus_carbon_emissions
                       FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717515372
                       FormatConfiguration:
@@ -3633,7 +3679,7 @@ dashboards:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: scope2_method_total_emissions_value
+                      ColumnName: total_emissions_value
                       DataSetIdentifier: sus_carbon_emissions
                     FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717515372
                   CustomLabel: Emissions in MTCO2e
@@ -3696,7 +3742,7 @@ dashboards:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: scope2_method_total_emissions_value
+                        ColumnName: total_emissions_value
                         DataSetIdentifier: sus_carbon_emissions
                       FieldId: 07a10654-dc4e-4929-91b1-da9214184165.2.1749717530565
                       FormatConfiguration:
@@ -3755,13 +3801,18 @@ dashboards:
                         NullValueFormatConfiguration:
                           NullString: 'null'
                       HierarchyId: 344de0b0-0e6b-407a-a7bc-7857bbcb5162
-                  Colors: []
+                  Colors:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: payer_account_id
+                        DataSetIdentifier: sus_carbon_emissions
+                      FieldId: c01a9a46-b2c5-4293-ad45-89532d8ff839.payer_account_id.2.1762858091898
                   Values:
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: scope2_method_total_emissions_value
+                        ColumnName: total_emissions_value
                         DataSetIdentifier: sus_carbon_emissions
                       FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717543453
                       FormatConfiguration:
@@ -3795,6 +3846,9 @@ dashboards:
                   - FieldTooltipItem:
                       FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717543453
                       Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: c01a9a46-b2c5-4293-ad45-89532d8ff839.payer_account_id.2.1762858091898
+                      Visibility: VISIBLE
                   TooltipTitleType: PRIMARY_VALUE
                 SelectedTooltipType: DETAILED
                 TooltipVisibility: VISIBLE
@@ -3802,7 +3856,7 @@ dashboards:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: scope2_method_total_emissions_value
+                      ColumnName: total_emissions_value
                       DataSetIdentifier: sus_carbon_emissions
                     FieldId: 07a10654-dc4e-4929-91b1-da9214184165.1.1749717543453
                   CustomLabel: Emissions in MTCO2e
@@ -3817,7 +3871,7 @@ dashboards:
                 RichText: |-
                   <visual-title>
                     <inline font-size="14px">
-                      <b>Total Carbon Emissions (Scope 1 and Scope 2) over all selected Management IDs per month</b>
+                      <b>Total Carbon Emissions (Scope 1, Scope 2, Scope 3) over all selected Management IDs per month</b>
                     </inline>
                   </visual-title>
               Visibility: VISIBLE
@@ -3868,7 +3922,7 @@ dashboards:
                   OtherCategories: INCLUDE
                 CategorySort:
                 - FieldSort:
-                    Direction: DESC
+                    Direction: ASC
                     FieldId: c01a9a46-b2c5-4293-ad45-89532d8ff839.usage_period_start.1.1749717824028
                 ColorItemsLimit:
                   OtherCategories: INCLUDE
@@ -3968,7 +4022,7 @@ dashboards:
                 Narrative: "<narrative>\n  <block align=\"center\">\n    <inline font-size=\"\
                   68.8px\">Sustainability Proxy\_</inline>\n    <inline color=\"#f6f9f9\"\
                   \ font-size=\"68.8px\">Dashboard</inline>\n  </block>\n  <br/>\n  <block\
-                  \ align=\"center\">\n    <inline font-size=\"68.8px\">\n      <b>v5.0.1</b>\n\
+                  \ align=\"center\">\n    <inline font-size=\"68.8px\">\n      <b>v6.0.0</b>\n\
                   \    </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n    <inline\
                   \ font-size=\"22.4px\">\n      <b>Sustainability Dashboard Metrics Optimization\
                   \ Solution</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"\
@@ -3995,7 +4049,7 @@ dashboards:
             Title:
               Visibility: VISIBLE
             VisualId: 0d89259f-86e0-48f6-a41b-4ca335f8ab8b
-    version: v5.0.1
+    version: v6.0.0
 datasets:
   sus_s3_storage_all:
     data:
@@ -4152,6 +4206,31 @@ datasets:
               SubType: FLOAT
             - Name: total_lbm_emissions_unit
               Type: STRING
+            - Name: total_scope_1_emissions_value
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: total_scope_1_emissions_unit
+              Type: STRING
+            - Name: total_scope_2_lbm_emissions_value
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: total_scope_2_lbm_emissions_unit
+              Type: STRING
+            - Name: total_scope_2_mbm_emissions_value
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: total_scope_2_mbm_emissions_unit
+              Type: STRING
+            - Name: total_scope_3_lbm_emissions_value
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: total_scope_3_lbm_emissions_unit
+              Type: STRING
+            - Name: total_scope_3_mbm_emissions_value
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: total_scope_3_mbm_emissions_unit
+              Type: STRING
             - Name: model_version
               Type: STRING
             - Name: product_code
@@ -4186,6 +4265,16 @@ datasets:
               - total_mbm_emissions_unit
               - total_lbm_emissions_value
               - total_lbm_emissions_unit
+              - total_scope_1_emissions_value
+              - total_scope_1_emissions_unit
+              - total_scope_2_lbm_emissions_value
+              - total_scope_2_lbm_emissions_unit
+              - total_scope_2_mbm_emissions_value
+              - total_scope_2_mbm_emissions_unit
+              - total_scope_3_lbm_emissions_value
+              - total_scope_3_lbm_emissions_unit
+              - total_scope_3_mbm_emissions_value
+              - total_scope_3_mbm_emissions_unit
               - model_version
               - product_code
               - usage_period_start
@@ -4420,7 +4509,7 @@ datasets:
               Type: INTEGER
             - Name: accbuskpi
               Type: INTEGER
-            - Name: Usage
+            - Name: usage
               Type: DECIMAL
               SubType: FIXED
         e7b46e3d-87cf-473e-908b-7870ffa90a32:
@@ -5153,6 +5242,16 @@ views:
       , total_mbm_emissions_unit
       , total_lbm_emissions_value
       , total_lbm_emissions_unit
+      , total_scope_1_emissions_unit
+      , total_scope_1_emissions_value
+      , total_scope_2_lbm_emissions_unit
+      , total_scope_2_lbm_emissions_value
+      , total_scope_2_mbm_emissions_unit
+      , total_scope_2_mbm_emissions_value
+      , total_scope_3_lbm_emissions_unit
+      , total_scope_3_lbm_emissions_value
+      , total_scope_3_mbm_emissions_unit
+      , total_scope_3_mbm_emissions_value
       , model_version
       , product_code
       , usage_period_start

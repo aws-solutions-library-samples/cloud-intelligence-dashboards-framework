@@ -139,7 +139,7 @@ Parameters:
   QuickSightDataSourceRoleName:
     Type: String
     Default: 'CidQuickSightDataSourceRole'
-    Description: "IAM Role Name to be used on QuickSight Datasource Creation. If empty - then the Default QuickSight Role will be used; if provided other existing role, will use that Role; if name equal to 'CidQuickSightDataSourceRole', then a role will be created by this CloudFromation)."
+    Description: "IAM Role Name to be used on QuickSight Datasource Creation. If empty - then the Default QuickSight Role will be used; if provided other existing role, will use that Role; if name equal to 'CidQuickSightDataSourceRole', then a role will be created by this CloudFormation)."
   ShareDashboard:
     Type: String
     Default: 'yes'
@@ -2090,7 +2090,7 @@ Resources:
             - LambdaLayerBucketPrefixIsManaged
             - !FindInMap [RegionMap, !Ref 'AWS::Region', BucketName]
             - !Sub '${LambdaLayerBucketPrefix}-${AWS::Region}' # Region added for backward compatibility
-        S3Key: 'cid-resource-lambda-layer/cid-4.4.3.zip' #replace version here if needed
+        S3Key: 'cid-resource-lambda-layer/cid-4.4.4.zip' #replace version here if needed
       CompatibleRuntimes:
         - python3.10
         - python3.11

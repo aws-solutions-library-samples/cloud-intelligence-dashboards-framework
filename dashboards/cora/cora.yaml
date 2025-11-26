@@ -113,7 +113,6 @@ dashboards:
               ${GroupBy} = 'Management Account Id', {source_account_id},
               ${GroupBy} = 'Source Account Id', {source_account_id},
               ${GroupBy} = 'Tag', Tag1,
-              ${GroupBy} = 'Business Unit', 'N/A',
               // Add ${GroupBy}
               'N/A'
           )
@@ -3973,7 +3972,6 @@ dashboards:
               Values:
               - Account Id
               - Account Name
-              - Business Unit
               - Management Account Id
               - Tag
             SourceParameterName: GroupBy
@@ -4960,7 +4958,6 @@ dashboards:
               Values:
               - Account Id
               - Account Name
-              - Business Unit
               - Management Account Id
               - Tag
             SourceParameterName: GroupBy
@@ -6777,7 +6774,7 @@ dashboards:
             \    <inline font-size=\"24px\">ecommended\_</inline>\n    <inline font-size=\"\
             24px\">\n      <b>A</b>\n    </inline>\n    <inline font-size=\"24px\">ctions</inline>\n\
             \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
-            >v0.0.9</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+            >v0.0.10</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
             \  <block align=\"center\">\n    <inline font-size=\"24px\">\n      <a href=\"\
             https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/cora-dashboard.html#usage-guide\"\
             \ target=\"_blank\">Documentation</a>\n    </inline>\n    <inline font-size=\"\
