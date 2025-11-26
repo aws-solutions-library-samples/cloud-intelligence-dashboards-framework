@@ -94,7 +94,7 @@ class Athena(CidBase):
             choices.append(self.defaults.get('DatabaseName') + ' (CREATE NEW)')
         self._DatabaseName = get_parameter(
             param_name='athena-database',
-            message="Select AWS Athena database to use as default for queries. " + (f"Use {default_database} if not sure." if default_database else ''),
+            message="Select AWS Athena database to use as default for queries and views. " + (f"Use {default_database} if not sure." if default_database else ''),
             choices=choices,
             default=default_database,
         )
