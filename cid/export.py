@@ -159,7 +159,6 @@ def export_analysis(qs, athena, glue):
         if dataset.raw.get('LogicalTableMap'):
             dataset_data["LogicalTableMap"] = dataset.raw['LogicalTableMap']
 
-
         for key, value in dataset_data['PhysicalTableMap'].items(): # iterate all sub tables
             if 'RelationalTable' in value \
                 and 'DataSourceArn' in value['RelationalTable'] \
