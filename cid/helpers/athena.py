@@ -82,9 +82,11 @@ class Athena(CidBase):
 
         # check if we have a default database
         logger.info(f'athena_databases = {athena_databases}')
-        default_databases = [database for database in athena_databases if database == self.defaults.get('DatabaseName')]
+        default_database = None
         if 'cid_cur' in athena_databases:
-            default_databases = ['cid_cur']
+            default_database = 'cid_cur'
+        elif self.defaults.get('DatabaseName') in athena_databases:
+            default_database = self.defaults.get('DatabaseName')
 
         # Ask user
         choices = list(athena_databases)
@@ -92,9 +94,9 @@ class Athena(CidBase):
             choices.append(self.defaults.get('DatabaseName') + ' (CREATE NEW)')
         self._DatabaseName = get_parameter(
             param_name='athena-database',
-            message="Select AWS Athena database to use as default",
+            message="Select AWS Athena database to use as default for queries and views. " + (f"Use {default_database} if not sure." if default_database else ''),
             choices=choices,
-            default=default_databases[0] if default_databases else None,
+            default=default_database,
         )
         if self._DatabaseName.endswith( ' (CREATE NEW)'):
             self._DatabaseName = self.defaults.get('DatabaseName')
@@ -118,25 +120,26 @@ class Athena(CidBase):
                 self.WorkGroup = self._ensure_workgroup(name=get_parameters().get('athena-workgroup'))
                 return self._WorkGroup
             logger.info('Selecting Athena workgroup...')
-            workgroups = self.list_work_groups()
-            logger.info(f'Found {len(workgroups)} workgroups: {", ".join([wg.get("Name") for wg in workgroups])}')
-            # if len(workgroups) == 0:
+            work_group_names = [wgr['Name'] for wgr in self.list_work_groups()]
+            logger.debug(f'Found {len(work_group_names)} work_groups: {work_group_names}')
+            # if len(work_group_names) == 0:
             #     self.WorkGroup = self._ensure_workgroup(name=self.defaults.get('WorkGroup'))
-            # elif len(workgroups) == 1:
+            # elif len(work_group_names) == 1:
             #     # Silently choose the only workgroup that is available
-            #     self.WorkGroup = self._ensure_workgroup(name=workgroups.pop().get('Name'))
+            #     self.WorkGroup = self._ensure_workgroup(name=work_group_names[0])
             # else:
             # Select default workgroup if present
-            if self.defaults.get('WorkGroup') not in {wgr['Name'] for wgr in workgroups}:
-                workgroups.append({'Name': f"{self.defaults.get('WorkGroup')} (create new)"})
-            default_workgroup = next(iter([wgr.get('Name') for wgr in workgroups if  self.defaults.get('WorkGroup') in wgr['Name']]), None)
-            if default_workgroup:
-                logger.info(f'Found "{default_workgroup}" as a default workgroup')
+            if self.defaults.get('WorkGroup') not in work_group_names:
+                work_group_names.append(f"{self.defaults.get('WorkGroup')} (create new)")
+            default_workgroup = None
+            if self.defaults.get('WorkGroup') in work_group_names:
+                default_workgroup = self.defaults.get('WorkGroup')
+                logger.debug(f'Found "{default_workgroup}" as a default workgroup')
             # Ask user
             selected_workgroup = get_parameter(
                 param_name='athena-workgroup',
-                message="Select Amazon Athena workgroup to use",
-                choices=[wgr['Name'] for wgr in workgroups],
+                message="Select Amazon Athena workgroup to use. " + (f"Use {default_workgroup} if not sure." if default_workgroup else ''),
+                choices=work_group_names,
                 default=default_workgroup,
                 fuzzy=False,
             )
