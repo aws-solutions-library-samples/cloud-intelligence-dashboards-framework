@@ -162,6 +162,8 @@ datasets:
     dependsOn:
       views:
       - account_map
+      - graviton_mapping
+      - modernization_mapping
       - graviton_opensearch_view
     schedules:
     - default
@@ -320,8 +322,10 @@ datasets:
       ImportMode: SPICE
     dependsOn:
       views:
-      - graviton_elasticache_view
       - account_map
+      - graviton_mapping
+      - modernization_mapping
+      - graviton_elasticache_view
     schedules:
     - default
   graviton_mapping:
@@ -675,6 +679,7 @@ datasets:
     dependsOn:
       views:
       - account_map
+      - graviton_mapping
       - graviton_ec2_view
     schedules:
     - default
@@ -852,6 +857,8 @@ datasets:
     dependsOn:
       views:
       - account_map
+      - modernization_mapping
+      - graviton_mapping
       - graviton_rds_view
     schedules:
     - default
