@@ -1,5 +1,8 @@
 # What's new in the Media Services Insights Hub (MSIH)
 
+## Media Services Insights Hub - v1.1.3
+* Improve the reservation purchase recommendation calculation.
+
 ## Media Services Insights Hub - v1.1.2
 * Clarifies some guidance text and filters hourly to 30 days from last data collection, rather than current time.
 

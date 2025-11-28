@@ -467,25 +467,30 @@ CalculatedFields:
     ), \"Live Origination & Packaging (GB)\",\n\t\t\tcontains({usage_type}, \"vod-origin\"\
     ), \"VOD Origination & Packaging (GB)\",\n\t\t\tconcat(\"EMP other: \", {product_family},\
     \ \":\", operation, \":\", {usage_type})\n\t\t),\n\tcontains({product_code}, \"\
-    MediaTailor\"),\n\t\tifelse(\n\t\t\tcontains({usage_type}, \"DataTransfer\"),\
-    \ \"Ad Delivery to Internet (GB)\",\n\t\t\tcontains({usage_type}, \"CloudFront\"\
-    ), \"Ad Delivery to CloudFront (GB)\",\n\t\t\tcontains({usage_type}, \"AWS-Out-Bytes\"\
-    ) or contains({usage_type}, \"AWS-In-Bytes\"), \"Data Transfer Cross Region (GB)\"\
-    ,\n\t\t\toperation = \"VOD\", \"Ad Insertions VOD (Count)\",\n\t\t\tcontains({usage_type},\
-    \ \"AdInsertion\"), \"Ad Insertions Live (Count)\",\n\t\t\tcontains({usage_type},\
-    \ \"ChannelHoursB\"), \"Channel Assembly Basic (Hrs)\",\n\t\t\tcontains({usage_type},\
-    \ \"ChannelHoursS\"), \"Channel Assembly Standard (Hrs)\",\n\t\t\tconcat(\"EMT\
-    \ other: \", {product_family}, \":\", operation, \":\", {usage_type})\n\t\t),\n\
-    \tcontains({product_code}, \"MediaConnect\"),\n\t\tifelse(\n\t\t\toperation =\
-    \ \"RunningFlow\", \"Running Flow (Hrs)\",\n\t\t\tcontains({usage_type}, \"DataTransfer-In-Bytes\"\
-    ) or contains({usage_type}, \"AWS-In-Bytes\"), \"Data Ingress (GB)\",\n\t\t\t\
-    contains({usage_type}, \"DataTransfer-Out-Bytes\"), \"Data Transfer Internet (GB)\"\
-    ,\n\t\t\tcontains({usage_type}, \"DataTransfer-Regional-Bytes\"), \"Data Transfer\
-    \ Intra-Region (GB)\",\n\t\t\tcontains({usage_type}, \"AWS-Out-Bytes\"), \"Data\
-    \ Transfer Cross Region (GB)\",\n\t\t\tconcat(\"EMX other: \", {product_family},\
+    MediaTailor\"),\n\t\tifelse(\n\t\t\t(startsWith({usage_type}, \"EU-DataTransfer\"\
+    ) or startsWith({usage_type}, \"US-DataTransfer\") or startsWith({usage_type},\
+    \ \"APC-DataTransfer\")), \"Ad Delivery CloudFront to Internet (GB)\",\n\t\t\t\
+    contains({usage_type}, \"DataTransfer\"), \"Ad Delivery Direct to Internet (GB)\"\
+    ,\n\t\t\tcontains({usage_type}, \"CloudFront\"), \"Ad Delivery to CloudFront (GB)\"\
+    ,\n\t\t\tcontains({usage_type}, \"AWS-Out-Bytes\") or contains({usage_type}, \"\
+    AWS-In-Bytes\"), \"Data Transfer Cross Region (GB)\",\n\t\t\toperation = \"VOD\"\
+    , \"Ad Insertions VOD (Count)\",\n\t\t\tcontains({usage_type}, \"AdInsertion\"\
+    ), \"Ad Insertions Live (Count)\",\n\t\t\tcontains({usage_type}, \"ChannelHoursB\"\
+    ), \"Channel Assembly Basic (Hrs)\",\n\t\t\tcontains({usage_type}, \"ChannelHoursS\"\
+    ), \"Channel Assembly Standard (Hrs)\",\n\t\t\tconcat(\"EMT other: \", {product_family},\
+    \ \":\", operation, \":\", {usage_type})\n\t\t),\n\tcontains({product_code}, \"\
+    MediaConnect\"),\n\t\tifelse(\n\t\t\toperation = \"RunningFlow\", \"Running Flow\
+    \ (Hrs)\",\n\t\t\tcontains({usage_type}, \"DataTransfer-In-Bytes\") or contains({usage_type},\
+    \ \"AWS-In-Bytes\"), \"Data Ingress (GB)\",\n\t\t\tcontains({usage_type}, \"DataTransfer-Out-Bytes\"\
+    ), \"Data Transfer Internet (GB)\",\n\t\t\tcontains({usage_type}, \"DataTransfer-Regional-Bytes\"\
+    ), \"Data Transfer Intra-Region (GB)\",\n\t\t\tcontains({usage_type}, \"AWS-Out-Bytes\"\
+    ), \"Data Transfer Cross Region (GB)\",\n\t\t\tconcat(\"EMX other: \", {product_family},\
     \ \":\", operation, \":\", {usage_type})\n\t\t),\n\tcontains({product_code}, \"\
     MediaStore\"), {product_family},\n\tNULL\n)"
   Name: Usage Category
+- DataSetIdentifier: msih_view
+  Expression: truncDate("DD", {usage_date})
+  Name: Usage Day
 - DataSetIdentifier: msih_view
   Expression: |-
     ifelse(
@@ -496,6 +501,15 @@ CalculatedFields:
 - DataSetIdentifier: msih_view
   Expression: '{usage_type}'
   Name: Usage Type
+- DataSetIdentifier: msih_view
+  Expression: |-
+    /*distinctCountOver({resource_id}, [{eml_transcode_profile_hour}], PRE_AGG)*/
+    distinct_count({resource_id}, [{eml_transcode_profile_hour}])
+  Name: eml_distinct_channels_per_hour
+- DataSetIdentifier: msih_view
+  Expression: ifelse(strlen({Transcoding Profile}) > 0 and {is_eml_idle} = 0, concat({linked_account_id},
+    {Transcoding Profile}, formatDate({usage_date}, "yyyyMMdd'T'HHmmss")), "")
+  Name: eml_transcode_profile_hour
 - DataSetIdentifier: msih_view
   Expression: dateDiff({billing_period}, addDateTime(1, "MM", {billing_period}), "HH")
   Name: hours_in_month
@@ -520,7 +534,7 @@ CalculatedFields:
 - DataSetIdentifier: msih_view
   Expression: |-
     ifelse(
-        {usage_date} >= addDateTime(-1 * ${EmlLookbackDays}, "DD", now()), 1, 0
+        {usage_date} >= addDateTime(-1 * ${d3da7afb-3669-48b1-ba6b-b726df1486cc}, "DD", now()), 1, 0
     )
   Name: is_eml_lookback_in_scope
 - DataSetIdentifier: msih_view
@@ -529,7 +543,7 @@ CalculatedFields:
     ) or contains({usage_type}, \"CloudFront\"), 1,\n\t\t\t0\n\t\t),\n    0\n)"
   Name: is_emp_data_transfer
 - DataSetIdentifier: msih_view
-  Expression: ifelse(dateDiff({usage_date}, {last_refresh_date}, "DD") < 30, 1, 0)
+  Expression: ifelse(dateDiff({usage_date}, {last_refresh_date}, "DD") < 25, 1, 0)
   Name: is_last_30days_collected
 - DataSetIdentifier: msih_view
   Expression: "ifelse(\n\toperation = \"CHANNEL_INPUT\" or operation = \"CHANNEL_OUTPUT\"\
@@ -540,8 +554,11 @@ CalculatedFields:
   Expression: '{Public Cost} - Cost'
   Name: public_vs_actual_cost_delta
 - DataSetIdentifier: msih_view
-  Expression: ({usage_quantity}/720)
-  Name: usage_divided_by_720_hours
+  Expression: ({usage_quantity}/(24 * (${EmlLookbackDays}-1)))
+  Name: usage_divided_by_lookback_hours
+- DataSetIdentifier: msih_view
+  Expression: '{usage_quantity}/24'
+  Name: usage_hour_days_per_day
 DataSetIdentifierDeclarations:
 - DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-reservations
   Identifier: msih_reservations
@@ -1689,8 +1706,6 @@ FilterGroups:
         - 806f73d8-230c-4deb-8a49-70a5c068e05f
         - 243d0afe-22f7-47e6-88f5-6921314e2961
         - 1dc2ecce-728d-4718-93b1-12417ebd7516
-        - e1fdaf1a-3ff9-4cf0-a452-0bf2eb28e5a9
-        - fef76ed9-46a2-4d63-a99d-22030154b7d0
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 4fd97787-a2d6-422b-8612-af1e64046d1b
@@ -3069,11 +3084,9 @@ FilterGroups:
         DataSetIdentifier: msih_view
       Configuration:
         CustomFilterListConfiguration:
-          CategoryValues:
-          - Basic
-          - Professional
           MatchOperator: CONTAINS
           NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
       FilterId: a7395754-9327-4770-851c-b53b3f2036a5
   ScopeConfiguration:
     SelectedSheets:
@@ -5399,6 +5412,25 @@ FilterGroups:
         - 919f3d64-edff-449a-befa-ca7b7a8141f0
         - 7f306008-6e37-497b-984b-ce0501612dab
   Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: f57f0084-34b0-48e4-9483-e8071e5f3287
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: is_eml_idle
+        DataSetIdentifier: msih_view
+      FilterId: 2ead39e9-7c1d-4815-9fab-ab03b1e73da5
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 0.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 652661af-5b76-4855-80ee-19e261578d3f
+        VisualIds:
+        - 806f73d8-230c-4deb-8a49-70a5c068e05f
+  Status: ENABLED
 Options: {}
 ParameterDeclarations:
 - IntegerParameterDeclaration:
@@ -5428,16 +5460,16 @@ ParameterDeclarations:
 - IntegerParameterDeclaration:
     DefaultValues:
       StaticValues:
-      - 30
-    Name: EmlLookbackDays
+      - 12
+    Name: MonthsLookback
     ParameterValueType: SINGLE_VALUED
     ValueWhenUnset:
       ValueWhenUnsetOption: RECOMMENDED_VALUE
 - IntegerParameterDeclaration:
     DefaultValues:
       StaticValues:
-      - 12
-    Name: MonthsLookback
+      - 30
+    Name: EmlLookbackDays
     ParameterValueType: SINGLE_VALUED
     ValueWhenUnset:
       ValueWhenUnsetOption: RECOMMENDED_VALUE
@@ -5650,114 +5682,114 @@ Sheets:
           ElementId: 2f46fd36-2205-4382-ac22-04a2483e6ba2
           ElementType: TEXT_BOX
           RowIndex: 10
-          RowSpan: 2
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 7
           ElementId: df1890f8-ecdb-451e-9e1e-eb307628f414
           ElementType: VISUAL
-          RowIndex: 12
+          RowIndex: 13
           RowSpan: 5
         - ColumnIndex: 7
           ColumnSpan: 7
           ElementId: c84721ca-cf03-4b0b-b181-dcff9c001ae3
           ElementType: VISUAL
-          RowIndex: 12
+          RowIndex: 13
           RowSpan: 5
         - ColumnIndex: 14
           ColumnSpan: 7
           ElementId: b984bf33-ca83-4bf4-8667-0adbcbdff020
           ElementType: VISUAL
-          RowIndex: 12
+          RowIndex: 13
           RowSpan: 5
         - ColumnIndex: 21
           ColumnSpan: 7
           ElementId: 8c3ad38b-6695-4438-a2af-114fb9fee3c9
           ElementType: VISUAL
-          RowIndex: 12
+          RowIndex: 13
           RowSpan: 5
         - ColumnIndex: 28
           ColumnSpan: 8
           ElementId: f76e331e-7cd5-476e-bfc2-b22ce0795f5f
           ElementType: VISUAL
-          RowIndex: 12
+          RowIndex: 13
           RowSpan: 5
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 8e72c2c4-c19c-451c-8e86-c11fac4c47a0
           ElementType: TEXT_BOX
-          RowIndex: 17
-          RowSpan: 2
+          RowIndex: 18
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 7
           ElementId: df85d83a-6b57-4c39-bc1b-7558152e87d7
           ElementType: VISUAL
-          RowIndex: 19
+          RowIndex: 21
           RowSpan: 5
         - ColumnIndex: 7
           ColumnSpan: 7
           ElementId: 833b4318-5d49-4d19-81c1-1bb3ae76852b
           ElementType: VISUAL
-          RowIndex: 19
+          RowIndex: 21
           RowSpan: 5
         - ColumnIndex: 14
           ColumnSpan: 7
           ElementId: ff5a4b11-fdf6-4021-af76-afdde6d999a1
           ElementType: VISUAL
-          RowIndex: 19
+          RowIndex: 21
           RowSpan: 5
         - ColumnIndex: 21
           ColumnSpan: 7
           ElementId: 83df9967-9331-4e54-b2fd-b529f9630611
           ElementType: VISUAL
-          RowIndex: 19
+          RowIndex: 21
           RowSpan: 5
         - ColumnIndex: 28
           ColumnSpan: 8
           ElementId: a76655db-7599-4507-b153-2e6f662c5dd9
           ElementType: VISUAL
-          RowIndex: 19
+          RowIndex: 21
           RowSpan: 5
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 796d949d-25b5-4fe2-9431-86947f8a0a3c
           ElementType: VISUAL
-          RowIndex: 24
+          RowIndex: 26
           RowSpan: 7
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 17e94240-fb8b-4bfc-9d44-0c4ffc2ec931
           ElementType: VISUAL
-          RowIndex: 24
+          RowIndex: 26
           RowSpan: 5
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 969a9e31-6556-4304-9662-f6d2173c0cb0
           ElementType: VISUAL
-          RowIndex: 29
+          RowIndex: 31
           RowSpan: 5
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: e72da725-1343-4d14-a6db-edcf1522018b
           ElementType: VISUAL
-          RowIndex: 31
+          RowIndex: 33
           RowSpan: 11
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 51518e2f-0734-4fc1-bdec-7677142a96c2
           ElementType: VISUAL
-          RowIndex: 34
+          RowIndex: 36
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 8883b80b-9470-4af5-b9c0-5eaa61c3598f
           ElementType: VISUAL
-          RowIndex: 42
+          RowIndex: 44
           RowSpan: 12
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 149a67a4-cfc8-42ff-bb5e-0c8c500ecc6e
           ElementType: VISUAL
-          RowIndex: 42
+          RowIndex: 44
           RowSpan: 12
   Name: Executive Summary
   ParameterControls:
@@ -5908,7 +5940,8 @@ Sheets:
           RowSpan: 1
   SheetId: c08d9356-82db-44bd-b20d-c3359027ca57
   TextBoxes:
-  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>Media\
+  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AWS\_\
+      </b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"40px\">\n    <b>Media\
       \ Services Insights Hub</b>\n  </inline>\n  <br/>\n  <inline color=\"#fec48c\"\
       \ font-size=\"22px\">\n    <b>\_</b>\n  </inline>\n  <inline color=\"#efefe9\"\
       \ font-size=\"18px\">\n    <i>This dashboard is designed to help you track,\
@@ -5952,15 +5985,17 @@ Sheets:
       \ the corresponding product-specific detail tab</i>\n      </inline>\n    </li>\n\
       \  </ul>\n</text-box>"
     SheetTextBoxId: 86cd6b08-035c-4c2b-9a88-912329522c35
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">\_S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">\_S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
       30px\">UMMARY</inline>\n</text-box>"
     SheetTextBoxId: 2f46fd36-2205-4382-ac22-04a2483e6ba2
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      30px\">UMMARY</inline>\n</text-box>"
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\"\
+      >UMMARY</inline>\n</text-box>"
     SheetTextBoxId: 8e72c2c4-c19c-451c-8e86-c11fac4c47a0
   Visuals:
   - KPIVisual:
@@ -6960,7 +6995,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -7635,7 +7670,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -8414,132 +8449,144 @@ Sheets:
           ElementId: 25ae5434-01af-4fd6-b505-ca73df85ee6e
           ElementType: TEXT_BOX
           RowIndex: 10
-          RowSpan: 2
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 12
           ElementId: a4a15dae-b6a2-4794-ac44-41e5bb202842
           ElementType: VISUAL
-          RowIndex: 12
+          RowIndex: 13
           RowSpan: 9
         - ColumnIndex: 12
           ColumnSpan: 12
           ElementId: ff9da80e-dc5a-4c35-b545-e04ad2410009
           ElementType: VISUAL
-          RowIndex: 12
+          RowIndex: 13
           RowSpan: 9
         - ColumnIndex: 24
           ColumnSpan: 12
           ElementId: 8df0a038-ac09-47bc-b0cf-c3abc3ca6573
           ElementType: VISUAL
-          RowIndex: 12
+          RowIndex: 13
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 2
           ElementId: 397fd424-fa7e-4cba-8375-21e0bfe752ff
           ElementType: PARAMETER_CONTROL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 12
         - ColumnIndex: 2
           ColumnSpan: 17
           ElementId: e1fdaf1a-3ff9-4cf0-a452-0bf2eb28e5a9
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 12
         - ColumnIndex: 19
           ColumnSpan: 17
           ElementId: fef76ed9-46a2-4d63-a99d-22030154b7d0
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 12
         - ColumnIndex: 0
           ColumnSpan: 29
           ElementId: d51c35cd-d554-4639-82ec-713b929e75a6
           ElementType: TEXT_BOX
-          RowIndex: 33
-          RowSpan: 5
+          RowIndex: 34
+          RowSpan: 6
         - ColumnIndex: 29
           ColumnSpan: 7
           ElementId: 0a58170a-9870-4eab-84db-4497fb2c384b
           ElementType: FILTER_CONTROL
-          RowIndex: 33
-          RowSpan: 5
+          RowIndex: 34
+          RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 0308143d-ce59-4071-b3e6-7b2c612461e0
           ElementType: VISUAL
-          RowIndex: 38
+          RowIndex: 40
           RowSpan: 6
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: be37da6b-f80c-45ee-afd8-fc5e1fd8d0d1
           ElementType: VISUAL
-          RowIndex: 38
+          RowIndex: 40
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 3
           ElementId: 37ebf190-66d8-44b5-9a9f-067ca44bd4a5
           ElementType: PARAMETER_CONTROL
-          RowIndex: 44
+          RowIndex: 46
           RowSpan: 10
         - ColumnIndex: 3
           ColumnSpan: 33
           ElementId: e61a2c58-5441-4d79-b525-14fbaa91379e
           ElementType: VISUAL
-          RowIndex: 44
+          RowIndex: 46
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 64a2da59-9bc6-41c5-9982-3221ac2b9991
           ElementType: VISUAL
-          RowIndex: 54
+          RowIndex: 56
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 67029010-af24-429d-89aa-a920caaa7805
           ElementType: VISUAL
-          RowIndex: 64
+          RowIndex: 66
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: df48dd52-e806-4d02-a0b3-70428eb6da1f
           ElementType: VISUAL
-          RowIndex: 72
+          RowIndex: 74
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 9468c54c-3f3a-4f8a-9db5-0a7a704da488
           ElementType: VISUAL
-          RowIndex: 82
+          RowIndex: 84
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 2eaa808d-cf20-413f-bd26-30c9fd06a297
           ElementType: TEXT_BOX
-          RowIndex: 90
+          RowIndex: 92
           RowSpan: 2
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 3f2bab35-3767-4932-b8ea-b11eec5dcdae
           ElementType: TEXT_BOX
-          RowIndex: 92
-          RowSpan: 4
+          RowIndex: 94
+          RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 1dc2ecce-728d-4718-93b1-12417ebd7516
           ElementType: VISUAL
-          RowIndex: 96
-          RowSpan: 10
+          RowIndex: 100
+          RowSpan: 13
+        - ColumnIndex: 18
+          ColumnSpan: 18
+          ElementId: de4c06e6-11c6-4f4c-8ad2-a902e2c8c2e5
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 100
+          RowSpan: 3
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 243d0afe-22f7-47e6-88f5-6921314e2961
           ElementType: VISUAL
-          RowIndex: 96
+          RowIndex: 103
           RowSpan: 10
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 9d809ff1-0fbd-41a6-9133-ab9d612e6e7b
+          ElementType: TEXT_BOX
+          RowIndex: 113
+          RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 806f73d8-230c-4deb-8a49-70a5c068e05f
           ElementType: VISUAL
-          RowIndex: 106
+          RowIndex: 121
           RowSpan: 9
   Name: MediaLive Reservation & Savings
   ParameterControls:
@@ -8564,7 +8611,7 @@ Sheets:
         - '90'
         - '180'
         - '365'
-      SourceParameterName: EmlLookbackDays
+      SourceParameterName: MissingParameterd3da7afb366948b1ba6bb726df1486cc
       Title: Days
       Type: SINGLE_SELECT
   - List:
@@ -8660,6 +8707,21 @@ Sheets:
       SourceParameterName: EmlReservationSavingRate
       StepSize: 1.0
       Title: Potential Reservation Savings Rate
+  - Slider:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: LARGE
+          Visibility: VISIBLE
+      MaximumValue: 90.0
+      MinimumValue: 1.0
+      ParameterControlId: de4c06e6-11c6-4f4c-8ad2-a902e2c8c2e5
+      SourceParameterName: EmlLookbackDays
+      StepSize: 1.0
+      Title: Lookback Days
   SheetControlLayouts:
   - Configuration:
       GridLayout:
@@ -8718,21 +8780,20 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 2
           RowSpan: 1
-        - ColumnIndex: 3
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: e185c0cd-c3b6-49c1-89ce-819728f175a3
           ElementType: PARAMETER_CONTROL
-          RowIndex: 2
           RowSpan: 1
   SheetId: 652661af-5b76-4855-80ee-19e261578d3f
   TextBoxes:
-  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AEML\
-      \ Reservations &amp; Savings</b>\n  </inline>\n  <br/>\n  <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n    <i>This tab analyzes AWS Elemental MediaLive reservation\
-      \ usage and opportunity.</i>\n  </inline>\n  <br/>\n  <br/>\n  <inline color=\"\
-      #fec48c\" font-size=\"24px\">\n    <b>\_S</b>\n  </inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"20px\">\n    <b>ECTIONS</b>\n  </inline>\n  <br/>\n  <ul>\n\
-      \    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"\
+  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AEML\_\
+      </b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"40px\">\n    <b>Reservations\
+      \ &amp; Savings</b>\n  </inline>\n  <br/>\n  <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n    <i>This tab analyzes AWS Elemental MediaLive reservation usage\
+      \ and opportunity.</i>\n  </inline>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"24px\">\n    <b>\_S</b>\n  </inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"20px\">\n    <b>ECTIONS</b>\n  </inline>\n  <br/>\n  <ul>\n  \
+      \  <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"\
       16px\">\n        <b>\n          <i>Savings Overview</i>\n        </b>\n    \
       \  </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <b>\n\
       \          <i>\_</i>\n        </b>\n      </inline>\n      <inline color=\"\
@@ -8765,21 +8826,25 @@ Sheets:
       >\n        <i>Use the controls at the top of the tab to filter your profile\
       \ scope.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 9b2dd7a7-0f08-4323-8bc5-1addd986224b
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">S</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">AVINGS</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">\_O</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">S</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">AVINGS</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">\_O</inline>\n  <inline color=\"#fec48c\" font-size=\"\
       30px\">VERVIEW</inline>\n</text-box>"
     SheetTextBoxId: 25ae5434-01af-4fd6-b505-ca73df85ee6e
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">A</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">DDITIONAL</inline>\n  <inline\
-      \ color=\"#fec48c\" font-size=\"36px\">\_O</inline>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"30px\">PPORTUNITY</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li\
-      \ class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
-      >\n        <i>Use these visuals to identify parameter combinations that could\
-      \ benefit from additional reservation coverage.</i>\n      </inline>\n    </li>\n\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\">A</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">DDITIONAL</inline>\n\
+      \  <inline color=\"#fec48c\" font-size=\"36px\">\_O</inline>\n  <inline color=\"\
+      #fec48c\" font-size=\"30px\">PPORTUNITY</inline>\n  <br/>\n  <br/>\n  <ul>\n\
       \    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"\
-      16px\">\n        <i>See also:\_</i>\n      </inline>\n      <inline color=\"\
-      #09add4\" font-size=\"16px\">\n        <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/input-output-reservations.html\"\
+      16px\">\n        <i>Use these visuals to identify parameter combinations that\
+      \ could benefit from additional reservation coverage.</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
+      \ font-size=\"16px\">\n        <i>Adjust the Lookback Days to change the time\
+      \ scope of the calculations.</i>\n      </inline>\n    </li>\n    <li class=\"\
+      ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
+      \  <i>See also:\_</i>\n      </inline>\n      <inline color=\"#09add4\" font-size=\"\
+      16px\">\n        <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/input-output-reservations.html\"\
       \ target=\"_blank\">\n          <b>\n            <i>\n              <u>How input\
       \ and output reservations work</u>\n            </i>\n          </b>\n     \
       \   </a>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n     \
@@ -8790,21 +8855,22 @@ Sheets:
       \ Elemental MediaLive reservations</u>\n            </i>\n          </b>\n \
       \       </a>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 3f2bab35-3767-4932-b8ea-b11eec5dcdae
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">E</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"32px\">FFICIENCY</inline>\n  <inline\
-      \ color=\"#fec48c\" font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"32px\">RACKING</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">E</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"32px\">FFICIENCY</inline>\n  <inline color=\"\
+      #fec48c\" font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      32px\">RACKING</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Use these\
+      \ visuals to track overall coverage and utilization for your existing reservations.</i>\n\
+      \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      #efefe9\" font-size=\"16px\">\n        <i>Median reservation utilization is\
+      \ based on an accounting for each hour of the month. In some cases a few hours\
+      \ of a day may reflect low utilization, which can be masked by the larger proportion\
+      \ of higher utilization.\_</i>\n      </inline>\n    </li>\n    <li class=\"\
       ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
-      \  <i>Use these visuals to track overall coverage and utilization for your existing\
-      \ reservations.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Median reservation\
-      \ utilization is based on an accounting for each hour of the month. In some\
-      \ cases a few hours of a day may reflect low utilization, which can be masked\
-      \ by the larger proportion of higher utilization.\_</i>\n      </inline>\n \
-      \   </li>\n    <li class=\"ql-indent-0\"/>\n    <li class=\"ql-indent-0\">\n\
-      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Use the threshold\
-      \ slider to inspect for reservations that potentially have brief periods of\
-      \ low utilization.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+      \  <i>Use the threshold slider to inspect for reservations that potentially\
+      \ have brief periods of low utilization.</i>\n      </inline>\n    </li>\n \
+      \ </ul>\n</text-box>"
     SheetTextBoxId: d51c35cd-d554-4639-82ec-713b929e75a6
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"24px\">A</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"20px\">BOUT\_</inline>\n  <inline color=\"\
@@ -8834,6 +8900,47 @@ Sheets:
         </inline>
       </text-box>
     SheetTextBoxId: 2eaa808d-cf20-413f-bd26-30c9fd06a297
+  - Content: "<text-box>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"24px\"\
+      >\n    <b>G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"20px\"\
+      >\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <inline font-size=\"16px\">An\
+      \ EML reservation can only be used on one channel at a time. The recommendations\
+      \ presented below have three calculations to project a potential purchase amount\
+      \ for your consideration. In all cases, you should consider if your future usage\
+      \ for each account and profile will continue as your previous usage evaluated\
+      \ in the lokback scope:</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"\
+      ql-indent-0\">\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n  \
+      \    </inline>\n      <inline font-size=\"16px\">\n        <b>\n          <i>Minimum\
+      \ Purchase</i>\n        </b>\n      </inline>\n      <inline font-size=\"16px\"\
+      >\n        <i>\_number represents the lowest concurrency rate of simultaneous\
+      \ channels during a 1-hour window over the last\_</i>\n      </inline>\n   \
+      \   <inline font-size=\"16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
+      \        </i>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
+      days. Purchasing reservations at that level should be 100% utilized, if past\
+      \ patterns continue.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n      </inline>\n\
+      \      <inline font-size=\"16px\">\n        <b>\n          <i>Maximum Purchase</i>\n\
+      \        </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
+      number represents the highest concurrency rate of simultaneous channels during\
+      \ a 1-hour window over the last\_</i>\n      </inline>\n      <inline font-size=\"\
+      16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
+      \        </i>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
+      days. Purchasing reservations at that level might not be 100% utilized, if past\
+      \ patterns continue.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n      </inline>\n\
+      \      <inline font-size=\"16px\">\n        <b>\n          <i>Median Purchase</i>\n\
+      \        </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
+      number represents the statistical median (not average) concurrency rate of simultaneous\
+      \ channels during a 1-hour window over the last\_</i>\n      </inline>\n   \
+      \   <inline font-size=\"16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
+      \        </i>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
+      days. That is, half of the hours being evaluated had a concurrency rate of less\
+      \ than the median number and half had more. Purchasing reservations at this\
+      \ level might not be 100% utilized but should be more utilized than the Maximum\
+      \ number. You may consider purchasing at this level and still save money, even\
+      \ if they are not 100% utilized because the cost savings of the overall amount\
+      \ to transcoding time being discounted is significant enough to offset the idle\
+      \ time for that reservation.\_</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+    SheetTextBoxId: 9d809ff1-0fbd-41a6-9133-ab9d612e6e7b
   Visuals:
   - LineChartVisual:
       Actions:
@@ -9313,13 +9420,13 @@ Sheets:
         FieldOptions:
           SelectedFieldOptions:
           - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.11.1754685170416
-            Width: 219px
+            Width: 176px
           - CustomLabel: Linked Account
             FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1747068105054
             Width: 212px
-          - CustomLabel: Flow Direction
+          - CustomLabel: Flow
             FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.video_flow_direction.12.1756430011629
-            Width: 115px
+            Width: 72px
           - CustomLabel: Resolution
             FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_resolution.11.1752621853883
             Width: 84px
@@ -9328,13 +9435,13 @@ Sheets:
             Width: 62px
           - CustomLabel: Bit Rate
             FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_bit_rate.11.1752621873497
-            Width: 96px
+            Width: 85px
           - CustomLabel: Frame Rate
             FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_frame_rate.11.1752621885847
-            Width: 99px
+            Width: 94px
           - CustomLabel: Region
             FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.region.4.1747068129207
-            Width: 83px
+            Width: 103px
           - CustomLabel: OD Cost
             FieldId: 33332fff-4cd4-4b4e-8420-e9ffd6e0a644.10.1747070078113
             Width: 78px
@@ -9344,9 +9451,15 @@ Sheets:
           - CustomLabel: Total Hours
             FieldId: 266f487b-417e-4920-a59d-5b2b88c4af09.usage_quantity.2.1744081387149
             Width: 90px
-          - CustomLabel: Purchase Qty
-            FieldId: dbb276de-3898-4863-86fe-676fe56bec47.2.1747067499496
-            Width: 100px
+          - CustomLabel: Min. Purchase
+            FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.12.1763762637702
+            Width: 111px
+          - CustomLabel: Ma.x Purchase
+            FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769251451
+            Width: 119px
+          - CustomLabel: Med. Purchase
+            FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769712076
+            Width: 128px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -9454,21 +9567,25 @@ Sheets:
                           Visibility: VISIBLE
             - NumericalMeasureField:
                 AggregationFunction:
-                  SimpleNumericalAggregation: SUM
+                  SimpleNumericalAggregation: MIN
                 Column:
-                  ColumnName: usage_divided_by_720_hours
+                  ColumnName: eml_distinct_channels_per_hour
                   DataSetIdentifier: msih_view
-                FieldId: dbb276de-3898-4863-86fe-676fe56bec47.2.1747067499496
-                FormatConfiguration:
-                  FormatConfiguration:
-                    NumberDisplayFormatConfiguration:
-                      DecimalPlacesConfiguration:
-                        DecimalPlaces: 0
-                      NullValueFormatConfiguration:
-                        NullString: 'null'
-                      SeparatorConfiguration:
-                        ThousandsSeparator:
-                          Visibility: VISIBLE
+                FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.12.1763762637702
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: eml_distinct_channels_per_hour
+                  DataSetIdentifier: msih_view
+                FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769251451
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MEDIAN
+                Column:
+                  ColumnName: eml_distinct_channels_per_hour
+                  DataSetIdentifier: msih_view
+                FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769712076
         SortConfiguration:
           RowSort:
           - FieldSort:
@@ -9483,17 +9600,17 @@ Sheets:
       Subtitle:
         FormatText:
           RichText: <visual-subtitle>The charts above reflect overall profile usage
-            agnostic of account. Multiple entries may appear here based on account-specific
-            opportunity.</visual-subtitle>
+            agnostic of account. This chart estimates quantity to purchase to cover
+            total hours over the lookback period. Multiple entries may appear here
+            based on account-specific opportunity.</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: |-
-            <visual-title>
-              <inline font-size="16px">
-                <b>Recommended account-specific reservation purchases based on last 30 days</b>
-              </inline>
-            </visual-title>
+          RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Recommended\
+            \ account-specific reservation purchases based on last\_</b>\n  </inline>\n\
+            \  <inline font-size=\"16px\">\n    <b>\n      <parameter>${EmlLookbackDays}</parameter>\n\
+            \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_days</b>\n\
+            \  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 806f73d8-230c-4deb-8a49-70a5c068e05f
   - InsightVisual:
@@ -9554,12 +9671,11 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: |-
-            <visual-title>
-              <inline font-size="16px">
-                <b>Top net new reservation estimated savings based on usage (aggregated accounts, last 30 days)</b>
-              </inline>
-            </visual-title>
+          RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Top net\
+            \ new reservation estimated savings based on usage (aggregated accounts,\
+            \ last\_</b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\n  \
+            \    <parameter>${EmlLookbackDays}</parameter>\n    </b>\n  </inline>\n\
+            \  <inline font-size=\"16px\">\n    <b>\_days)</b>\n  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 243d0afe-22f7-47e6-88f5-6921314e2961
   - KPIVisual:
@@ -10002,7 +10118,7 @@ Sheets:
                 Column:
                   ColumnName: reservation_end_time
                   DataSetIdentifier: msih_reservations
-                DateGranularity: DAY
+                DateGranularity: HOUR
                 FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation_end_time.2.1744986268466
                 HierarchyId: 4637c335-fcfe-4c90-9501-51d0b35928e6
             Colors:
@@ -10533,6 +10649,8 @@ Sheets:
                           Visibility: VISIBLE
                       Suffix: '%'
         Legend:
+          Height: 229px
+          Position: BOTTOM
           Title:
             CustomLabel: Parameters
           Width: 320px
@@ -10559,6 +10677,8 @@ Sheets:
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
+        XAxisDisplayOptions:
+          AxisOffset: 36px
         XAxisLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -10584,12 +10704,11 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: |-
-            <visual-title>
-              <inline font-size="16px">
-                <b>Relative remaining on demand spend vs. current coverage (aggregated accounts, last 30 days)</b>
-              </inline>
-            </visual-title>
+          RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Relative\
+            \ remaining on demand spend vs. current coverage (aggregated accounts,\
+            \ last\_</b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\n  \
+            \    <parameter>${EmlLookbackDays}</parameter>\n    </b>\n  </inline>\n\
+            \  <inline font-size=\"16px\">\n    <b>\_days)</b>\n  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 1dc2ecce-728d-4718-93b1-12417ebd7516
   - BarChartVisual:
@@ -10853,6 +10972,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
+          AxisOffset: 351px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -10874,6 +10994,8 @@ Sheets:
             DataSetIdentifier: msih_view
           - ColumnName: usage_type
             DataSetIdentifier: msih_view
+          - ColumnName: Region
+            DataSetIdentifier: msih_view
           DrillDownFilters: []
           HierarchyId: be213006-920b-4bf7-86e1-bde713557da4
       Subtitle:
@@ -10887,8 +11009,8 @@ Sheets:
             \ profile hours by purchase option (top\_</b>\n  </inline>\n  <inline\
             \ font-size=\"16px\">\n    <b>\n      <parameter>${TopN}</parameter>\n\
             \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>, last\_\
-            </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\n      <parameter>${EmlLookbackDays}</parameter>\n\
-            \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_days)</b>\n\
+            </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\n      <parameter>${MonthsLookback}</parameter>\n\
+            \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_months)</b>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: e1fdaf1a-3ff9-4cf0-a452-0bf2eb28e5a9
@@ -11335,6 +11457,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
+          AxisOffset: 398px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -11354,6 +11477,8 @@ Sheets:
           Columns:
           - ColumnName: Transcoding Profile
             DataSetIdentifier: msih_view
+          - ColumnName: Region
+            DataSetIdentifier: msih_view
           - ColumnName: usage_type
             DataSetIdentifier: msih_view
           - ColumnName: video_codec
@@ -11371,8 +11496,8 @@ Sheets:
             \ transcoding profile by purchase option (top\_</b>\n  </inline>\n  <inline\
             \ font-size=\"16px\">\n    <b>\n      <parameter>${TopN}</parameter>\n\
             \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>, last\_\
-            </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\n      <parameter>${EmlLookbackDays}</parameter>\n\
-            \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_days)</b>\n\
+            </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\n      <parameter>${MonthsLookback}</parameter>\n\
+            \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_months)</b>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: fef76ed9-46a2-4d63-a99d-22030154b7d0
@@ -11443,6 +11568,7 @@ Sheets:
           Width: 636px
         PrimaryYAxisDisplayOptions:
           AxisOptions:
+            AxisOffset: 90px
             TickLabelOptions:
               LabelOptions:
                 FontConfiguration:
@@ -11613,144 +11739,144 @@ Sheets:
           ElementId: 736e1f30-9ed1-4ee5-b815-b4764c9953f8
           ElementType: TEXT_BOX
           RowIndex: 11
-          RowSpan: 2
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 5
           ElementId: f023e71b-deb5-46bb-bf3c-f73bc2f5ed8d
           ElementType: PARAMETER_CONTROL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 6
         - ColumnIndex: 5
           ColumnSpan: 13
           ElementId: 78642579-ac15-466d-a58f-c67f54ab7a44
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 6
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: a2aae540-c0da-4b17-9a23-3bcc07448ca2
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 34bc1b8a-7215-4f29-aefc-176db1f46c90
           ElementType: VISUAL
-          RowIndex: 19
+          RowIndex: 20
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 1d3367c8-49db-4a2c-9f0d-49a5fb4f5b2b
           ElementType: VISUAL
-          RowIndex: 19
+          RowIndex: 20
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: d2467169-52ed-49cb-8481-e29aff270329
           ElementType: TEXT_BOX
-          RowIndex: 28
-          RowSpan: 2
+          RowIndex: 29
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 5
           ElementId: e18bb5e4-db57-41f7-852c-d92793bd1d8d
           ElementType: PARAMETER_CONTROL
-          RowIndex: 30
+          RowIndex: 32
           RowSpan: 6
         - ColumnIndex: 5
           ColumnSpan: 13
           ElementId: 4b6dd934-ab36-4c7b-8c93-a6c6b1b3201e
           ElementType: VISUAL
-          RowIndex: 30
+          RowIndex: 32
           RowSpan: 6
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 055f0abc-285f-49b7-8a2d-8d3edc7925cf
           ElementType: VISUAL
-          RowIndex: 30
+          RowIndex: 32
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: dd6e9e80-713a-4a0c-9021-1577a92fe009
           ElementType: VISUAL
-          RowIndex: 36
+          RowIndex: 38
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 26ab76e9-5846-473c-b4c2-e77ed9fe10bc
           ElementType: VISUAL
-          RowIndex: 36
+          RowIndex: 38
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 5128925a-37fc-4e10-b0bb-da9aeb493ea0
           ElementType: TEXT_BOX
-          RowIndex: 45
+          RowIndex: 47
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 8fe7f2e4-4167-49a4-87e9-a03614fdcd15
           ElementType: VISUAL
-          RowIndex: 49
+          RowIndex: 51
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 16
           ElementId: 3e18aacc-ade2-4b1e-8d8f-dee49f950a47
           ElementType: VISUAL
-          RowIndex: 56
+          RowIndex: 58
           RowSpan: 11
         - ColumnIndex: 16
           ColumnSpan: 4
           ElementId: b93893af-5753-4dfb-a82f-81d5a9a32ec6
           ElementType: FILTER_CONTROL
-          RowIndex: 56
+          RowIndex: 58
           RowSpan: 3
         - ColumnIndex: 20
           ColumnSpan: 16
           ElementId: ddf430ae-3917-497e-b033-18b14c87c708
           ElementType: VISUAL
-          RowIndex: 56
+          RowIndex: 58
           RowSpan: 11
         - ColumnIndex: 16
           ColumnSpan: 4
           ElementId: 88776387-5dbd-4564-ba42-6405a9841333
           ElementType: PARAMETER_CONTROL
-          RowIndex: 59
+          RowIndex: 61
           RowSpan: 3
         - ColumnIndex: 16
           ColumnSpan: 4
           ElementId: 75f2db5f-836e-4415-a331-f0db76ccdc3f
           ElementType: FILTER_CONTROL
-          RowIndex: 62
+          RowIndex: 64
           RowSpan: 5
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 40301eba-826a-462f-8a56-6ded11b11992
           ElementType: TEXT_BOX
-          RowIndex: 67
+          RowIndex: 69
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: f4e8b1e5-328d-454a-8219-18bcceb5e2da
           ElementType: VISUAL
-          RowIndex: 70
+          RowIndex: 72
           RowSpan: 16
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: a9f4fe01-d8a4-4e38-aad9-feff51852308
           ElementType: VISUAL
-          RowIndex: 70
+          RowIndex: 72
           RowSpan: 16
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 5dec24d1-dc40-468b-82d3-74b3c8ca5bee
           ElementType: VISUAL
-          RowIndex: 86
+          RowIndex: 88
           RowSpan: 11
         - ColumnIndex: 0
           ColumnSpan: 1
           ElementId: 203c707d-c067-4279-9aaa-168144345380
           ElementType: FILTER_CONTROL
-          RowIndex: 97
+          RowIndex: 99
           RowSpan: 1
   Name: MediaConvert
   ParameterControls:
@@ -11909,96 +12035,103 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: a312a2ab-38df-4dec-aa3c-3b85fa26a65b
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
   SheetId: ac236152-fd32-4423-8422-616ff0773fbd
   TextBoxes:
-  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"36px\">\n    <b>AWS\
-      \ Elemental MediaConvert\_</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
-      36px\">(AEMC)</inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"20px\"\
-      >\_\_\_</inline>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>S</b>\n\
-      \  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n    <b>ECTIONS</b>\n\
-      \  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline\
-      \ color=\"#fc850d\" font-size=\"16px\">\n        <b>\n          <i>Usage Summary</i>\n\
-      \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
-      16px\">\n        <i>\_looks at channel usage by various categories.</i>\n  \
-      \    </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #fc850d\" font-size=\"16px\">\n        <b>\n          <i>Cost Summary</i>\n\
-      \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
-      16px\">\n        <i>\_provides breakouts by various dimensions.</i>\n      </inline>\n\
-      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\"\
-      \ font-size=\"16px\">\n        <b>\n          <i>Transcoding</i>\n        </b>\n\
-      \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
-      \    <b>\n          <i>\_</i>\n        </b>\n      </inline>\n      <inline\
-      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>explores trends by parameter\
-      \ profiles.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
-      \      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n        \
-      \  <i>Job Detail</i>\n        </b>\n      </inline>\n      <inline color=\"\
+  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"36px\">\n    <b>AWS\_\
+      </b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"36px\">\n    <b>Elemental\
+      \ MediaConvert\_</b>\n  </inline>\n  <inline color=\"#cbcbcb\" font-size=\"\
+      30px\">\n    <b>(AEMC)</b>\n  </inline>\n  <br/>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"20px\">\_\_\_</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      22px\">\n    <b>S</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      18px\">\n    <b>ECTIONS</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"\
+      ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"16px\">\n      \
+      \  <b>\n          <i>Usage Summary</i>\n        </b>\n      </inline>\n    \
+      \  <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>\_looks at channel\
+      \ usage by various categories.</i>\n      </inline>\n    </li>\n    <li class=\"\
+      ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"16px\">\n      \
+      \  <b>\n          <i>Cost Summary</i>\n        </b>\n      </inline>\n     \
+      \ <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>\_provides breakouts\
+      \ by various dimensions.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
+      \    <i>Transcoding</i>\n        </b>\n      </inline>\n      <inline color=\"\
       #efefe9\" font-size=\"16px\">\n        <b>\n          <i>\_</i>\n        </b>\n\
       \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
-      \    <i>reveals different dimensions of individual jobs.</i>\n      </inline>\n\
-      \    </li>\n  </ul>\n  <br/>\n  <inline font-size=\"16px\">\n    <i>\_</i>\n\
-      \  </inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n   \
-      \ <b>\_\_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\"\
-      >\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#09add4\" font-size=\"16px\">\n        <a href=\"https://aws.amazon.com/mediaconvert/pricing/\"\
-      \ target=\"_blank\">\n          <b>\n            <i>\n              <u>AEMC\
-      \ pricing and cost</u>\n            </i>\n          </b>\n        </a>\n   \
-      \   </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n       \
-      \ <b>\n          <i>\n            <u>\_</u>\n          </i>\n        </b>\n\
-      \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
-      \    <i>is primarily driven by transcoding time, as measured in minutes (Mins).</i>\n\
-      \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #efefe9\" font-size=\"16px\">\n        <i>Select the Usage Category or categories\
-      \ you wish to view from the list.</i>\n      </inline>\n    </li>\n    <li class=\"\
-      ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
-      \  <i>To analyze Usage, avoid mixing categories that measure by different units.\
-      \ For example, \"Hrs\"  and \"GB\".</i>\n      </inline>\n    </li>\n    <li\
-      \ class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
-      >\n        <i>To analyze Cost, you can mix different units because the end measure\
-      \ is cost.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
-    SheetTextBoxId: 586a5610-4de3-4aa1-8673-603267630f23
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">T</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">RANSCODING</inline>\n  <br/>\n\
-      \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>Profile consists of\_</i>\n      </inline>\n\
+      \    <i>explores trends by parameter profiles.</i>\n      </inline>\n    </li>\n\
+      \    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"\
+      16px\">\n        <b>\n          <i>Job Detail</i>\n        </b>\n      </inline>\n\
       \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <b>\n        \
-      \  <i>Region</i>\n        </b>\n      </inline>\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>,\_</i>\n      </inline>\n      <inline color=\"\
-      #efefe9\" font-size=\"16px\">\n        <b>\n          <i>Product Tier</i>\n\
+      \  <i>\_</i>\n        </b>\n      </inline>\n      <inline color=\"#efefe9\"\
+      \ font-size=\"16px\">\n        <i>reveals different dimensions of individual\
+      \ jobs.</i>\n      </inline>\n    </li>\n  </ul>\n  <br/>\n  <inline font-size=\"\
+      16px\">\n    <i>\_</i>\n  </inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      22px\">\n    <b>\_\_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      18px\">\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"\
+      ql-indent-0\">\n      <inline color=\"#09add4\" font-size=\"16px\">\n      \
+      \  <a href=\"https://aws.amazon.com/mediaconvert/pricing/\" target=\"_blank\"\
+      >\n          <b>\n            <i>\n              <u>AEMC pricing and cost</u>\n\
+      \            </i>\n          </b>\n        </a>\n      </inline>\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <b>\n          <i>\n      \
+      \      <u>\_</u>\n          </i>\n        </b>\n      </inline>\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>is primarily driven by\_\
+      </i>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n\
+      \        <b>\n          <i>transcoding time</i>\n        </b>\n      </inline>\n\
+      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>, as measured\
+      \ in minutes (Mins).</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Select the\
+      \ Usage Category or categories you wish to view from the list.</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
+      \ font-size=\"16px\">\n        <i>To analyze Usage, avoid mixing categories\
+      \ that measure by different units. For example, \"Hrs\"  and \"GB\".</i>\n \
+      \     </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      #efefe9\" font-size=\"16px\">\n        <i>To analyze Cost, you can mix different\
+      \ units because the end measure is cost.</i>\n      </inline>\n    </li>\n \
+      \ </ul>\n</text-box>"
+    SheetTextBoxId: 586a5610-4de3-4aa1-8673-603267630f23
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">T</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">RANSCODING</inline>\n  <br/>\n  <br/>\n\
+      \  <ul>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>Profile consists of\_</i>\n      </inline>\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <b>\n          <i>Region</i>\n\
       \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
       16px\">\n        <i>,\_</i>\n      </inline>\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <b>\n          <i>Codec</i>\n        </b>\n \
-      \     </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n     \
-      \   <i>,\_</i>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
-      16px\">\n        <b>\n          <i>Resolution</i>\n        </b>\n      </inline>\n\
-      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>, and\_</i>\n\
+      \ font-size=\"16px\">\n        <b>\n          <i>Product Tier</i>\n        </b>\n\
       \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
-      \    <b>\n          <i>Quality\_</i>\n        </b>\n      </inline>\n      <inline\
-      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>parameters</i>\n      </inline>\n\
-      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>Filter by Region and/or Tier and/or Region\
-      \ agnostic</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+      \    <i>,\_</i>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <b>\n          <i>Codec</i>\n        </b>\n      </inline>\n\
+      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>,\_</i>\n \
+      \     </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n     \
+      \   <b>\n          <i>Resolution</i>\n        </b>\n      </inline>\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>, and\_</i>\n      </inline>\n\
+      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <b>\n        \
+      \  <i>Quality\_</i>\n        </b>\n      </inline>\n      <inline color=\"#efefe9\"\
+      \ font-size=\"16px\">\n        <i>parameters</i>\n      </inline>\n    </li>\n\
+      \    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>Filter by Region and/or Tier and/or Region agnostic</i>\n\
+      \      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 5128925a-37fc-4e10-b0bb-da9aeb493ea0
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">J</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">OB</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">\_D</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      30px\">ETAIL</inline>\n  <br/>\n</text-box>"
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">J</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">OB</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">\_D</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      30px\">ETAIL</inline>\n</text-box>"
     SheetTextBoxId: 40301eba-826a-462f-8a56-6ded11b11992
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"32px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">UMMARY</inline>\n\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"32px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"36px\"\
+      >S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">UMMARY</inline>\n\
       </text-box>"
     SheetTextBoxId: 736e1f30-9ed1-4ee5-b815-b4764c9953f8
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      30px\">UMMARY</inline>\n</text-box>"
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\"\
+      >UMMARY</inline>\n</text-box>"
     SheetTextBoxId: d2467169-52ed-49cb-8481-e29aff270329
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
@@ -13185,7 +13318,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -13301,7 +13434,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -14363,108 +14496,108 @@ Sheets:
           ElementId: 2f9afa7f-fe7e-47c0-9f62-31ed2c95ea0d
           ElementType: TEXT_BOX
           RowIndex: 11
-          RowSpan: 2
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 5
           ElementId: a97d1967-0619-42bf-bca2-c7b890527ad4
           ElementType: PARAMETER_CONTROL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 7
         - ColumnIndex: 5
           ColumnSpan: 13
           ElementId: b1ab6762-96b4-424a-a644-03876483cd49
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 7
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: d241bf1f-2a52-464d-8388-9cf1a9879927
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 2ba86ce2-e349-4a06-900a-aca41539578f
           ElementType: VISUAL
-          RowIndex: 20
+          RowIndex: 21
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 1f34ea3c-0bed-4277-928b-8962c4029172
           ElementType: VISUAL
-          RowIndex: 20
+          RowIndex: 21
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 690e4156-64ab-46ef-ac71-b84c7043bedd
           ElementType: TEXT_BOX
-          RowIndex: 29
-          RowSpan: 2
+          RowIndex: 30
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 5
           ElementId: 400ccb18-8c84-412e-8af0-206b8be1be62
           ElementType: PARAMETER_CONTROL
-          RowIndex: 31
+          RowIndex: 33
           RowSpan: 7
         - ColumnIndex: 5
           ColumnSpan: 13
           ElementId: 8ba9b978-4e88-429a-a964-6eadd0e39e4f
           ElementType: VISUAL
-          RowIndex: 31
+          RowIndex: 33
           RowSpan: 7
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 64f2da6e-ea5e-409a-bf13-9932ec0bdb8c
           ElementType: VISUAL
-          RowIndex: 31
+          RowIndex: 33
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: de638fb9-1fa2-4cf6-92f7-935c6e1c1c7c
           ElementType: VISUAL
-          RowIndex: 38
+          RowIndex: 40
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: eadc5e0a-90e2-4c9d-80cd-50a8dfcfe895
           ElementType: VISUAL
-          RowIndex: 38
+          RowIndex: 40
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 87a25807-e4fe-4c0f-9892-cc2390aa7177
           ElementType: TEXT_BOX
-          RowIndex: 47
+          RowIndex: 49
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 50ef0ccc-0dcf-46fe-9df0-ad0857de2ec8
           ElementType: VISUAL
-          RowIndex: 51
+          RowIndex: 53
           RowSpan: 13
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 51dfabb4-3719-4f89-a34b-0654dbbd190a
           ElementType: VISUAL
-          RowIndex: 51
+          RowIndex: 53
           RowSpan: 13
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 950f333c-6f06-4b6b-9a1e-15baba1ee314
           ElementType: VISUAL
-          RowIndex: 64
+          RowIndex: 66
           RowSpan: 11
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: a1a7d2ae-33c4-4840-b76c-bf43f14fba9d
           ElementType: TEXT_BOX
-          RowIndex: 75
+          RowIndex: 77
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: bb82379f-78cd-485a-8611-a8c01c12b77c
           ElementType: VISUAL
-          RowIndex: 78
+          RowIndex: 80
           RowSpan: 14
   Name: MediaConnect
   ParameterControls:
@@ -14596,96 +14729,98 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 6b707864-0d99-4cca-a710-d6e4033d1dfb
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 61a7dc0e-5157-4b94-8bda-86078d955f3c
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
   SheetId: 7c504d5e-c0c0-4e5c-9c0e-87a0b22d47c5
   TextBoxes:
-  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AWS\
-      \ Elemental MediaConnect\_</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
-      40px\">(AEMX)</inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"20px\"\
-      >\_\_\_</inline>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>S</b>\n\
-      \  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n    <b>ECTIONS</b>\n\
-      \  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline\
-      \ color=\"#fc850d\" font-size=\"16px\">\n        <b>\n          <i>Usage Summary</i>\n\
-      \        </b>\n      </inline>\n      <inline color=\"#fc850d\" font-size=\"\
-      16px\">\n        <i>\_</i>\n      </inline>\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>looks at the overall stream usage from Data\
-      \ Transfer In and Out and running flows, broken down to forecasted, monthly\
-      \ and hourly charts.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
-      \    <i>Cost Summary</i>\n        </b>\n      </inline>\n      <inline color=\"\
-      #efefe9\" font-size=\"16px\">\n        <b>\n          <i>\_</i>\n        </b>\n\
-      \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
-      \    <i>looks at total costs of streams  cost per usage category breakdowns\
-      \ from flow hours to data transfer.</i>\n      </inline>\n    </li>\n    <li\
-      \ class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"16px\"\
-      >\n        <b>\n          <i>Data Transfer</i>\n        </b>\n      </inline>\n\
+  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AWS\_\
+      </b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"40px\">\n    <b>Elemental\
+      \ MediaConnect\_</b>\n  </inline>\n  <inline color=\"#cbcbcb\" font-size=\"\
+      30px\">\n    <b>(AEMX)</b>\n  </inline>\n  <br/>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"20px\">\_\_\_</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      22px\">\n    <b>S</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      18px\">\n    <b>ECTIONS</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"\
+      ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"16px\">\n      \
+      \  <b>\n          <i>Usage Summary</i>\n        </b>\n      </inline>\n    \
+      \  <inline color=\"#fc850d\" font-size=\"16px\">\n        <i>\_</i>\n      </inline>\n\
+      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>looks at the\
+      \ overall stream usage from Data Transfer In and Out and running flows, broken\
+      \ down to forecasted, monthly and hourly charts.</i>\n      </inline>\n    </li>\n\
+      \    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"\
+      16px\">\n        <b>\n          <i>Cost Summary</i>\n        </b>\n      </inline>\n\
       \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <b>\n        \
       \  <i>\_</i>\n        </b>\n      </inline>\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>explores usage and trends specific to differnt\
-      \ types of data transfer</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
-      \    <i>Resource Detail\_</i>\n        </b>\n      </inline>\n      <inline\
-      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>reveals different dimensions\
-      \ of specific service resources.</i>\n      </inline>\n    </li>\n  </ul>\n\
-      \  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>\_\
-      \_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n  \
-      \  <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#09add4\" font-size=\"16px\">\n        <a href=\"https://aws.amazon.com/mediaconnect/pricing/\"\
-      \ target=\"_blank\">\n          <b>\n            <i>\n              <u>AEMX\
-      \ pricing and costs</u>\n            </i>\n          </b>\n        </a>\n  \
-      \    </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
-      \  <i>\_are driven by Running Flows and Data Transfer.</i>\n      </inline>\n\
-      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>Select the Usage Category or categories you\
-      \ wish to view from the list.</i>\n      </inline>\n    </li>\n    <li class=\"\
-      ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
-      \  <i>To analyze Usage, avoid mixing categories that measure by different units.\
-      \ For example, \"Hrs\"  and \"GB\".</i>\n      </inline>\n    </li>\n    <li\
+      \ font-size=\"16px\">\n        <i>looks at total costs of streams  cost per\
+      \ usage category breakdowns from flow hours to data transfer.</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\"\
+      \ font-size=\"16px\">\n        <b>\n          <i>Data Transfer</i>\n       \
+      \ </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\"\
+      >\n        <b>\n          <i>\_</i>\n        </b>\n      </inline>\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>explores usage and trends\
+      \ specific to differnt types of data transfer</i>\n      </inline>\n    </li>\n\
+      \    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"\
+      16px\">\n        <b>\n          <i>Resource Detail\_</i>\n        </b>\n   \
+      \   </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n       \
+      \ <i>reveals different dimensions of specific service resources.</i>\n     \
+      \ </inline>\n    </li>\n  </ul>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"22px\">\n    <b>\_\_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"18px\">\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n  \
+      \  <li class=\"ql-indent-0\">\n      <inline color=\"#09add4\" font-size=\"\
+      16px\">\n        <a href=\"https://aws.amazon.com/mediaconnect/pricing/\" target=\"\
+      _blank\">\n          <b>\n            <i>\n              <u>AEMX pricing and\
+      \ costs</u>\n            </i>\n          </b>\n        </a>\n      </inline>\n\
+      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>\_are driven\
+      \ by Running Flows and Data Transfer.</i>\n      </inline>\n    </li>\n    <li\
       \ class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
-      >\n        <i>To analyze Cost, you can mix different units because the end measure\
-      \ is cost.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
-      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Identify average\
-      \ Internet data transfer; Reserved Outbound Bandwidth can reduce such cost by\
-      \ up to 70%.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Check your\
-      \ AMEX flows inventory for flows that has no destination output, which still\
-      \ incur hourly cost.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+      >\n        <i>Select the Usage Category or categories you wish to view from\
+      \ the list.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
+      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>To analyze\
+      \ Usage, avoid mixing categories that measure by different units. For example,\
+      \ \"Hrs\"  and \"GB\".</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>To analyze\
+      \ Cost, you can mix different units because the end measure is cost.</i>\n \
+      \     </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      #efefe9\" font-size=\"16px\">\n        <i>Identify average Internet data transfer;\
+      \ Reserved Outbound Bandwidth can reduce such cost by up to 70%.</i>\n     \
+      \ </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      #efefe9\" font-size=\"16px\">\n        <i>Check your AMEX flows inventory for\
+      \ flows that has no destination output, which still incur hourly cost.</i>\n\
+      \      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 7aa11026-e9a8-4278-aea8-0fe2fd7c882c
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">R</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">ESOURCE</inline>\n  <inline\
-      \ color=\"#fec48c\" font-size=\"36px\">\_D</inline>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"30px\">ETAIL</inline>\n</text-box>"
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">R</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">ESOURCE</inline>\n  <inline color=\"\
+      #fec48c\" font-size=\"36px\">\_D</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      30px\">ETAIL</inline>\n</text-box>"
     SheetTextBoxId: a1a7d2ae-33c4-4840-b76c-bf43f14fba9d
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"32px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">UMMARY</inline>\n\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"32px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"36px\"\
+      >S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">UMMARY</inline>\n\
       </text-box>"
     SheetTextBoxId: 2f9afa7f-fe7e-47c0-9f62-31ed2c95ea0d
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      30px\">UMMARY</inline>\n</text-box>"
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\"\
+      >UMMARY</inline>\n</text-box>"
     SheetTextBoxId: 690e4156-64ab-46ef-ac71-b84c7043bedd
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">D</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">ATA</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">D</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">ATA</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\" font-size=\"\
       30px\">RANSFER</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>The following\
       \ charts break down data transfer usage and cost by source and destination and\
       \ group by the data transfer category</i>\n      </inline>\n    </li>\n  </ul>\n\
-      \  <br/>\n</text-box>"
+      </text-box>"
     SheetTextBoxId: 87a25807-e4fe-4c0f-9892-cc2390aa7177
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
@@ -15024,7 +15159,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -15464,7 +15599,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -16604,246 +16739,240 @@ Sheets:
           ElementId: b07b8b49-3bec-463c-8ef0-13527d1eeacf
           ElementType: TEXT_BOX
           RowIndex: 12
-          RowSpan: 2
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 5
           ElementId: e7e78894-c9a2-426f-b33a-b1b4eb0e5fdd
           ElementType: PARAMETER_CONTROL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 7
         - ColumnIndex: 5
           ColumnSpan: 13
           ElementId: 823d8b5a-b9c5-44d6-805b-86dd1c560fe9
           ElementType: VISUAL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 7
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 423ef237-3b91-4ed9-88bb-fbef2947545f
           ElementType: VISUAL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 3328a62c-0ff2-4949-8676-9d244abcbefa
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 82851e38-dea6-4e49-a82b-b1ab79303542
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 77c54a41-012c-4163-af3c-eadf6ca440df
           ElementType: TEXT_BOX
-          RowIndex: 30
-          RowSpan: 2
+          RowIndex: 31
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 5
           ElementId: 16380c4b-c5bd-4e9d-ba73-2274befafc4f
           ElementType: PARAMETER_CONTROL
-          RowIndex: 32
+          RowIndex: 34
           RowSpan: 7
         - ColumnIndex: 5
           ColumnSpan: 13
           ElementId: 3696e211-dd7b-4d2e-bbf5-5b9d5025ffee
           ElementType: VISUAL
-          RowIndex: 32
+          RowIndex: 34
           RowSpan: 7
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 8fe98d70-2cfc-4c35-a0f9-9801580fd48a
           ElementType: VISUAL
-          RowIndex: 32
+          RowIndex: 34
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 387cb2a1-4c60-4ba2-8103-542c4353dd77
           ElementType: VISUAL
-          RowIndex: 39
+          RowIndex: 41
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 089831d5-6935-45bb-92ff-9be1991e2ba3
           ElementType: VISUAL
-          RowIndex: 39
+          RowIndex: 41
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 25
           ElementId: 143b2dcb-b6ac-4b19-a31d-3523842a0691
           ElementType: TEXT_BOX
-          RowIndex: 48
+          RowIndex: 50
           RowSpan: 7
         - ColumnIndex: 25
           ColumnSpan: 11
           ElementId: e77d2466-9c09-4144-be75-c202f7707ba6
           ElementType: TEXT_BOX
-          RowIndex: 48
+          RowIndex: 50
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 11
           ElementId: c045c5e8-59e6-4fe5-8255-e612febd1add
           ElementType: VISUAL
-          RowIndex: 55
+          RowIndex: 57
           RowSpan: 9
         - ColumnIndex: 11
           ColumnSpan: 14
           ElementId: 516c2a4c-e21c-400d-88db-8604b39dfa61
           ElementType: VISUAL
-          RowIndex: 55
+          RowIndex: 57
           RowSpan: 9
         - ColumnIndex: 25
           ColumnSpan: 11
           ElementId: 68432809-21ca-42b1-9151-9c722740e668
           ElementType: VISUAL
-          RowIndex: 55
+          RowIndex: 57
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 3c99c65d-0d8f-4f56-a0d2-011f406fcdfc
           ElementType: VISUAL
-          RowIndex: 64
+          RowIndex: 66
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 904881be-3e93-44ab-b8ea-c3e2f1d97e35
           ElementType: VISUAL
-          RowIndex: 64
+          RowIndex: 66
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 16
           ElementId: d85cda4a-f820-44f0-9484-6e515be04fa0
           ElementType: VISUAL
-          RowIndex: 73
+          RowIndex: 75
           RowSpan: 9
         - ColumnIndex: 16
           ColumnSpan: 4
           ElementId: f15ec21e-aca5-4418-9acc-a6cd986d70b7
           ElementType: PARAMETER_CONTROL
-          RowIndex: 73
+          RowIndex: 75
           RowSpan: 9
         - ColumnIndex: 20
           ColumnSpan: 16
           ElementId: 42015d7e-2422-4ef1-b8f8-a44bd8c26ce2
           ElementType: VISUAL
-          RowIndex: 73
+          RowIndex: 75
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 53ecab94-c369-4eb0-8cff-8ed0d00b3a22
           ElementType: VISUAL
-          RowIndex: 82
+          RowIndex: 84
           RowSpan: 10
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 9ba51ea9-2788-4f1e-a694-55873828ab0a
           ElementType: VISUAL
-          RowIndex: 82
+          RowIndex: 84
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 64f1bdfb-436c-4474-bc5e-61d3f31bd854
           ElementType: VISUAL
-          RowIndex: 92
+          RowIndex: 94
           RowSpan: 10
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: d1116720-cfc7-46f4-a5b1-a598120a3075
           ElementType: VISUAL
-          RowIndex: 92
+          RowIndex: 94
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 325a9c8b-145f-4eff-a6cd-13d6d611ed94
           ElementType: TEXT_BOX
-          RowIndex: 102
+          RowIndex: 104
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 463d98df-4637-4f5d-ab1e-f3408b2cef27
           ElementType: VISUAL
-          RowIndex: 105
+          RowIndex: 107
           RowSpan: 13
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: c83ee5c0-e453-4e47-bcc7-d73dfde109f2
           ElementType: VISUAL
-          RowIndex: 118
+          RowIndex: 120
           RowSpan: 13
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: a2e08b0e-9d90-42b1-8fc9-6d3464df874f
           ElementType: VISUAL
-          RowIndex: 118
+          RowIndex: 120
           RowSpan: 13
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 9ed1cd45-28a0-43f2-a17d-6916a5571b60
           ElementType: VISUAL
-          RowIndex: 131
+          RowIndex: 133
           RowSpan: 13
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: be4a66a2-f603-4c21-badd-6d782c0808de
           ElementType: VISUAL
-          RowIndex: 131
+          RowIndex: 133
           RowSpan: 13
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 0a61fb45-21bf-4c1a-b92f-e9347d1f4df7
           ElementType: VISUAL
-          RowIndex: 144
+          RowIndex: 146
           RowSpan: 11
         - ColumnIndex: 0
-          ColumnSpan: 8
+          ColumnSpan: 36
           ElementId: 0e3cebf0-8e51-4f8a-8a6d-d7decda31c44
           ElementType: TEXT_BOX
-          RowIndex: 155
-          RowSpan: 4
-        - ColumnIndex: 8
-          ColumnSpan: 28
-          ElementId: 707620d9-8812-4621-8cce-74a8c94182fa
-          ElementType: TEXT_BOX
-          RowIndex: 155
-          RowSpan: 4
+          RowIndex: 157
+          RowSpan: 5
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 850905e7-c5f9-4979-9413-59b8e930b13e
           ElementType: VISUAL
-          RowIndex: 159
+          RowIndex: 162
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 114c8fbf-f7a9-4912-b69f-460dabb7cf9e
           ElementType: VISUAL
-          RowIndex: 159
+          RowIndex: 162
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 16
           ElementId: 5663c3e1-9b05-4ab5-875b-b50a590391de
           ElementType: VISUAL
-          RowIndex: 168
+          RowIndex: 171
           RowSpan: 9
         - ColumnIndex: 16
           ColumnSpan: 4
           ElementId: af8ada51-0cd6-4d0e-be49-5550c7204191
           ElementType: PARAMETER_CONTROL
-          RowIndex: 168
+          RowIndex: 171
           RowSpan: 9
         - ColumnIndex: 20
           ColumnSpan: 16
           ElementId: 76e1d93d-7248-489b-9cbb-8c6e64f152e4
           ElementType: VISUAL
-          RowIndex: 168
+          RowIndex: 171
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 3f2846fe-0349-4337-8b9a-21d96afb3c4c
           ElementType: VISUAL
-          RowIndex: 177
+          RowIndex: 180
           RowSpan: 9
   Name: MediaLive
   ParameterControls:
@@ -17023,24 +17152,21 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 535fcc13-cf10-4e37-95c4-400436a843a6
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: f9609fd4-b50e-4de7-aabe-b5a5ac7c4a8d
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
   SheetId: b0546a34-b29a-4de1-b4e4-f29c46346119
   TextBoxes:
-  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AWS\
-      \ Elemental MediaLive\_</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
-      40px\">(AEML)</inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"10px\"\
-      >\_</inline>\n  <inline color=\"#fec48c\" font-size=\"20px\">\_\_</inline>\n\
+  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AWS\_\
+      </b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"40px\">\n    <b>Elemental\
+      \ MediaLive\_</b>\n  </inline>\n  <inline color=\"#cbcbcb\" font-size=\"30px\"\
+      >\n    <b>(AEML)</b>\n  </inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      10px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"20px\">\_\_</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>S</b>\n  </inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"18px\">\n    <b>ECTIONS</b>\n  </inline>\n\
       \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\"\
@@ -17097,6 +17223,10 @@ Sheets:
     SheetTextBoxId: 8cbd6d6e-1de4-4585-bb72-980c3f633759
   - Content: |-
       <text-box>
+        <br/>
+        <br/>
+        <br/>
+        <inline color="#fec48c" font-size="36px"/>
         <inline color="#fec48c" font-size="36px">T</inline>
         <inline color="#fec48c" font-size="30px">RANSCODING</inline>
         <br/>
@@ -17135,53 +17265,42 @@ Sheets:
         </ul>
       </text-box>
     SheetTextBoxId: 143b2dcb-b6ac-4b19-a31d-3523842a0691
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">HANNEL</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">\_D</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">HANNEL</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">\_D</inline>\n  <inline color=\"#fec48c\" font-size=\"\
       30px\">ETAIL</inline>\n</text-box>"
     SheetTextBoxId: 325a9c8b-145f-4eff-a6cd-13d6d611ed94
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"32px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">UMMARY</inline>\n\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"32px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"36px\"\
+      >S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">UMMARY</inline>\n\
       </text-box>"
     SheetTextBoxId: b07b8b49-3bec-463c-8ef0-13527d1eeacf
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      30px\">UMMARY</inline>\n</text-box>"
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\"\
+      >UMMARY</inline>\n</text-box>"
     SheetTextBoxId: 77c54a41-012c-4163-af3c-eadf6ca440df
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">I</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">DLE</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"30px\"/>\n  <inline color=\"#fec48c\" font-size=\"32px\"\
-      >\_</inline>\n  <inline color=\"#fec48c\" font-size=\"36px\">R</inline>\n  <inline\
-      \ color=\"#fec48c\" font-size=\"30px\">ESOURCES</inline>\n</text-box>"
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\">I</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">DLE</inline>\n\
+      \  <inline color=\"#fec48c\" font-size=\"32px\">\_</inline>\n  <inline color=\"\
+      #fec48c\" font-size=\"36px\">R</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      30px\">ESOURCES</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Idle channels\
+      \ and inputs should be reviewed for potential cost inefficiencies because they\
+      \ are billed like active channels but at a lower rate.</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
+      \ font-size=\"16px\">\n        <i>Idle Input hours usage should be lowered \
+      \ as much as possible, by deleting MediaLive Inputs that are not attached to\
+      \ any channel.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Idle channel\
+      \ hours usage should be lowered as much as possible whenever possible, you can\
+      \ do this by deleting stopped channel.</i>\n      </inline>\n    </li>\n  </ul>\n\
+      \  <br/>\n</text-box>"
     SheetTextBoxId: 0e3cebf0-8e51-4f8a-8a6d-d7decda31c44
-  - Content: |-
-      <text-box>
-        <inline color="#fec48c" font-size="24px">G</inline>
-        <inline color="#fec48c" font-size="20px">UIDANCE</inline>
-        <br/>
-        <br/>
-        <ul>
-          <li class="ql-indent-0">
-            <inline color="#efefe9" font-size="16px">
-              <i>Idle channels and inputs should be reviewed for potential cost inefficiencies because they are billed like active channels but at a lower rate.</i>
-            </inline>
-          </li>
-          <li class="ql-indent-0">
-            <inline color="#efefe9" font-size="16px">
-              <i>Idle Input hours usage should be lowered  as much as possible, by deleting MediaLive Inputs that are not attached to any channel.</i>
-            </inline>
-          </li>
-          <li class="ql-indent-0">
-            <inline color="#efefe9" font-size="16px">
-              <i>Idle channel hours usage should be lowered as much as possible whenever possible, you can do this by deleting stopped channel.</i>
-            </inline>
-          </li>
-        </ul>
-      </text-box>
-    SheetTextBoxId: 707620d9-8812-4621-8cce-74a8c94182fa
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"24px\">T</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"20px\">RANSCODING</inline>\n  <inline\
       \ color=\"#fec48c\" font-size=\"24px\">\_P</inline>\n  <inline color=\"#fec48c\"\
@@ -19217,7 +19336,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -19348,7 +19467,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -19453,8 +19572,8 @@ Sheets:
           ScrollbarOptions:
             VisibleRange:
               PercentRange:
-                From: 34.375
-                To: 96.875
+                From: 28.125
+                To: 90.625
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -20594,8 +20713,8 @@ Sheets:
           ScrollbarOptions:
             VisibleRange:
               PercentRange:
-                From: 10.0
-                To: 60.0
+                From: 0.0
+                To: 50.0
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -21782,90 +21901,90 @@ Sheets:
           ElementId: cf42ff89-02a6-4e7f-bf54-ce08e4d0e36f
           ElementType: TEXT_BOX
           RowIndex: 11
-          RowSpan: 2
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 5
           ElementId: 5c063f6a-ccfa-4ea0-9089-a5045024ee8b
           ElementType: PARAMETER_CONTROL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 7
         - ColumnIndex: 5
           ColumnSpan: 13
           ElementId: dba1a884-a435-4509-b640-d29e58209ef5
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 7
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 85e37dae-8335-46a6-b99c-1abbbfe25151
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 24db0e17-d664-4669-81e5-d73645157fc7
           ElementType: VISUAL
-          RowIndex: 20
+          RowIndex: 21
           RowSpan: 8
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: f59c6bb6-df69-46a8-8776-080ed4be7457
           ElementType: VISUAL
-          RowIndex: 20
+          RowIndex: 21
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: bdbd15b0-4215-4ccd-817e-635f9655e337
           ElementType: TEXT_BOX
-          RowIndex: 28
-          RowSpan: 2
+          RowIndex: 29
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 5
           ElementId: af14715a-d9fc-4734-a264-e8b689d4fa0f
           ElementType: PARAMETER_CONTROL
-          RowIndex: 30
+          RowIndex: 32
           RowSpan: 7
         - ColumnIndex: 5
           ColumnSpan: 13
           ElementId: f24edd3f-25f8-4c60-aa8c-c0a234a5279b
           ElementType: VISUAL
-          RowIndex: 30
+          RowIndex: 32
           RowSpan: 7
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 27f845e2-5102-460d-89a1-f06f00b59a1c
           ElementType: VISUAL
-          RowIndex: 30
+          RowIndex: 32
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: b24ecfd2-7ada-435e-af2d-497b16110400
           ElementType: VISUAL
-          RowIndex: 37
+          RowIndex: 39
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: b1234c7c-dfeb-476a-b178-2e4fb93c365b
           ElementType: VISUAL
-          RowIndex: 37
+          RowIndex: 39
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: c3cd6f62-f128-4357-a261-e26b408e237d
           ElementType: TEXT_BOX
-          RowIndex: 46
+          RowIndex: 48
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: e411dcd3-0c7f-49c8-9da7-7d4fbf480ed0
           ElementType: VISUAL
-          RowIndex: 49
+          RowIndex: 51
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 748663fb-d51b-427b-a8a3-a2e9a2ba046f
           ElementType: VISUAL
-          RowIndex: 59
+          RowIndex: 61
           RowSpan: 10
   Name: MediaTailor
   ParameterControls:
@@ -21885,8 +22004,9 @@ Sheets:
       ParameterControlId: 5c063f6a-ccfa-4ea0-9089-a5045024ee8b
       SelectableValues:
         Values:
+        - Ad Delivery CloudFront to Internet (GB)
+        - Ad Delivery Direct to Internet (GB)
         - Ad Delivery to CloudFront (GB)
-        - Ad Delivery to Internet (GB)
         - Ad Insertions Live (Count)
         - Ad Insertions VOD (Count)
         - Channel Assembly Basic (Hrs)
@@ -22001,72 +22121,73 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 58c62de0-afa1-422e-aa76-3166b70d968a
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 124e4211-7b15-49d7-ae26-1b3f8c9d975b
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
   SheetId: 7ac1dbd7-5afe-47d3-a3dc-6df8a59829db
   TextBoxes:
-  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AWS\
-      \ Elemental MediaTailor\_</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
-      40px\">(AEMT)</inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"20px\"\
-      >\_\_\_</inline>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>S</b>\n\
-      \  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n    <b>ECTIONS</b>\n\
-      \  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline\
-      \ color=\"#fc850d\" font-size=\"16px\">\n        <b>\n          <i>Usage Summary</i>\n\
-      \        </b>\n      </inline>\n      <inline color=\"#fc850d\" font-size=\"\
-      16px\">\n        <i>\_</i>\n      </inline>\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>looks at usage by various categories, including\
-      \ usage hours and ad activity.</i>\n      </inline>\n    </li>\n    <li class=\"\
-      ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"16px\">\n      \
-      \  <b>\n          <i>Cost Summary</i>\n        </b>\n      </inline>\n     \
-      \ <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>\_provides breakouts\
-      \ by various dimensions.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AWS\_\
+      </b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"40px\">\n    <b>Elemental\
+      \ MediaTailor\_</b>\n  </inline>\n  <inline color=\"#cbcbcb\" font-size=\"30px\"\
+      >\n    <b>(AEMT)</b>\n  </inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      20px\">\_\_\_</inline>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n  \
+      \  <b>S</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n\
+      \    <b>ECTIONS</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
       >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
-      \    <i>Resource Detail\_</i>\n        </b>\n      </inline>\n      <inline\
-      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>reveals different dimensions\
-      \ of specific service resources.</i>\n      </inline>\n    </li>\n  </ul>\n\
-      \  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>\_\
-      \_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n  \
-      \  <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#09add4\" font-size=\"16px\">\n        <a href=\"https://aws.amazon.com/mediatailor/pricing/\"\
-      \ target=\"_blank\">\n          <b>\n            <i>\n              <u>AEMT\
-      \ pricing and cost</u>\n            </i>\n          </b>\n        </a>\n   \
+      \    <i>Usage Summary</i>\n        </b>\n      </inline>\n      <inline color=\"\
+      #fc850d\" font-size=\"16px\">\n        <i>\_</i>\n      </inline>\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>looks at usage by various\
+      \ categories, including usage hours and ad activity.</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\"\
+      \ font-size=\"16px\">\n        <b>\n          <i>Cost Summary</i>\n        </b>\n\
+      \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
+      \    <i>\_provides breakouts by various dimensions.</i>\n      </inline>\n \
+      \   </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"\
+      16px\">\n        <b>\n          <i>Resource Detail\_</i>\n        </b>\n   \
       \   </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n       \
-      \ <i>\_is primarily driven by ad insertions and channel assembly.</i>\n    \
-      \  </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #efefe9\" font-size=\"16px\">\n        <i>Select the Usage Category or categories\
-      \ you wish to view from the list.</i>\n      </inline>\n    </li>\n    <li class=\"\
+      \ <i>reveals different dimensions of specific service resources.</i>\n     \
+      \ </inline>\n    </li>\n  </ul>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"22px\">\n    <b>\_\_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"18px\">\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n  \
+      \  <li class=\"ql-indent-0\">\n      <inline color=\"#09add4\" font-size=\"\
+      16px\">\n        <a href=\"https://aws.amazon.com/mediatailor/pricing/\" target=\"\
+      _blank\">\n          <b>\n            <i>\n              <u>AEMT pricing and\
+      \ cost</u>\n            </i>\n          </b>\n        </a>\n      </inline>\n\
+      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>\_is primarily\
+      \ driven by ad insertions and channel assembly.</i>\n      </inline>\n    </li>\n\
+      \    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>Select the Usage Category or categories you wish to view\
+      \ from the list.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>To analyze\
+      \ Usage, avoid mixing categories that measure by different units. For example,\
+      \ \"Hrs\"  and \"Count\".</i>\n      </inline>\n    </li>\n    <li class=\"\
       ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
-      \  <i>To analyze Usage, avoid mixing categories that measure by different units.\
-      \ For example, \"Hrs\"  and \"Count\".</i>\n      </inline>\n    </li>\n   \
-      \ <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\"\
-      >\n        <i>To analyze Cost, you can mix different units because the end measure\
-      \ is cost.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+      \  <i>To analyze Cost, you can mix different units because the end measure is\
+      \ cost.</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 0cac8001-2dc6-4da0-a8ea-e5fff5ad9191
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">R</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">ESOURCE</inline>\n  <inline\
-      \ color=\"#fec48c\" font-size=\"36px\">\_D</inline>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"30px\">ETAIL</inline>\n</text-box>"
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">R</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">ESOURCE</inline>\n  <inline color=\"\
+      #fec48c\" font-size=\"36px\">\_D</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      30px\">ETAIL</inline>\n</text-box>"
     SheetTextBoxId: c3cd6f62-f128-4357-a261-e26b408e237d
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"32px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">UMMARY</inline>\n\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"32px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"36px\"\
+      >S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">UMMARY</inline>\n\
       </text-box>"
     SheetTextBoxId: cf42ff89-02a6-4e7f-bf54-ce08e4d0e36f
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      30px\">UMMARY</inline>\n</text-box>"
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\"\
+      >UMMARY</inline>\n</text-box>"
     SheetTextBoxId: bdbd15b0-4215-4ccd-817e-635f9655e337
   - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
@@ -22306,15 +22427,15 @@ Sheets:
           - DataPathList:
             - FieldId: acc0bf17-a0c2-47be-9daa-79b852c68cf6.2.1744316794855
               FieldValue: Resource
-            Width: 515px
+            Width: 343px
+          - DataPathList:
+            - FieldId: 50b2a3c6-8a80-41bd-890b-521da908785a.5.1752632894255
+              FieldValue: Usage Category
+            Width: 279px
           - DataPathList:
             - FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1752632832279
               FieldValue: Linked Account
             Width: 216px
-          - DataPathList:
-            - FieldId: 50b2a3c6-8a80-41bd-890b-521da908785a.5.1752632894255
-              FieldValue: Usage Category
-            Width: 172px
           - DataPathList:
             - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.pricing_unit.7.1752633314367
               FieldValue: pricing_unit
@@ -22821,7 +22942,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -23396,7 +23517,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -23930,96 +24051,96 @@ Sheets:
           ElementId: bb845dfa-29b3-40ea-8f08-284b2a6d528b
           ElementType: TEXT_BOX
           RowIndex: 12
-          RowSpan: 2
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 5
           ElementId: 1ddbdc3c-5e49-4121-86a7-ce54cd1808e5
           ElementType: PARAMETER_CONTROL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 7
         - ColumnIndex: 5
           ColumnSpan: 13
           ElementId: d350e43c-5ede-405a-8e48-2eb74d9ca3fc
           ElementType: VISUAL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 7
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: dfb63eb0-b314-4520-ac7f-7d8cf29f5d8d
           ElementType: VISUAL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: f086abb2-af5c-4cd7-87a7-83ae771b59f9
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 919f3d64-edff-449a-befa-ca7b7a8141f0
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 8dc4070d-7ad3-4e36-9fa4-77263127bae7
           ElementType: TEXT_BOX
-          RowIndex: 30
-          RowSpan: 2
+          RowIndex: 31
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 5
           ElementId: 92cc3f45-346c-49c6-a3c1-884db39e7e17
           ElementType: PARAMETER_CONTROL
-          RowIndex: 32
+          RowIndex: 34
           RowSpan: 7
         - ColumnIndex: 5
           ColumnSpan: 13
           ElementId: 42485cd1-c5ca-491e-bb92-332f1e148485
           ElementType: VISUAL
-          RowIndex: 32
+          RowIndex: 34
           RowSpan: 7
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: adcc54f4-7ff6-47e1-b9a3-961306d52e36
           ElementType: VISUAL
-          RowIndex: 32
+          RowIndex: 34
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: b1c1b6de-b091-47fd-9c40-4523cf0242c2
           ElementType: VISUAL
-          RowIndex: 39
+          RowIndex: 41
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 7f306008-6e37-497b-984b-ce0501612dab
           ElementType: VISUAL
-          RowIndex: 39
+          RowIndex: 41
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 607ebdca-5bc2-43ec-b167-e27b8aa54948
           ElementType: TEXT_BOX
-          RowIndex: 48
-          RowSpan: 3
+          RowIndex: 50
+          RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 5a3d244e-b243-42fd-b009-7cefc3d7376b
           ElementType: VISUAL
-          RowIndex: 51
+          RowIndex: 54
           RowSpan: 15
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 012a53b2-d1cb-4a71-9451-a2fdde286af1
           ElementType: VISUAL
-          RowIndex: 51
+          RowIndex: 54
           RowSpan: 15
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: b0c507cd-e0e6-4301-89bb-9b9a7cad5f05
           ElementType: VISUAL
-          RowIndex: 66
+          RowIndex: 69
           RowSpan: 15
   Name: MediaPackage
   ParameterControls:
@@ -24155,79 +24276,79 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 1ab2894b-a0b6-4ed7-834c-58d54c840ba1
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 83465598-27b0-46b3-9a55-8d4376488eda
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
   SheetId: 00e3d4f2-02b9-4336-a8c1-94f92dd9328c
   TextBoxes:
-  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AWS\
-      \ Elemental MediaPackage\_</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
-      40px\">(AEMP)</inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"20px\"\
-      >\_\_\_</inline>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>S</b>\n\
-      \  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n    <b>ECTIONS</b>\n\
-      \  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline\
-      \ color=\"#fc850d\" font-size=\"16px\">\n        <b>\n          <i>Usage Summary</i>\n\
-      \        </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
-      16px\">\n        <i>\_looks at usage by various categories, including data transfer\
-      \ and packaging.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
-      \    <i>Cost Summary</i>\n        </b>\n      </inline>\n      <inline color=\"\
-      #fc850d\" font-size=\"16px\">\n        <i>\_</i>\n      </inline>\n      <inline\
-      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>provides breakouts by various\
-      \ dimensions.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline color=\"#fc850d\" font-size=\"16px\">\n        <b>\n      \
-      \    <i>Data Transfer</i>\n        </b>\n      </inline>\n      <inline color=\"\
-      #efefe9\" font-size=\"16px\">\n        <b>\n          <i>\_</i>\n        </b>\n\
-      \      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n    \
-      \    <i>looks at the relative costs of different types of data transfer.</i>\n\
-      \      </inline>\n    </li>\n  </ul>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"22px\">\n    <b>\_\_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"18px\">\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n  \
-      \  <li class=\"ql-indent-0\">\n      <inline color=\"#09add4\" font-size=\"\
-      16px\">\n        <a href=\"https://aws.amazon.com/mediapackage/pricing/\" target=\"\
-      _blank\">\n          <b>\n            <i>\n              <u>AEMP pricing and\
-      \ cost</u>\n            </i>\n          </b>\n        </a>\n      </inline>\n\
-      \      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>\_is primarily\
-      \ driven by data transfer.</i>\n      </inline>\n    </li>\n    <li class=\"\
-      ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
-      \  <i>Select the Usage Category or categories you wish to view from the list.</i>\n\
-      \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #efefe9\" font-size=\"16px\">\n        <i>For analyzing Usage, avoid mixing\
-      \ categories that measure by different units. For example, \"Hrs\"  and \"GB\"\
-      .</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline\
-      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>For analyzing Cost, you\
-      \ can mix different units because the end measure is cost.</i>\n      </inline>\n\
-      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>Identify Data Transfer to Internet usage and\
-      \ consider delivering through CloudFront to optimize cost.</i>\n      </inline>\n\
-      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
-      \ font-size=\"16px\">\n        <i>Regularly check the CloudFront Cache/hit ratio,\
-      \ which should approach the 100% to reduce costs.</i>\n      </inline>\n   \
-      \ </li>\n  </ul>\n</text-box>"
+  - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AWS\_\
+      </b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"40px\">\n    <b>Elemental\
+      \ MediaPackage\_</b>\n  </inline>\n  <inline color=\"#cbcbcb\" font-size=\"\
+      30px\">\n    <b>(AEMP)</b>\n  </inline>\n  <br/>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"20px\">\_\_\_</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      22px\">\n    <b>S</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      18px\">\n    <b>ECTIONS</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"\
+      ql-indent-0\">\n      <inline color=\"#fc850d\" font-size=\"16px\">\n      \
+      \  <b>\n          <i>Usage Summary</i>\n        </b>\n      </inline>\n    \
+      \  <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>\_looks at usage\
+      \ by various categories, including data transfer and packaging.</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\"\
+      \ font-size=\"16px\">\n        <b>\n          <i>Cost Summary</i>\n        </b>\n\
+      \      </inline>\n      <inline color=\"#fc850d\" font-size=\"16px\">\n    \
+      \    <i>\_</i>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>provides breakouts by various dimensions.</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#fc850d\"\
+      \ font-size=\"16px\">\n        <b>\n          <i>Data Transfer</i>\n       \
+      \ </b>\n      </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\"\
+      >\n        <b>\n          <i>\_</i>\n        </b>\n      </inline>\n      <inline\
+      \ color=\"#efefe9\" font-size=\"16px\">\n        <i>looks at the relative costs\
+      \ of different types of data transfer.</i>\n      </inline>\n    </li>\n  </ul>\n\
+      \  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"22px\">\n    <b>\_\
+      \_\_G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"18px\">\n  \
+      \  <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#09add4\" font-size=\"16px\">\n        <a href=\"https://aws.amazon.com/mediapackage/pricing/\"\
+      \ target=\"_blank\">\n          <b>\n            <i>\n              <u>AEMP\
+      \ pricing and cost</u>\n            </i>\n          </b>\n        </a>\n   \
+      \   </inline>\n      <inline color=\"#efefe9\" font-size=\"16px\">\n       \
+      \ <i>\_is primarily driven by data transfer.</i>\n      </inline>\n    </li>\n\
+      \    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"\
+      16px\">\n        <i>Select the Usage Category or categories you wish to view\
+      \ from the list.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>For analyzing\
+      \ Usage, avoid mixing categories that measure by different units. For example,\
+      \ \"Hrs\"  and \"GB\".</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>For analyzing\
+      \ Cost, you can mix different units because the end measure is cost.</i>\n \
+      \     </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      #efefe9\" font-size=\"16px\">\n        <i>Identify Data Transfer to Internet\
+      \ usage and consider delivering through CloudFront to optimize cost.</i>\n \
+      \     </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      #efefe9\" font-size=\"16px\">\n        <i>Regularly check the CloudFront Cache/hit\
+      \ ratio, which should approach the 100% to reduce costs.</i>\n      </inline>\n\
+      \    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: dbc7cd4f-f576-48b2-ba54-772892f4b9d1
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"32px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">UMMARY</inline>\n\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">U</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">SAGE</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"32px\">\_</inline>\n  <inline color=\"#fec48c\" font-size=\"36px\"\
+      >S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">UMMARY</inline>\n\
       </text-box>"
     SheetTextBoxId: bb845dfa-29b3-40ea-8f08-284b2a6d528b
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"\
-      30px\">UMMARY</inline>\n</text-box>"
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">C</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">OST\_</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\"\
+      >UMMARY</inline>\n</text-box>"
     SheetTextBoxId: 8dc4070d-7ad3-4e36-9fa4-77263127bae7
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"36px\">D</inline>\n\
-      \  <inline color=\"#fec48c\" font-size=\"30px\">ATA</inline>\n  <inline color=\"\
-      #fec48c\" font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">D</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">ATA</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\" font-size=\"\
       30px\">RANSFER</inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n \
       \     <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Includes the\
       \ following data transfer types: outbound through CloudFront, outbound to the\
@@ -25358,7 +25479,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -25492,7 +25613,7 @@ Sheets:
         ForecastConfigurations:
         - ForecastProperties:
             LowerBoundary: 0.0
-            PeriodsBackward: 0
+            PeriodsBackward: 1
             PeriodsForward: 14
             PredictionInterval: 90
         Legend:
@@ -26765,7 +26886,7 @@ Sheets:
     SheetTextBoxId: 8738ed95-db68-48f4-9115-f7a8dcb618cf
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"64px\"\
       >\n      <b>Media Services Insights Hub</b>\n    </inline>\n  </block>\n  <br/>\n\
-      \  <block align=\"center\">\n    <inline font-size=\"64px\">v1.1.2</inline>\n\
+      \  <block align=\"center\">\n    <inline font-size=\"64px\">v1.1.3</inline>\n\
       \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
       >\_</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
       \ align=\"center\">\n    <inline color=\"#09add4\" font-size=\"24px\">\n   \

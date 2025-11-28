@@ -5,8 +5,26 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Fri, 17 Oct 2025 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 24 Nov 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] Media Services Insights Hub v1.1.3</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-media-services-insights
+      </link>
+      <pubDate>Tue, 25 Nov 2024 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6</guid>
+      <description>Media Services Insights Hub v1.1.3</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>MediaLive:</strong> Improved reservation recommendation calculation</li>
+    <li><strong>Analytics:</strong> Small UI enhncements</li>
+  </ul>
+</div>
+    ]]></content:encoded>    
+    </item>
     <item>
       <title>[Update] Extended Support Cost Projection - v4.0.4</title>
       <link>
