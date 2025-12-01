@@ -33,6 +33,7 @@ CalculatedFields:
   Expression: |-
     concat(
         "ID# ", {reservation_id},
+        " : ", ifelse(contains({line_item_usage_type}, "-IN-"), "Input", "Output"),
         " : ", ifelse({video_pipeline}="Single","Single Pipe","Std. Pipe"),
         " : ", {video_region},
         " : Codec = ", {video_codec},
@@ -53,7 +54,7 @@ CalculatedFields:
 - DataSetIdentifier: msih_reservations
   Expression: |-
     concat(
-        ifelse(strlen({video_input}) > 0, "In", "Out"),
+        ifelse(contains({line_item_usage_type}, "-IN-"), "In", "Out"),
         " : ", {video_pipeline}, " Pipe",
         " : ", {video_region},
         ifelse(strlen({video_codec}) > 0, concat(" : ", {video_codec}, " Codec"), ""),
@@ -75,6 +76,10 @@ CalculatedFields:
 - DataSetIdentifier: msih_reservations
   Expression: now()
   Name: now
+- DataSetIdentifier: msih_reservations
+  Expression: sumOver(min({reservation_count}), [{Linked Account},{Transcoding Profile}],
+    POST_AGG_FILTER)
+  Name: reservation_count_over_profile
 - DataSetIdentifier: msih_reservations
   Expression: |-
     ifelse(
@@ -198,10 +203,10 @@ CalculatedFields:
     Quantity}, [ {billing_period}]))
   Name: EML Reservation Coverage Pct
 - DataSetIdentifier: msih_view
-  Expression: sumOver(({EML Transcoding Reserved Quantity}), [{Transcoding Profile},
-    {billing_period}], PRE_FILTER)/(sumOver(({EML Transcoding Reserved Quantity}),
-    [{Transcoding Profile}, {billing_period}], PRE_FILTER) + sumOver(({EML Transcoding
-    On Demand Quantity}), [{Transcoding Profile}, {billing_period}], PRE_FILTER))
+  Expression: sumOver(({EML Transcoding Reserved Quantity}), [{billing_period}, {Transcoding
+    Profile}], PRE_FILTER)/(sumOver(({EML Transcoding Reserved Quantity}), [{billing_period},
+    {Transcoding Profile}], PRE_FILTER) + sumOver(({EML Transcoding On Demand Quantity}),
+    [{billing_period}, {Transcoding Profile}], PRE_FILTER))
   Name: EML Reservation Coverage by Profile
 - DataSetIdentifier: msih_view
   Expression: 1 - (sum(ifelse(contains({charge_type}, "Usage") and {is_eml_active_transcode}=1,{unblended_cost},0))
@@ -503,9 +508,18 @@ CalculatedFields:
   Name: Usage Type
 - DataSetIdentifier: msih_view
   Expression: |-
-    /*distinctCountOver({resource_id}, [{eml_transcode_profile_hour}], PRE_AGG)*/
-    distinct_count({resource_id}, [{eml_transcode_profile_hour}])
+    /*distinctCountOver(ifelse({product_code} = "AWSElementalMediaLive", {reservation_id}, NULL), [{usage_type}], PRE_FILTER)*/
+    sumOver((ifelse({product_code} = "AWSElementalMediaLive" and {charge_type} = "DiscountedUsage", {usage_quantity},0) ), [{billing_period}, {usage_type}], PRE_FILTER)
+  Name: eml_active_reservations_per_profile
+- DataSetIdentifier: msih_view
+  Expression: |-
+    /*distinctCountOver({resource_id}, [{eml_transcode_profile_hour}], PRE_AGG)
+    distinct_count({resource_id}, [{eml_transcode_profile_hour}])*/
+    sum({usage_quantity}, [{eml_transcode_profile_hour}])
   Name: eml_distinct_channels_per_hour
+- DataSetIdentifier: msih_view
+  Expression: dateDiff({usage_date}, {last_refresh_date}) < 30
+  Name: eml_is_reservation_lookback_window
 - DataSetIdentifier: msih_view
   Expression: ifelse(strlen({Transcoding Profile}) > 0 and {is_eml_idle} = 0, concat({linked_account_id},
     {Transcoding Profile}, formatDate({usage_date}, "yyyyMMdd'T'HHmmss")), "")
@@ -4932,10 +4946,9 @@ FilterGroups:
         DataSetIdentifier: msih_view
       Configuration:
         FilterListConfiguration:
-          CategoryValues:
-          - AWSElementalMediaConvert
           MatchOperator: CONTAINS
           NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
       FilterId: ed870051-5b1b-4a4b-baa6-01957104d850
   ScopeConfiguration:
     SelectedSheets:
@@ -5430,6 +5443,25 @@ FilterGroups:
         SheetId: 652661af-5b76-4855-80ee-19e261578d3f
         VisualIds:
         - 806f73d8-230c-4deb-8a49-70a5c068e05f
+  Status: DISABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: aa789888-007f-4f8d-a7b3-980e1cf8c398
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: eml_is_reservation_lookback_window
+        DataSetIdentifier: msih_view
+      FilterId: 7123062b-7672-4d2e-a4e0-50e5601bd498
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 652661af-5b76-4855-80ee-19e261578d3f
+        VisualIds:
+        - 806f73d8-230c-4deb-8a49-70a5c068e05f
   Status: ENABLED
 Options: {}
 ParameterDeclarations:
@@ -5666,130 +5698,146 @@ Sheets:
           RowIndex: 0
           RowSpan: 10
         - ColumnIndex: 27
+          ColumnSpan: 4
+          ElementId: c76f076e-3a57-42e9-a59a-1822c854e1d8
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 31
+          ColumnSpan: 5
+          ElementId: e317b9c5-913f-415e-a2c9-d7cf016822bf
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 27
           ColumnSpan: 9
           ElementId: e39732a6-6b82-4ffb-b2c9-ff7d3d68bf63
           ElementType: VISUAL
-          RowIndex: 0
+          RowIndex: 1
           RowSpan: 4
         - ColumnIndex: 27
           ColumnSpan: 9
           ElementId: 40259ea7-10db-4796-b9f0-90db8e36121d
           ElementType: VISUAL
-          RowIndex: 4
+          RowIndex: 5
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 2f46fd36-2205-4382-ac22-04a2483e6ba2
           ElementType: TEXT_BOX
-          RowIndex: 10
+          RowIndex: 11
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 7
           ElementId: df1890f8-ecdb-451e-9e1e-eb307628f414
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 5
         - ColumnIndex: 7
           ColumnSpan: 7
           ElementId: c84721ca-cf03-4b0b-b181-dcff9c001ae3
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 5
         - ColumnIndex: 14
           ColumnSpan: 7
           ElementId: b984bf33-ca83-4bf4-8667-0adbcbdff020
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 5
         - ColumnIndex: 21
           ColumnSpan: 7
           ElementId: 8c3ad38b-6695-4438-a2af-114fb9fee3c9
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 5
         - ColumnIndex: 28
           ColumnSpan: 8
           ElementId: f76e331e-7cd5-476e-bfc2-b22ce0795f5f
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 5
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 8e72c2c4-c19c-451c-8e86-c11fac4c47a0
           ElementType: TEXT_BOX
-          RowIndex: 18
+          RowIndex: 19
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 7
           ElementId: df85d83a-6b57-4c39-bc1b-7558152e87d7
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 5
         - ColumnIndex: 7
           ColumnSpan: 7
           ElementId: 833b4318-5d49-4d19-81c1-1bb3ae76852b
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 5
         - ColumnIndex: 14
           ColumnSpan: 7
           ElementId: ff5a4b11-fdf6-4021-af76-afdde6d999a1
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 5
         - ColumnIndex: 21
           ColumnSpan: 7
           ElementId: 83df9967-9331-4e54-b2fd-b529f9630611
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 5
         - ColumnIndex: 28
           ColumnSpan: 8
           ElementId: a76655db-7599-4507-b153-2e6f662c5dd9
           ElementType: VISUAL
-          RowIndex: 21
+          RowIndex: 22
           RowSpan: 5
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 796d949d-25b5-4fe2-9431-86947f8a0a3c
           ElementType: VISUAL
-          RowIndex: 26
+          RowIndex: 27
           RowSpan: 7
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 17e94240-fb8b-4bfc-9d44-0c4ffc2ec931
           ElementType: VISUAL
-          RowIndex: 26
+          RowIndex: 27
           RowSpan: 5
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 969a9e31-6556-4304-9662-f6d2173c0cb0
           ElementType: VISUAL
-          RowIndex: 31
+          RowIndex: 32
           RowSpan: 5
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: e72da725-1343-4d14-a6db-edcf1522018b
           ElementType: VISUAL
-          RowIndex: 33
+          RowIndex: 34
           RowSpan: 11
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 51518e2f-0734-4fc1-bdec-7677142a96c2
           ElementType: VISUAL
-          RowIndex: 36
+          RowIndex: 37
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 8883b80b-9470-4af5-b9c0-5eaa61c3598f
           ElementType: VISUAL
-          RowIndex: 44
+          RowIndex: 45
           RowSpan: 12
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 149a67a4-cfc8-42ff-bb5e-0c8c500ecc6e
           ElementType: VISUAL
-          RowIndex: 44
+          RowIndex: 45
+          RowSpan: 12
+        - ColumnSpan: 18
+          ElementId: 88e33109-334e-4bf8-b507-448eaf4b1ca5
+          ElementType: VISUAL
           RowSpan: 12
   Name: Executive Summary
   ParameterControls:
@@ -5997,6 +6045,24 @@ Sheets:
       \ font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\"\
       >UMMARY</inline>\n</text-box>"
     SheetTextBoxId: 8e72c2c4-c19c-451c-8e86-c11fac4c47a0
+  - Content: |-
+      <text-box>
+        <block align="center">
+          <inline font-size="16px">
+            <b>Current Version: 1.1.2</b>
+          </inline>
+        </block>
+      </text-box>
+    SheetTextBoxId: c76f076e-3a57-42e9-a59a-1822c854e1d8
+  - Content: |-
+      <text-box>
+        <block align="center">
+          <inline font-size="16px">
+            <b>Latest Available: 1.1.3</b>
+          </inline>
+        </block>
+      </text-box>
+    SheetTextBoxId: e317b9c5-913f-415e-a2c9-d7cf016822bf
   Visuals:
   - KPIVisual:
       Actions: []
@@ -8144,7 +8210,7 @@ Sheets:
             FontConfiguration:
               FontColor: '#FC850D'
               FontSize:
-                Absolute: 20px
+                Absolute: 16px
               FontWeight:
                 Name: BOLD
             Height: 35
@@ -8280,6 +8346,17 @@ Sheets:
             \ per month</b>\n  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 8883b80b-9470-4af5-b9c0-5eaa61c3598f
+  - CustomContentVisual:
+      Actions: []
+      ChartConfiguration:
+        ContentType: OTHER_EMBEDDED_CONTENT
+        ContentUrl: https://www.nytimes.com/2025/11/26/us/trump-georgia-election-racketeering.html
+      DataSetIdentifier: msih_view
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        Visibility: HIDDEN
+      VisualId: 88e33109-334e-4bf8-b507-448eaf4b1ca5
 - ContentType: INTERACTIVE
   FilterControls:
   - List:
@@ -8780,9 +8857,11 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 2
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 3
+          ColumnSpan: 2
           ElementId: e185c0cd-c3b6-49c1-89ce-819728f175a3
           ElementType: PARAMETER_CONTROL
+          RowIndex: 2
           RowSpan: 1
   SheetId: 652661af-5b76-4855-80ee-19e261578d3f
   TextBoxes:
@@ -8911,35 +8990,45 @@ Sheets:
       ql-indent-0\">\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n  \
       \    </inline>\n      <inline font-size=\"16px\">\n        <b>\n          <i>Minimum\
       \ Purchase</i>\n        </b>\n      </inline>\n      <inline font-size=\"16px\"\
-      >\n        <i>\_number represents the lowest concurrency rate of simultaneous\
-      \ channels during a 1-hour window over the last\_</i>\n      </inline>\n   \
-      \   <inline font-size=\"16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
+      >\n        <i>\_number represents the\_</i>\n      </inline>\n      <inline\
+      \ font-size=\"16px\">\n        <i>\n          <u>lowest\_</u>\n        </i>\n\
+      \      </inline>\n      <inline font-size=\"16px\">\n        <i>concurrent usage\
+      \ rate of channels during any 1-hour window over the last\_</i>\n      </inline>\n\
+      \      <inline font-size=\"16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
       \        </i>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
       days. Purchasing reservations at that level should be 100% utilized, if past\
       \ patterns continue.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n      </inline>\n\
       \      <inline font-size=\"16px\">\n        <b>\n          <i>Maximum Purchase</i>\n\
       \        </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
-      number represents the highest concurrency rate of simultaneous channels during\
-      \ a 1-hour window over the last\_</i>\n      </inline>\n      <inline font-size=\"\
-      16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
+      number represents the\_</i>\n      </inline>\n      <inline font-size=\"16px\"\
+      >\n        <i>\n          <u>highest\_</u>\n        </i>\n      </inline>\n\
+      \      <inline font-size=\"16px\">\n        <i>concurrent usage rate of channels\
+      \ during any 1-hour window over the last\_</i>\n      </inline>\n      <inline\
+      \ font-size=\"16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
       \        </i>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
       days. Purchasing reservations at that level might not be 100% utilized, if past\
       \ patterns continue.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n      </inline>\n\
-      \      <inline font-size=\"16px\">\n        <b>\n          <i>Median Purchase</i>\n\
+      \      <inline font-size=\"16px\">\n        <b>\n          <i>Percentile Purchase</i>\n\
       \        </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
-      number represents the statistical median (not average) concurrency rate of simultaneous\
-      \ channels during a 1-hour window over the last\_</i>\n      </inline>\n   \
-      \   <inline font-size=\"16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
+      numbers (P25, P50, P75) represents the\_</i>\n      </inline>\n      <inline\
+      \ font-size=\"16px\">\n        <i>\n          <u>statistical variation</u>\n\
       \        </i>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
-      days. That is, half of the hours being evaluated had a concurrency rate of less\
-      \ than the median number and half had more. Purchasing reservations at this\
-      \ level might not be 100% utilized but should be more utilized than the Maximum\
-      \ number. You may consider purchasing at this level and still save money, even\
-      \ if they are not 100% utilized because the cost savings of the overall amount\
-      \ to transcoding time being discounted is significant enough to offset the idle\
-      \ time for that reservation.\_</i>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+      of concurrent usage rate of channels during any 1-hour window over the last\_\
+      </i>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\n    \
+      \      <expression>${EmlLookbackDays}</expression>\n        </i>\n      </inline>\n\
+      \      <inline font-size=\"16px\">\n        <i>\_days. P50 is the median value\
+      \ where half of the 1-hour windows had a concurrency rate of less than the median\
+      \ number and half had more. P25 indicates that 25% of the hours in scope used\
+      \ that value or fewer whil 75% of the hours used more than that value. P75 indicats\
+      \ that 75% of the hours in scope used that value or fewer. Purchasing reservations\
+      \ at one of these levels might not be 100% utilized but should be more utilized\
+      \ than the Maximum number, if past patterns continue. You may consider purchasing\
+      \ at one of these levels and still save money, even if they are not 100% utilized\
+      \ because the cost savings of the overall amount to transcoding time being discounted\
+      \ is significant enough to offset the unused time for that reservation.\_</i>\n\
+      \      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 9d809ff1-0fbd-41a6-9133-ab9d612e6e7b
   Visuals:
   - LineChartVisual:
@@ -9420,7 +9509,7 @@ Sheets:
         FieldOptions:
           SelectedFieldOptions:
           - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.11.1754685170416
-            Width: 176px
+            Width: 149px
           - CustomLabel: Linked Account
             FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1747068105054
             Width: 212px
@@ -9441,7 +9530,7 @@ Sheets:
             Width: 94px
           - CustomLabel: Region
             FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.region.4.1747068129207
-            Width: 103px
+            Width: 100px
           - CustomLabel: OD Cost
             FieldId: 33332fff-4cd4-4b4e-8420-e9ffd6e0a644.10.1747070078113
             Width: 78px
@@ -9453,13 +9542,19 @@ Sheets:
             Width: 90px
           - CustomLabel: Min. Purchase
             FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.12.1763762637702
-            Width: 111px
+            Width: 108px
           - CustomLabel: Ma.x Purchase
             FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769251451
-            Width: 119px
-          - CustomLabel: Med. Purchase
+            Width: 114px
+          - CustomLabel: P25
+            FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.15.1764614542260
+            Width: 54px
+          - CustomLabel: P50
             FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769712076
-            Width: 128px
+            Width: 64px
+          - CustomLabel: P75
+            FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.14.1764613866025
+            Width: 60px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -9498,6 +9593,9 @@ Sheets:
                   ColumnName: video_frame_rate
                   DataSetIdentifier: msih_view
                 FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.video_frame_rate.11.1752621885847
+                FormatConfiguration:
+                  NullValueFormatConfiguration:
+                    NullString: n/a
             - CategoricalDimensionField:
                 Column:
                   ColumnName: region
@@ -9572,6 +9670,16 @@ Sheets:
                   ColumnName: eml_distinct_channels_per_hour
                   DataSetIdentifier: msih_view
                 FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.12.1763762637702
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      SeparatorConfiguration:
+                        ThousandsSeparator:
+                          Visibility: VISIBLE
             - NumericalMeasureField:
                 AggregationFunction:
                   SimpleNumericalAggregation: MAX
@@ -9579,13 +9687,70 @@ Sheets:
                   ColumnName: eml_distinct_channels_per_hour
                   DataSetIdentifier: msih_view
                 FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769251451
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      SeparatorConfiguration:
+                        ThousandsSeparator:
+                          Visibility: VISIBLE
             - NumericalMeasureField:
                 AggregationFunction:
-                  SimpleNumericalAggregation: MEDIAN
+                  PercentileAggregation:
+                    PercentileValue: 25.0
+                Column:
+                  ColumnName: eml_distinct_channels_per_hour
+                  DataSetIdentifier: msih_view
+                FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.15.1764614542260
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      SeparatorConfiguration:
+                        ThousandsSeparator:
+                          Visibility: VISIBLE
+            - NumericalMeasureField:
+                AggregationFunction:
+                  PercentileAggregation:
+                    PercentileValue: 50.0
                 Column:
                   ColumnName: eml_distinct_channels_per_hour
                   DataSetIdentifier: msih_view
                 FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769712076
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      SeparatorConfiguration:
+                        ThousandsSeparator:
+                          Visibility: VISIBLE
+            - NumericalMeasureField:
+                AggregationFunction:
+                  PercentileAggregation:
+                    PercentileValue: 75.0
+                Column:
+                  ColumnName: eml_distinct_channels_per_hour
+                  DataSetIdentifier: msih_view
+                FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.14.1764613866025
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      SeparatorConfiguration:
+                        ThousandsSeparator:
+                          Visibility: VISIBLE
         SortConfiguration:
           RowSort:
           - FieldSort:
@@ -10084,16 +10249,11 @@ Sheets:
       ChartConfiguration:
         BarsArrangement: STACKED
         CategoryAxis:
-          AxisOffset: 105px
           DataOptions:
             DateAxisOptions:
               MissingDateVisibility: HIDDEN
           ScrollbarOptions:
             Visibility: VISIBLE
-            VisibleRange:
-              PercentRange:
-                From: 0.0
-                To: 100.0
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -10157,7 +10317,6 @@ Sheets:
         Orientation: VERTICAL
         SortConfiguration:
           CategoryItemsLimit:
-            ItemsLimit: 200
             OtherCategories: INCLUDE
           CategorySort:
           - FieldSort:
@@ -10677,8 +10836,6 @@ Sheets:
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
-        XAxisDisplayOptions:
-          AxisOffset: 36px
         XAxisLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -11174,7 +11331,7 @@ Sheets:
           RowSort:
           - FieldSort:
               Direction: ASC
-              FieldId: 25a0c3e1-8c00-44e1-bb44-d9133716e9ea.reservation_end_time.3.1743083436463
+              FieldId: 589bb05e-0681-4403-8f96-b4ef9b7435bf.13.1753196337358
         TableOptions:
           HeaderStyle:
             Height: 26
@@ -11260,7 +11417,7 @@ Sheets:
           Width: 637px
         PrimaryYAxisDisplayOptions:
           AxisOptions:
-            AxisOffset: 74px
+            AxisOffset: 69px
             DataOptions:
               NumericAxisOptions:
                 Range:
@@ -11309,13 +11466,8 @@ Sheets:
           TooltipVisibility: VISIBLE
         Type: LINE
         XAxisDisplayOptions:
-          AxisOffset: 105px
           ScrollbarOptions:
             Visibility: VISIBLE
-            VisibleRange:
-              PercentRange:
-                From: 0.0
-                To: 100.0
         XAxisLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -11363,6 +11515,10 @@ Sheets:
         CategoryAxis:
           ScrollbarOptions:
             Visibility: VISIBLE
+            VisibleRange:
+              PercentRange:
+                From: 13.333333333333314
+                To: 80.00000000000003
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -11568,7 +11724,7 @@ Sheets:
           Width: 636px
         PrimaryYAxisDisplayOptions:
           AxisOptions:
-            AxisOffset: 90px
+            AxisOffset: 105px
             TickLabelOptions:
               LabelOptions:
                 FontConfiguration:
@@ -12035,9 +12191,11 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 8
+          ColumnSpan: 2
           ElementId: a312a2ab-38df-4dec-aa3c-3b85fa26a65b
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
   SheetId: ac236152-fd32-4423-8422-616ff0773fbd
   TextBoxes:
@@ -14729,13 +14887,17 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 6
+          ColumnSpan: 2
           ElementId: 6b707864-0d99-4cca-a710-d6e4033d1dfb
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 8
+          ColumnSpan: 2
           ElementId: 61a7dc0e-5157-4b94-8bda-86078d955f3c
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
   SheetId: 7c504d5e-c0c0-4e5c-9c0e-87a0b22d47c5
   TextBoxes:
@@ -17152,13 +17314,17 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 6
+          ColumnSpan: 2
           ElementId: 535fcc13-cf10-4e37-95c4-400436a843a6
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 8
+          ColumnSpan: 2
           ElementId: f9609fd4-b50e-4de7-aabe-b5a5ac7c4a8d
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
   SheetId: b0546a34-b29a-4de1-b4e4-f29c46346119
   TextBoxes:
@@ -22121,13 +22287,17 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 6
+          ColumnSpan: 2
           ElementId: 58c62de0-afa1-422e-aa76-3166b70d968a
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 8
+          ColumnSpan: 2
           ElementId: 124e4211-7b15-49d7-ae26-1b3f8c9d975b
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
   SheetId: 7ac1dbd7-5afe-47d3-a3dc-6df8a59829db
   TextBoxes:
@@ -24276,13 +24446,17 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 6
+          ColumnSpan: 2
           ElementId: 1ab2894b-a0b6-4ed7-834c-58d54c840ba1
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 8
+          ColumnSpan: 2
           ElementId: 83465598-27b0-46b3-9a55-8d4376488eda
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
   SheetId: 00e3d4f2-02b9-4336-a8c1-94f92dd9328c
   TextBoxes:

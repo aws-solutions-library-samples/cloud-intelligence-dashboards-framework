@@ -131,7 +131,7 @@ datasets:
               NewColumnName: linked_account_name
           Source:
             PhysicalTableId: 481b319c-c8f4-4e82-9ddf-fa705f6cf783
-        e1820395-c716-4ffd-98dc-d233afba0627:
+        7f0aa5d7-db0e-4129-b3cd-e45ca980d12f:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -187,11 +187,11 @@ datasets:
               - linked_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: e3860de6-016c-4d5f-881b-791701f46468
+              LeftOperand: d515cb03-91c4-4e52-9d98-89239482a8fe
               RightOperand: 24baacd6-be68-44a1-ac29-318cfec3a2d9
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
-        e3860de6-016c-4d5f-881b-791701f46468:
+        d515cb03-91c4-4e52-9d98-89239482a8fe:
           Alias: Intermediate Table
           Source:
             JoinInstruction:
