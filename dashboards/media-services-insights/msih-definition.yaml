@@ -5835,10 +5835,6 @@ Sheets:
           ElementType: VISUAL
           RowIndex: 45
           RowSpan: 12
-        - ColumnSpan: 18
-          ElementId: 88e33109-334e-4bf8-b507-448eaf4b1ca5
-          ElementType: VISUAL
-          RowSpan: 12
   Name: Executive Summary
   ParameterControls:
   - Dropdown:
@@ -8346,17 +8342,6 @@ Sheets:
             \ per month</b>\n  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 8883b80b-9470-4af5-b9c0-5eaa61c3598f
-  - CustomContentVisual:
-      Actions: []
-      ChartConfiguration:
-        ContentType: OTHER_EMBEDDED_CONTENT
-        ContentUrl: https://www.nytimes.com/2025/11/26/us/trump-georgia-election-racketeering.html
-      DataSetIdentifier: msih_view
-      Subtitle:
-        Visibility: VISIBLE
-      Title:
-        Visibility: HIDDEN
-      VisualId: 88e33109-334e-4bf8-b507-448eaf4b1ca5
 - ContentType: INTERACTIVE
   FilterControls:
   - List:
