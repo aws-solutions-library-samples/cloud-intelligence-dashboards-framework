@@ -8974,7 +8974,7 @@ Sheets:
       \      <inline font-size=\"16px\">\n        <i>\_days. P50 is the median value\
       \ where half of the 1-hour windows had a concurrency rate of less than the median\
       \ number and half had more. P25 indicates that 25% of the hours in scope used\
-      \ that value or fewer whil 75% of the hours used more than that value. P75 indicats\
+      \ that value or fewer while 75% of the hours used more than that value. P75 indicates\
       \ that 75% of the hours in scope used that value or fewer. Purchasing reservations\
       \ at one of these levels might not be 100% utilized but should be more utilized\
       \ than the Maximum number, if past patterns continue. You may consider purchasing\
