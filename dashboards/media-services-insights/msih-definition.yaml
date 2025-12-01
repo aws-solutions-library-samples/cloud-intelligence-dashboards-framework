@@ -5698,18 +5698,6 @@ Sheets:
           RowIndex: 0
           RowSpan: 10
         - ColumnIndex: 27
-          ColumnSpan: 4
-          ElementId: c76f076e-3a57-42e9-a59a-1822c854e1d8
-          ElementType: TEXT_BOX
-          RowIndex: 0
-          RowSpan: 1
-        - ColumnIndex: 31
-          ColumnSpan: 5
-          ElementId: e317b9c5-913f-415e-a2c9-d7cf016822bf
-          ElementType: TEXT_BOX
-          RowIndex: 0
-          RowSpan: 1
-        - ColumnIndex: 27
           ColumnSpan: 9
           ElementId: e39732a6-6b82-4ffb-b2c9-ff7d3d68bf63
           ElementType: VISUAL
@@ -6041,24 +6029,6 @@ Sheets:
       \ font-size=\"36px\">S</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\"\
       >UMMARY</inline>\n</text-box>"
     SheetTextBoxId: 8e72c2c4-c19c-451c-8e86-c11fac4c47a0
-  - Content: |-
-      <text-box>
-        <block align="center">
-          <inline font-size="16px">
-            <b>Current Version: 1.1.2</b>
-          </inline>
-        </block>
-      </text-box>
-    SheetTextBoxId: c76f076e-3a57-42e9-a59a-1822c854e1d8
-  - Content: |-
-      <text-box>
-        <block align="center">
-          <inline font-size="16px">
-            <b>Latest Available: 1.1.3</b>
-          </inline>
-        </block>
-      </text-box>
-    SheetTextBoxId: e317b9c5-913f-415e-a2c9-d7cf016822bf
   Visuals:
   - KPIVisual:
       Actions: []
@@ -8842,11 +8812,9 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 2
           RowSpan: 1
-        - ColumnIndex: 3
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: e185c0cd-c3b6-49c1-89ce-819728f175a3
           ElementType: PARAMETER_CONTROL
-          RowIndex: 2
           RowSpan: 1
   SheetId: 652661af-5b76-4855-80ee-19e261578d3f
   TextBoxes:
@@ -12176,11 +12144,9 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: a312a2ab-38df-4dec-aa3c-3b85fa26a65b
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
   SheetId: ac236152-fd32-4423-8422-616ff0773fbd
   TextBoxes:
@@ -14872,17 +14838,13 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 6b707864-0d99-4cca-a710-d6e4033d1dfb
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 61a7dc0e-5157-4b94-8bda-86078d955f3c
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
   SheetId: 7c504d5e-c0c0-4e5c-9c0e-87a0b22d47c5
   TextBoxes:
@@ -17299,17 +17261,13 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 535fcc13-cf10-4e37-95c4-400436a843a6
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: f9609fd4-b50e-4de7-aabe-b5a5ac7c4a8d
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
   SheetId: b0546a34-b29a-4de1-b4e4-f29c46346119
   TextBoxes:
@@ -22272,17 +22230,13 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 58c62de0-afa1-422e-aa76-3166b70d968a
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 124e4211-7b15-49d7-ae26-1b3f8c9d975b
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
   SheetId: 7ac1dbd7-5afe-47d3-a3dc-6df8a59829db
   TextBoxes:
@@ -24431,17 +24385,13 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 1ab2894b-a0b6-4ed7-834c-58d54c840ba1
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 83465598-27b0-46b3-9a55-8d4376488eda
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
   SheetId: 00e3d4f2-02b9-4336-a8c1-94f92dd9328c
   TextBoxes:
