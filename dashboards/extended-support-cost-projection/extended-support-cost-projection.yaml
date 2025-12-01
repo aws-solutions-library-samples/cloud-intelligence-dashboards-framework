@@ -427,9 +427,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+              SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
               VisualIds:
-              - 801fcd03-794e-4904-bef4-e937c9915b4a
+              - 63456781-c0b6-4a5b-b6c5-c094c574db92
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: cf3e70f5-978c-4302-a173-fdbe932e7c5c
@@ -448,9 +448,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+              SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
               VisualIds:
-              - 6f90c36a-844d-48d4-b385-aea2c3f25c37
+              - f9a8f065-ce20-445e-a46c-af99928a9eee
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 833b8c86-9766-4b99-a5fb-ba3e4ef8d08c
@@ -469,9 +469,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+              SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
               VisualIds:
-              - 0e3d4453-aaba-44db-9bc0-e12e107c0c89
+              - f8d457e4-5ad8-4b3b-a5ae-3bc1e4d2f04e
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 215e6218-84f1-4f2d-a089-2724f513dac4
@@ -490,9 +490,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+              SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
               VisualIds:
-              - 6f90c36a-844d-48d4-b385-aea2c3f25c37
+              - f9a8f065-ce20-445e-a46c-af99928a9eee
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 2fe3bdea-f9d9-4376-8c5a-774089117858
@@ -511,9 +511,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+              SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
               VisualIds:
-              - 0e3d4453-aaba-44db-9bc0-e12e107c0c89
+              - f8d457e4-5ad8-4b3b-a5ae-3bc1e4d2f04e
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: bd90bee7-53ae-4185-ac0b-e63f97e3b866
@@ -532,9 +532,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+              SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
               VisualIds:
-              - 1b89a88b-e767-4731-bc19-4e1fa472ddb1
+              - d0828d4d-e769-4124-b330-2b66ddf39308
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: aa73eee4-f3c4-41d7-952a-00cd2105a67b
@@ -550,10 +550,7 @@ dashboards:
                 ParameterName: Payer
             FilterId: c28e1b7b-461e-4171-b1c7-d3b79e24f375
         ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+          AllSheets: {}
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: f36e0a01-2cd0-43b2-9719-bea89d5b859d
@@ -572,7 +569,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+              SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: e3a444dd-8196-4b96-afb2-8467b41edaac
@@ -591,11 +588,11 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
             - Scope: ALL_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
             - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 690def29-0236-4b47-bc6f-5b829189b3d8
@@ -614,11 +611,11 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
             - Scope: ALL_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
             - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 0205bf7f-6cd5-4f55-8d84-204fae79fb95
@@ -640,11 +637,11 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
             - Scope: ALL_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
             - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: c05373a5-2c9c-4092-bd59-70dbbb51fe0e
@@ -660,14 +657,7 @@ dashboards:
                 ParameterName: Payer
             FilterId: 2d548978-b52d-4a24-aac7-9d95b983b6c5
         ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
-            - Scope: ALL_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
-            - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+          AllSheets: {}
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 0a7aaa7a-7331-4a96-b6b0-22760cfe20f0
@@ -686,11 +676,11 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
             - Scope: ALL_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
             - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: c942fd6b-e51f-4a05-a651-199cb1f9726e
@@ -709,9 +699,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
               VisualIds:
-              - 155041ff-7627-431e-8852-021a958a49be
+              - e918f9c3-2585-4dab-bdd3-f5226e9e5d3b
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: fb5f848b-6e24-4eff-9c11-9a81fdc7f455
@@ -730,9 +720,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
               VisualIds:
-              - 2ea2d794-3e56-48ee-9e46-a74bb17e271e
+              - d842be7f-e5b7-4ecf-8f94-89e8e9a5f3ea
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 80dc41f6-5c72-401f-9e7e-2398fae1d7d1
@@ -751,9 +741,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
               VisualIds:
-              - dfa2d877-3bca-4ae4-835d-cc2a3e3ce9b3
+              - 11f2c694-9b4a-4b26-8751-fd75f69dbf69
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: b257166c-4314-461c-9327-736fbf156abf
@@ -772,9 +762,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
               VisualIds:
-              - 04e9b853-8079-4e00-a488-d21c22b03635
+              - 98bec68a-1876-474b-9ab6-2aa50338750e
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 2d0cfbf6-40c8-4c50-8cd0-6fe745c71a02
@@ -793,9 +783,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
               VisualIds:
-              - 2ea2d794-3e56-48ee-9e46-a74bb17e271e
+              - d842be7f-e5b7-4ecf-8f94-89e8e9a5f3ea
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: ac9ca838-1685-4064-8cb8-1f3dd3e04d16
@@ -814,9 +804,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
               VisualIds:
-              - dfa2d877-3bca-4ae4-835d-cc2a3e3ce9b3
+              - 11f2c694-9b4a-4b26-8751-fd75f69dbf69
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: b5fa5da0-e4d3-4071-be0e-28acb1e1400a
@@ -841,9 +831,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
               VisualIds:
-              - 65ac4746-eee2-441f-9be9-03603859e3ba
+              - 178e3b51-eb8d-4bc8-961d-555b25d9a397
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 2bf1721f-2f2c-4ddb-a3e2-06abb44295d1
@@ -868,7 +858,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+              SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 7ac956d1-efd9-48fc-8300-2ab504819d53
@@ -893,20 +883,20 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
               VisualIds:
-              - 46fd346e-6312-459a-857a-0d8151995780
-              - 264ea3fb-0168-4d26-a57a-99fad965a330
-              - 3e218c30-58a8-4821-b478-b66e43f261ba
-              - b0c3a1fe-fab9-48e7-be78-91f4e4376f5c
-              - f2c2cb42-7497-4ea6-b168-8d4c2bc2b9e6
-              - 04e9b853-8079-4e00-a488-d21c22b03635
-              - dfa2d877-3bca-4ae4-835d-cc2a3e3ce9b3
-              - 2ea2d794-3e56-48ee-9e46-a74bb17e271e
-              - da36d130-722f-4329-bba0-5587be3e7159
-              - 155041ff-7627-431e-8852-021a958a49be
-              - 8c2301b2-a89e-44e9-92ce-838b996354eb
-              - 8d74bf2b-cb28-4dd9-be0f-b5dbf04790bc
+              - ef7cccb0-eaf7-4353-938d-55ab15f38de9
+              - da0303eb-c4a3-4fb5-bbe8-18b4b3a657bc
+              - d8dcc6f6-4114-45fc-b930-0a486e6a4b7d
+              - 8abb3abb-521c-405a-899f-7367793bc502
+              - dc7361e0-effc-4bd3-8e94-3e2c4279e38a
+              - 98bec68a-1876-474b-9ab6-2aa50338750e
+              - 11f2c694-9b4a-4b26-8751-fd75f69dbf69
+              - d842be7f-e5b7-4ecf-8f94-89e8e9a5f3ea
+              - 64ef4204-811b-4875-b520-912c1dd743b7
+              - e918f9c3-2585-4dab-bdd3-f5226e9e5d3b
+              - fc3b1a23-e7ba-436b-8c6f-05a29584885d
+              - f592c056-effb-48d6-82a4-47d7fd19af7a
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 055d9d26-f055-4472-b369-fd8c02d79429
@@ -916,18 +906,13 @@ dashboards:
               ColumnName: payer_account_id
               DataSetIdentifier: opensearch_extended_support_view
             Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
+              CustomFilterConfiguration:
+                MatchOperator: EQUALS
                 NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
+                ParameterName: Payer
             FilterId: bbbcde7b-8199-42ff-a7f2-9876e1d694f5
         ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
-            - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+          AllSheets: {}
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 2e56031a-f840-430b-961e-dacd8164f603
@@ -946,9 +931,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
             - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 22ed5fda-6c66-4b92-b5e1-ce1b0bd81f9e
@@ -967,9 +952,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
               VisualIds:
-              - 2cb4954f-7de5-4b5c-8b0b-2b4fa79328c0
+              - bb34a21c-bcc6-4a80-8c0e-6029b81b4d48
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: eb57b1f9-5718-4bf0-a172-bebf31541247
@@ -988,9 +973,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
               VisualIds:
-              - 1522cedb-057a-44c4-a6fe-3ed2dbb0c5ec
+              - 19f1607f-8052-4c1a-94b4-8e8f9644c677
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 76b8598d-1cb1-43bf-8c02-d598250d4fc9
@@ -1009,9 +994,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
               VisualIds:
-              - aeaa5520-dae3-42a9-a45d-6a74fe14449e
+              - f426777e-50ec-4437-8260-55ed03239964
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: b51fe26d-6478-4571-a981-91b5256552f0
@@ -1030,9 +1015,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
               VisualIds:
-              - 1795550e-e25d-4fe0-b04f-18e0a75927e4
+              - 5322db85-7f83-4fe0-bd3b-03e52216938d
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 5bf56111-2be6-4cc5-9bc0-3e7ceee3f699
@@ -1051,9 +1036,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
               VisualIds:
-              - 1795550e-e25d-4fe0-b04f-18e0a75927e4
+              - 5322db85-7f83-4fe0-bd3b-03e52216938d
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: a21bd50c-90da-4b62-ab02-fc6d6fed8e4b
@@ -1072,9 +1057,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
               VisualIds:
-              - 1522cedb-057a-44c4-a6fe-3ed2dbb0c5ec
+              - 19f1607f-8052-4c1a-94b4-8e8f9644c677
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 7a39c08d-ef70-4116-aeed-5ba11513d7ba
@@ -1099,9 +1084,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
             - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: fc278c0d-a6e1-4cab-beab-ec803565ab07
@@ -1120,7 +1105,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+              SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 4929d969-3c24-4d40-8df5-879840558921
@@ -1139,7 +1124,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+              SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: b79192af-bc59-4a96-8237-965e94b19ec9
@@ -1158,7 +1143,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+              SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: b931b454-dce0-4389-bbf1-b062f7115e83
@@ -1177,9 +1162,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+              SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
             - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 35184e8b-79b3-4312-b71c-93d274204d9d
@@ -1189,16 +1174,13 @@ dashboards:
               ColumnName: payer_account_id
               DataSetIdentifier: elasticache_extended_support_view
             Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
+              CustomFilterConfiguration:
+                MatchOperator: EQUALS
                 NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
+                ParameterName: Payer
             FilterId: d48ab038-c9d8-4080-974f-48d8635c7e01
         ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+          AllSheets: {}
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: e4aac887-b06a-42d2-8393-74ab60d8b96b
@@ -1217,7 +1199,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 1ae5b0fa-ce9c-40a7-abfe-87dbb0383b39
@@ -1236,9 +1218,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
               VisualIds:
-              - 85b57e98-fd0b-4ba4-8eeb-29717b59d123
+              - 00225b75-b736-419b-94a8-ecfb6bba7c4b
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: a59a9b43-089f-4671-a026-67d0ec23451a
@@ -1263,7 +1245,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 80f6da07-39b2-4868-ae25-63dce8bae323
@@ -1282,7 +1264,7 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: ALL_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 3a9e030f-54a2-42cd-b315-1590615c6bea
@@ -1301,9 +1283,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
               VisualIds:
-              - 2da2373a-1c3b-4868-b42e-a049300e7392
+              - 6a9749c0-2630-436f-9549-af225f94c97e
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 4c1202cd-fba5-4821-98b1-90f01844baff
@@ -1322,9 +1304,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
               VisualIds:
-              - 3b9f037d-a95b-4f88-94d5-3d1efe8c2f15
+              - 75edf990-659d-4524-a30b-c42b6c85760d
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 48a610b2-7d24-4d03-bdb4-1ebe278e57fd
@@ -1343,9 +1325,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
               VisualIds:
-              - c881bee2-47ab-49c3-ba92-e2140980aab0
+              - 919a539c-81b6-41b8-8401-1874e40639ce
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 46d0f1a7-63c1-48cd-8cb0-3d4517883746
@@ -1364,9 +1346,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
               VisualIds:
-              - 2da2373a-1c3b-4868-b42e-a049300e7392
+              - 6a9749c0-2630-436f-9549-af225f94c97e
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: e0f0d407-cb90-44c7-89b7-e49e5c0f9d68
@@ -1385,9 +1367,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
               VisualIds:
-              - 3b9f037d-a95b-4f88-94d5-3d1efe8c2f15
+              - 75edf990-659d-4524-a30b-c42b6c85760d
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 45c2c0d4-b24b-423c-b616-06317e184e85
@@ -1410,9 +1392,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
               VisualIds:
-              - a7b33e19-a890-44d6-9228-78bfad37c1c6
+              - 5ab951e2-9c81-499a-9587-4a8078a63927
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 0d98d1f1-4eca-4fed-a3af-cf5af3010d38
@@ -1435,9 +1417,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
               VisualIds:
-              - d37adc34-3e15-456d-9b62-541c4c125fa6
+              - 1819bbd5-bc7d-47f5-833e-b5e57f6216e2
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 89abd9de-09a2-4b7a-b0e7-faf44601411a
@@ -1460,9 +1442,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+              SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
               VisualIds:
-              - e6e3e636-7741-4eac-b44a-8b0e8e04d21a
+              - 1f0d965e-b698-4091-a29f-abc0dd278cd9
         Status: ENABLED
       Options:
         WeekStart: SUNDAY
@@ -1527,7 +1509,7 @@ dashboards:
                 RowSpan: 2
               - ColumnIndex: 1
                 ColumnSpan: 18
-                ElementId: db2261fe-ef3f-44d7-b20d-560f0a735f0e
+                ElementId: a45dd3f2-e7d3-4849-b68e-f75fa2a3154e
                 ElementType: VISUAL
                 RowIndex: 2
                 RowSpan: 6
@@ -1539,73 +1521,73 @@ dashboards:
                 RowSpan: 2
               - ColumnIndex: 19
                 ColumnSpan: 4
-                ElementId: 801fcd03-794e-4904-bef4-e937c9915b4a
+                ElementId: 63456781-c0b6-4a5b-b6c5-c094c574db92
                 ElementType: VISUAL
                 RowIndex: 4
                 RowSpan: 4
               - ColumnIndex: 23
                 ColumnSpan: 4
-                ElementId: 6f90c36a-844d-48d4-b385-aea2c3f25c37
+                ElementId: f9a8f065-ce20-445e-a46c-af99928a9eee
                 ElementType: VISUAL
                 RowIndex: 4
                 RowSpan: 4
               - ColumnIndex: 27
                 ColumnSpan: 4
-                ElementId: 0e3d4453-aaba-44db-9bc0-e12e107c0c89
+                ElementId: f8d457e4-5ad8-4b3b-a5ae-3bc1e4d2f04e
                 ElementType: VISUAL
                 RowIndex: 4
                 RowSpan: 4
               - ColumnIndex: 31
                 ColumnSpan: 4
-                ElementId: 1b89a88b-e767-4731-bc19-4e1fa472ddb1
+                ElementId: d0828d4d-e769-4124-b330-2b66ddf39308
                 ElementType: VISUAL
                 RowIndex: 4
                 RowSpan: 4
               - ColumnIndex: 3
                 ColumnSpan: 10
-                ElementId: 2d2b1454-2c05-4108-bddd-c7d7edfca5e3
+                ElementId: c2a9d3c5-88ce-4371-af14-d82ba11c43a4
                 ElementType: VISUAL
                 RowIndex: 8
                 RowSpan: 4
               - ColumnIndex: 13
                 ColumnSpan: 10
-                ElementId: 9377067f-9a80-4de6-b224-0e9d1f9f6718
+                ElementId: e4a4229d-b607-47a3-8f47-a2735a92b9ab
                 ElementType: VISUAL
                 RowIndex: 8
                 RowSpan: 4
               - ColumnIndex: 23
                 ColumnSpan: 10
-                ElementId: 8dcbc532-4452-45c3-934c-5d819979a466
+                ElementId: 25a3a6f8-0882-46a7-a844-d4f25d6b8d05
                 ElementType: VISUAL
                 RowIndex: 8
                 RowSpan: 4
               - ColumnIndex: 1
                 ColumnSpan: 14
-                ElementId: 0b0273cd-08b6-4e31-9469-0a43a59955bd
+                ElementId: 3148a201-653d-41df-9ed3-d9a9503467ff
                 ElementType: VISUAL
                 RowIndex: 12
                 RowSpan: 9
               - ColumnIndex: 15
                 ColumnSpan: 20
-                ElementId: cf13841a-6c41-4721-a5ea-f7fb9084add7
+                ElementId: 96015dc2-961d-425e-b742-209d1b174624
                 ElementType: VISUAL
                 RowIndex: 12
                 RowSpan: 9
               - ColumnIndex: 1
                 ColumnSpan: 17
-                ElementId: 147bc6ad-41b9-4cac-ad27-a3c45de832e5
+                ElementId: f090fcf8-98d4-4160-b4dc-b1f21865ea38
                 ElementType: VISUAL
                 RowIndex: 21
                 RowSpan: 12
               - ColumnIndex: 18
                 ColumnSpan: 17
-                ElementId: 5af04bb2-2cf5-40c2-9ea6-23b9cda1bbec
+                ElementId: 5e8f4990-2d28-4ebf-9abf-0b94f16901fd
                 ElementType: VISUAL
                 RowIndex: 21
                 RowSpan: 12
               - ColumnIndex: 1
                 ColumnSpan: 34
-                ElementId: 1fd6b6f8-192f-4a43-b0d2-a1c4163a8e8b
+                ElementId: 6d018c62-16c0-44f5-bd35-31059ce5ed9f
                 ElementType: VISUAL
                 RowIndex: 33
                 RowSpan: 13
@@ -1703,7 +1685,7 @@ dashboards:
                 ElementId: 72131530-2e02-4792-b613-6c3d7457eb43
                 ElementType: PARAMETER_CONTROL
                 RowSpan: 1
-        SheetId: bc6936b0-c9fc-43cd-98fa-950482cc5cb2
+        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
         TextBoxes:
         - Content: |-
             <text-box>
@@ -1764,7 +1746,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost (Year 2)</visual-title>
               Visibility: VISIBLE
-            VisualId: 9377067f-9a80-4de6-b224-0e9d1f9f6718
+            VisualId: e4a4229d-b607-47a3-8f47-a2735a92b9ab
         - BarChartVisual:
             Actions:
             - ActionOperations:
@@ -1872,7 +1854,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>vCPU/ACU Hours Breakdown - Account by Engine</visual-title>
               Visibility: VISIBLE
-            VisualId: 5af04bb2-2cf5-40c2-9ea6-23b9cda1bbec
+            VisualId: 5e8f4990-2d28-4ebf-9abf-0b94f16901fd
         - BarChartVisual:
             Actions:
             - ActionOperations:
@@ -1981,7 +1963,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Costs by Engine Version</visual-title>
               Visibility: VISIBLE
-            VisualId: cf13841a-6c41-4721-a5ea-f7fb9084add7
+            VisualId: 96015dc2-961d-425e-b742-209d1b174624
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -2027,7 +2009,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 1b89a88b-e767-4731-bc19-4e1fa472ddb1
+            VisualId: d0828d4d-e769-4124-b330-2b66ddf39308
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -2074,7 +2056,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 0e3d4453-aaba-44db-9bc0-e12e107c0c89
+            VisualId: f8d457e4-5ad8-4b3b-a5ae-3bc1e4d2f04e
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -2121,7 +2103,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 6f90c36a-844d-48d4-b385-aea2c3f25c37
+            VisualId: f9a8f065-ce20-445e-a46c-af99928a9eee
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -2161,7 +2143,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost (Year 3)</visual-title>
               Visibility: VISIBLE
-            VisualId: 8dcbc532-4452-45c3-934c-5d819979a466
+            VisualId: 25a3a6f8-0882-46a7-a844-d4f25d6b8d05
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -2201,7 +2183,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost (Year 1)</visual-title>
               Visibility: VISIBLE
-            VisualId: 2d2b1454-2c05-4108-bddd-c7d7edfca5e3
+            VisualId: c2a9d3c5-88ce-4371-af14-d82ba11c43a4
         - PieChartVisual:
             Actions:
             - ActionOperations:
@@ -2297,7 +2279,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>vCPU/ACU Hours of Usage By Engine Version</visual-title>
               Visibility: VISIBLE
-            VisualId: 0b0273cd-08b6-4e31-9469-0a43a59955bd
+            VisualId: 3148a201-653d-41df-9ed3-d9a9503467ff
         - TableVisual:
             Actions:
             - ActionOperations:
@@ -2519,7 +2501,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Extended Support Estimated Cost Breakdown</visual-title>
               Visibility: VISIBLE
-            VisualId: 1fd6b6f8-192f-4a43-b0d2-a1c4163a8e8b
+            VisualId: 6d018c62-16c0-44f5-bd35-31059ce5ed9f
         - TableVisual:
             Actions:
             - ActionOperations:
@@ -2623,7 +2605,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Extended Support Details</visual-title>
               Visibility: VISIBLE
-            VisualId: db2261fe-ef3f-44d7-b20d-560f0a735f0e
+            VisualId: a45dd3f2-e7d3-4849-b68e-f75fa2a3154e
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -2670,7 +2652,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 801fcd03-794e-4904-bef4-e937c9915b4a
+            VisualId: 63456781-c0b6-4a5b-b6c5-c094c574db92
         - BarChartVisual:
             Actions:
             - ActionOperations:
@@ -2778,7 +2760,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>vCPU/ACU Hours Breakdown - Engine by Account</visual-title>
               Visibility: VISIBLE
-            VisualId: 147bc6ad-41b9-4cac-ad27-a3c45de832e5
+            VisualId: f090fcf8-98d4-4160-b4dc-b1f21865ea38
       - ContentType: INTERACTIVE
         Layouts:
         - Configuration:
@@ -2796,7 +2778,7 @@ dashboards:
                 RowSpan: 3
               - ColumnIndex: 1
                 ColumnSpan: 18
-                ElementId: da36d130-722f-4329-bba0-5587be3e7159
+                ElementId: 64ef4204-811b-4875-b520-912c1dd743b7
                 ElementType: VISUAL
                 RowIndex: 3
                 RowSpan: 6
@@ -2808,73 +2790,73 @@ dashboards:
                 RowSpan: 2
               - ColumnIndex: 19
                 ColumnSpan: 4
-                ElementId: 155041ff-7627-431e-8852-021a958a49be
+                ElementId: e918f9c3-2585-4dab-bdd3-f5226e9e5d3b
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 23
                 ColumnSpan: 4
-                ElementId: 2ea2d794-3e56-48ee-9e46-a74bb17e271e
+                ElementId: d842be7f-e5b7-4ecf-8f94-89e8e9a5f3ea
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 27
                 ColumnSpan: 4
-                ElementId: dfa2d877-3bca-4ae4-835d-cc2a3e3ce9b3
+                ElementId: 11f2c694-9b4a-4b26-8751-fd75f69dbf69
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 31
                 ColumnSpan: 4
-                ElementId: 04e9b853-8079-4e00-a488-d21c22b03635
+                ElementId: 98bec68a-1876-474b-9ab6-2aa50338750e
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 11
                 ColumnSpan: 14
-                ElementId: 8c2301b2-a89e-44e9-92ce-838b996354eb
+                ElementId: fc3b1a23-e7ba-436b-8c6f-05a29584885d
                 ElementType: VISUAL
                 RowIndex: 9
                 RowSpan: 4
               - ColumnIndex: 1
                 ColumnSpan: 34
-                ElementId: 65ac4746-eee2-441f-9be9-03603859e3ba
+                ElementId: 178e3b51-eb8d-4bc8-961d-555b25d9a397
                 ElementType: VISUAL
                 RowIndex: 13
                 RowSpan: 9
               - ColumnIndex: 1
                 ColumnSpan: 12
-                ElementId: 8d74bf2b-cb28-4dd9-be0f-b5dbf04790bc
+                ElementId: f592c056-effb-48d6-82a4-47d7fd19af7a
                 ElementType: VISUAL
                 RowIndex: 22
                 RowSpan: 9
               - ColumnIndex: 13
                 ColumnSpan: 11
-                ElementId: f2c2cb42-7497-4ea6-b168-8d4c2bc2b9e6
+                ElementId: dc7361e0-effc-4bd3-8e94-3e2c4279e38a
                 ElementType: VISUAL
                 RowIndex: 22
                 RowSpan: 9
               - ColumnIndex: 24
                 ColumnSpan: 11
-                ElementId: 46fd346e-6312-459a-857a-0d8151995780
+                ElementId: ef7cccb0-eaf7-4353-938d-55ab15f38de9
                 ElementType: VISUAL
                 RowIndex: 22
                 RowSpan: 9
               - ColumnIndex: 1
                 ColumnSpan: 17
-                ElementId: b0c3a1fe-fab9-48e7-be78-91f4e4376f5c
+                ElementId: 8abb3abb-521c-405a-899f-7367793bc502
                 ElementType: VISUAL
                 RowIndex: 31
                 RowSpan: 12
               - ColumnIndex: 18
                 ColumnSpan: 17
-                ElementId: 3e218c30-58a8-4821-b478-b66e43f261ba
+                ElementId: d8dcc6f6-4114-45fc-b930-0a486e6a4b7d
                 ElementType: VISUAL
                 RowIndex: 31
                 RowSpan: 12
               - ColumnIndex: 1
                 ColumnSpan: 34
-                ElementId: 264ea3fb-0168-4d26-a57a-99fad965a330
+                ElementId: da0303eb-c4a3-4fb5-bbe8-18b4b3a657bc
                 ElementType: VISUAL
                 RowIndex: 43
                 RowSpan: 12
@@ -2955,7 +2937,7 @@ dashboards:
                 ElementId: e471b8e7-29d0-4b20-b02b-f92e4266a232
                 ElementType: PARAMETER_CONTROL
                 RowSpan: 1
-        SheetId: 465f135d-c793-4ca7-b3fe-c6f280cdf41a
+        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
         TextBoxes:
         - Content: |-
             <text-box>
@@ -3108,7 +3090,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost by Account</visual-title>
               Visibility: VISIBLE
-            VisualId: 46fd346e-6312-459a-857a-0d8151995780
+            VisualId: ef7cccb0-eaf7-4353-938d-55ab15f38de9
         - BarChartVisual:
             Actions:
             - ActionOperations:
@@ -3162,7 +3144,7 @@ dashboards:
                         DateTimeFormat: MMM YYYY
                         NullValueFormatConfiguration:
                           NullString: 'null'
-                      HierarchyId: e9956286-37dd-44fd-8996-a04599d14353
+                      HierarchyId: fb87a59b-3632-4ff2-8248-2d0f9063fafd
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -3234,14 +3216,14 @@ dashboards:
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
-                HierarchyId: e9956286-37dd-44fd-8996-a04599d14353
+                HierarchyId: fb87a59b-3632-4ff2-8248-2d0f9063fafd
             Subtitle:
               Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: <visual-title>Usage by Cluster Version (Past 3 months + MTD)</visual-title>
               Visibility: VISIBLE
-            VisualId: 65ac4746-eee2-441f-9be9-03603859e3ba
+            VisualId: 178e3b51-eb8d-4bc8-961d-555b25d9a397
         - TableVisual:
             Actions: []
             ChartConfiguration:
@@ -3360,7 +3342,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Extended Support Estimated Cost Breakdown</visual-title>
               Visibility: VISIBLE
-            VisualId: 264ea3fb-0168-4d26-a57a-99fad965a330
+            VisualId: da0303eb-c4a3-4fb5-bbe8-18b4b3a657bc
         - BarChartVisual:
             Actions:
             - ActionOperations:
@@ -3485,7 +3467,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Hours Breakdown - Account by Version</visual-title>
               Visibility: VISIBLE
-            VisualId: 3e218c30-58a8-4821-b478-b66e43f261ba
+            VisualId: d8dcc6f6-4114-45fc-b930-0a486e6a4b7d
         - BarChartVisual:
             Actions:
             - ActionOperations:
@@ -3614,7 +3596,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Hours Breakdown - Version by Account</visual-title>
               Visibility: VISIBLE
-            VisualId: b0c3a1fe-fab9-48e7-be78-91f4e4376f5c
+            VisualId: 8abb3abb-521c-405a-899f-7367793bc502
         - BarChartVisual:
             Actions:
             - ActionOperations:
@@ -3740,7 +3722,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost by Cluster Version</visual-title>
               Visibility: VISIBLE
-            VisualId: f2c2cb42-7497-4ea6-b168-8d4c2bc2b9e6
+            VisualId: dc7361e0-effc-4bd3-8e94-3e2c4279e38a
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -3786,7 +3768,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 04e9b853-8079-4e00-a488-d21c22b03635
+            VisualId: 98bec68a-1876-474b-9ab6-2aa50338750e
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -3833,7 +3815,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: dfa2d877-3bca-4ae4-835d-cc2a3e3ce9b3
+            VisualId: 11f2c694-9b4a-4b26-8751-fd75f69dbf69
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -3880,7 +3862,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 2ea2d794-3e56-48ee-9e46-a74bb17e271e
+            VisualId: d842be7f-e5b7-4ecf-8f94-89e8e9a5f3ea
         - TableVisual:
             Actions:
             - ActionOperations:
@@ -3959,7 +3941,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Extended Support Details</visual-title>
               Visibility: VISIBLE
-            VisualId: da36d130-722f-4329-bba0-5587be3e7159
+            VisualId: 64ef4204-811b-4875-b520-912c1dd743b7
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -4006,7 +3988,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 155041ff-7627-431e-8852-021a958a49be
+            VisualId: e918f9c3-2585-4dab-bdd3-f5226e9e5d3b
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -4047,7 +4029,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost</visual-title>
               Visibility: VISIBLE
-            VisualId: 8c2301b2-a89e-44e9-92ce-838b996354eb
+            VisualId: fc3b1a23-e7ba-436b-8c6f-05a29584885d
         - PieChartVisual:
             Actions:
             - ActionOperations:
@@ -4149,7 +4131,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Hours of Usage by Cluster Version</visual-title>
               Visibility: VISIBLE
-            VisualId: 8d74bf2b-cb28-4dd9-be0f-b5dbf04790bc
+            VisualId: f592c056-effb-48d6-82a4-47d7fd19af7a
       - ContentType: INTERACTIVE
         Layouts:
         - Configuration:
@@ -4167,7 +4149,7 @@ dashboards:
                 RowSpan: 3
               - ColumnIndex: 1
                 ColumnSpan: 18
-                ElementId: c6115659-a8e1-46ac-9999-5a3ab60fdfc8
+                ElementId: d54cef88-d1e2-4298-890e-195b5ee8519c
                 ElementType: VISUAL
                 RowIndex: 3
                 RowSpan: 6
@@ -4179,73 +4161,73 @@ dashboards:
                 RowSpan: 2
               - ColumnIndex: 19
                 ColumnSpan: 4
-                ElementId: 2cb4954f-7de5-4b5c-8b0b-2b4fa79328c0
+                ElementId: bb34a21c-bcc6-4a80-8c0e-6029b81b4d48
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 23
                 ColumnSpan: 4
-                ElementId: 1795550e-e25d-4fe0-b04f-18e0a75927e4
+                ElementId: 5322db85-7f83-4fe0-bd3b-03e52216938d
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 27
                 ColumnSpan: 4
-                ElementId: 1522cedb-057a-44c4-a6fe-3ed2dbb0c5ec
+                ElementId: 19f1607f-8052-4c1a-94b4-8e8f9644c677
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 31
                 ColumnSpan: 4
-                ElementId: aeaa5520-dae3-42a9-a45d-6a74fe14449e
+                ElementId: f426777e-50ec-4437-8260-55ed03239964
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 11
                 ColumnSpan: 14
-                ElementId: 508a0e9d-5e04-4039-8840-5c2e5b3f43b5
+                ElementId: 56953a68-2fde-448c-b07d-67e99ba9ad9f
                 ElementType: VISUAL
                 RowIndex: 9
                 RowSpan: 4
               - ColumnIndex: 1
                 ColumnSpan: 34
-                ElementId: 58f9ff72-d4dd-48d7-ad77-bffdab470b31
+                ElementId: 073903a0-eece-46fd-82f3-975be7bd91db
                 ElementType: VISUAL
                 RowIndex: 13
                 RowSpan: 6
               - ColumnIndex: 1
                 ColumnSpan: 12
-                ElementId: de15cc79-1ad6-4fe3-9a27-4a2b5c89d22a
+                ElementId: bf333309-d663-478d-b76f-e79d89a917cc
                 ElementType: VISUAL
                 RowIndex: 19
                 RowSpan: 9
               - ColumnIndex: 13
                 ColumnSpan: 11
-                ElementId: fd1e5d0d-0639-4ca7-9636-a835b1d865a0
+                ElementId: cc264440-15fb-4109-83cb-774b1b0f67af
                 ElementType: VISUAL
                 RowIndex: 19
                 RowSpan: 9
               - ColumnIndex: 24
                 ColumnSpan: 11
-                ElementId: 1209b99b-bc4e-4e0b-910a-853452c803fb
+                ElementId: 6c874ea2-8edf-4283-a70a-2632a5d83554
                 ElementType: VISUAL
                 RowIndex: 19
                 RowSpan: 9
               - ColumnIndex: 1
                 ColumnSpan: 17
-                ElementId: 15363616-99c2-4b40-8817-0eab73396017
+                ElementId: 2d25d42f-2147-4156-a5a2-845a7f849eca
                 ElementType: VISUAL
                 RowIndex: 28
                 RowSpan: 12
               - ColumnIndex: 18
                 ColumnSpan: 17
-                ElementId: 52a0d3c2-353f-46b3-bc68-b7692bc7e2f3
+                ElementId: fc084d2c-ea92-46de-9b9b-a1c6391d883a
                 ElementType: VISUAL
                 RowIndex: 28
                 RowSpan: 12
               - ColumnIndex: 1
                 ColumnSpan: 34
-                ElementId: ec5e9d47-5985-41fc-a680-3903613cb5f4
+                ElementId: 89dc2226-c17b-4d67-b68c-72ce820baef6
                 ElementType: VISUAL
                 RowIndex: 40
                 RowSpan: 12
@@ -4326,7 +4308,7 @@ dashboards:
                 ElementId: 5711d566-10c5-4411-9b3f-6f128330755a
                 ElementType: PARAMETER_CONTROL
                 RowSpan: 1
-        SheetId: 36fb15ac-c445-45e3-8439-b5b5e4f8e2b0
+        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
         TextBoxes:
         - Content: |-
             <text-box>
@@ -4451,7 +4433,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Hours Breakdown - Account by Engine Version</visual-title>
               Visibility: VISIBLE
-            VisualId: 52a0d3c2-353f-46b3-bc68-b7692bc7e2f3
+            VisualId: fc084d2c-ea92-46de-9b9b-a1c6391d883a
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -4528,7 +4510,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost by Account</visual-title>
               Visibility: VISIBLE
-            VisualId: 1209b99b-bc4e-4e0b-910a-853452c803fb
+            VisualId: 6c874ea2-8edf-4283-a70a-2632a5d83554
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -4575,7 +4557,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 1795550e-e25d-4fe0-b04f-18e0a75927e4
+            VisualId: 5322db85-7f83-4fe0-bd3b-03e52216938d
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -4621,7 +4603,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: aeaa5520-dae3-42a9-a45d-6a74fe14449e
+            VisualId: f426777e-50ec-4437-8260-55ed03239964
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -4668,7 +4650,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 1522cedb-057a-44c4-a6fe-3ed2dbb0c5ec
+            VisualId: 19f1607f-8052-4c1a-94b4-8e8f9644c677
         - TableVisual:
             Actions: []
             ChartConfiguration:
@@ -4734,7 +4716,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Extended Support Details</visual-title>
               Visibility: VISIBLE
-            VisualId: c6115659-a8e1-46ac-9999-5a3ab60fdfc8
+            VisualId: d54cef88-d1e2-4298-890e-195b5ee8519c
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -4781,7 +4763,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 2cb4954f-7de5-4b5c-8b0b-2b4fa79328c0
+            VisualId: bb34a21c-bcc6-4a80-8c0e-6029b81b4d48
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -4822,7 +4804,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost</visual-title>
               Visibility: VISIBLE
-            VisualId: 508a0e9d-5e04-4039-8840-5c2e5b3f43b5
+            VisualId: 56953a68-2fde-448c-b07d-67e99ba9ad9f
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -4855,7 +4837,7 @@ dashboards:
                         ColumnName: billing_period
                         DataSetIdentifier: opensearch_extended_support_view
                       FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.billing_period.0.1732629127936
-                      HierarchyId: 4c4df047-7753-4d72-8cd9-47c6e56b2112
+                      HierarchyId: 550df654-a7f0-444d-860c-5db3183879a3
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -4920,14 +4902,14 @@ dashboards:
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
-                HierarchyId: 4c4df047-7753-4d72-8cd9-47c6e56b2112
+                HierarchyId: 550df654-a7f0-444d-860c-5db3183879a3
             Subtitle:
               Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: <visual-title>Usage by Engine Version</visual-title>
               Visibility: VISIBLE
-            VisualId: 58f9ff72-d4dd-48d7-ad77-bffdab470b31
+            VisualId: 073903a0-eece-46fd-82f3-975be7bd91db
         - PieChartVisual:
             Actions: []
             ChartConfiguration:
@@ -5012,7 +4994,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Hours of Usage by Engine Version</visual-title>
               Visibility: VISIBLE
-            VisualId: de15cc79-1ad6-4fe3-9a27-4a2b5c89d22a
+            VisualId: bf333309-d663-478d-b76f-e79d89a917cc
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -5089,7 +5071,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost by Engine Version</visual-title>
               Visibility: VISIBLE
-            VisualId: fd1e5d0d-0639-4ca7-9636-a835b1d865a0
+            VisualId: cc264440-15fb-4109-83cb-774b1b0f67af
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -5190,7 +5172,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Hours Breakdown - Engine Version by Account</visual-title>
               Visibility: VISIBLE
-            VisualId: 15363616-99c2-4b40-8817-0eab73396017
+            VisualId: 2d25d42f-2147-4156-a5a2-845a7f849eca
         - TableVisual:
             Actions: []
             ChartConfiguration:
@@ -5341,7 +5323,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Extended Support Estimated Cost Breakdown</visual-title>
               Visibility: VISIBLE
-            VisualId: ec5e9d47-5985-41fc-a680-3903613cb5f4
+            VisualId: 89dc2226-c17b-4d67-b68c-72ce820baef6
       - ContentType: INTERACTIVE
         Layouts:
         - Configuration:
@@ -5359,7 +5341,7 @@ dashboards:
                 RowSpan: 3
               - ColumnIndex: 1
                 ColumnSpan: 18
-                ElementId: f5dac93b-8c50-4a9c-99ae-9e656985aedb
+                ElementId: 45839bc4-ca21-48fc-a972-053a70c1b97e
                 ElementType: VISUAL
                 RowIndex: 3
                 RowSpan: 6
@@ -5371,85 +5353,85 @@ dashboards:
                 RowSpan: 2
               - ColumnIndex: 19
                 ColumnSpan: 4
-                ElementId: 85b57e98-fd0b-4ba4-8eeb-29717b59d123
+                ElementId: 00225b75-b736-419b-94a8-ecfb6bba7c4b
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 23
                 ColumnSpan: 4
-                ElementId: 2da2373a-1c3b-4868-b42e-a049300e7392
+                ElementId: 6a9749c0-2630-436f-9549-af225f94c97e
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 27
                 ColumnSpan: 4
-                ElementId: 3b9f037d-a95b-4f88-94d5-3d1efe8c2f15
+                ElementId: 75edf990-659d-4524-a30b-c42b6c85760d
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 31
                 ColumnSpan: 4
-                ElementId: c881bee2-47ab-49c3-ba92-e2140980aab0
+                ElementId: 919a539c-81b6-41b8-8401-1874e40639ce
                 ElementType: VISUAL
                 RowIndex: 5
                 RowSpan: 4
               - ColumnIndex: 4
                 ColumnSpan: 9
-                ElementId: a725bbe4-03fc-4b21-910e-cbc5d94c30d5
+                ElementId: fd087b09-eaca-4d2d-bc4d-6efbcf8a9330
                 ElementType: VISUAL
                 RowIndex: 9
                 RowSpan: 3
               - ColumnIndex: 13
                 ColumnSpan: 9
-                ElementId: 9944dc29-c3ff-441f-b548-df740cac13f0
+                ElementId: 4a951d61-9625-4319-831f-f306bb3778bb
                 ElementType: VISUAL
                 RowIndex: 9
                 RowSpan: 3
               - ColumnIndex: 22
                 ColumnSpan: 9
-                ElementId: 98fb508b-5e6c-4d61-a3ba-200537b96d5b
+                ElementId: b7c57127-82da-447f-88a8-c0c752e3959b
                 ElementType: VISUAL
                 RowIndex: 9
                 RowSpan: 3
               - ColumnIndex: 1
                 ColumnSpan: 34
-                ElementId: 5ee1448a-53f0-4d09-82f9-9f7ec7d5b7bc
+                ElementId: 8c0e55ed-8fb9-42d1-80ef-0c6873353f3a
                 ElementType: VISUAL
                 RowIndex: 12
                 RowSpan: 8
               - ColumnIndex: 1
                 ColumnSpan: 12
-                ElementId: a083f418-c1ce-4f7e-a05e-3ecb5848a64f
+                ElementId: e6a7c499-d441-4108-879a-ae0421dece4a
                 ElementType: VISUAL
                 RowIndex: 20
                 RowSpan: 9
               - ColumnIndex: 13
                 ColumnSpan: 22
-                ElementId: 193dd08e-4416-4719-88aa-e55874e62e40
+                ElementId: cf72e169-95dc-472f-9d96-fb2a89bc8bec
                 ElementType: VISUAL
                 RowIndex: 20
                 RowSpan: 9
               - ColumnIndex: 1
                 ColumnSpan: 34
-                ElementId: a7b33e19-a890-44d6-9228-78bfad37c1c6
+                ElementId: 5ab951e2-9c81-499a-9587-4a8078a63927
                 ElementType: VISUAL
                 RowIndex: 29
                 RowSpan: 9
               - ColumnIndex: 1
                 ColumnSpan: 17
-                ElementId: d37adc34-3e15-456d-9b62-541c4c125fa6
+                ElementId: 1819bbd5-bc7d-47f5-833e-b5e57f6216e2
                 ElementType: VISUAL
                 RowIndex: 38
                 RowSpan: 9
               - ColumnIndex: 18
                 ColumnSpan: 17
-                ElementId: e6e3e636-7741-4eac-b44a-8b0e8e04d21a
+                ElementId: 1f0d965e-b698-4091-a29f-abc0dd278cd9
                 ElementType: VISUAL
                 RowIndex: 38
                 RowSpan: 9
               - ColumnIndex: 1
                 ColumnSpan: 34
-                ElementId: 8ad795b1-ed50-46d3-9c5e-f676310295a6
+                ElementId: dccde2c3-29de-46c3-811a-81c78f1a5bb6
                 ElementType: VISUAL
                 RowIndex: 47
                 RowSpan: 12
@@ -5530,7 +5512,7 @@ dashboards:
                 ElementId: 54741f97-819f-4319-9452-6e3f3a8f8104
                 ElementType: PARAMETER_CONTROL
                 RowSpan: 1
-        SheetId: df27fb1f-6641-4dc5-a4ac-c5a0ebddc7ab
+        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
         TextBoxes:
         - Content: |-
             <text-box>
@@ -5642,7 +5624,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Hours Breakdown - Account by Engine Version</visual-title>
               Visibility: VISIBLE
-            VisualId: e6e3e636-7741-4eac-b44a-8b0e8e04d21a
+            VisualId: 1f0d965e-b698-4091-a29f-abc0dd278cd9
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -5764,7 +5746,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Hours Breakdown - Engine Version by Account</visual-title>
               Visibility: VISIBLE
-            VisualId: d37adc34-3e15-456d-9b62-541c4c125fa6
+            VisualId: 1819bbd5-bc7d-47f5-833e-b5e57f6216e2
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -5893,7 +5875,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost by Top 5 Account</visual-title>
               Visibility: VISIBLE
-            VisualId: a7b33e19-a890-44d6-9228-78bfad37c1c6
+            VisualId: 5ab951e2-9c81-499a-9587-4a8078a63927
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -5950,7 +5932,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost (Year 3)</visual-title>
               Visibility: VISIBLE
-            VisualId: 98fb508b-5e6c-4d61-a3ba-200537b96d5b
+            VisualId: b7c57127-82da-447f-88a8-c0c752e3959b
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -6007,7 +5989,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost (Year 2)</visual-title>
               Visibility: VISIBLE
-            VisualId: 9944dc29-c3ff-441f-b548-df740cac13f0
+            VisualId: 4a951d61-9625-4319-831f-f306bb3778bb
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -6054,7 +6036,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: c881bee2-47ab-49c3-ba92-e2140980aab0
+            VisualId: 919a539c-81b6-41b8-8401-1874e40639ce
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -6101,7 +6083,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 3b9f037d-a95b-4f88-94d5-3d1efe8c2f15
+            VisualId: 75edf990-659d-4524-a30b-c42b6c85760d
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -6150,7 +6132,7 @@ dashboards:
                     <block align="center"/>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 2da2373a-1c3b-4868-b42e-a049300e7392
+            VisualId: 6a9749c0-2630-436f-9549-af225f94c97e
         - TableVisual:
             Actions: []
             ChartConfiguration:
@@ -6219,7 +6201,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Extended Support Details</visual-title>
               Visibility: VISIBLE
-            VisualId: f5dac93b-8c50-4a9c-99ae-9e656985aedb
+            VisualId: 45839bc4-ca21-48fc-a972-053a70c1b97e
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -6266,7 +6248,7 @@ dashboards:
                     </block>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 85b57e98-fd0b-4ba4-8eeb-29717b59d123
+            VisualId: 00225b75-b736-419b-94a8-ecfb6bba7c4b
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -6323,7 +6305,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Cost (Year 1)</visual-title>
               Visibility: VISIBLE
-            VisualId: a725bbe4-03fc-4b21-910e-cbc5d94c30d5
+            VisualId: fd087b09-eaca-4d2d-bc4d-6efbcf8a9330
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -6353,7 +6335,7 @@ dashboards:
                         DateTimeFormat: MMM YYYY
                         NullValueFormatConfiguration:
                           NullString: 'null'
-                      HierarchyId: f77c1bf1-5055-48f4-8590-d4e8f6b7d67b
+                      HierarchyId: fb4a2a3d-9db3-478a-a526-861e6529eb36
                   Colors:
                   - CategoricalDimensionField:
                       Column:
@@ -6434,14 +6416,14 @@ dashboards:
             ColumnHierarchies:
             - DateTimeHierarchy:
                 DrillDownFilters: []
-                HierarchyId: f77c1bf1-5055-48f4-8590-d4e8f6b7d67b
+                HierarchyId: fb4a2a3d-9db3-478a-a526-861e6529eb36
             Subtitle:
               Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: <visual-title>Usage by Engine Version</visual-title>
               Visibility: VISIBLE
-            VisualId: 5ee1448a-53f0-4d09-82f9-9f7ec7d5b7bc
+            VisualId: 8c0e55ed-8fb9-42d1-80ef-0c6873353f3a
         - PieChartVisual:
             Actions: []
             ChartConfiguration:
@@ -6526,7 +6508,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Hours of Usage by Engine Version</visual-title>
               Visibility: VISIBLE
-            VisualId: a083f418-c1ce-4f7e-a05e-3ecb5848a64f
+            VisualId: e6a7c499-d441-4108-879a-ae0421dece4a
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -6650,7 +6632,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Estimated Monthly Costs by Engine Version</visual-title>
               Visibility: VISIBLE
-            VisualId: 193dd08e-4416-4719-88aa-e55874e62e40
+            VisualId: cf72e169-95dc-472f-9d96-fb2a89bc8bec
         - TableVisual:
             Actions: []
             ChartConfiguration:
@@ -6750,7 +6732,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Extended Support Estimated Cost Breakdown</visual-title>
               Visibility: VISIBLE
-            VisualId: 8ad795b1-ed50-46d3-9c5e-f676310295a6
+            VisualId: dccde2c3-29de-46c3-811a-81c78f1a5bb6
       - ContentType: INTERACTIVE
         Layouts:
         - Configuration:
@@ -6773,7 +6755,7 @@ dashboards:
                 RowIndex: 7
                 RowSpan: 11
         Name: About
-        SheetId: d46bcc82-8655-419c-9b19-a1860f6c310e
+        SheetId: 67a7dc2f-6ce3-45ce-a30d-061f536cba50
         TextBoxes:
         - Content: "<text-box>\n  <inline font-size=\"54.88px\">Notices</inline>\n  <inline\
             \ font-size=\"12.8px\">\n    <img src=\"https://d66mvi2kszsvt.cloudfront.net/resources/dashboard-visual-analytics/About/header.png\"\
@@ -6794,7 +6776,7 @@ dashboards:
             center\">\n    <inline color=\"#61d1d6\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/extended-support.html\"\
             \ target=\"_blank\">\n        <b>\n          <u>Extended Support Cost Projection</u>\n\
             \        </b>\n      </a>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"\
-            center\">\n    <b>v4.0.4</b>\n  </block>\n  <br/>\n  <block align=\"right\"\
+            center\">\n    <b>v4.0.5</b>\n  </block>\n  <br/>\n  <block align=\"right\"\
             />\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"\
             />\n  <br/>\n  <block align=\"right\">Built by: Julio Chaves, Yuriy Prykhodko,\
             \ Iakov Gan, Eric Christensen, Sumit Agarwal</block>\n  <br/>\n  <block align=\"\
