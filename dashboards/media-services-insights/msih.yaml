@@ -8,7 +8,7 @@ dashboards:
     dashboardId: media-services-insights
     category: Advanced
     theme: MIDNIGHT
-    version: v1.1.2
+    version: v1.1.3
     file: ./msih-definition.yaml
 datasets:
   msih_reservations:
@@ -131,7 +131,7 @@ datasets:
               NewColumnName: linked_account_name
           Source:
             PhysicalTableId: 481b319c-c8f4-4e82-9ddf-fa705f6cf783
-        9d41b8af-311f-4f41-9835-e6df45e5e693:
+        7f0aa5d7-db0e-4129-b3cd-e45ca980d12f:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -187,11 +187,11 @@ datasets:
               - linked_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: b36cde4d-cf09-4068-b51f-6d9032eff788
+              LeftOperand: d515cb03-91c4-4e52-9d98-89239482a8fe
               RightOperand: 24baacd6-be68-44a1-ac29-318cfec3a2d9
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
-        b36cde4d-cf09-4068-b51f-6d9032eff788:
+        d515cb03-91c4-4e52-9d98-89239482a8fe:
           Alias: Intermediate Table
           Source:
             JoinInstruction:
@@ -363,7 +363,7 @@ datasets:
               NewColumnName: payer_account_name
           Source:
             PhysicalTableId: ca2f9216-c240-4505-9a10-3d7794d2633a
-        577d1b5c-c0f6-4c3b-9e19-073469c8b7b9:
+        d5f36788-3777-4aca-b7f2-8c77dda5c7bd:
           Alias: Intermediate Table
           Source:
             JoinInstruction:
@@ -371,7 +371,7 @@ datasets:
               RightOperand: fe50ab11-682a-4611-b7a0-048682763adf
               Type: LEFT
               OnClause: '{linked_account_id} = {account_id}'
-        d43506c7-accc-4e0c-9554-60f5c5b75703:
+        e594d951-ccd9-4a1e-ba06-b555944d6b97:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -447,7 +447,7 @@ datasets:
               - payer_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: 577d1b5c-c0f6-4c3b-9e19-073469c8b7b9
+              LeftOperand: d5f36788-3777-4aca-b7f2-8c77dda5c7bd
               RightOperand: 43f7b42d-3957-4651-8f5c-278ecd1981cc
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
