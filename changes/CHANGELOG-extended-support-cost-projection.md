@@ -1,5 +1,10 @@
 # What's new in Extended Support Cost Projection
 
+## Extended Support Cost Projection - v4.0.5
+
+- OpenSearch and ElastiCache payer filters aligned with RDS and EKS filters by using "equals" comparison with "Payer" parameter.
+- Adjusted payer filter behaviour to enable cross-sheet filtering.
+
 ## Extended Support Cost Projection - v4.0.4
 
 **Important:** This version requires the data collection version 3.2.0+. Update to this version requires a forced update. Since this is a major version upgrade, the `cid-cmd` tool will ask to confirm a recursive update or not. Please make sure to confirm the recursive update by answering **yes** to continue the update process and have the new Elasticache dataset and Athena view deployed for the dashboard.
