@@ -173,8 +173,7 @@ def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], fie
                         "Configuration": {
                             "FilterListConfiguration": {
                                 "MatchOperator": "CONTAINS",
-                                "NullOption": "ALL_VALUES",
-                                "SelectAllOptions": "FILTER_ALL_VALUES"
+                                "NullOption": "ALL_VALUES"
                             }
                         },
                         "DefaultFilterControlConfiguration": {
