@@ -2037,6 +2037,17 @@ class Cid():
     @command
     def teardown(self, **kwargs):
         """remove all assets created by cid"""
+        dashboards = list(self.qs.dashboards.values())
+        cid_print('Following dashboards and datasets will be <RED><BOLD>deleted<END><END>:')
+        for dashboard in dashboards:
+            cid_print(f' <RED><BOLD>{dashboard.id}<END><END> <RED>{dashboard.name} <END>')
+
+        if not get_yesno_parameter(param_name='confirm',
+            message='You selected Teardown command. It will destroy ALL dashboards, datasets and datasources created by CID. Are you sure?',
+            default='no'):
+            cid_print('Good')
+            return
+
         for dashboard in list(self.qs.dashboards.values()):
             self.delete(dashboard.id)
         self.iam.ensure_role_does_not_exist('CidCmdQuickSightDataSourceRole')
