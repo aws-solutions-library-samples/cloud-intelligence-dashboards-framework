@@ -680,7 +680,7 @@ dashboards:
             \  </inline>\n  <br/>\n  <ul>\n    <li>\n      At least 1 cost anomaly monitor\
             \ should be configured to view the results of cost anomaly detection [\n   \
             \   <a href=\"https://catalog.workshops.aws/awscff/en-US/foundations/3-cost-anomaly\"\
-            \ target=\"_blank\">1</a>\n      ].\n    </li>\n    <li>\n      This dashbaord\
+            \ target=\"_blank\">1</a>\n      ].\n    </li>\n    <li>\n      This dashboard\
             \ is build for reviews and long term analysis for reactive notification use\
             \ built-in mechanism in AWS Cost Anomaly service [\n      <a href=\"https://docs.aws.amazon.com/cost-management/latest/userguide/ad-SNS.html\"\
             \ target=\"_blank\">2</a>\n      ].\n    </li>\n    <li>\n      <inline color=\"\
