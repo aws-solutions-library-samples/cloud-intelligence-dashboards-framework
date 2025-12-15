@@ -7,66 +7,7 @@ dashboards:
     dashboardId: cid-rls
     category: Custom
     version: v1.0.0
-    data: |
-      AnalysisDefaults:
-        DefaultNewSheetConfiguration:
-          InteractiveLayoutConfiguration:
-            Grid:
-              CanvasSizeOptions:
-                ScreenCanvasSizeOptions:
-                  OptimizedViewPortWidth: 1600px
-                  ResizeOption: FIXED
-          SheetContentType: INTERACTIVE
-      CalculatedFields: []
-      DataSetIdentifierDeclarations:
-      - DataSetArn: arn:aws:quicksight:::dataset/770b6f30-9498-49e2-9878-5ac9e3258b2c
-        Identifier: rls_dataset
-      FilterGroups: []
-      Options:
-        WeekStart: SUNDAY
-      ParameterDeclarations: []
-      Sheets:
-      - ContentType: INTERACTIVE
-        Layouts:
-        - Configuration:
-            GridLayout:
-              CanvasSizeOptions:
-                ScreenCanvasSizeOptions:
-                  OptimizedViewPortWidth: 1600px
-                  ResizeOption: FIXED
-              Elements:
-              - ColumnIndex: 0
-                ColumnSpan: 15
-                ElementId: 0aa39690-90fc-46bf-9175-6ba05d4156a6
-                ElementType: VISUAL
-                RowIndex: 0
-                RowSpan: 11
-        Name: Sheet 1
-        SheetId: 899b6ce7-83c3-4e6d-8611-0ed6530e6539
-        Visuals:
-        - TableVisual:
-            Actions: []
-            ChartConfiguration:
-              FieldWells:
-                TableAggregatedFieldWells:
-                  GroupBy:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: UserName
-                        DataSetIdentifier: rls_dataset
-                      FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.UserName.0.1752384777900
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: account_id
-                        DataSetIdentifier: rls_dataset
-                      FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.account_id.1.1752384782382
-                  Values: []
-              SortConfiguration: {}
-            Subtitle:
-              Visibility: VISIBLE
-            Title:
-              Visibility: VISIBLE
-            VisualId: 0aa39690-90fc-46bf-9175-6ba05d4156a6
+    file: ./rls-definition.yaml
 datasets:
   rls_dataset:
     data:
