@@ -22,3 +22,4 @@ Resources:
   - Url: data-collection-monitor/data-collection-monitor.yaml
   - Url: tao/tao.yaml
   - Url: media-services-insights/msih.yaml
+  - Url: rls/rls.yaml

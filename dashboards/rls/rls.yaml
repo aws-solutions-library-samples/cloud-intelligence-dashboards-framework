@@ -5,7 +5,7 @@ dashboards:
       - rls_dataset
     name: RLS
     dashboardId: cid-rls
-    category: Custom
+    category: Utils
     version: v0.0.1
     file: ./rls-definition.yaml
     theme: MIDNIGHT
