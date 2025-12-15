@@ -8,6 +8,19 @@ AnalysisDefaults:
             ResizeOption: FIXED
     SheetContentType: INTERACTIVE
 CalculatedFields:
+- DataSetIdentifier: rls_all_users_view
+  Expression: ifelse({account_id} = '' or isNull({account_id}), 'empty (ANY)', {account_id})
+  Name: Account ID
+- DataSetIdentifier: rls_all_users_view
+  Expression: ifelse(isNull(groupname) or groupname = '', '<direct access>', groupname
+    )
+  Name: Group
+- DataSetIdentifier: rls_all_users_view
+  Expression: ifelse({payer_id} = '' or isNull({payer_id}), 'empty (ANY)', {payer_id})
+  Name: Payer ID
+- DataSetIdentifier: rls_dataset
+  Expression: ifelse({_account_id_is_null}=1, 'empty (FULL ACCESS)', {account_id})
+  Name: Account ID(s)
 - DataSetIdentifier: rls_dataset
   Expression: |-
     concat(
@@ -31,6 +44,9 @@ CalculatedFields:
         )
     )
   Name: Description
+- DataSetIdentifier: rls_dataset
+  Expression: ifelse({_payer_id_is_null} = 1, 'empty (FULL ACCESS)', {payer_id})
+  Name: Payer ID(s)
 - DataSetIdentifier: rls_dataset
   Expression: ifelse(isNull({account_id}) OR {account_id} = '', 1, 0)
   Name: _account_id_is_null
@@ -91,9 +107,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 1f56cca7-d6c4-4b82-84e7-4741cb3582d0
+        SheetId: 62ce4978-0ccd-4e93-8ae9-5f197316aa5a
         VisualIds:
-        - 8cc77b33-cb36-497b-9fef-d3ccd97f867e
+        - 2f63efee-5e59-4c0d-a2ac-c36c327d8bc7
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: d0caea2c-0ccf-452f-900b-511d8cd90011
@@ -112,9 +128,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 1f56cca7-d6c4-4b82-84e7-4741cb3582d0
+        SheetId: 62ce4978-0ccd-4e93-8ae9-5f197316aa5a
         VisualIds:
-        - 8cc77b33-cb36-497b-9fef-d3ccd97f867e
+        - 2f63efee-5e59-4c0d-a2ac-c36c327d8bc7
   Status: ENABLED
 Options:
   WeekStart: SUNDAY
@@ -137,17 +153,19 @@ Sheets:
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 78602264-b797-4bc8-922c-76e2fd852742
+          ElementId: 5e757f9b-0753-4ab7-ae48-b0d02f3ecbff
           ElementType: VISUAL
           RowIndex: 4
           RowSpan: 17
   Name: RLS Dataset
-  SheetId: 0146de27-2f7d-4268-9dd5-e7a5679a3d98
+  SheetId: 66ea4383-55eb-4c3d-b580-ef2414ac2097
   TextBoxes:
   - Content: |-
       <text-box>
-        <inline font-size="32px">RLS Dataset</inline>
+        <inline font-size="32px">Row Level Security (RLS) Dataset</inline>
         <br/>
+        <br/>
+        RLS dataset help you managing security for your users. This dashboard visualize RLS dataset for QS administrators for managing granular permissions:
         <br/>
         <ul>
           <li class="ql-indent-0">
@@ -175,12 +193,12 @@ Sheets:
       ChartConfiguration:
         FieldOptions:
           SelectedFieldOptions:
-          - FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.UserName.0.1752384777900
+          - CustomLabel: User
+            FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.UserName.0.1752384777900
             Width: 234px
-          - FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.GroupName.3.1765750843355
-            Width: 156px
-          - FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.account_id.1.1752384782382
-            Width: 136px
+          - CustomLabel: Group
+            FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.GroupName.3.1765750843355
+            Width: 196px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -196,14 +214,14 @@ Sheets:
                 FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.GroupName.3.1765750843355
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: account_id
+                  ColumnName: Account ID(s)
                   DataSetIdentifier: rls_dataset
-                FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.account_id.1.1752384782382
+                FieldId: 25de85b9-03ba-43ff-9dab-6e20f045e06b.4.1765818739418
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: payer_id
+                  ColumnName: Payer ID(s)
                   DataSetIdentifier: rls_dataset
-                FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.payer_id.2.1765750833895
+                FieldId: 873c374a-4303-4f09-a4e2-f1401b1fa665.4.1765818787711
             - CategoricalDimensionField:
                 Column:
                   ColumnName: Description
@@ -220,32 +238,33 @@ Sheets:
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - Cell:
-            FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.account_id.1.1752384782382
+            FieldId: 25de85b9-03ba-43ff-9dab-6e20f045e06b.4.1765818739418
             TextFormat:
-              Icon:
-                CustomCondition:
-                  DisplayConfiguration:
-                    IconDisplayOption: ICON_ONLY
-                  Expression: SUM({_account_id_is_null}) = 1
-                  IconOptions:
-                    UnicodeIcon: "\u26A0"
+              TextColor:
+                Solid:
+                  Color: '#DE3B00'
+                  Expression: '{Account ID(s)} = "empty (FULL ACCESS)"'
         - Cell:
-            FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.payer_id.2.1765750833895
+            FieldId: 873c374a-4303-4f09-a4e2-f1401b1fa665.4.1765818787711
             TextFormat:
-              Icon:
-                CustomCondition:
-                  DisplayConfiguration:
-                    IconDisplayOption: ICON_ONLY
-                  Expression: SUM({_payer_id_is_null}) = 1
-                  IconOptions:
-                    UnicodeIcon: "\u26A0"
+              TextColor:
+                Solid:
+                  Color: '#DE3B00'
+                  Expression: '{Payer ID(s)} = "empty (FULL ACCESS)"'
+        - Cell:
+            FieldId: 8c712ab3-0b62-4fa5-9b4f-09aada6eda7a.4.1765780070945
+            TextFormat:
+              TextColor:
+                Solid:
+                  Color: '#AAAAAA'
+                  Expression: '{Description} <> "none"'
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>RLS Dataset</visual-title>
         Visibility: VISIBLE
-      VisualId: 78602264-b797-4bc8-922c-76e2fd852742
+      VisualId: 5e757f9b-0753-4ab7-ae48-b0d02f3ecbff
 - ContentType: INTERACTIVE
   FilterControls:
   - Dropdown:
@@ -288,10 +307,10 @@ Sheets:
         Elements:
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 8cc77b33-cb36-497b-9fef-d3ccd97f867e
+          ElementId: 2f63efee-5e59-4c0d-a2ac-c36c327d8bc7
           ElementType: VISUAL
           RowIndex: 0
-          RowSpan: 12
+          RowSpan: 21
   Name: Users
   SheetControlLayouts:
   - Configuration:
@@ -305,7 +324,7 @@ Sheets:
           ElementId: d6b77184-93c4-4063-8ec8-0754551ef149
           ElementType: FILTER_CONTROL
           RowSpan: 1
-  SheetId: 1f56cca7-d6c4-4b82-84e7-4741cb3582d0
+  SheetId: 62ce4978-0ccd-4e93-8ae9-5f197316aa5a
   Visuals:
   - PivotTableVisual:
       Actions: []
@@ -320,34 +339,21 @@ Sheets:
             - FieldId: rls_all_u-username-6976b4.1.1765803201724
               FieldValue: username
             Width: 262px
-          - DataPathList:
-            - FieldId: rls_all_u-groupname-afb520.4.1765803219996
-              FieldValue: groupname
-            Width: 193px
-          - DataPathList:
-            - DataPathType:
-                PivotTableDataPathType: COUNT_METRIC_COLUMN
-            Width: 147px
-          - DataPathList:
-            - FieldId: rls_all_u-account_i-616da3.3.1765803217027
-              FieldValue: account_id
-            Width: 136px
-          - DataPathList:
-            - FieldId: rls_all_u-payer_id-133248.2.1765803215132
-              FieldValue: payer_id
-            Width: 131px
           SelectedFieldOptions:
-          - FieldId: rls_all_u-email-2b3908.0.1765803192622
+          - CustomLabel: Email
+            FieldId: rls_all_u-email-2b3908.0.1765803192622
             Visibility: VISIBLE
-          - FieldId: rls_all_u-username-6976b4.1.1765803201724
+          - CustomLabel: User
+            FieldId: rls_all_u-username-6976b4.1.1765803201724
             Visibility: VISIBLE
-          - FieldId: rls_all_u-groupname-afb520.4.1765803219996
+          - FieldId: 61320fb2-c46f-4e3e-97b1-f17d54847227.5.1765819127770
             Visibility: VISIBLE
-          - FieldId: rls_all_u-payer_id-133248.2.1765803215132
+          - FieldId: c7de5073-bfe1-4920-9bde-b03d243e4b3c.5.1765819230961
             Visibility: VISIBLE
-          - FieldId: rls_all_u-account_i-616da3.3.1765803217027
+          - FieldId: 7258ebe1-8545-4e8a-8cea-f24811165d03.5.1765819235280
             Visibility: VISIBLE
-          - FieldId: rls_all_u-permissio-becbbc.5.1765803387807
+          - CustomLabel: ' '
+            FieldId: rls_all_u-account_i-616da3.6.1765819285957
             Visibility: VISIBLE
         FieldWells:
           PivotTableAggregatedFieldWells:
@@ -365,25 +371,26 @@ Sheets:
                 FieldId: rls_all_u-username-6976b4.1.1765803201724
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: groupname
+                  ColumnName: Group
                   DataSetIdentifier: rls_all_users_view
-                FieldId: rls_all_u-groupname-afb520.4.1765803219996
+                FieldId: 61320fb2-c46f-4e3e-97b1-f17d54847227.5.1765819127770
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: payer_id
+                  ColumnName: Payer ID
                   DataSetIdentifier: rls_all_users_view
-                FieldId: rls_all_u-payer_id-133248.2.1765803215132
+                FieldId: c7de5073-bfe1-4920-9bde-b03d243e4b3c.5.1765819230961
             - CategoricalDimensionField:
+                Column:
+                  ColumnName: Account ID
+                  DataSetIdentifier: rls_all_users_view
+                FieldId: 7258ebe1-8545-4e8a-8cea-f24811165d03.5.1765819235280
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
                 Column:
                   ColumnName: account_id
                   DataSetIdentifier: rls_all_users_view
-                FieldId: rls_all_u-account_i-616da3.3.1765803217027
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: permission_type
-                  DataSetIdentifier: rls_all_users_view
-                FieldId: rls_all_u-permissio-becbbc.5.1765803387807
-            Values: []
+                FieldId: rls_all_u-account_i-616da3.6.1765819285957
         SortConfiguration:
           FieldSortOptions:
           - FieldId: rls_all_u-email-2b3908.0.1765803192622
@@ -418,13 +425,28 @@ Sheets:
             ValueCellStyle: {}
           RowTotalOptions:
             Placement: AUTO
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - Cell:
+            FieldId: rls_all_u-account_i-616da3.6.1765819285957
+            Scopes:
+            - Role: FIELD
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  Color: '#162645'
+                  DisplayConfiguration:
+                    IconDisplayOption: ICON_ONLY
+                  Expression: COUNT({account_id}) = "MID_50_PERCENT"
+                  IconOptions:
+                    Icon: CIRCLE
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>RLS Users and Group Membership</visual-title>
         Visibility: VISIBLE
-      VisualId: 8cc77b33-cb36-497b-9fef-d3ccd97f867e
+      VisualId: 2f63efee-5e59-4c0d-a2ac-c36c327d8bc7
 - ContentType: INTERACTIVE
   Layouts:
   - Configuration:
@@ -441,7 +463,7 @@ Sheets:
           RowIndex: 0
           RowSpan: 9
   Name: About
-  SheetId: 99a5bb68-44fd-4454-bf78-545d5fb14f35
+  SheetId: 0551fb35-9266-4994-a59e-c2079cdb90ec
   TextBoxes:
   - Content: "<text-box>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"\
       center\"/>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"32px\"\
