@@ -228,7 +228,7 @@ Sheets:
                     IconDisplayOption: ICON_ONLY
                   Expression: SUM({_account_id_is_null}) = 1
                   IconOptions:
-                    UnicodeIcon: "\u26A0\uFE0F"
+                    UnicodeIcon: "\u26A0"
         - Cell:
             FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.payer_id.2.1765750833895
             TextFormat:
@@ -238,7 +238,7 @@ Sheets:
                     IconDisplayOption: ICON_ONLY
                   Expression: SUM({_payer_id_is_null}) = 1
                   IconOptions:
-                    UnicodeIcon: "\u26A0\uFE0F"
+                    UnicodeIcon: "\u26A0"
       Subtitle:
         Visibility: VISIBLE
       Title:

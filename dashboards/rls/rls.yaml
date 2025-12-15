@@ -3,9 +3,10 @@ dashboards:
     dependsOn:
       datasets:
       - rls_dataset
+      - rls_all_users_view
     name: RLS
     dashboardId: cid-rls
-    category: Utils
+    category: Advanced
     version: v0.0.1
     file: ./rls-definition.yaml
     theme: MIDNIGHT
@@ -44,29 +45,28 @@ datasets:
     - default
   rls_all_users_view:
     data:
-      DataSetId: rls_all_users_view
+      DataSetId: 0414c907-daaf-46f7-9ae4-f922c198faa4
       Name: rls_all_users_view
       PhysicalTableMap:
-        142b0996ddda-625fab9d-ce94-4690-a7bf:
+        a4a17683-2fe9-4d08-9935-95ed1af884bb:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
             Schema: ${athena_database_name}
-            Name: rls_dataset
+            Name: rls_all_users_view
             InputColumns:
-            - Name: UserName
+            - Name: email
               Type: STRING
-            - Name: GroupName
+            - Name: username
+              Type: STRING
+            - Name: groupname
               Type: STRING
             - Name: account_id
               Type: STRING
             - Name: payer_id
               Type: STRING
-      LogicalTableMap:
-        ffd0b8e3d804-ba97c5ca-ff05-4d15-8cca:
-          Alias: rls_all_users
-          Source:
-            PhysicalTableId: 142b0996ddda-625fab9d-ce94-4690-a7bf
+            - Name: permission_type
+              Type: STRING
       ImportMode: SPICE
     dependsOn:
       views:
