@@ -42,6 +42,37 @@ datasets:
       - rls_dataset
     schedules:
     - default
+  rls_all_users_view:
+    data:
+      DataSetId: rls_all_users_view
+      Name: rls_all_users_view
+      PhysicalTableMap:
+        142b0996ddda-625fab9d-ce94-4690-a7bf:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: rls_dataset
+            InputColumns:
+            - Name: UserName
+              Type: STRING
+            - Name: GroupName
+              Type: STRING
+            - Name: account_id
+              Type: STRING
+            - Name: payer_id
+              Type: STRING
+      LogicalTableMap:
+        ffd0b8e3d804-ba97c5ca-ff05-4d15-8cca:
+          Alias: rls_all_users
+          Source:
+            PhysicalTableId: 142b0996ddda-625fab9d-ce94-4690-a7bf
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - rls_all_users_view
+    schedules:
+    - default
 crawlers: {}
 views:
   rls_dataset:
@@ -246,3 +277,81 @@ views:
            ROW ('group1')
          , ROW ('group2')
       )  ignored_table_name ("group")
+  rls_all_users_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rls_all_users_view AS 
+      WITH user_groups AS (
+        SELECT
+          quser.username,
+          grp.groupname
+        FROM "${data_collection_database_name}".quicksight_groupmembership_data grpmem
+          INNER JOIN "${data_collection_database_name}".quicksight_user_data quser 
+            ON quser.arn = grpmem.arn
+            AND quser.account_id = grpmem.account_id
+            AND quser.namespace = grpmem.namespace
+          INNER JOIN "${data_collection_database_name}".quicksight_group_data grp 
+            ON grp.arn = grpmem.grouparn
+            AND grp.account_id = grpmem.account_id
+            AND grp.namespace = grpmem.namespace
+      ),
+      user_permissions AS (
+        -- Direct permissions (where email matches)
+        SELECT
+          qs.email,
+          qs.username,
+          rls."group" AS groupname,
+          rls.account_ids,
+          rls.payer_ids,
+          'direct' AS permission_type
+        FROM "${data_collection_database_name}".quicksight_user_data qs
+          INNER JOIN rls_all_permissions rls
+            ON qs.email = rls.email
+        
+        UNION ALL
+        
+        -- Indirect permissions (via group membership)
+        SELECT
+          qs.email,
+          qs.username,
+          rls."group" AS groupname,
+          rls.account_ids,
+          rls.payer_ids,
+          'group' AS permission_type
+        FROM "${data_collection_database_name}".quicksight_user_data qs
+          INNER JOIN user_groups ug
+            ON ug.username = qs.username
+          INNER JOIN rls_all_permissions rls
+            ON ug.groupname = rls."group"
+      )
+      SELECT DISTINCT
+        up.email AS "email",
+        up.username AS "UserName",
+        up.groupname AS "GroupName",
+        TRIM(account_id_split) AS account_id,
+        TRIM(payer_id_split) AS payer_id,
+        up.permission_type
+      FROM user_permissions up
+        CROSS JOIN UNNEST(
+          CASE 
+            WHEN up.account_ids IS NOT NULL AND up.account_ids != '' 
+            THEN SPLIT(up.account_ids, ',') 
+            ELSE ARRAY[CAST(NULL AS VARCHAR)]
+          END
+        ) AS t(account_id_split)
+        CROSS JOIN UNNEST(
+          CASE 
+            WHEN up.payer_ids IS NOT NULL AND up.payer_ids != '' 
+            THEN SPLIT(up.payer_ids, ',') 
+            ELSE ARRAY[CAST(NULL AS VARCHAR)]
+          END
+        ) AS t2(payer_id_split)
+    parameters:
+      data_collection_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'organization_data'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
+
+
