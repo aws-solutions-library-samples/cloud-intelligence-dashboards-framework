@@ -1,0 +1,220 @@
+AnalysisDefaults:
+  DefaultNewSheetConfiguration:
+    InteractiveLayoutConfiguration:
+      Grid:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+    SheetContentType: INTERACTIVE
+CalculatedFields:
+- DataSetIdentifier: rls_dataset
+  Expression: |-
+    concat(
+        ifelse(
+                (isNotNull(UserName) AND UserName <> '') AND NOT (isNotNull(GroupName) AND GroupName <> ''), 'User has ',
+            NOT (isNotNull(UserName) AND UserName <> '') AND     (isNotNull(GroupName) AND GroupName <> ''), 'Group has ',
+                (isNotNull(UserName) AND UserName <> '') AND NOT (isNotNull(GroupName) AND GroupName <> ''), 'User in Group have ',
+            'ANY USER have '
+        ),
+        ifelse(
+            {_account_id_is_null} = 1 AND {_payer_id_is_null} = 1, 'Full Access (All Payers all Accounts)',
+            {_account_id_is_null} = 1 AND {_payer_id_is_null} = 0, ifelse(contains({payer_id}, ','),
+                                                                        concat('Access To Payers: ', {payer_id}),
+                                                                        concat('Access To Payer: ', {payer_id})
+            ),
+            {_account_id_is_null} = 0 AND {_payer_id_is_null} = 1, ifelse(contains({account_id}, ','),
+                                                                        concat('Access To Account: ', {account_id}),
+                                                                        concat('Access To Account: ', {account_id})
+            ),
+            ''
+        )
+    )
+  Name: Description
+- DataSetIdentifier: rls_dataset
+  Expression: ifelse(isNull({account_id}) OR {account_id} = '', 1, 0)
+  Name: _account_id_is_null
+- DataSetIdentifier: rls_dataset
+  Expression: ifelse(isNull({payer_id}) OR {payer_id} = '', 1, 0)
+  Name: _payer_id_is_null
+ColumnConfigurations:
+- Column:
+    ColumnName: UserName
+    DataSetIdentifier: rls_dataset
+  FormatConfiguration:
+    StringFormatConfiguration: {}
+- Column:
+    ColumnName: account_id
+    DataSetIdentifier: rls_dataset
+  FormatConfiguration:
+    StringFormatConfiguration: {}
+- Column:
+    ColumnName: payer_id
+    DataSetIdentifier: rls_dataset
+  FormatConfiguration:
+    StringFormatConfiguration: {}
+DataSetIdentifierDeclarations:
+- DataSetArn: arn:aws:quicksight:::dataset/770b6f30-9498-49e2-9878-5ac9e3258b2c
+  Identifier: rls_dataset
+FilterGroups: []
+Options:
+  WeekStart: SUNDAY
+ParameterDeclarations: []
+Sheets:
+- ContentType: INTERACTIVE
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: a9d45e76-1669-4b1c-bf44-b526a1fa245a
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 78602264-b797-4bc8-922c-76e2fd852742
+          ElementType: VISUAL
+          RowIndex: 4
+          RowSpan: 17
+  Name: RLS Dataset
+  SheetId: 0146de27-2f7d-4268-9dd5-e7a5679a3d98
+  TextBoxes:
+  - Content: |-
+      <text-box>
+        <inline font-size="32px">RLS Dataset</inline>
+        <br/>
+        <br/>
+        <ul>
+          <li class="ql-indent-0">
+            <b>No access</b>
+            : Users not listed in the dataset will see empty dashboards
+          </li>
+          <li class="ql-indent-0">
+            <b>Full access</b>
+            : Users with empty account_id and payer_id fields have unrestricted access (recommended for Security, FinOps, and Platform teams)
+          </li>
+          <li class="ql-indent-0">
+            <b>Organization access</b>
+            : Users with empty account_id but populated payer_id have access to all accounts in the specified AWS Organization
+          </li>
+        </ul>
+        <br/>
+        See more in
+        <a href="https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/row-level-security.html" target="_blank">documentation</a>
+        .
+      </text-box>
+    SheetTextBoxId: a9d45e76-1669-4b1c-bf44-b526a1fa245a
+  Visuals:
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.UserName.0.1752384777900
+            Width: 234px
+          - FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.GroupName.3.1765750843355
+            Width: 156px
+          - FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.account_id.1.1752384782382
+            Width: 136px
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: UserName
+                  DataSetIdentifier: rls_dataset
+                FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.UserName.0.1752384777900
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: GroupName
+                  DataSetIdentifier: rls_dataset
+                FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.GroupName.3.1765750843355
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: rls_dataset
+                FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.account_id.1.1752384782382
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: payer_id
+                  DataSetIdentifier: rls_dataset
+                FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.payer_id.2.1765750833895
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Description
+                  DataSetIdentifier: rls_dataset
+                FieldId: 8c712ab3-0b62-4fa5-9b4f-09aada6eda7a.4.1765780070945
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          CellStyle:
+            Height: 25
+          HeaderStyle:
+            Height: 25
+            TextWrap: WRAP
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - Cell:
+            FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.account_id.1.1752384782382
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  DisplayConfiguration:
+                    IconDisplayOption: ICON_ONLY
+                  Expression: SUM({_account_id_is_null}) = 1
+                  IconOptions:
+                    UnicodeIcon: "\u26A0\uFE0F"
+        - Cell:
+            FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.payer_id.2.1765750833895
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  DisplayConfiguration:
+                    IconDisplayOption: ICON_ONLY
+                  Expression: SUM({_payer_id_is_null}) = 1
+                  IconOptions:
+                    UnicodeIcon: "\u26A0\uFE0F"
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>RLS Dataset</visual-title>
+        Visibility: VISIBLE
+      VisualId: 78602264-b797-4bc8-922c-76e2fd852742
+- ContentType: INTERACTIVE
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: b31933cc-2fec-4b5c-beb7-8226c408eb42
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 6
+  Name: About
+  SheetId: 99a5bb68-44fd-4454-bf78-545d5fb14f35
+  TextBoxes:
+  - Content: "<text-box>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"\
+      center\"/>\n  <br/>\n  <block align=\"center\">CID Row Level Security Dashboard</block>\n\
+      \  <br/>\n  <block align=\"center\">v0.0.1\_</block>\n  <br/>\n  <block align=\"\
+      center\"/>\n  <br/>\n  <block align=\"center\">This dashboard visualizes RLS\
+      \ dataset for using in Row Level Security process</block>\n  <br/>\n  <block\
+      \ align=\"center\"/>\n  <br/>\n  <block align=\"center\">\n    [\n    <a href=\"\
+      https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/row-level-security.html\"\
+      \ target=\"_blank\">Documentation</a>\n    ]\n  </block>\n  <br/>\n  <block\
+      \ align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
+      \ align=\"center\"/>\n  <br/>\n  <block align=\"right\">Author: Iakov Gan</block>\n\
+      </text-box>"
+    SheetTextBoxId: b31933cc-2fec-4b5c-beb7-8226c408eb42
+  Visuals: []
