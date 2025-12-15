@@ -39,6 +39,21 @@ CalculatedFields:
   Name: _payer_id_is_null
 ColumnConfigurations:
 - Column:
+    ColumnName: account_id
+    DataSetIdentifier: rls_all_users_view
+  FormatConfiguration:
+    StringFormatConfiguration: {}
+- Column:
+    ColumnName: groupname
+    DataSetIdentifier: rls_all_users_view
+  FormatConfiguration:
+    StringFormatConfiguration: {}
+- Column:
+    ColumnName: payer_id
+    DataSetIdentifier: rls_all_users_view
+  FormatConfiguration:
+    StringFormatConfiguration: {}
+- Column:
     ColumnName: UserName
     DataSetIdentifier: rls_dataset
   FormatConfiguration:
@@ -56,7 +71,51 @@ ColumnConfigurations:
 DataSetIdentifierDeclarations:
 - DataSetArn: arn:aws:quicksight:::dataset/770b6f30-9498-49e2-9878-5ac9e3258b2c
   Identifier: rls_dataset
-FilterGroups: []
+- DataSetArn: arn:aws:quicksight:::dataset/0414c907-daaf-46f7-9ae4-f922c198faa4
+  Identifier: rls_all_users_view
+FilterGroups:
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 66362af8-4aa2-4391-b834-54d539b70bdf
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: email
+        DataSetIdentifier: rls_all_users_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: c6e3fb9f-5cb1-485f-ae5c-4810829526a1
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 1f56cca7-d6c4-4b82-84e7-4741cb3582d0
+        VisualIds:
+        - 8cc77b33-cb36-497b-9fef-d3ccd97f867e
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: d0caea2c-0ccf-452f-900b-511d8cd90011
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: groupname
+        DataSetIdentifier: rls_all_users_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: a28e5a72-170f-4a85-91cb-9c260ab72362
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 1f56cca7-d6c4-4b82-84e7-4741cb3582d0
+        VisualIds:
+        - 8cc77b33-cb36-497b-9fef-d3ccd97f867e
+  Status: ENABLED
 Options:
   WeekStart: SUNDAY
 ParameterDeclarations: []
@@ -188,6 +247,185 @@ Sheets:
         Visibility: VISIBLE
       VisualId: 78602264-b797-4bc8-922c-76e2fd852742
 - ContentType: INTERACTIVE
+  FilterControls:
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 10e48992-0f2d-4b1a-b2df-7778c1def6ca
+      SourceFilterId: c6e3fb9f-5cb1-485f-ae5c-4810829526a1
+      Title: Email
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: d6b77184-93c4-4063-8ec8-0754551ef149
+      SourceFilterId: a28e5a72-170f-4a85-91cb-9c260ab72362
+      Title: Group
+      Type: MULTI_SELECT
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 8cc77b33-cb36-497b-9fef-d3ccd97f867e
+          ElementType: VISUAL
+          RowIndex: 0
+          RowSpan: 12
+  Name: Users
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnSpan: 2
+          ElementId: 10e48992-0f2d-4b1a-b2df-7778c1def6ca
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: d6b77184-93c4-4063-8ec8-0754551ef149
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+  SheetId: 1f56cca7-d6c4-4b82-84e7-4741cb3582d0
+  Visuals:
+  - PivotTableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          DataPathOptions:
+          - DataPathList:
+            - FieldId: rls_all_u-email-2b3908.0.1765803192622
+              FieldValue: email
+            Width: 267px
+          - DataPathList:
+            - FieldId: rls_all_u-username-6976b4.1.1765803201724
+              FieldValue: username
+            Width: 262px
+          - DataPathList:
+            - FieldId: rls_all_u-groupname-afb520.4.1765803219996
+              FieldValue: groupname
+            Width: 193px
+          - DataPathList:
+            - DataPathType:
+                PivotTableDataPathType: COUNT_METRIC_COLUMN
+            Width: 147px
+          - DataPathList:
+            - FieldId: rls_all_u-account_i-616da3.3.1765803217027
+              FieldValue: account_id
+            Width: 136px
+          - DataPathList:
+            - FieldId: rls_all_u-payer_id-133248.2.1765803215132
+              FieldValue: payer_id
+            Width: 131px
+          SelectedFieldOptions:
+          - FieldId: rls_all_u-email-2b3908.0.1765803192622
+            Visibility: VISIBLE
+          - FieldId: rls_all_u-username-6976b4.1.1765803201724
+            Visibility: VISIBLE
+          - FieldId: rls_all_u-groupname-afb520.4.1765803219996
+            Visibility: VISIBLE
+          - FieldId: rls_all_u-payer_id-133248.2.1765803215132
+            Visibility: VISIBLE
+          - FieldId: rls_all_u-account_i-616da3.3.1765803217027
+            Visibility: VISIBLE
+          - FieldId: rls_all_u-permissio-becbbc.5.1765803387807
+            Visibility: VISIBLE
+        FieldWells:
+          PivotTableAggregatedFieldWells:
+            Columns: []
+            Rows:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: email
+                  DataSetIdentifier: rls_all_users_view
+                FieldId: rls_all_u-email-2b3908.0.1765803192622
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: username
+                  DataSetIdentifier: rls_all_users_view
+                FieldId: rls_all_u-username-6976b4.1.1765803201724
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: groupname
+                  DataSetIdentifier: rls_all_users_view
+                FieldId: rls_all_u-groupname-afb520.4.1765803219996
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: payer_id
+                  DataSetIdentifier: rls_all_users_view
+                FieldId: rls_all_u-payer_id-133248.2.1765803215132
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: rls_all_users_view
+                FieldId: rls_all_u-account_i-616da3.3.1765803217027
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: permission_type
+                  DataSetIdentifier: rls_all_users_view
+                FieldId: rls_all_u-permissio-becbbc.5.1765803387807
+            Values: []
+        SortConfiguration:
+          FieldSortOptions:
+          - FieldId: rls_all_u-email-2b3908.0.1765803192622
+            SortBy:
+              Field:
+                Direction: ASC
+                FieldId: rls_all_u-email-2b3908.0.1765803192622
+        TableOptions:
+          CellStyle: {}
+          CollapsedRowDimensionsVisibility: HIDDEN
+          ColumnHeaderStyle:
+            Height: 25
+          RowAlternateColorOptions:
+            Status: DISABLED
+            UsePrimaryBackgroundColor: ENABLED
+          RowFieldNamesStyle:
+            Height: 25
+          RowsLayout: TABULAR
+          ToggleButtonsVisibility: VISIBLE
+        TotalOptions:
+          ColumnTotalOptions:
+            Placement: END
+          RowSubtotalOptions:
+            CustomLabel: <<$aws:subtotalDimension>> Subtotal
+            MetricHeaderCellStyle: {}
+            StyleTargets:
+            - CellType: VALUE
+            - CellType: TOTAL
+            - CellType: METRIC_HEADER
+            TotalCellStyle: {}
+            TotalsVisibility: HIDDEN
+            ValueCellStyle: {}
+          RowTotalOptions:
+            Placement: AUTO
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: <visual-title>RLS Users and Group Membership</visual-title>
+        Visibility: VISIBLE
+      VisualId: 8cc77b33-cb36-497b-9fef-d3ccd97f867e
+- ContentType: INTERACTIVE
   Layouts:
   - Configuration:
       GridLayout:
@@ -201,20 +439,22 @@ Sheets:
           ElementId: b31933cc-2fec-4b5c-beb7-8226c408eb42
           ElementType: TEXT_BOX
           RowIndex: 0
-          RowSpan: 6
+          RowSpan: 9
   Name: About
   SheetId: 99a5bb68-44fd-4454-bf78-545d5fb14f35
   TextBoxes:
   - Content: "<text-box>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"\
-      center\"/>\n  <br/>\n  <block align=\"center\">CID Row Level Security Dashboard</block>\n\
-      \  <br/>\n  <block align=\"center\">v0.0.1\_</block>\n  <br/>\n  <block align=\"\
-      center\"/>\n  <br/>\n  <block align=\"center\">This dashboard visualizes RLS\
-      \ dataset for using in Row Level Security process</block>\n  <br/>\n  <block\
-      \ align=\"center\"/>\n  <br/>\n  <block align=\"center\">\n    [\n    <a href=\"\
-      https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/row-level-security.html\"\
-      \ target=\"_blank\">Documentation</a>\n    ]\n  </block>\n  <br/>\n  <block\
-      \ align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
-      \ align=\"center\"/>\n  <br/>\n  <block align=\"right\">Author: Iakov Gan</block>\n\
-      </text-box>"
+      center\"/>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"32px\"\
+      >CID Row Level Security Dashboard</inline>\n  </block>\n  <br/>\n  <block align=\"\
+      center\">\n    <inline font-size=\"20px\">v0.0.1\_</inline>\n  </block>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\">\n    <inline\
+      \ font-size=\"20px\">This dashboard visualizes RLS dataset for using in Row\
+      \ Level Security process</inline>\n  </block>\n  <br/>\n  <block align=\"center\"\
+      />\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"20px\">[</inline>\n\
+      \    <inline font-size=\"20px\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/row-level-security.html\"\
+      \ target=\"_blank\">Documentation</a>\n    </inline>\n    <inline font-size=\"\
+      20px\">]</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"right\">Author: Iakov Gan</block>\n</text-box>"
     SheetTextBoxId: b31933cc-2fec-4b5c-beb7-8226c408eb42
   Visuals: []
