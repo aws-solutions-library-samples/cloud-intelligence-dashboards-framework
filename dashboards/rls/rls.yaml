@@ -3,70 +3,13 @@ dashboards:
     dependsOn:
       datasets:
       - rls_dataset
+      - rls_all_users_view
     name: RLS
     dashboardId: cid-rls
-    category: Custom
-    version: v1.0.0
-    data: |
-      AnalysisDefaults:
-        DefaultNewSheetConfiguration:
-          InteractiveLayoutConfiguration:
-            Grid:
-              CanvasSizeOptions:
-                ScreenCanvasSizeOptions:
-                  OptimizedViewPortWidth: 1600px
-                  ResizeOption: FIXED
-          SheetContentType: INTERACTIVE
-      CalculatedFields: []
-      DataSetIdentifierDeclarations:
-      - DataSetArn: arn:aws:quicksight:::dataset/770b6f30-9498-49e2-9878-5ac9e3258b2c
-        Identifier: rls_dataset
-      FilterGroups: []
-      Options:
-        WeekStart: SUNDAY
-      ParameterDeclarations: []
-      Sheets:
-      - ContentType: INTERACTIVE
-        Layouts:
-        - Configuration:
-            GridLayout:
-              CanvasSizeOptions:
-                ScreenCanvasSizeOptions:
-                  OptimizedViewPortWidth: 1600px
-                  ResizeOption: FIXED
-              Elements:
-              - ColumnIndex: 0
-                ColumnSpan: 15
-                ElementId: 0aa39690-90fc-46bf-9175-6ba05d4156a6
-                ElementType: VISUAL
-                RowIndex: 0
-                RowSpan: 11
-        Name: Sheet 1
-        SheetId: 899b6ce7-83c3-4e6d-8611-0ed6530e6539
-        Visuals:
-        - TableVisual:
-            Actions: []
-            ChartConfiguration:
-              FieldWells:
-                TableAggregatedFieldWells:
-                  GroupBy:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: UserName
-                        DataSetIdentifier: rls_dataset
-                      FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.UserName.0.1752384777900
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: account_id
-                        DataSetIdentifier: rls_dataset
-                      FieldId: ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804.account_id.1.1752384782382
-                  Values: []
-              SortConfiguration: {}
-            Subtitle:
-              Visibility: VISIBLE
-            Title:
-              Visibility: VISIBLE
-            VisualId: 0aa39690-90fc-46bf-9175-6ba05d4156a6
+    category: Advanced
+    version: v0.0.1
+    file: ./rls-definition.yaml
+    theme: MIDNIGHT
 datasets:
   rls_dataset:
     data:
@@ -98,6 +41,36 @@ datasets:
     dependsOn:
       views:
       - rls_dataset
+    schedules:
+    - default
+  rls_all_users_view:
+    data:
+      DataSetId: 0414c907-daaf-46f7-9ae4-f922c198faa4
+      Name: rls_all_users_view
+      PhysicalTableMap:
+        a4a17683-2fe9-4d08-9935-95ed1af884bb:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: rls_all_users_view
+            InputColumns:
+            - Name: email
+              Type: STRING
+            - Name: username
+              Type: STRING
+            - Name: groupname
+              Type: STRING
+            - Name: account_id
+              Type: STRING
+            - Name: payer_id
+              Type: STRING
+            - Name: permission_type
+              Type: STRING
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - rls_all_users_view
     schedules:
     - default
 crawlers: {}
@@ -304,3 +277,81 @@ views:
            ROW ('group1')
          , ROW ('group2')
       )  ignored_table_name ("group")
+  rls_all_users_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rls_all_users_view AS 
+      WITH user_groups AS (
+        SELECT
+          quser.username,
+          grp.groupname
+        FROM "${data_collection_database_name}".quicksight_groupmembership_data grpmem
+          INNER JOIN "${data_collection_database_name}".quicksight_user_data quser 
+            ON quser.arn = grpmem.arn
+            AND quser.account_id = grpmem.account_id
+            AND quser.namespace = grpmem.namespace
+          INNER JOIN "${data_collection_database_name}".quicksight_group_data grp 
+            ON grp.arn = grpmem.grouparn
+            AND grp.account_id = grpmem.account_id
+            AND grp.namespace = grpmem.namespace
+      ),
+      user_permissions AS (
+        -- Direct permissions (where email matches)
+        SELECT
+          qs.email,
+          qs.username,
+          rls."group" AS groupname,
+          rls.account_ids,
+          rls.payer_ids,
+          'direct' AS permission_type
+        FROM "${data_collection_database_name}".quicksight_user_data qs
+          INNER JOIN rls_all_permissions rls
+            ON qs.email = rls.email
+        
+        UNION ALL
+        
+        -- Indirect permissions (via group membership)
+        SELECT
+          qs.email,
+          qs.username,
+          rls."group" AS groupname,
+          rls.account_ids,
+          rls.payer_ids,
+          'group' AS permission_type
+        FROM "${data_collection_database_name}".quicksight_user_data qs
+          INNER JOIN user_groups ug
+            ON ug.username = qs.username
+          INNER JOIN rls_all_permissions rls
+            ON ug.groupname = rls."group"
+      )
+      SELECT DISTINCT
+        up.email AS "email",
+        up.username AS "UserName",
+        up.groupname AS "GroupName",
+        TRIM(account_id_split) AS account_id,
+        TRIM(payer_id_split) AS payer_id,
+        up.permission_type
+      FROM user_permissions up
+        CROSS JOIN UNNEST(
+          CASE 
+            WHEN up.account_ids IS NOT NULL AND up.account_ids != '' 
+            THEN SPLIT(up.account_ids, ',') 
+            ELSE ARRAY[CAST(NULL AS VARCHAR)]
+          END
+        ) AS t(account_id_split)
+        CROSS JOIN UNNEST(
+          CASE 
+            WHEN up.payer_ids IS NOT NULL AND up.payer_ids != '' 
+            THEN SPLIT(up.payer_ids, ',') 
+            ELSE ARRAY[CAST(NULL AS VARCHAR)]
+          END
+        ) AS t2(payer_id_split)
+    parameters:
+      data_collection_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'organization_data'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
+
+
