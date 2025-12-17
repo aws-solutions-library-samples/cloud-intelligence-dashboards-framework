@@ -773,6 +773,27 @@ class Cid():
         return dashboard_id
 
     @command
+    def refresh_datasets(self, dashboard_id, **kwargs):
+        """Refresh datasets for a dashboard"""
+        
+        if not dashboard_id:
+            dashboard_id = self.qs.select_dashboard(force=True)
+            if not dashboard_id:
+                print('No dashboard selected')
+                return None
+
+        dashboard = self.qs.discover_dashboard(dashboard_id)
+        
+        if not dashboard:
+            logger.error(f'Dashboard {dashboard_id} is not deployed.')
+            return None
+            
+        logger.info(f'Refreshing datasets for dashboard: {dashboard_id}')
+        dashboard.refresh_datasets()
+        
+        return dashboard_id
+
+    @command
     def status(self, dashboard_id, **kwargs):
         """Check QuickSight dashboard status"""
         next_selection = None
