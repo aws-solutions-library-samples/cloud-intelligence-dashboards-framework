@@ -2031,8 +2031,28 @@ class Cid():
     @command
     def map(self, **kwargs):
         """Create account mapping Athena views"""
-        for v in ['account_map', 'aws_accounts']:
-            self.create_or_update_account_map(v)
+        from cid.helpers.account_mapper import account_mapper
+        
+        # Pass existing helpers to avoid duplication
+        account_mapper(
+            athena=self.athena,
+            s3=self.s3,
+            session=self.base.session,
+            **kwargs
+        )
+
+    @command
+    def map_config(self, **kwargs):
+        """Configure account mapper interactively"""
+        from cid.helpers.map_config import run_configuration_menu
+        
+        # Pass existing helpers to configuration menu
+        run_configuration_menu(
+            athena=self.athena,
+            s3=self.s3,
+            session=self.base.session,
+            **kwargs
+        )
 
     @command
     def teardown(self, **kwargs):

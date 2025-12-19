@@ -6,3 +6,4 @@ six>=1.15
 tqdm
 tzlocal>=4.0
 InquirerPy
+pandas>=2.3.5

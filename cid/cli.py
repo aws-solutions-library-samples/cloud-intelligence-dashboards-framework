@@ -86,13 +86,21 @@ def map(ctx, **kwargs):
 
     \b
     Command options:
-     --cur-table-name TEXT                 CUR table name
-     --athena-database TEXT                Athena database
-     --glue-data-catalog TEXT              Glue data catalog
-     --account-map-source TEXT             csv, dummy, organization (if autodiscovery impossible)
-     --account-map-file TEXT               csv file path relative to current directory (if autodiscovery impossible and csv selected as a source )
+     --config-file TEXT                    Path to configuration file (default: config.json)
     """
     ctx.obj.map(**kwargs)
+
+@click.option('-v', '--verbose', count=True)
+@click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
+@cid_command
+def map_config(ctx, **kwargs):
+    """Configure account mapper interactively
+
+    \b
+    Command options:
+     --config-file TEXT                    Path to configuration file (default: config.json)
+    """
+    ctx.obj.map_config(**kwargs)
 
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
