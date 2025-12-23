@@ -8,6 +8,26 @@
     <lastBuildDate>Mon, 24 Nov 2025 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Media Services Insights Hub v1.2.0</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-media-services-insights
+      </link>
+      <pubDate>Tue, 30 Dec 2024 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">39ca37db-1813-4120-bc54-270ae162f6ca</guid>
+      <description>Media Services Insights Hub v1.2.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>MediaLive:</strong>Hourly-based analysis for fine tuning reservations</li>
+    <li><strong>Other:</strong>UI enhncements</li>
+    <li><strong>Note:</strong>Requires --force --recursive for updating to incorporate dataset changes</li>
+  </ul>
+</div>
+    ]]></content:encoded>    
+    </item>
+
+    <item>
       <title>[Update] Media Services Insights Hub v1.1.3</title>
       <link>
         https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-media-services-insights

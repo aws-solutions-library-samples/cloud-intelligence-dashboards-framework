@@ -2,13 +2,14 @@ dashboards:
   MEDIA SERVICES INSIGHTS:
     dependsOn:
       datasets:
+      - msih_reservation_optimize
       - msih_reservations
       - msih_view
     name: Media Services Insights
     dashboardId: media-services-insights
     category: Advanced
     theme: MIDNIGHT
-    version: v1.1.3
+    version: v1.2.0
     file: ./msih-definition.yaml
 datasets:
   msih_reservations:
@@ -23,6 +24,8 @@ datasets:
             Schema: ${athena_database_name}
             Name: msih_reservations
             InputColumns:
+            - Name: reservation_arn
+              Type: STRING
             - Name: reservation_id
               Type: STRING
             - Name: reservation_count
@@ -32,6 +35,8 @@ datasets:
               Type: DATETIME
             - Name: reservation_end_time
               Type: DATETIME
+            - Name: reservation_first_start_time
+              Type: DATETIME
             - Name: linked_account_id
               Type: STRING
             - Name: payer_account_id
@@ -40,24 +45,28 @@ datasets:
               Type: STRING
             - Name: line_item_usage_type
               Type: STRING
-            - Name: video_pipeline
+            - Name: region
               Type: STRING
             - Name: video_region
               Type: STRING
             - Name: line_item_operation
               Type: STRING
-            - Name: video_input
+            - Name: video_pipeline
               Type: STRING
-            - Name: video_output
-              Type: STRING
-            - Name: video_resolution
+            - Name: video_flow_direction
               Type: STRING
             - Name: video_bit_rate
               Type: STRING
+            - Name: video_codec
+              Type: STRING
             - Name: video_frame_rate
+              Type: STRING
+            - Name: video_resolution
               Type: STRING
             - Name: video_quality
               Type: STRING
+            - Name: is_renewal
+              Type: INTEGER
             - Name: reservation_fee
               Type: DECIMAL
               SubType: FLOAT
@@ -131,7 +140,15 @@ datasets:
               NewColumnName: linked_account_name
           Source:
             PhysicalTableId: 481b319c-c8f4-4e82-9ddf-fa705f6cf783
-        7f0aa5d7-db0e-4129-b3cd-e45ca980d12f:
+        8e3cde21-1774-4ff9-b5e2-8b05c644ec5d:
+          Alias: Intermediate Table
+          Source:
+            JoinInstruction:
+              LeftOperand: faff24db-9601-4a15-85e1-4b264d4626c3
+              RightOperand: 6bab26bf-161f-47a2-9dd7-c83e7d9a20ee
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id[account_map]}'
+        ccefc42a-c250-4838-89e7-66418c0f0fbb:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -154,23 +171,27 @@ datasets:
                   )
           - ProjectOperation:
               ProjectedColumns:
+              - reservation_arn
               - reservation_id
               - reservation_count
               - reservation_start_time
               - reservation_end_time
+              - reservation_first_start_time
               - linked_account_id
               - payer_account_id
               - line_item_line_item_description
               - line_item_usage_type
-              - video_pipeline
+              - region
               - video_region
               - line_item_operation
-              - video_input
-              - video_output
-              - video_resolution
+              - video_pipeline
+              - video_flow_direction
               - video_bit_rate
+              - video_codec
               - video_frame_rate
+              - video_resolution
               - video_quality
+              - is_renewal
               - reservation_fee
               - effective_rate_adjust
               - usage_start_time
@@ -187,18 +208,10 @@ datasets:
               - linked_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: d515cb03-91c4-4e52-9d98-89239482a8fe
+              LeftOperand: 8e3cde21-1774-4ff9-b5e2-8b05c644ec5d
               RightOperand: 24baacd6-be68-44a1-ac29-318cfec3a2d9
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
-        d515cb03-91c4-4e52-9d98-89239482a8fe:
-          Alias: Intermediate Table
-          Source:
-            JoinInstruction:
-              LeftOperand: faff24db-9601-4a15-85e1-4b264d4626c3
-              RightOperand: 6bab26bf-161f-47a2-9dd7-c83e7d9a20ee
-              Type: LEFT
-              OnClause: '{linked_account_id} = {account_id[account_map]}'
         faff24db-9601-4a15-85e1-4b264d4626c3:
           Alias: msih_reservations
           Source:
@@ -299,6 +312,13 @@ datasets:
               Type: STRING
             - Name: reservation_id
               Type: STRING
+            - Name: reservation_count
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: reservation_start_time
+              Type: DATETIME
+            - Name: reservation_end_time
+              Type: DATETIME
             - Name: last_refresh_date
               Type: DATETIME
             - Name: usage_quantity
@@ -348,30 +368,7 @@ datasets:
             - Name: account_name
               Type: STRING
       LogicalTableMap:
-        3e96372e-5959-4a5b-a96a-730193e3990b:
-          Alias: msih_view
-          Source:
-            PhysicalTableId: 17740ffc-0df9-4dc9-8780-a77c9dadae18
-        43f7b42d-3957-4651-8f5c-278ecd1981cc:
-          Alias: account_map_payer
-          DataTransforms:
-          - RenameColumnOperation:
-              ColumnName: account_id
-              NewColumnName: account_id[account_map_payer]
-          - RenameColumnOperation:
-              ColumnName: account_name
-              NewColumnName: payer_account_name
-          Source:
-            PhysicalTableId: ca2f9216-c240-4505-9a10-3d7794d2633a
-        d5f36788-3777-4aca-b7f2-8c77dda5c7bd:
-          Alias: Intermediate Table
-          Source:
-            JoinInstruction:
-              LeftOperand: 3e96372e-5959-4a5b-a96a-730193e3990b
-              RightOperand: fe50ab11-682a-4611-b7a0-048682763adf
-              Type: LEFT
-              OnClause: '{linked_account_id} = {account_id}'
-        e594d951-ccd9-4a1e-ba06-b555944d6b97:
+        2b725533-c0ba-4bc5-b7a5-27b44fce734b:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -432,6 +429,9 @@ datasets:
               - pricing_unit
               - resource_id
               - reservation_id
+              - reservation_count
+              - reservation_start_time
+              - reservation_end_time
               - last_refresh_date
               - usage_quantity
               - unblended_cost
@@ -447,10 +447,33 @@ datasets:
               - payer_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: d5f36788-3777-4aca-b7f2-8c77dda5c7bd
+              LeftOperand: e65317df-6c52-48d1-be10-0b82615d2619
               RightOperand: 43f7b42d-3957-4651-8f5c-278ecd1981cc
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
+        3e96372e-5959-4a5b-a96a-730193e3990b:
+          Alias: msih_view
+          Source:
+            PhysicalTableId: 17740ffc-0df9-4dc9-8780-a77c9dadae18
+        43f7b42d-3957-4651-8f5c-278ecd1981cc:
+          Alias: account_map_payer
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map_payer]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: payer_account_name
+          Source:
+            PhysicalTableId: ca2f9216-c240-4505-9a10-3d7794d2633a
+        e65317df-6c52-48d1-be10-0b82615d2619:
+          Alias: Intermediate Table
+          Source:
+            JoinInstruction:
+              LeftOperand: 3e96372e-5959-4a5b-a96a-730193e3990b
+              RightOperand: fe50ab11-682a-4611-b7a0-048682763adf
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
         fe50ab11-682a-4611-b7a0-048682763adf:
           Alias: account_map_linked
           DataTransforms:
@@ -467,8 +490,392 @@ datasets:
       - account_map
     schedules:
     - default
+  msih_reservation_optimize:
+    data:
+      DataSetId: 353c4e2d-6526-45fa-a7b6-21f72060f385
+      Name: msih_reservation_optimize
+      PhysicalTableMap:
+        47a7153e-a73a-4974-85b7-41db6720a217:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: msih_reservation_optimize
+            InputColumns:
+            - Name: payer_account_id
+              Type: STRING
+            - Name: linked_account_id
+              Type: STRING
+            - Name: usage_time
+              Type: DATETIME
+            - Name: usage_hour_of_day
+              Type: INTEGER
+            - Name: usage_profile
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: operation
+              Type: STRING
+            - Name: video_pipeline
+              Type: STRING
+            - Name: video_flow_direction
+              Type: STRING
+            - Name: video_bit_rate
+              Type: STRING
+            - Name: video_codec
+              Type: STRING
+            - Name: video_frame_rate
+              Type: STRING
+            - Name: video_resolution
+              Type: STRING
+            - Name: video_quality
+              Type: STRING
+            - Name: usage_amount_od
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: usage_amount_reserved
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: usage_amount_total
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_od_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_od_net_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_reserved
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_total_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_total_net_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_public
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit_cost_od_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit_cost_od_net_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit_cost_reserved
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit_cost_combined_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit_cost_combined_net_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: reservation_count
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: current_reservation_count
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: reservation_count_candidate
+              Type: INTEGER
+            - Name: last_refresh_date
+              Type: DATETIME
+        629857f4-594a-436e-b28e-b14cba791f14:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+        91eaa102-fc91-4283-adef-fe6697fd3cf5:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+      LogicalTableMap:
+        21b22c8d-94f4-4b1b-9886-9dd1a73f0eda:
+          Alias: Intermediate Table
+          Source:
+            JoinInstruction:
+              LeftOperand: 6ba9a35e-fa2a-4227-8d01-496968256d34
+              RightOperand: e7038b62-397d-46f7-9fe2-dd369b97dde3
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id[account_map_linked]}'
+        65bdbb17-34ed-4d38-9a4a-2a3814fdeb77:
+          Alias: Intermediate Table (2)
+          DataTransforms:
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: linked_account_formatted
+                ColumnId: dfe2c505-49cf-42b8-ad3d-231115e4a399
+                Expression: |-
+                  ifelse(
+                      strlen({linked_account_name})=0 or {linked_account_name} = {linked_account_id}, {linked_account_id},
+                      concat({linked_account_name}, " (", {linked_account_id}, ")")
+                  )
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: payer_account_formatted
+                ColumnId: 83456603-3b9e-4796-accd-8fc1e98b94db
+                Expression: |-
+                  ifelse(
+                      strlen({payer_account_name})=0 or {payer_account_name} = {payer_account_id}, {payer_account_id},
+                      concat({payer_account_name}, " (", {payer_account_id}, ")")
+                  )
+          - ProjectOperation:
+              ProjectedColumns:
+              - payer_account_id
+              - linked_account_id
+              - usage_time
+              - usage_hour_of_day
+              - usage_profile
+              - region
+              - operation
+              - video_pipeline
+              - video_flow_direction
+              - video_bit_rate
+              - video_codec
+              - video_frame_rate
+              - video_resolution
+              - video_quality
+              - usage_amount_od
+              - usage_amount_reserved
+              - usage_amount_total
+              - cost_od_unblended
+              - cost_od_net_unblended
+              - cost_reserved
+              - cost_total_unblended
+              - cost_total_net_unblended
+              - cost_public
+              - unit_cost_od_unblended
+              - unit_cost_od_net_unblended
+              - unit_cost_reserved
+              - unit_cost_combined_unblended
+              - unit_cost_combined_net_unblended
+              - reservation_count
+              - current_reservation_count
+              - reservation_count_candidate
+              - last_refresh_date
+              - linked_account_name
+              - payer_account_name
+              - linked_account_formatted
+              - payer_account_formatted
+          Source:
+            JoinInstruction:
+              LeftOperand: 21b22c8d-94f4-4b1b-9886-9dd1a73f0eda
+              RightOperand: 929368f8-f032-493b-a61a-9aae152bf092
+              Type: LEFT
+              OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
+        6ba9a35e-fa2a-4227-8d01-496968256d34:
+          Alias: msih_reservation_optimize
+          Source:
+            PhysicalTableId: 47a7153e-a73a-4974-85b7-41db6720a217
+        929368f8-f032-493b-a61a-9aae152bf092:
+          Alias: account_map_payer
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map_payer]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: payer_account_name
+          Source:
+            PhysicalTableId: 91eaa102-fc91-4283-adef-fe6697fd3cf5
+        e7038b62-397d-46f7-9fe2-dd369b97dde3:
+          Alias: account_map_linked
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map_linked]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: linked_account_name
+          Source:
+            PhysicalTableId: 629857f4-594a-436e-b28e-b14cba791f14
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - msih_reservation_optimize
+      - account_map
+      - account_map
+    schedules:
+    - default
 crawlers: {}
 views:
+  msih_view:
+    dependsOn:
+      cur2:
+      - bill_billing_entity
+      - bill_billing_period_start_date
+      - bill_payer_account_id
+      - billing_period
+      - line_item_line_item_description
+      - line_item_line_item_type
+      - line_item_net_unblended_cost
+      - line_item_operation
+      - line_item_product_code
+      - line_item_resource_id
+      - line_item_unblended_cost
+      - line_item_usage_account_id
+      - line_item_usage_amount
+      - line_item_usage_end_date
+      - line_item_usage_start_date
+      - line_item_usage_type
+      - pricing_public_on_demand_cost
+      - pricing_unit
+      - product
+      - product_from_location
+      - product_product_family
+      - product_to_location
+      - reservation_amortized_upfront_fee_for_billing_period
+      - reservation_effective_cost
+      - reservation_end_time
+      - reservation_net_effective_cost
+      - reservation_net_unused_amortized_upfront_fee_for_billing_period
+      - reservation_net_unused_recurring_fee
+      - reservation_reservation_a_r_n
+      - reservation_start_time
+      - reservation_unused_amortized_upfront_fee_for_billing_period
+      - reservation_unused_recurring_fee
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".msih_view AS
+      WITH
+        "cur_base" AS (
+         SELECT
+           *
+         , "product"['region'] "region"
+         , (CASE WHEN ((line_item_line_item_type = 'RIFee') AND ("line_item_product_code" = 'AWSElementalMediaLive')) THEN ROUND(("line_item_usage_amount" / DATE_DIFF('hour', date_trunc('hour', CAST("line_item_usage_start_date" AS timestamp)), date_trunc('hour', CAST("line_item_usage_end_date" AS timestamp))))) ELSE null END) "reservation_count"
+         , TRY_CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) "reservation_start_date"
+         , TRY_CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) "reservation_end_date"
+         FROM
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE (("line_item_product_code" LIKE '%Media%') AND ("line_item_product_code" <> 'AWSElementalMediaStore') AND (NOT ("line_item_product_code" LIKE '%MediaSupport')) AND ("bill_billing_period_start_date" >= (date_trunc('month', current_timestamp) - INTERVAL  '13' MONTH)) AND (CAST(concat("billing_period", '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '13' MONTH)) AND (NOT ("line_item_line_item_type" IN ('Tax', 'Refund', 'Credit'))))
+      )
+      , "cur_pre_processing" AS (
+         SELECT
+           *
+         , split_part("billing_period", '-', 1) "year"
+         , split_part("billing_period", '-', 2) "month"
+         , (CASE WHEN ("date_trunc"('day', "line_item_usage_start_date") >= ("date_trunc"('day', current_timestamp) - INTERVAL  '30' DAY)) THEN "date_trunc"('hour', "line_item_usage_start_date") WHEN ("date_trunc"('month', "line_item_usage_start_date") >= ("date_trunc"('month', current_timestamp) - INTERVAL  '4' MONTH)) THEN "date_trunc"('day', "line_item_usage_start_date") ELSE "date_trunc"('month', "line_item_usage_start_date") END) "usage_date"
+         , (CASE WHEN ("strpos"("pricing_unit", 'Reserved') > 0) THEN 'Reserved' WHEN ("reservation_reservation_a_r_n" <> '') THEN 'Reserved' ELSE 'OnDemand' END) "purchase_option"
+         , (CASE WHEN ("reservation_reservation_a_r_n" <> '') THEN "reservation_reservation_a_r_n" ELSE CAST('' AS varchar) END) "ri_sp_arn"
+         , (CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN 'Running_Usage' WHEN ("line_item_line_item_type" = 'Usage') THEN 'Running_Usage' ELSE 'non_usage' END) "charge_category"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" = 'Transcoding') AND (NOT ("line_item_line_item_type" LIKE '%Usage'))) THEN 'CreateJob' ELSE "line_item_operation" END) "operation"
+         , SPLIT_PART(reservation_reservation_a_r_n, ':', 7) "reservation_id"
+         , (CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_effective_cost" WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee") WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0 ELSE "line_item_unblended_cost" END) "amortized_cost"
+         , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN COALESCE(("reservation_net_unused_amortized_upfront_fee_for_billing_period" + "reservation_net_unused_recurring_fee"), ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee")) WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN COALESCE("reservation_net_effective_cost", "reservation_effective_cost") WHEN (("line_item_line_item_type" = 'Fee') AND (COALESCE("reservation_reservation_a_r_n", '') = '')) THEN COALESCE("line_item_net_unblended_cost", "line_item_unblended_cost") WHEN ("line_item_line_item_type" IN ('Usage', 'Tax', 'Credit', 'Refund')) THEN COALESCE("line_item_net_unblended_cost", "line_item_unblended_cost") ELSE 0 END) "net_amortized_cost"
+         , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN -("reservation_amortized_upfront_fee_for_billing_period") ELSE 0 END) "ri_sp_trueup"
+         , (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN "line_item_unblended_cost" WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN "line_item_unblended_cost" ELSE 0 END) "ri_sp_upfront_fees"
+         , (CASE WHEN ("line_item_line_item_type" <> 'SavingsPlanNegation') THEN "pricing_public_on_demand_cost" ELSE 0 END) "public_cost"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaPackage') AND ("line_item_usage_type" LIKE '%-origin-p%-bytes')) THEN 'Packaging Data Transfer' WHEN ("line_item_operation" = 'DataProcessed') THEN 'Data Transfer' WHEN ("line_item_operation" = 'RunningFlow') THEN 'Compute Instance' WHEN ("line_item_operation" = 'CreateJob') THEN 'Transcoding' WHEN ("line_item_operation" = 'reserve') THEN 'Reserved Transcoding' WHEN ("line_item_operation" = 'CHANNEL_BANDWIDTH') THEN 'Data Transfer' WHEN (("line_item_operation" LIKE 'CHANNEL_%PUT') OR ("line_item_operation" LIKE 'INACTIVE_%') OR ("line_item_operation" = 'CHANNEL_Add-on')) THEN 'Transcoding' WHEN ("line_item_usage_type" LIKE '%-Out-Bytes') THEN 'Data Transfer' WHEN (("line_item_usage_type" LIKE '%-ingest-bytes') OR ("line_item_usage_type" LIKE '%-origin-packaging-bytes')) THEN 'Packaging Data Transfer' WHEN ("line_item_usage_type" LIKE '%-AdInsertion') THEN 'Fee' WHEN ("line_item_operation" = 'runChannel') THEN 'Fee' ELSE "product_product_family" END) "product_family"
+         , replace(concat('-', "line_item_usage_type", '-'), '-NA-', '--') "line_item_usage_type_norm"
+         FROM
+           "cur_base"
+      )
+      , "usage_type_processing" AS (
+         SELECT
+           *
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null WHEN (strpos("line_item_usage_type_norm", '-EML1-') > 0) THEN 'Single' WHEN (strpos("line_item_usage_type_norm", '-EML2-') > 0) THEN 'Standard' ELSE null END) "video_pipeline"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null WHEN (strpos("line_item_usage_type_norm", '-IN-') > 0) THEN 'In' WHEN (strpos("line_item_usage_type_norm", '-OUT-') > 0) THEN 'Out' ELSE null END) "video_flow_direction"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null WHEN (strpos("line_item_usage_type_norm", '-IN-') > 0) THEN 'Input' WHEN (strpos("line_item_usage_type_norm", '-OUT-') > 0) THEN 'Output' ELSE null END) "video_flow_direction2"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null ELSE concat(regexp_extract("line_item_usage_type_norm", '-L([0-9]*?)-', 1), ' mbps') END) "video_bit_rate"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaConvert')) THEN null WHEN (strpos("line_item_usage_type_norm", '-B-') > 0) THEN 'Basic' WHEN (strpos("line_item_usage_type_norm", '-P-') > 0) THEN 'Professional' ELSE null END) "video_tier"
+         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (strpos("line_item_usage_type_norm", '-AV1-') > 0) THEN 'AV1' WHEN (strpos("line_item_usage_type_norm", '-AVC-') > 0) THEN 'AVC' WHEN (strpos("line_item_usage_type_norm", '-AVCI-') > 0) THEN 'AVCI' WHEN (strpos("line_item_usage_type_norm", '-HEVC-') > 0) THEN 'HEVC' WHEN (strpos("line_item_usage_type_norm", '-MP2-') > 0) THEN 'MP2' WHEN (strpos("line_item_usage_type_norm", '-VC3-') > 0) THEN 'VC3' WHEN (strpos("line_item_usage_type_norm", '-VP8-') > 0) THEN 'VP8' WHEN (strpos("line_item_usage_type_norm", '-VP9-') > 0) THEN 'VP9' WHEN (strpos("line_item_usage_type_norm", '-XAVC-') > 0) THEN 'XAVC' WHEN (strpos("line_item_usage_type_norm", '-PR-') > 0) THEN 'Apple ProRes' WHEN (strpos("line_item_usage_type_norm", '-AUD-') > 0) THEN 'Audio-only' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-IDLE-') > 0)) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-AUDIO-') > 0)) THEN 'Audio-only' WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN regexp_extract("line_item_usage_type_norm", '(^-.*(OUT|IN)-)(.*)?-', 3) ELSE null END) "video_codec"
+         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-30-') > 0)) THEN '<= 30fps' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-60-') > 0)) THEN '> 30, <= 60 fps' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-120-') > 0)) THEN '> 60 fps' WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN concat(regexp_extract("line_item_usage_type_norm", '-([0-9]*?)-', 1), ' fps') ELSE null END) "video_frame_rate"
+         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-MHQ-') > 0)) THEN 'Multi-pass HQ' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-M-') > 0)) THEN 'Multi-pass' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-SHQ-') > 0)) THEN 'Single-pass HQ' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-S-') > 0)) THEN 'Single-pass' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-S-') > 0)) THEN 'Standard' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-E-') > 0)) THEN 'Enhanced' ELSE null END) "video_quality"
+         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (strpos("line_item_usage_type_norm", '-4K-') > 0) THEN '4K' WHEN (strpos("line_item_usage_type_norm", '-8K-') > 0) THEN '8K' WHEN (strpos("line_item_usage_type_norm", '-SD-') > 0) THEN 'SD' WHEN (strpos("line_item_usage_type_norm", '-HD-') > 0) THEN 'HD' WHEN (strpos("line_item_usage_type_norm", '-HDR10PLUS-') > 0) THEN 'HDR 10+' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-IDLE-') > 0)) THEN null ELSE null END) "video_resolution"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-NTM-') > 0)) THEN 'Yes' ELSE null END) "video_emc_ntm"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-RTS-') > 0)) THEN 'Yes' ELSE null END) "video_emc_rts"
+         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-AUD-') > 0)) THEN 'Yes' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-DTS-') > 0)) THEN 'Yes' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-DOLBY-') > 0)) THEN 'Yes' WHEN ("line_item_product_code" = 'AWSElementalMediaConvert') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-AUDIO-') > 0)) THEN 'Yes' ELSE null END) "video_audio_only"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-MUX-') > 0)) THEN 'Yes' ELSE null END) "video_statmux"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-Y-') > 0)) THEN 'Yearly' ELSE null END) "video_emc_term"
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-IDLE-') > 0)) THEN 'Yes' ELSE null END) "video_eml_idle"
+         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaConvert')) THEN null WHEN (strpos("line_item_usage_type_norm", '-GIF-') > 0) THEN 'Animated GIF' WHEN (strpos("line_item_usage_type_norm", '-DTS-') > 0) THEN 'Audio normalization' WHEN (strpos("line_item_usage_type_norm", '-DOLBY-') > 0) THEN 'Dolby Audio' WHEN (strpos("line_item_usage_type_norm", '-DOLBY_VIS-') > 0) THEN 'Dolby Vision' WHEN (strpos("line_item_usage_type_norm", '-FRAMEFORMER-') > 0) THEN 'FrameFormer' WHEN (strpos("line_item_usage_type_norm", '-KANTAR-') > 0) THEN 'Kantar watermarking' WHEN (strpos("line_item_usage_type_norm", '-PROBE-') > 0) THEN 'MediaConvert Probe' WHEN (strpos("line_item_usage_type_norm", '-NEXGUARD-') > 0) THEN 'NexGuard watermarking' WHEN (strpos("line_item_usage_type_norm", '-NIELSEN_SID_TIC-') > 0) THEN 'Nielsen watermarking' ELSE null END) "video_emc_addon"
+         FROM
+           "cur_pre_processing"
+      )
+      , "post_processing" AS (
+         SELECT
+           *
+         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("operation" IN ('CHANNEL_INPUT', 'CHANNEL_OUTPUT', 'CHANNEL_FEATURE'))) THEN concat("region", ' : ', "video_flow_direction2", ' : ', "video_codec", ' : ', "video_resolution", ' : ', "video_bit_rate", ' : ', "video_frame_rate") ELSE '' END) "eml_reservation_profile"
+         FROM
+           "usage_type_processing"
+      )
+      SELECT
+        "year"
+      , "month"
+      , "bill_billing_period_start_date" "billing_period"
+      , "usage_date"
+      , "bill_payer_account_id" "payer_account_id"
+      , "line_item_usage_account_id" "linked_account_id"
+      , "line_item_line_item_type" "charge_type"
+      , "charge_category"
+      , "purchase_option"
+      , "ri_sp_arn"
+      , "line_item_product_code" "product_code"
+      , "product_family"
+      , "line_item_usage_type" "usage_type"
+      , "operation"
+      , "line_item_line_item_description" "item_description"
+      , "region"
+      , "video_pipeline"
+      , "video_flow_direction"
+      , "video_bit_rate"
+      , (CASE WHEN (length("video_emc_addon") > 0) THEN 'Professional' ELSE "video_tier" END) "video_tier"
+      , "video_codec"
+      , "video_frame_rate"
+      , "video_quality"
+      , "video_resolution"
+      , "video_emc_ntm"
+      , "video_emc_rts"
+      , "video_audio_only"
+      , "video_statmux"
+      , "video_emc_term"
+      , "video_eml_idle"
+      , "video_emc_addon"
+      , "product"['transcoding_result'] "video_transcoding_result"
+      , "product_from_location" "location_source"
+      , "product_to_location" "location_destination"
+      , "bill_billing_entity" "billing_entity"
+      , "pricing_unit" "pricing_unit"
+      , "line_item_resource_id" "resource_id"
+      , "reservation_id"
+      , "reservation_count"
+      , "reservation_start_date" "reservation_start_time"
+      , "reservation_end_date" "reservation_end_time"
+      , "last_refresh_date"
+      , sum("line_item_usage_amount") "usage_quantity"
+      , sum("line_item_unblended_cost") "unblended_cost"
+      , sum("line_item_net_unblended_cost") "net_unblended_cost"
+      , sum("amortized_cost") "amortized_cost"
+      , sum("net_amortized_cost") "net_amortized_cost"
+      , sum("ri_sp_trueup") "ri_sp_trueup"
+      , sum("ri_sp_upfront_fees") "ri_sp_upfront_fees"
+      , sum("public_cost") "public_cost"
+      FROM
+        ("post_processing" pp
+      INNER JOIN (
+         SELECT
+           "bill_payer_account_id" "payer_account_id"
+         , MAX("line_item_usage_start_date") "last_refresh_date"
+         FROM
+           "cur_base"
+         WHERE ("line_item_usage_start_date" <= (date_trunc('day', current_timestamp) - INTERVAL  '0' DAY))
+         GROUP BY 1
+      )  ts ON ("bill_payer_account_id" = "payer_account_id"))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42
   msih_reservations:
     dependsOn:
       cur2:
@@ -490,19 +897,6 @@ views:
       - reservation_end_time
       - reservation_reservation_a_r_n
       - reservation_start_time
-      - product['pipeline']
-      - product['frame_rate']
-      - product['input']
-      - product['output']
-      - product['bit_rate']
-      - product['resolution']
-      - product['video_quality']
-      - product['video_codec']
-      - product['tier']
-      - product['transcoding_result']
-      - product['video_frame_rate']
-      - product['video_quality_setting']
-      - product['video_resolution']
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".msih_reservations AS
       WITH
@@ -527,34 +921,48 @@ views:
          , "reservation_effective_cost"
          , "pricing_public_on_demand_cost"
          FROM
-           "${cur2_database}".${cur2_table_name}
-         WHERE (CAST("line_item_usage_end_date" AS date) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '24' MONTH))
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE (CAST("line_item_usage_end_date" AS date) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '36' MONTH))
+      )
+      , eml_ri_first_start_time AS (
+         SELECT
+           "reservation_reservation_a_r_n"
+         , CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) "reservation_first_start_time"
+         , MIN(reservation_start_time) OVER (PARTITION BY reservation_reservation_a_r_n) first_start_time
+         FROM
+           "core"
+         WHERE ((line_item_product_code = 'AWSElementalMediaLive') AND (line_item_line_item_type = 'RIFee'))
       )
       , eml_ri_inventory AS (
          SELECT
-           SPLIT_PART("reservation_reservation_a_r_n", ':', 7) "reservation_id"
+           c."reservation_reservation_a_r_n" reservation_arn
+         , SPLIT_PART(c."reservation_reservation_a_r_n", ':', 7) "reservation_id"
          , ROUND(("line_item_usage_amount" / DATE_DIFF('hour', date_trunc('hour', CAST("line_item_usage_start_date" AS timestamp)), date_trunc('hour', CAST("line_item_usage_end_date" AS timestamp))))) "reservation_count"
          , CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) "reservation_start_time"
          , CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) "reservation_end_time"
+         , "reservation_first_start_time"
          , "line_item_usage_account_id" "linked_account_id"
          , "bill_payer_account_id" "payer_account_id"
          , "line_item_line_item_description"
          , "line_item_usage_type"
-         , "product"['pipeline'] "video_pipeline"
+         , "product"['region'] "region"
          , "product"['region'] "video_region"
          , "line_item_operation"
-         , "product"['input'] "video_input"
-         , "product"['output'] "video_output"
-         , "product"['resolution'] "video_resolution"
-         , "product"['bit_rate'] "video_bit_rate"
-         , "product"['frame_rate'] "video_frame_rate"
-         , "product"['video_quality'] "video_quality"
+         , (CASE WHEN (strpos("line_item_usage_type", 'EML1-') = 0) THEN 'Single' WHEN (strpos("line_item_usage_type", 'EML2-') = 0) THEN 'Standard' ELSE null END) "video_pipeline"
+         , (CASE WHEN (strpos("line_item_usage_type", '-IN-') > 0) THEN 'In' WHEN (strpos("line_item_usage_type", '-OUT-') > 0) THEN 'Out' ELSE null END) "video_flow_direction"
+         , concat(regexp_extract("line_item_usage_type", '-L([0-9]*?)(-|$)', 1), ' mbps') "video_bit_rate"
+         , (CASE WHEN (strpos("line_item_usage_type", '-AV1-') > 0) THEN 'AV1' WHEN (strpos("line_item_usage_type", '-AVC-') > 0) THEN 'AVC' WHEN (strpos("line_item_usage_type", '-AVCI-') > 0) THEN 'AVCI' WHEN (strpos("line_item_usage_type", '-HEVC-') > 0) THEN 'HEVC' WHEN (strpos("line_item_usage_type", '-MP2-') > 0) THEN 'MP2' WHEN (strpos("line_item_usage_type", '-VC3-') > 0) THEN 'VC3' WHEN (strpos("line_item_usage_type", '-VP8-') > 0) THEN 'VP8' WHEN (strpos("line_item_usage_type", '-VP9-') > 0) THEN 'VP9' WHEN (strpos("line_item_usage_type", '-XAVC-') > 0) THEN 'XAVC' WHEN (strpos("line_item_usage_type", '-PR-') > 0) THEN 'Apple ProRes' WHEN (strpos("line_item_usage_type", '-AUD-') > 0) THEN 'Audio-only' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type", '-IDLE-') > 0)) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type", '-AUDIO-') > 0)) THEN 'Audio-only' WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN regexp_extract("line_item_usage_type", '(^-.*(OUT|IN)-)(.*)?-', 3) ELSE null END) "video_codec"
+         , concat(regexp_extract("line_item_usage_type", '-([0-9]*?)-', 1), ' fps') "video_frame_rate"
+         , (CASE WHEN (strpos("line_item_usage_type", '-4K-') > 0) THEN '4K' WHEN (strpos("line_item_usage_type", '-8K-') > 0) THEN '8K' WHEN (strpos("line_item_usage_type", '-SD-') > 0) THEN 'SD' WHEN (strpos("line_item_usage_type", '-HD-') > 0) THEN 'HD' WHEN (strpos("line_item_usage_type", '-HDR10PLUS-') > 0) THEN 'HDR 10+' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type", '-IDLE-') > 0)) THEN null ELSE null END) "video_resolution"
+         , (CASE WHEN (strpos("line_item_usage_type", '-S') > 0) THEN 'Standard' WHEN (strpos("line_item_usage_type", '-E') > 0) THEN 'Enhanced' ELSE null END) "video_quality"
+         , (CASE WHEN (substring("line_item_usage_type", (length("line_item_usage_type") - 1)) = '-R') THEN 1 ELSE 0 END) "is_renewal"
          , SUM("line_item_unblended_cost") "reservation_fee"
          , ROUND(AVG(((CASE WHEN ("line_item_net_unblended_cost" IS NULL) THEN "line_item_unblended_cost" ELSE "line_item_net_unblended_cost" END) / "line_item_unblended_cost")), 2) "effective_rate_adjust"
          FROM
-           "core"
+           ("core" c
+         LEFT JOIN eml_ri_first_start_time fst ON (fst."reservation_reservation_a_r_n" = c."reservation_reservation_a_r_n"))
          WHERE ((line_item_product_code = 'AWSElementalMediaLive') AND (line_item_line_item_type = 'RIFee'))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
       )
       , eml_usage AS (
          SELECT
@@ -603,159 +1011,147 @@ views:
       FROM
         ("eml_ri_inventory" i
       LEFT JOIN eml_ri_utilization u ON ((i."reservation_id" = u."reservation_id") AND ((date_trunc('day', u."line_item_usage_start_date") >= date_trunc('day', i."reservation_start_time")) AND (date_trunc('day', u."line_item_usage_end_date") <= date_trunc('day', i."reservation_end_time")))))
-  msih_view:
+  msih_reservation_optimize:
     dependsOn:
       cur2:
-      - bill_billing_entity
-      - bill_billing_period_start_date
       - bill_payer_account_id
-      - billing_period
-      - line_item_line_item_description
       - line_item_line_item_type
       - line_item_net_unblended_cost
       - line_item_operation
       - line_item_product_code
-      - line_item_resource_id
       - line_item_unblended_cost
       - line_item_usage_account_id
       - line_item_usage_amount
+      - line_item_usage_end_date
       - line_item_usage_start_date
       - line_item_usage_type
       - pricing_public_on_demand_cost
-      - pricing_unit
       - product
-      - product_from_location
-      - product_product_family
-      - product_to_location
-      - reservation_amortized_upfront_fee_for_billing_period
       - reservation_effective_cost
-      - reservation_net_effective_cost
-      - reservation_net_unused_amortized_upfront_fee_for_billing_period
-      - reservation_net_unused_recurring_fee
+      - reservation_end_time
       - reservation_reservation_a_r_n
-      - reservation_unused_amortized_upfront_fee_for_billing_period
-      - reservation_unused_recurring_fee
-      - product['pipeline']
-      - product['frame_rate']
-      - product['input']
-      - product['output']
-      - product['bit_rate']
-      - product['resolution']
-      - product['video_quality']
-      - product['video_codec']
-      - product['tier']
-      - product['transcoding_result']
-      - product['video_frame_rate']
-      - product['video_quality_setting']
-      - product['video_resolution']
+      - reservation_start_time
     data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".msih_view AS
+      CREATE OR REPLACE VIEW "${athena_database_name}".msih_reservation_optimize AS
       WITH
-        "cur_base" AS (
-         SELECT *
-         FROM
-           "${cur2_database}"."${cur2_table_name}"
-         WHERE (("line_item_product_code" LIKE '%Media%') AND ("line_item_product_code" <> 'AWSElementalMediaStore') AND (NOT ("line_item_product_code" LIKE '%MediaSupport')) AND ("bill_billing_period_start_date" >= (date_trunc('month', current_timestamp) - INTERVAL  '13' MONTH)) AND (CAST(concat("billing_period", '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '13' MONTH)) AND (NOT ("line_item_line_item_type" IN ('Tax', 'Refund', 'Credit'))))
-      )
-      , "cur_pre_processing" AS (
-         SELECT
-           *
-         , split_part("billing_period", '-', 1) "year"
-         , split_part("billing_period", '-', 2) "month"
-         , (CASE WHEN ("date_trunc"('day', "line_item_usage_start_date") >= ("date_trunc"('day', current_timestamp) - INTERVAL  '30' DAY)) THEN "date_trunc"('hour', "line_item_usage_start_date") WHEN ("date_trunc"('month', "line_item_usage_start_date") >= ("date_trunc"('month', current_timestamp) - INTERVAL  '4' MONTH)) THEN "date_trunc"('day', "line_item_usage_start_date") ELSE "date_trunc"('month', "line_item_usage_start_date") END) "usage_date"
-         , (CASE WHEN ("strpos"("pricing_unit", 'Reserved') > 0) THEN 'Reserved' WHEN ("reservation_reservation_a_r_n" <> '') THEN 'Reserved' ELSE 'OnDemand' END) "purchase_option"
-         , (CASE WHEN ("reservation_reservation_a_r_n" <> '') THEN "reservation_reservation_a_r_n" ELSE CAST('' AS varchar) END) "ri_sp_arn"
-         , (CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN 'Running_Usage' WHEN ("line_item_line_item_type" = 'Usage') THEN 'Running_Usage' ELSE 'non_usage' END) "charge_category"
-         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND ("product_product_family" = 'Transcoding') AND (NOT ("line_item_line_item_type" LIKE '%Usage'))) THEN 'CreateJob' ELSE "line_item_operation" END) "operation"
-         , SPLIT_PART(reservation_reservation_a_r_n, ':', 7) "reservation_id"
-         , (CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_effective_cost" WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee") WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0 ELSE "line_item_unblended_cost" END) "amortized_cost"
-         , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN COALESCE(("reservation_net_unused_amortized_upfront_fee_for_billing_period" + "reservation_net_unused_recurring_fee"), ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee")) WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN COALESCE("reservation_net_effective_cost", "reservation_effective_cost") WHEN (("line_item_line_item_type" = 'Fee') AND (COALESCE("reservation_reservation_a_r_n", '') = '')) THEN COALESCE("line_item_net_unblended_cost", "line_item_unblended_cost") WHEN ("line_item_line_item_type" IN ('Usage', 'Tax', 'Credit', 'Refund')) THEN COALESCE("line_item_net_unblended_cost", "line_item_unblended_cost") ELSE 0 END) "net_amortized_cost"
-         , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN -("reservation_amortized_upfront_fee_for_billing_period") ELSE 0 END) "ri_sp_trueup"
-         , (CASE WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN "line_item_unblended_cost" WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN "line_item_unblended_cost" ELSE 0 END) "ri_sp_upfront_fees"
-         , (CASE WHEN ("line_item_line_item_type" <> 'SavingsPlanNegation') THEN "pricing_public_on_demand_cost" ELSE 0 END) "public_cost"
-         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaPackage') AND ("line_item_usage_type" LIKE '%-origin-p%-bytes')) THEN 'Packaging Data Transfer' WHEN ("line_item_operation" = 'DataProcessed') THEN 'Data Transfer' WHEN ("line_item_operation" = 'RunningFlow') THEN 'Compute Instance' WHEN ("line_item_operation" = 'CreateJob') THEN 'Transcoding' WHEN ("line_item_operation" = 'reserve') THEN 'Reserved Transcoding' WHEN ("line_item_operation" = 'CHANNEL_BANDWIDTH') THEN 'Data Transfer' WHEN (("line_item_operation" LIKE 'CHANNEL_%PUT') OR ("line_item_operation" LIKE 'INACTIVE_%') OR ("line_item_operation" = 'CHANNEL_Add-on')) THEN 'Transcoding' WHEN ("line_item_usage_type" LIKE '%-Out-Bytes') THEN 'Data Transfer' WHEN (("line_item_usage_type" LIKE '%-ingest-bytes') OR ("line_item_usage_type" LIKE '%-origin-packaging-bytes')) THEN 'Packaging Data Transfer' WHEN ("line_item_usage_type" LIKE '%-AdInsertion') THEN 'Fee' WHEN ("line_item_operation" = 'runChannel') THEN 'Fee' ELSE "product_product_family" END) "product_family"
-         , replace(concat('-', "line_item_usage_type", '-'), '-NA-', '--') "line_item_usage_type_norm"
-         FROM
-           "cur_base"
-      )
-      , "usage_type_processing" AS (
-         SELECT
-           *
-         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null WHEN (strpos("line_item_usage_type_norm", '-EML1-') > 0) THEN 'Single' WHEN (strpos("line_item_usage_type_norm", '-EML2-') > 0) THEN 'Standard' ELSE null END) "video_pipeline"
-         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null WHEN (strpos("line_item_usage_type_norm", '-IN-') > 0) THEN 'In' WHEN (strpos("line_item_usage_type_norm", '-OUT-') > 0) THEN 'Out' ELSE null END) "video_flow_direction"
-         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaLive')) THEN null ELSE concat(regexp_extract("line_item_usage_type_norm", '-L([0-9]*?)-', 1), ' mbps') END) "video_bit_rate"
-         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaConvert')) THEN null WHEN (strpos("line_item_usage_type_norm", '-B-') > 0) THEN 'Basic' WHEN (strpos("line_item_usage_type_norm", '-P-') > 0) THEN 'Professional' ELSE null END) "video_tier"
-         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (strpos("line_item_usage_type_norm", '-AV1-') > 0) THEN 'AV1' WHEN (strpos("line_item_usage_type_norm", '-AVC-') > 0) THEN 'AVC' WHEN (strpos("line_item_usage_type_norm", '-AVCI-') > 0) THEN 'AVCI' WHEN (strpos("line_item_usage_type_norm", '-HEVC-') > 0) THEN 'HEVC' WHEN (strpos("line_item_usage_type_norm", '-MP2-') > 0) THEN 'MP2' WHEN (strpos("line_item_usage_type_norm", '-VC3-') > 0) THEN 'VC3' WHEN (strpos("line_item_usage_type_norm", '-VP8-') > 0) THEN 'VP8' WHEN (strpos("line_item_usage_type_norm", '-VP9-') > 0) THEN 'VP9' WHEN (strpos("line_item_usage_type_norm", '-XAVC-') > 0) THEN 'XAVC' WHEN (strpos("line_item_usage_type_norm", '-PR-') > 0) THEN 'Apple ProRes' WHEN (strpos("line_item_usage_type_norm", '-AUD-') > 0) THEN 'Audio-only' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-IDLE-') > 0)) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-AUDIO-') > 0)) THEN 'Audio-only' WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN regexp_extract("line_item_usage_type_norm", '(^-.*(OUT|IN)-)(.*)?-', 3) ELSE null END) "video_codec"
-         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-30-') > 0)) THEN '<= 30fps' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-60-') > 0)) THEN '> 30, <= 60 fps' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-120-') > 0)) THEN '> 60 fps' WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN concat(regexp_extract("line_item_usage_type_norm", '-([0-9]*?)-', 1), ' fps') ELSE null END) "video_frame_rate"
-         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-MHQ-') > 0)) THEN 'Multi-pass HQ' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-M-') > 0)) THEN 'Multi-pass' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-SHQ-') > 0)) THEN 'Single-pass HQ' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-S-') > 0)) THEN 'Single-pass' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-S-') > 0)) THEN 'Standard' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-E-') > 0)) THEN 'Enhanced' ELSE null END) "video_quality"
-         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (strpos("line_item_usage_type_norm", '-4K-') > 0) THEN '4K' WHEN (strpos("line_item_usage_type_norm", '-8K-') > 0) THEN '8K' WHEN (strpos("line_item_usage_type_norm", '-SD-') > 0) THEN 'SD' WHEN (strpos("line_item_usage_type_norm", '-HD-') > 0) THEN 'HD' WHEN (strpos("line_item_usage_type_norm", '-HDR10PLUS-') > 0) THEN 'HDR 10+' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-IDLE-') > 0)) THEN null ELSE null END) "video_resolution"
-         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-NTM-') > 0)) THEN 'Yes' ELSE null END) "video_emc_ntm"
-         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-RTS-') > 0)) THEN 'Yes' ELSE null END) "video_emc_rts"
-         , (CASE WHEN ("product_family" <> 'Transcoding') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-AUD-') > 0)) THEN 'Yes' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-DTS-') > 0)) THEN 'Yes' WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-DOLBY-') > 0)) THEN 'Yes' WHEN ("line_item_product_code" = 'AWSElementalMediaConvert') THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-AUDIO-') > 0)) THEN 'Yes' ELSE null END) "video_audio_only"
-         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-MUX-') > 0)) THEN 'Yes' ELSE null END) "video_statmux"
-         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaConvert') AND (strpos("line_item_usage_type_norm", '-Y-') > 0)) THEN 'Yearly' ELSE null END) "video_emc_term"
-         , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type_norm", '-IDLE-') > 0)) THEN 'Yes' ELSE null END) "video_eml_idle"
-         , (CASE WHEN (("product_family" <> 'Transcoding') OR ("line_item_product_code" <> 'AWSElementalMediaConvert')) THEN null WHEN (strpos("line_item_usage_type_norm", '-GIF-') > 0) THEN 'Animated GIF' WHEN (strpos("line_item_usage_type_norm", '-DTS-') > 0) THEN 'Audio normalization' WHEN (strpos("line_item_usage_type_norm", '-DOLBY-') > 0) THEN 'Dolby Audio' WHEN (strpos("line_item_usage_type_norm", '-DOLBY_VIS-') > 0) THEN 'Dolby Vision' WHEN (strpos("line_item_usage_type_norm", '-FRAMEFORMER-') > 0) THEN 'FrameFormer' WHEN (strpos("line_item_usage_type_norm", '-KANTAR-') > 0) THEN 'Kantar watermarking' WHEN (strpos("line_item_usage_type_norm", '-PROBE-') > 0) THEN 'MediaConvert Probe' WHEN (strpos("line_item_usage_type_norm", '-NEXGUARD-') > 0) THEN 'NexGuard watermarking' WHEN (strpos("line_item_usage_type_norm", '-NIELSEN_SID_TIC-') > 0) THEN 'Nielsen watermarking' ELSE null END) "video_emc_addon"
-         FROM
-           "cur_pre_processing"
-      )
-      SELECT
-        "year"
-      , "month"
-      , "bill_billing_period_start_date" "billing_period"
-      , "usage_date"
-      , "bill_payer_account_id" "payer_account_id"
-      , "line_item_usage_account_id" "linked_account_id"
-      , "line_item_line_item_type" "charge_type"
-      , "charge_category"
-      , "purchase_option"
-      , "ri_sp_arn"
-      , "line_item_product_code" "product_code"
-      , "product_family"
-      , "line_item_usage_type" "usage_type"
-      , "operation"
-      , "line_item_line_item_description" "item_description"
-      , "product"['region'] "region"
-      , "video_pipeline"
-      , "video_flow_direction"
-      , "video_bit_rate"
-      , (CASE WHEN (length("video_emc_addon") > 0) THEN 'Professional' ELSE "video_tier" END) "video_tier"
-      , "video_codec"
-      , "video_frame_rate"
-      , "video_quality"
-      , "video_resolution"
-      , "video_emc_ntm"
-      , "video_emc_rts"
-      , "video_audio_only"
-      , "video_statmux"
-      , "video_emc_term"
-      , "video_eml_idle"
-      , "video_emc_addon"
-      , "product"['transcoding_result'] "video_transcoding_result"
-      , "product_from_location" "location_source"
-      , "product_to_location" "location_destination"
-      , "bill_billing_entity" "billing_entity"
-      , "pricing_unit" "pricing_unit"
-      , "line_item_resource_id" "resource_id"
-      , "reservation_id"
-      , "last_refresh_date"
-      , sum("line_item_usage_amount") "usage_quantity"
-      , sum("line_item_unblended_cost") "unblended_cost"
-      , sum("line_item_net_unblended_cost") "net_unblended_cost"
-      , sum("amortized_cost") "amortized_cost"
-      , sum("net_amortized_cost") "net_amortized_cost"
-      , sum("ri_sp_trueup") "ri_sp_trueup"
-      , sum("ri_sp_upfront_fees") "ri_sp_upfront_fees"
-      , sum("public_cost") "public_cost"
-      FROM
-        ("usage_type_processing"
-      INNER JOIN (
+        core AS (
          SELECT
            "bill_payer_account_id" "payer_account_id"
+         , "line_item_usage_account_id" "linked_account_id"
+         , "line_item_usage_start_date" "usage_time"
+         , hour("line_item_usage_start_date") "usage_hour_of_day"
+         , "line_item_usage_type" "usage_profile"
+         , "product"['region'] "region"
+         , "line_item_operation" "operation"
+         , (CASE WHEN (strpos("line_item_usage_type", 'EML1-') = 0) THEN 'Single' WHEN (strpos("line_item_usage_type", 'EML2-') = 0) THEN 'Standard' ELSE null END) "video_pipeline"
+         , (CASE WHEN (strpos("line_item_usage_type", '-IN-') > 0) THEN 'In' WHEN (strpos("line_item_usage_type", '-OUT-') > 0) THEN 'Out' ELSE null END) "video_flow_direction"
+         , concat(regexp_extract("line_item_usage_type", '-L([0-9]*?)(-|$)', 1), ' mbps') "video_bit_rate"
+         , (CASE WHEN (strpos("line_item_usage_type", '-AV1-') > 0) THEN 'AV1' WHEN (strpos("line_item_usage_type", '-AVC-') > 0) THEN 'AVC' WHEN (strpos("line_item_usage_type", '-AVCI-') > 0) THEN 'AVCI' WHEN (strpos("line_item_usage_type", '-HEVC-') > 0) THEN 'HEVC' WHEN (strpos("line_item_usage_type", '-MP2-') > 0) THEN 'MP2' WHEN (strpos("line_item_usage_type", '-VC3-') > 0) THEN 'VC3' WHEN (strpos("line_item_usage_type", '-VP8-') > 0) THEN 'VP8' WHEN (strpos("line_item_usage_type", '-VP9-') > 0) THEN 'VP9' WHEN (strpos("line_item_usage_type", '-XAVC-') > 0) THEN 'XAVC' WHEN (strpos("line_item_usage_type", '-PR-') > 0) THEN 'Apple ProRes' WHEN (strpos("line_item_usage_type", '-AUD-') > 0) THEN 'Audio-only' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type", '-IDLE-') > 0)) THEN null WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type", '-AUDIO-') > 0)) THEN 'Audio-only' WHEN ("line_item_product_code" = 'AWSElementalMediaLive') THEN regexp_extract("line_item_usage_type", '(^-.*(OUT|IN)-)(.*)?-', 3) ELSE null END) "video_codec"
+         , concat(regexp_extract("line_item_usage_type", '-([0-9]*?)-', 1), ' fps') "video_frame_rate"
+         , (CASE WHEN (strpos("line_item_usage_type", '-4K-') > 0) THEN '4K' WHEN (strpos("line_item_usage_type", '-8K-') > 0) THEN '8K' WHEN (strpos("line_item_usage_type", '-SD-') > 0) THEN 'SD' WHEN (strpos("line_item_usage_type", '-HD-') > 0) THEN 'HD' WHEN (strpos("line_item_usage_type", '-HDR10PLUS-') > 0) THEN 'HDR 10+' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type", '-IDLE-') > 0)) THEN null ELSE null END) "video_resolution"
+         , (CASE WHEN (strpos("line_item_usage_type", '-S') > 0) THEN 'Standard' WHEN (strpos("line_item_usage_type", '-E') > 0) THEN 'Enhanced' ELSE null END) "video_quality"
+         , sum((CASE WHEN ("line_item_line_item_type" = 'Usage') THEN "line_item_usage_amount" ELSE 0 END)) "usage_amount_od"
+         , sum((CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "line_item_usage_amount" ELSE 0 END)) "usage_amount_reserved"
+         , sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "line_item_usage_amount" ELSE 0 END)) "usage_amount_total"
+         , sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "line_item_unblended_cost" ELSE 0 END)) "cost_od_unblended"
+         , sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "line_item_net_unblended_cost" ELSE 0 END)) "cost_od_net_unblended"
+         , sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "reservation_effective_cost" ELSE 0 END)) "cost_reserved"
+         , (sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "reservation_effective_cost" ELSE 0 END)) + sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "line_item_unblended_cost" ELSE 0 END))) "cost_total_unblended"
+         , (sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "reservation_effective_cost" ELSE 0 END)) + sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "line_item_net_unblended_cost" ELSE 0 END))) "cost_total_net_unblended"
+         , sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "pricing_public_on_demand_cost" ELSE 0 END)) "cost_public"
+         FROM
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_operation" IN ('CHANNEL_INPUT', 'CHANNEL_OUTPUT', 'CHANNEL_FEATURE')) AND ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage', 'EdpDiscount', 'PrivateRateDiscount')) AND (("line_item_line_item_type" <> 'EdpDiscount') AND (substring("line_item_usage_type", (length("line_item_usage_type") - 1)) <> '-R')) AND (CAST("line_item_usage_end_date" AS date) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)))
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+      )
+      , ri_inventory AS (
+         SELECT
+           "usage_time"
+         , "usage_profile"
+         , 0 "is_renewal"
+         , "payer_account_id"
+         , "linked_account_id"
+         , sum("reservation_count") "reservation_count"
+         FROM
+           ((
+            SELECT date_add('hour', t.hour_offset, date_add('month', -7, date_trunc('hour', current_timestamp))) "usage_time"
+            FROM
+              UNNEST(sequence(0, date_diff('hour', date_add('month', -7, date_trunc('hour', current_timestamp)), current_timestamp))) t (hour_offset)
+         )  h
+         LEFT JOIN (
+            SELECT DISTINCT
+              "bill_payer_account_id" "payer_account_id"
+            , "line_item_usage_account_id" "linked_account_id"
+            , CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) "reservation_start_time"
+            , CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) "reservation_end_time"
+            , SPLIT_PART("reservation_reservation_a_r_n", ':', 7) "reservation_id"
+            , (CASE WHEN (substring("line_item_usage_type", (length("line_item_usage_type") - 1)) = '-R') THEN substring("line_item_usage_type", 1, (length("line_item_usage_type") - 2)) ELSE "line_item_usage_type" END) "usage_profile"
+            , ROUND(("line_item_usage_amount" / DATE_DIFF('hour', date_trunc('second', CAST("line_item_usage_start_date" AS timestamp)), date_trunc('second', CAST("line_item_usage_end_date" AS timestamp))))) "reservation_count"
+            FROM
+              "${cur2_database}"."${cur2_table_name}" c
+            WHERE (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_line_item_type" = 'RIFee'))
+         )  r ON ("usage_time" BETWEEN "reservation_start_time" AND "reservation_end_time"))
+         GROUP BY 1, 2, 3, 4, 5
+      )
+      , latest_reservation_count AS (
+         SELECT
+           "reservation_count" "current_reservation_count"
+         , r2."linked_account_id"
+         , r2."usage_profile"
+         , "latest_time"
+         FROM
+           (ri_inventory r2
+         INNER JOIN (
+            SELECT
+              "linked_account_id"
+            , "usage_profile"
+            , MAX("usage_time") "latest_time"
+            FROM
+              ri_inventory
+            GROUP BY 1, 2
+         )  rlat ON ((r2.linked_account_id = rlat.linked_account_id) AND (r2.usage_profile = rlat.usage_profile) AND (usage_time = latest_time)))
+      )
+      , candidate_concur_seq AS (
+         SELECT
+           "linked_account_id"
+         , "usage_profile"
+         , d "reservation_count_candidate"
+         FROM
+           (UNNEST(sequence(0, 1000)) t (d)
+         INNER JOIN (
+            SELECT
+              "linked_account_id"
+            , "usage_profile"
+            , MIN("usage_amount_total") "min_seq"
+            , MAX("usage_amount_total") "max_seq"
+            FROM
+              core
+            GROUP BY 1, 2
+         )  mm ON (1 = 1))
+         WHERE ((d >= ("min_seq" * 9.5E-1)) AND (d <= ("max_seq" * 1.05E0)))
+      )
+      SELECT
+        c.*
+      , (CASE WHEN ("usage_amount_od" <> 0) THEN ("cost_od_unblended" / "usage_amount_od") ELSE null END) "unit_cost_od_unblended"
+      , (CASE WHEN ("usage_amount_od" <> 0) THEN ("cost_od_net_unblended" / "usage_amount_od") ELSE null END) "unit_cost_od_net_unblended"
+      , (CASE WHEN ("usage_amount_reserved" <> 0) THEN ("cost_reserved" / "usage_amount_reserved") ELSE null END) "unit_cost_reserved"
+      , (CASE WHEN ("usage_amount_total" <> 0) THEN (("cost_reserved" + "cost_od_unblended") / "usage_amount_total") ELSE null END) "unit_cost_combined_unblended"
+      , (CASE WHEN ("usage_amount_total" <> 0) THEN (("cost_reserved" + "cost_od_net_unblended") / "usage_amount_total") ELSE null END) "unit_cost_combined_net_unblended"
+      , "reservation_count"
+      , "current_reservation_count"
+      , "reservation_count_candidate"
+      , "last_refresh_date"
+      FROM
+        ((((core c
+      LEFT JOIN "candidate_concur_seq" cs ON ((c."linked_account_id" = cs."linked_account_id") AND (c."usage_profile" = cs."usage_profile")))
+      LEFT JOIN "ri_inventory" r ON ((c."usage_profile" = r."usage_profile") AND (c."linked_account_id" = r."linked_account_id") AND (c."usage_time" = r."usage_time")))
+      LEFT JOIN "latest_reservation_count" rl ON ((c."usage_profile" = rl."usage_profile") AND (c."linked_account_id" = rl."linked_account_id")))
+      INNER JOIN (
+         SELECT
+           "bill_payer_account_id"
          , MAX("line_item_usage_start_date") "last_refresh_date"
          FROM
-           "cur_base"
+           "${cur2_database}"."${cur2_table_name}"
          WHERE ("line_item_usage_start_date" <= (date_trunc('day', current_timestamp) - INTERVAL  '0' DAY))
          GROUP BY 1
-      )  ts ON ("bill_payer_account_id" = "payer_account_id"))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39
+      )  ts ON ("bill_payer_account_id" = c."payer_account_id"))

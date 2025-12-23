@@ -1,5 +1,10 @@
 # What's new in the Media Services Insights Hub (MSIH)
 
+## Media Services Insights Hub - v1.2.0
+* Hourly-based analysis for fine tuning reservations
+* UI enhncements
+* Requires --force --recursive for updating to incorporate dataset changes
+
 ## Media Services Insights Hub - v1.1.3
 * Improve the reservation purchase recommendation calculation.
 
