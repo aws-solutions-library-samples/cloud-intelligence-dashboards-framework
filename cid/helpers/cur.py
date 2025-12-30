@@ -209,7 +209,7 @@ class AbstractCUR(CidBase):
                         ''',
                         database=self.database,
                     )
-                    max_width = max(len(str(line[0])) for line in res)
+                    max_width = max(len(str(line[0])) for line in res) if res else 0
                     cid_print(f' <BOLD>{tag_type:<{max_width}} | Distinct Values <END> ')
                     for line in res:
                         if int(line[1]) > 10:
