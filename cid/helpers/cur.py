@@ -189,7 +189,9 @@ class AbstractCUR(CidBase):
             for tag_type in ['resource_tags', 'cost_category', 'tags']:
                 if tag_type not in self.fields:
                     logging.debug(f'skipping {tag_type} scan')
-                cid_print(f'Scanning {tag_type} in {self.table_name}.')
+
+                display_name = "Account Tags" if tag_type == "tags" else tag_type
+                cid_print(f'Scanning {display_name} in {self.table_name}.')
                 try:
                     if tag_type == 'tags':
                         # For comprehensive tags column, filter only account tags
@@ -234,12 +236,13 @@ class AbstractCUR(CidBase):
                             database=self.database,
                         )
                     max_width = max(len(str(line[0])) for line in res) if res else 0
-                    cid_print(f' <BOLD>{tag_type:<{max_width}} | Distinct Values <END> ')
-                    for line in res:
-                        if int(line[1]) > 10:
-                            name = line[0]
-                            name = name.replace('user_', '').replace('accountTag/', '')
-                            cid_print(f' <BOLD>{name:<{max_width}}<END> | {line[1]} ')
+                    cid_print(f' <BOLD>{display_name:<{max_width}} | Distinct Values (Top 20) <END> ')
+
+                    # Show top 20 tags by cardinality, regardless of count
+                    for line in res[:20]:
+                        name = line[0]
+                        name = name.replace('user_', '').replace('accountTag/', '')
+                        cid_print(f' <BOLD>{name:<{max_width}}<END> | {line[1]} ')
 
                     self._tag_and_cost_category += sorted([f"{tag_type}['{line[0]}']" for line in res])
                 except (self.athena.client.exceptions.ClientError, CidCritical, ValueError) as exc:
@@ -252,6 +255,9 @@ class AbstractCUR(CidBase):
                             cid_print(f'Column "{tag_type}" not found in {self.table_name}. Skipping {tag_type} discovery.')
                     else:
                         cid_print(f'Failed to read {tag_type} from {self.table_name}: "{exc}". Will continue without.')
+
+                # Add empty line between sections
+                cid_print('')
             return self._tag_and_cost_category
         else:
             raise NotImplemented('cur version not known')
