@@ -104,7 +104,7 @@ class AbstractCUR(CidBase):
 
     def get_type_of_column(self, column: str, version=None):
         """ Return an Athena type of a given non existent CUR column """
-        if column.startswith('cost_category_') or column.startswith('resource_tags_'):
+        if column.startswith('cost_category_') or column.startswith('resource_tags_') or column.startswith('tags_'):
             return 'STRING'
         for ending in ['_cost', '_factor', '_quantity', '_fee', '_amount', '_discount', '_usage', '_usage_ratio']:
             if column.endswith(ending):
@@ -118,6 +118,7 @@ class AbstractCUR(CidBase):
             "discount": "MAP",
             "product": "MAP",
             "resource_tags": "MAP",
+            "tags": "MAP",
             "reservation_amortized_upfront_fee_for_billing_period": "DOUBLE",
             "reservation_unused_amortized_upfront_fee_for_billing_period": "DOUBLE",
             "reservation_upfront_value": "DOUBLE",
@@ -185,40 +186,72 @@ class AbstractCUR(CidBase):
 
             self._tag_and_cost_category = []
             number_of_rows_scanned = 500000 # empiric value
-            for tag_type in ['resource_tags', 'cost_category']:
+            for tag_type in ['resource_tags', 'cost_category', 'tags']:
                 if tag_type not in self.fields:
                     logging.debug(f'skipping {tag_type} scan')
                 cid_print(f'Scanning {tag_type} in {self.table_name}.')
                 try:
-                    res = self.athena.query(
-                        sql=f'''
-                            SELECT
-                                key,
-                                COUNT(DISTINCT value) as unique_values
-                            FROM (
-                                SELECT {tag_type}
-                                FROM "{self.database}"."{self.table_name}"
-                                WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
-                                AND line_item_usage_start_date > DATE_ADD('day', -60, CURRENT_DATE)
-                                AND cardinality({tag_type}) > 0
-                                LIMIT {number_of_rows_scanned}
-                            ) t
-                            CROSS JOIN UNNEST({tag_type}) AS t(key, value)
-                            GROUP BY key
-                            ORDER BY unique_values DESC;
-                        ''',
-                        database=self.database,
-                    )
+                    if tag_type == 'tags':
+                        # For comprehensive tags column, filter only account tags
+                        res = self.athena.query(
+                            sql=f'''
+                                SELECT
+                                    key,
+                                    COUNT(DISTINCT value) as unique_values
+                                FROM (
+                                    SELECT {tag_type}
+                                    FROM "{self.database}"."{self.table_name}"
+                                    WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
+                                    AND line_item_usage_start_date > DATE_ADD('day', -60, CURRENT_DATE)
+                                    AND cardinality({tag_type}) > 0
+                                    LIMIT {number_of_rows_scanned}
+                                ) t
+                                CROSS JOIN UNNEST({tag_type}) AS t(key, value)
+                                WHERE key LIKE 'accountTag/%'
+                                GROUP BY key
+                                ORDER BY unique_values DESC;
+                            ''',
+                            database=self.database,
+                        )
+                    else:
+                        res = self.athena.query(
+                            sql=f'''
+                                SELECT
+                                    key,
+                                    COUNT(DISTINCT value) as unique_values
+                                FROM (
+                                    SELECT {tag_type}
+                                    FROM "{self.database}"."{self.table_name}"
+                                    WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
+                                    AND line_item_usage_start_date > DATE_ADD('day', -60, CURRENT_DATE)
+                                    AND cardinality({tag_type}) > 0
+                                    LIMIT {number_of_rows_scanned}
+                                ) t
+                                CROSS JOIN UNNEST({tag_type}) AS t(key, value)
+                                GROUP BY key
+                                ORDER BY unique_values DESC;
+                            ''',
+                            database=self.database,
+                        )
                     max_width = max(len(str(line[0])) for line in res) if res else 0
                     cid_print(f' <BOLD>{tag_type:<{max_width}} | Distinct Values <END> ')
                     for line in res:
                         if int(line[1]) > 10:
                             name = line[0]
-                            name = name.replace('user_', '')
+                            name = name.replace('user_', '').replace('accountTag/', '')
                             cid_print(f' <BOLD>{name:<{max_width}}<END> | {line[1]} ')
+
                     self._tag_and_cost_category += sorted([f"{tag_type}['{line[0]}']" for line in res])
                 except (self.athena.client.exceptions.ClientError, CidCritical, ValueError) as exc:
-                    logger.error(f'Failed to read {tag_type} from {self.table_name}: "{exc}". Will continue without.')
+                    if 'COLUMN_NOT_FOUND' in str(exc):
+                        if tag_type == 'tags':
+                            cid_print(f'Column "{tag_type}" not found in {self.table_name}. Tags column, which contains Account level Tags, is only available in CUR2. To access Account Tags in CID, update the CID stack at payer account(s) to include "Tag" column in the CUR2 data export. Skipping account tags discovery.')
+                        elif tag_type == 'cost_category':
+                            cid_print(f'Column "{tag_type}" not found in {self.table_name}. Cost Categories are not available in this CUR table. Skipping cost categories discovery.')
+                        else:
+                            cid_print(f'Column "{tag_type}" not found in {self.table_name}. Skipping {tag_type} discovery.')
+                    else:
+                        cid_print(f'Failed to read {tag_type} from {self.table_name}: "{exc}". Will continue without.')
             return self._tag_and_cost_category
         else:
             raise NotImplemented('cur version not known')
