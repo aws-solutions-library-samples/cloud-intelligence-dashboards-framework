@@ -6,6 +6,7 @@ CREATE OR REPLACE VIEW resource_view AS
       , "line_item_usage_account_id" "linked_account_id"
       , "bill_billing_entity" "billing_entity"
       , product['product_name'] "product_name"
+      , resource_tags['user_name'] "resource_name"
       , "line_item_resource_id" "resource_id"
       , "line_item_product_code" "product_code"
       , "line_item_operation" "operation"
@@ -40,4 +41,4 @@ CREATE OR REPLACE VIEW resource_view AS
         (((current_date - INTERVAL  '30' DAY) <= line_item_usage_start_date)
         AND (line_item_resource_id <> '')
         AND coalesce("line_item_operation", '') NOT IN ('EKSPod-EC2','ECSTask-EC2'))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
