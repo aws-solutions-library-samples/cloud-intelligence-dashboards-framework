@@ -42,6 +42,9 @@ CalculatedFields:
     )
   Name: Reservation Profile
 - DataSetIdentifier: msih_reservation_optimize
+  Expression: 'concat({eml_linked_account_option}, " : ", {Reservation Profile}) '
+  Name: Reservation Profile Account Owner
+- DataSetIdentifier: msih_reservation_optimize
   Expression: |-
     ifelse(
         operation = "CHANNEL_INPUT", "Input",
@@ -68,25 +71,61 @@ CalculatedFields:
   Expression: '{reservation_count_candidate} - {current_reservation_count}'
   Name: buy_new_count
 - DataSetIdentifier: msih_reservation_optimize
-  Expression: ifelse(${IncludePricingAdjustments} = "Yes", {cost_total_net_unblended},
-    {cost_total_unblended})
+  Expression: |-
+    ifelse(
+        minOver(1-{cost_reserved}/{cost_public}, [{Linked Account}, {Reservation Profile}], PRE_FILTER) < 1, minOver(1-{cost_reserved}/{cost_public}, [{Linked Account}, {Reservation Profile}], PRE_FILTER),
+        minOver(1-{cost_reserved}/{cost_public}, [{Linked Account}], PRE_FILTER) < 1, minOver(1-{cost_reserved}/{cost_public}, [{Linked Account}], PRE_FILTER),
+        ${EmlReservationSavingRate}
+    )
+  Name: calc_reservation_discount
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: ifelse({usage_amount_reserved} > {reservation_count}, {usage_amount_reserved},
+    {reservation_count}) * {calc_unit_cost_reserved}
+  Name: calc_reserved_true_cost
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: |-
+    ifelse(
+        maxOver({unit_cost_od}, [{Linked Account}, {Reservation Profile}], PRE_FILTER) > 0, maxOver({unit_cost_od}, [{Linked Account}, {Reservation Profile}], PRE_FILTER),
+        {cost_public} / {usage_amount_total}
+    ) * ifelse(${IncludePricingAdjustments} = "Yes", ${DiscCoefficient}, 1)
+  Name: calc_unit_cost_od
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: |-
+    ifelse(
+        maxOver({unit_cost_reserved}, [{Linked Account}, {Reservation Profile}], PRE_FILTER) > 0, maxOver({unit_cost_reserved}, [{Linked Account}, {Reservation Profile}], PRE_FILTER),
+        {cost_public} / {usage_amount_total} * ${EmlReservationSavingRate}
+    ) * ifelse(${IncludePricingAdjustments} = "Yes", ${DiscCoefficient}, 1)
+  Name: calc_unit_cost_reserved
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: ifelse(${IncludePricingAdjustments} = "Yes", {cost_od_net_unblended},
+    {cost_od_unblended}) + {calc_reserved_true_cost}
   Name: cost_total
 - DataSetIdentifier: msih_reservation_optimize
   Expression: ({usage_amount_total} * {unit_cost_od}) - {cost_reserved}
   Name: current_savings
 - DataSetIdentifier: msih_reservation_optimize
+  Expression: ifelse(${ReservationLevel} = "Payer", "(payer)", {Linked Account})
+  Name: eml_linked_account_option
+- DataSetIdentifier: msih_reservation_optimize
   Expression: dateDiff({usage_time}, {last_refresh_date}) < ${EmlLookbackDays}
   Name: is_hourly_lookback_window
 - DataSetIdentifier: msih_reservation_optimize
   Expression: ifelse({usage_amount_total} >= {reservation_count_candidate}, {usage_amount_total}
-    - {reservation_count_candidate}, 0) * {unit_cost_od}
+    - {reservation_count_candidate}, 0) * {calc_unit_cost_od}
   Name: range_cost_od
 - DataSetIdentifier: msih_reservation_optimize
-  Expression: "{reservation_count_candidate} * {unit_cost_reserved}\t"
+  Expression: '{usage_amount_total} * {calc_unit_cost_od}'
+  Name: range_cost_od_max
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: '{reservation_count_candidate} * {calc_unit_cost_reserved}'
   Name: range_cost_reserved
 - DataSetIdentifier: msih_reservation_optimize
   Expression: '{range_cost_od} + {range_cost_reserved}'
   Name: range_cost_total
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: ifelse({usage_amount_total} >= {reservation_count_candidate}, {usage_amount_total}
+    - {reservation_count_candidate}, 0)
+  Name: range_hours_od
 - DataSetIdentifier: msih_reservation_optimize
   Expression: ifelse(maxOver(sum({range_total_savings}), [{Linked Account}, {Reservation
     Profile}]) = maxOver(sum({range_total_savings}), [{Linked Account}, {Reservation
@@ -97,37 +136,48 @@ CalculatedFields:
     Profile}])
   Name: range_max_potential_savings
 - DataSetIdentifier: msih_reservation_optimize
-  Expression: '{range_total_savings} - {current_savings}'
-  Name: range_new_savings
-- DataSetIdentifier: msih_reservation_optimize
-  Expression: ifelse(${IncludePricingAdjustments} = "Yes", {cost_total_net_unblended},
-    {cost_total_unblended}) - {range_cost_total}
+  Expression: |-
+    /*{cost_total} - {range_cost_total}*/
+    {range_cost_od_max} - {range_cost_total}
   Name: range_total_savings
 - DataSetIdentifier: msih_reservation_optimize
-  Expression: sum({range_cost_total}) / sum({usage_amount_total})
-  Name: range_unit_cost
-- DataSetIdentifier: msih_reservation_optimize
-  Expression: |-
-    minOver(sum({cost_total}), [{Linked Account}, {Reservation Profile}])
+  Expression: '{cost_total}/{total_reservation_candidates}'
   Name: scenario_actual_cost
 - DataSetIdentifier: msih_reservation_optimize
-  Expression: '{scenario_actual_cost} - {scenario_total_cost}'
+  Expression: '{usage_amount_total}/{total_reservation_candidates}'
+  Name: scenario_actual_usage_amount
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: '{scenario_total_cost} - {scenario_actual_cost}'
   Name: scenario_cost_delta
 - DataSetIdentifier: msih_reservation_optimize
-  Expression: |-
-    /*(minOver(min({usage_amount_total}), [{Linked Account}, {Reservation Profile}]) - ${EmlReservationTargetScenario}) * minOver(min({unit_cost_od}), [{Linked Account}, {Reservation Profile}])*/
-    (sumOver(avg(ifelse({usage_amount_total} >= ${EmlReservationTargetScenario}, {usage_amount_total} - ${EmlReservationTargetScenario}, 0)), [{Linked Account}, {Reservation Profile}]) ) * minOver(min({unit_cost_od}), [{Linked Account}, {Reservation Profile}])
-  Name: scenario_od_cost
+  Expression: '{scenario_hours_od} * {scenario_unit_cost_od} '
+  Name: scenario_cost_od
 - DataSetIdentifier: msih_reservation_optimize
-  Expression: sumOver(min({unit_cost_reserved}), [{Linked Account}, {Reservation Profile}])
-    * ${EmlReservationTargetScenario}
-  Name: scenario_reserved_cost
+  Expression: '{scenario_target} * {calc_unit_cost_reserved} / {total_reservation_candidates}'
+  Name: scenario_cost_reserved
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: ifelse({usage_amount_total} >= ${EmlReservationTargetScenario}, {usage_amount_total}
+    - ${EmlReservationTargetScenario}, 0) / {reservation_count_candidate}
+  Name: scenario_hours_od
 - DataSetIdentifier: msih_reservation_optimize
   Expression: ${EmlReservationTargetScenario}
   Name: scenario_target
 - DataSetIdentifier: msih_reservation_optimize
-  Expression: '{scenario_od_cost} + {scenario_reserved_cost}'
+  Expression: |-
+    {scenario_cost_od} + {scenario_cost_reserved}
   Name: scenario_total_cost
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: |-
+    ifelse(
+        maxOver({unit_cost_od}, [{Linked Account}, {Reservation Profile}], PRE_FILTER) > 0, maxOver({unit_cost_od}, [{Linked Account}, {Reservation Profile}], PRE_FILTER),
+        {cost_public}/{usage_amount_total}*ifelse(${IncludePricingAdjustments} = "Yes", ${DiscCoefficient}, 1)
+    )
+  Name: scenario_unit_cost_od
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: |-
+    floor(sum({usage_amount_total}, [concat({linked_account_id}, {Reservation Profile}, formatDate({usage_time}, "yyyyMMdd'T'HHmmss"))]
+    ))
+  Name: t
 - DataSetIdentifier: msih_reservation_optimize
   Expression: ifelse(${IncludePricingAdjustments} = "Yes", {unit_cost_combined_net_unblended},
     {unit_cost_combined_unblended})
@@ -136,6 +186,9 @@ CalculatedFields:
   Expression: ifelse(${IncludePricingAdjustments} = "Yes", {unit_cost_od_net_unblended},
     {unit_cost_od_unblended})
   Name: unit_cost_od
+- DataSetIdentifier: msih_reservation_optimize
+  Expression: '{unit_cost_reserved} * .85'
+  Name: unit_cost_reserved_disc
 - DataSetIdentifier: msih_reservation_optimize
   Expression: '{usage_profile}'
   Name: usage_type
@@ -530,6 +583,9 @@ CalculatedFields:
     )
   Name: Reservation Profile
 - DataSetIdentifier: msih_view
+  Expression: 'concat({eml_linked_account_option}, " : ", {Reservation Profile})'
+  Name: Reservation Profile Account Owner
+- DataSetIdentifier: msih_view
   Expression: |-
     ifelse(
         contains({product_code}, "MediaLive"), {EML Unique Channel Name},
@@ -697,6 +753,9 @@ CalculatedFields:
   Expression: dateDiff({usage_date}, {last_refresh_date}, "DD") < ${EmlLookbackDays}
   Name: eml_is_hourly_lookback_window
 - DataSetIdentifier: msih_view
+  Expression: ifelse(${ReservationLevel} = "Payer", "(payer)", {Linked Account})
+  Name: eml_linked_account_option
+- DataSetIdentifier: msih_view
   Expression: 'sumOver(sum({usage_quantity} / {days_in_month}), [{billing_period},
     {Reservation Profile}]) '
   Name: eml_reservation_profile_hours_per_day
@@ -710,7 +769,7 @@ CalculatedFields:
   Name: eml_unit_cost_by_reservation_profile
 - DataSetIdentifier: msih_view
   Expression: |-
-    floor(sum(ifelse({charge_type} <> "RIFee" and strlen({Reservation Profile}) > 0 and {is_eml_idle} = 0, {usage_quantity}, 0),
+    floor(sum(ifelse({charge_type} <> "RIFee" and strlen({Reservation Profile}) > 0 and {is_eml_idle} = 0, {usage_quantity} / ifelse(({usage_date}) > ({first_hourly_date}), 1, 24), 0),
         [concat({linked_account_id}, {Reservation Profile}, formatDate({usage_date}, "yyyyMMdd'T'HHmmss"))]
     ))
   Name: eml_usage_amount_by_profile_per_hour
@@ -724,6 +783,10 @@ CalculatedFields:
     //sumOver(sum(ifelse({EML Reservation Status} = "Active" and truncDate("MM", {billing_period}) = truncDate("MM", now()) , {reservation_count}, 0)), [{Linked Account},{Reservation Profile}])
     sumOver((ifelse({EML Reservation Status} = "Active" and truncDate("MM", {billing_period}) = truncDate("MM", now()) , {reservation_count}, 0)), [{Linked Account},{Reservation Profile}], PRE_FILTER)
   Name: existing_reservation_count
+- DataSetIdentifier: msih_view
+  Expression: minOver(ifelse(extract("HH", {usage_date}) = 1, {usage_date}, null),
+    [{product_code}], PRE_AGG)
+  Name: first_hourly_date
 - DataSetIdentifier: msih_view
   Expression: parseInt(substring(formatDate({usage_date}, "dd/MM/yyyy HH:mm:ss"),
     12, 2))
@@ -5807,9 +5870,48 @@ FilterGroups:
         DataSetIdentifier: msih_view
       Configuration:
         CustomFilterListConfiguration:
+          CategoryValues:
+          - 'In : Single Pipe : AVC Codec : HD : 10 mbps'
+          - 'In : Single Pipe : AVC Codec : HD : 20 mbps'
+          - 'In : Single Pipe : us-east-1 : AVC Codec : HD : 10 mbps'
+          - 'In : Single Pipe : us-east-1 : AVC Codec : HD : 20 mbps'
+          - 'In : Standard Pipe : IDLE'
+          - 'In : Standard Pipe : eu-west-1 : IDLE'
+          - 'In : Standard Pipe : us-east-1 : IDLE'
+          - 'In : Standard Pipe : us-east-2 : IDLE'
+          - 'In : Standard Pipe : us-west-2 : IDLE'
+          - 'Out : Single Pipe : AVC Codec : HD : 10 mbps : 30 fps : Standard Qlty.'
+          - 'Out : Single Pipe : AVC Codec : HD : 10 mbps : 60 fps : Standard Qlty.'
+          - 'Out : Single Pipe : AVC Codec : HD : 20 mbps : 60 fps : Standard Qlty.'
+          - 'Out : Single Pipe : AVC Codec : HD : 30 fps : Enhanced Qlty.'
+          - 'Out : Single Pipe : AVC Codec : SD : 10 mbps : 30 fps : Standard Qlty.'
+          - 'Out : Single Pipe : AVC Codec : SD : 10 mbps : 60 fps : Standard Qlty.'
+          - 'Out : Single Pipe : AVC Codec : SD : 30 fps : Enhanced Qlty.'
+          - 'Out : Single Pipe : Audio-only Codec'
+          - 'Out : Single Pipe : us-east-1 : AVC Codec : HD : 10 mbps : 30 fps : Standard
+            Qlty.'
+          - 'Out : Single Pipe : us-east-1 : AVC Codec : HD : 10 mbps : 60 fps : Standard
+            Qlty.'
+          - 'Out : Single Pipe : us-east-1 : AVC Codec : HD : 20 mbps : 60 fps : Standard
+            Qlty.'
+          - 'Out : Single Pipe : us-east-1 : AVC Codec : SD : 10 mbps : 30 fps : Standard
+            Qlty.'
+          - 'Out : Single Pipe : us-east-1 : Audio-only Codec'
+          - 'Out : Single Pipe : us-west-2 : AVC Codec : HD : 10 mbps : 30 fps : Standard
+            Qlty.'
+          - 'Out : Single Pipe : us-west-2 : AVC Codec : HD : 10 mbps : 60 fps : Standard
+            Qlty.'
+          - 'Out : Single Pipe : us-west-2 : AVC Codec : HD : 20 mbps : 60 fps : Standard
+            Qlty.'
+          - 'Out : Single Pipe : us-west-2 : AVC Codec : HD : 30 fps : Enhanced Qlty.'
+          - 'Out : Single Pipe : us-west-2 : AVC Codec : SD : 10 mbps : 30 fps : Standard
+            Qlty.'
+          - 'Out : Single Pipe : us-west-2 : AVC Codec : SD : 10 mbps : 60 fps : Standard
+            Qlty.'
+          - 'Out : Single Pipe : us-west-2 : AVC Codec : SD : 30 fps : Enhanced Qlty.'
+          - 'In : Single Pipe : us-west-2 : AVC Codec : HD : 20 mbps'
           MatchOperator: CONTAINS
           NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
       FilterId: 83e8e98c-b79a-412b-b46f-25a94f00d7ed
   ScopeConfiguration:
     SelectedSheets:
@@ -6296,7 +6398,7 @@ FilterGroups:
         - b170387f-88dd-4b5c-bac8-8f83407f6759
         - 0a347fd6-a33c-45c1-8d9f-3ef4352dab54
         - 82e24148-3d62-4932-9143-8ece64c188c8
-        - 60ce0d47-dfb9-4202-b799-621b42c34284
+        - e28b7e9b-6c48-4114-bd4e-372af59d81d6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 7bf32441-0aef-430d-afb9-6ca6701b2b35
@@ -6345,7 +6447,7 @@ FilterGroups:
         - 29a443a8-33c3-4cfb-8f35-87763caae38a
         - 00305a71-ca16-46bc-bd62-2c0ee9636b30
         - 82e24148-3d62-4932-9143-8ece64c188c8
-        - 60ce0d47-dfb9-4202-b799-621b42c34284
+        - e28b7e9b-6c48-4114-bd4e-372af59d81d6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: e7cd82e9-89f6-4094-b1dd-a7696ccd3402
@@ -6368,28 +6470,6 @@ FilterGroups:
         VisualIds:
         - b170387f-88dd-4b5c-bac8-8f83407f6759
   Status: DISABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: ded775e8-a83c-4f2a-8afc-7c2cbf32d861
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: charge_type
-        DataSetIdentifier: msih_view
-      Configuration:
-        FilterListConfiguration:
-          CategoryValues:
-          - RIFee
-          MatchOperator: DOES_NOT_CONTAIN
-          NullOption: NON_NULLS_ONLY
-      FilterId: f5bfd36e-7a63-40ae-99c2-f83289df3045
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
-        VisualIds:
-        - b170387f-88dd-4b5c-bac8-8f83407f6759
-  Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 32a1b4a9-2cfa-4abb-9345-72b2ede7876b
   Filters:
@@ -6493,48 +6573,32 @@ FilterGroups:
         - 29a443a8-33c3-4cfb-8f35-87763caae38a
         - 00305a71-ca16-46bc-bd62-2c0ee9636b30
         - 82e24148-3d62-4932-9143-8ece64c188c8
-        - 60ce0d47-dfb9-4202-b799-621b42c34284
+        - e28b7e9b-6c48-4114-bd4e-372af59d81d6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
-  FilterGroupId: c3ec4b15-5ffc-4f7a-9db4-25bd2327bad9
+  FilterGroupId: 530e8f5e-e0b7-45b6-bd80-ce1c96d685a0
   Filters:
-  - NumericRangeFilter:
+  - TimeRangeFilter:
       Column:
-        ColumnName: reservation_count_candidate
+        ColumnName: usage_time
         DataSetIdentifier: msih_reservation_optimize
-      FilterId: 0e08c3ec-e9a3-4b79-96b5-e10ffe51c0ac
+      FilterId: 61693c93-5b3d-49e4-a878-97a2706cb4df
       IncludeMaximum: false
       IncludeMinimum: true
-      NullOption: ALL_VALUES
-      RangeMinimum:
-        Parameter: EmlReservationTargetMinByProfile
+      NullOption: NON_NULLS_ONLY
+      RangeMaximumValue:
+        StaticValue: 2025-12-27 19:00:00-05:00
+      RangeMinimumValue:
+        StaticValue: 2025-12-26 19:00:00-05:00
+      TimeGranularity: DAY
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
         SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
         VisualIds:
-        - 82e24148-3d62-4932-9143-8ece64c188c8
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: b665b8af-d2c5-415e-86db-5923ca769d5d
-  Filters:
-  - NumericEqualityFilter:
-      Column:
-        ColumnName: range_is_reservation_sweet_spot
-        DataSetIdentifier: msih_reservation_optimize
-      FilterId: 00029e77-453d-4e1a-ade7-f9a35b6f23e8
-      MatchOperator: EQUALS
-      NullOption: ALL_VALUES
-      Value: 1.0
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
-        VisualIds:
-        - 60ce0d47-dfb9-4202-b799-621b42c34284
-  Status: ENABLED
+        - e28b7e9b-6c48-4114-bd4e-372af59d81d6
+  Status: DISABLED
 Options: {}
 ParameterDeclarations:
 - DecimalParameterDeclaration:
@@ -6550,6 +6614,14 @@ ParameterDeclarations:
       StaticValues:
       - 0.358
     Name: Todcost
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- DecimalParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - 0.85
+    Name: DiscCoefficient
     ParameterValueType: SINGLE_VALUED
     ValueWhenUnset:
       ValueWhenUnsetOption: RECOMMENDED_VALUE
@@ -6658,7 +6730,7 @@ ParameterDeclarations:
 - StringParameterDeclaration:
     DefaultValues:
       StaticValues:
-      - 'Yes'
+      - 'No'
     Name: IncludePricingAdjustments
     ParameterValueType: SINGLE_VALUED
     ValueWhenUnset:
@@ -6814,6 +6886,14 @@ ParameterDeclarations:
       StaticValues:
       - select an account and profile
     Name: EmlReservationTargetAccount
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Payer
+    Name: ReservationLevel
     ParameterValueType: SINGLE_VALUED
     ValueWhenUnset:
       ValueWhenUnsetOption: RECOMMENDED_VALUE
@@ -9541,28 +9621,19 @@ Sheets:
       Type: MULTI_SELECT
   - Dropdown:
       DisplayOptions:
-        SelectAllOptions:
-          Visibility: VISIBLE
-      FilterControlId: 434fdae8-5bae-4e87-821b-b7a4126f4a3a
-      SourceFilterId: 581847dc-cf9e-4727-9a7e-e4b024960a49
-      Title: video_codec equals
-      Type: MULTI_SELECT
-  - Slider:
-      DisplayOptions:
         InfoIconLabelOptions:
           Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
         TitleOptions:
           FontConfiguration:
             FontSize:
-              Relative: LARGE
+              Relative: MEDIUM
           Visibility: VISIBLE
-      FilterControlId: 0a58170a-9870-4eab-84db-4497fb2c384b
-      MaximumValue: 100.0
-      MinimumValue: 0.0
-      SourceFilterId: ba45f1e1-e0fe-4ff8-8c76-6ee3bab308b7
-      StepSize: 1.0
-      Title: Reservation Utilization Threshold %
-      Type: SINGLE_POINT
+      FilterControlId: 434fdae8-5bae-4e87-821b-b7a4126f4a3a
+      SourceFilterId: 581847dc-cf9e-4727-9a7e-e4b024960a49
+      Title: Codec
+      Type: MULTI_SELECT
   Layouts:
   - Configuration:
       GridLayout:
@@ -9662,15 +9733,9 @@ Sheets:
           RowIndex: 37
           RowSpan: 10
         - ColumnIndex: 0
-          ColumnSpan: 29
+          ColumnSpan: 36
           ElementId: d51c35cd-d554-4639-82ec-713b929e75a6
           ElementType: TEXT_BOX
-          RowIndex: 47
-          RowSpan: 6
-        - ColumnIndex: 29
-          ColumnSpan: 7
-          ElementId: 0a58170a-9870-4eab-84db-4497fb2c384b
-          ElementType: FILTER_CONTROL
           RowIndex: 47
           RowSpan: 6
         - ColumnIndex: 0
@@ -9726,78 +9791,78 @@ Sheets:
           ElementId: 3f2bab35-3767-4932-b8ea-b11eec5dcdae
           ElementType: TEXT_BOX
           RowIndex: 89
-          RowSpan: 6
+          RowSpan: 11
         - ColumnIndex: 0
-          ColumnSpan: 18
-          ElementId: 7474bc8e-886d-42ec-a9df-cd53805e1829
-          ElementType: VISUAL
-          RowIndex: 95
-          RowSpan: 13
-        - ColumnIndex: 18
-          ColumnSpan: 18
+          ColumnSpan: 6
+          ElementId: 83bc37ed-0a82-4aa8-aa80-fbc9f1399c6e
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 100
+          RowSpan: 3
+        - ColumnIndex: 6
+          ColumnSpan: 12
           ElementId: de4c06e6-11c6-4f4c-8ad2-a902e2c8c2e5
           ElementType: PARAMETER_CONTROL
-          RowIndex: 95
+          RowIndex: 100
           RowSpan: 3
         - ColumnIndex: 18
           ColumnSpan: 18
+          ElementId: 7474bc8e-886d-42ec-a9df-cd53805e1829
+          ElementType: VISUAL
+          RowIndex: 100
+          RowSpan: 11
+        - ColumnIndex: 0
+          ColumnSpan: 18
           ElementId: b62f9d82-0ab3-40f5-a9bf-dc604ad9c176
           ElementType: VISUAL
-          RowIndex: 98
-          RowSpan: 10
-        - ColumnIndex: 0
-          ColumnSpan: 36
-          ElementId: 9d809ff1-0fbd-41a6-9133-ab9d612e6e7b
-          ElementType: TEXT_BOX
-          RowIndex: 108
-          RowSpan: 7
+          RowIndex: 103
+          RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: b170387f-88dd-4b5c-bac8-8f83407f6759
           ElementType: VISUAL
-          RowIndex: 115
+          RowIndex: 111
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 29a443a8-33c3-4cfb-8f35-87763caae38a
           ElementType: VISUAL
-          RowIndex: 124
+          RowIndex: 120
           RowSpan: 6
-        - ColumnIndex: 0
-          ColumnSpan: 36
-          ElementId: 82e24148-3d62-4932-9143-8ece64c188c8
-          ElementType: VISUAL
-          RowIndex: 130
-          RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 00305a71-ca16-46bc-bd62-2c0ee9636b30
           ElementType: VISUAL
-          RowIndex: 140
+          RowIndex: 126
+          RowSpan: 8
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 82e24148-3d62-4932-9143-8ece64c188c8
+          ElementType: VISUAL
+          RowIndex: 134
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: effbe11f-ef68-4976-90b5-32abcd2c3a34
           ElementType: PARAMETER_CONTROL
-          RowIndex: 148
+          RowIndex: 142
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 60ce0d47-dfb9-4202-b799-621b42c34284
+          ElementId: e28b7e9b-6c48-4114-bd4e-372af59d81d6
           ElementType: VISUAL
-          RowIndex: 151
-          RowSpan: 5
+          RowIndex: 145
+          RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 613ea48a-7412-4b6d-9714-237a69ef839b
           ElementType: TEXT_BOX
-          RowIndex: 156
+          RowIndex: 151
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 0a347fd6-a33c-45c1-8d9f-3ef4352dab54
           ElementType: VISUAL
-          RowIndex: 159
+          RowIndex: 154
           RowSpan: 14
   Name: MediaLive Reservation & Savings
   ParameterControls:
@@ -9822,6 +9887,27 @@ Sheets:
       SourceParameterName: EmlReservationStatus
       Title: Status
       Type: MULTI_SELECT
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: LARGE
+          Visibility: VISIBLE
+      ParameterControlId: 83bc37ed-0a82-4aa8-aa80-fbc9f1399c6e
+      SelectableValues:
+        Values:
+        - Linked
+        - Payer
+      SourceParameterName: ReservationLevel
+      Title: Reservation Owner Account
+      Type: SINGLE_SELECT
   - Dropdown:
       DisplayOptions:
         InfoIconLabelOptions:
@@ -9878,6 +9964,23 @@ Sheets:
       SourceParameterName: EmlReservationUtilizationStat
       Title: Statistical Method
       Type: SINGLE_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 3916b974-c284-4249-80e8-acca3e769bfe
+      SelectableValues:
+        Values:
+        - Amortized
+        - Invoice
+      SourceParameterName: CostModel
+      Title: Cost Model
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         InfoIconLabelOptions:
@@ -9924,6 +10027,54 @@ Sheets:
       SourceParameterName: EmlReservationTargetScenario
       StepSize: 1.0
       Title: Target Total Reservations (including existing)
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnSpan: 3
+          ElementId: ee98c904-1cc8-49b7-9d98-d1c0b6b4ba8b
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: c89d2be5-2c90-41b4-afb9-24e1c4e7f78e
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: 816820f9-485a-42e1-8c45-9a51361ff46a
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: e185c0cd-c3b6-49c1-89ce-819728f175a3
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: b7e883dd-55a1-470a-8e07-dbc5897898aa
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: 83a89852-9ab4-483c-a820-12d4bf06c294
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: 48950c30-205a-42ac-b827-159234f339d9
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: 7eceadb2-b2d4-4136-a22d-c98353660c89
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: 90a1da51-6c5b-4089-9b71-20af95f3c79d
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: 434fdae8-5bae-4e87-821b-b7a4126f4a3a
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 3916b974-c284-4249-80e8-acca3e769bfe
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
   SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
   TextBoxes:
   - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AEML\_\
@@ -9997,7 +10148,32 @@ Sheets:
       \    <a href=\"https://docs.aws.amazon.com/medialive/latest/ug/purchasing-reservations.html\"\
       \ target=\"_blank\">\n          <b>\n            <i>\n              <u>Purchasing\
       \ Elemental MediaLive reservations</u>\n            </i>\n          </b>\n \
-      \       </a>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
+      \       </a>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n \
+      \     <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>The Minimum\
+      \ number represents the lowest concurrent usage rate of channels during any\
+      \ 1-hour window over the last 30 days. Purchasing reservations at that level\
+      \ should be 100% utilized, if past patterns continue.</i>\n      </inline>\n\
+      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#efefe9\"\
+      \ font-size=\"16px\">\n        <i>The Maximum number represents the highest\
+      \ concurrent usage rate of channels during any 1-hour window over the last 30\
+      \ days. Purchasing reservations at that level might not be 100% utilized, if\
+      \ past patterns continue.</i>\n      </inline>\n    </li>\n    <li class=\"\
+      ql-indent-0\">\n      <inline color=\"#efefe9\" font-size=\"16px\">\n      \
+      \  <i>The Median number shows the 50% threshold at which half of the 1-hour\
+      \ windows had a concurrency rate of less than the median number and half had\
+      \ more. Purchasing reservations at this level might not be 100% utilized but\
+      \ should be more utilized than the Maximum number, if past patterns over the\
+      \ last 30 days continue. You may consider purchasing at this levels and still\
+      \ save money, even if they are not 100% utilized, because the cost savings of\
+      \ the overall amount to transcoding time being discounted is significant enough\
+      \ to offset the unused time for that reservation.\_</i>\n      </inline>\n \
+      \   </li>\n  </ul>\n  <br/>\n  <br/>\n  <inline color=\"#efefe9\" font-size=\"\
+      16px\">An EML reservation can only be used on one channel at a time. The recommendations\
+      \ presented below have three types of calculations to project a potential purchase\
+      \ amount for your consideration. In all cases, you should consider if your future\
+      \ usage for each account and profile will continue as your previous usage evaluated\
+      \ in the lookback scope. You can further tweak the number for more refined savings\
+      \ estimations.</inline>\n</text-box>"
     SheetTextBoxId: 3f2bab35-3767-4932-b8ea-b11eec5dcdae
   - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
       36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">E</inline>\n  <inline\
@@ -10044,52 +10220,6 @@ Sheets:
         </inline>
       </text-box>
     SheetTextBoxId: 2eaa808d-cf20-413f-bd26-30c9fd06a297
-  - Content: "<text-box>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"24px\"\
-      >\n    <b>G</b>\n  </inline>\n  <inline color=\"#fec48c\" font-size=\"20px\"\
-      >\n    <b>UIDANCE</b>\n  </inline>\n  <br/>\n  <inline font-size=\"16px\">An\
-      \ EML reservation can only be used on one channel at a time. The recommendations\
-      \ presented below have three types of calculations to project a potential purchase\
-      \ amount for your consideration. In all cases, you should consider if your future\
-      \ usage for each account and profile will continue as your previous usage evaluated\
-      \ in the lookback scope. You can further tweak the number for more refined savings\
-      \ estimations.</inline>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n      </inline>\n\
-      \      <inline font-size=\"16px\">\n        <b>\n          <i>Minimum\_</i>\n\
-      \        </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>number\
-      \ represents the\_</i>\n      </inline>\n      <inline font-size=\"16px\">\n\
-      \        <i>\n          <u>lowest</u>\n        </i>\n      </inline>\n     \
-      \ <inline font-size=\"16px\">\n        <i>\_concurrent usage rate of channels\
-      \ during any 1-hour window over the last\_</i>\n      </inline>\n      <inline\
-      \ font-size=\"16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
-      \        </i>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
-      days. Purchasing reservations at that level should be 100% utilized, if past\
-      \ patterns continue.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n      </inline>\n\
-      \      <inline font-size=\"16px\">\n        <b>\n          <i>Maximum\_</i>\n\
-      \        </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>number\
-      \ represents the\_</i>\n      </inline>\n      <inline font-size=\"16px\">\n\
-      \        <i>\n          <u>highest</u>\n        </i>\n      </inline>\n    \
-      \  <inline font-size=\"16px\">\n        <i>\_concurrent usage rate of channels\
-      \ during any 1-hour window over the last\_</i>\n      </inline>\n      <inline\
-      \ font-size=\"16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
-      \        </i>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
-      days. Purchasing reservations at that level might not be 100% utilized, if past\
-      \ patterns continue.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n      </inline>\n\
-      \      <inline font-size=\"16px\">\n        <b>\n          <i>Median</i>\n \
-      \       </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
-      number shows the 50% threshold at which half of the 1-hour windows had a concurrency\
-      \ rate of less than the median number and half had more. Purchasing reservations\
-      \ at this level might not be 100% utilized but should be more utilized than\
-      \ the Maximum number, if past patterns over the last\_</i>\n      </inline>\n\
-      \      <inline font-size=\"16px\">\n        <i>\n          <expression>${EmlLookbackDays}</expression>\n\
-      \        </i>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>\_\
-      days continue. You may consider purchasing at this levels and still save money,\
-      \ even if they are not 100% utilized, because the cost savings of the overall\
-      \ amount to transcoding time being discounted is significant enough to offset\
-      \ the unused time for that reservation.\_</i>\n      </inline>\n    </li>\n\
-      \  </ul>\n</text-box>"
-    SheetTextBoxId: 9d809ff1-0fbd-41a6-9133-ab9d612e6e7b
   - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
       36px\">P</inline>\n  <inline color=\"#fec48c\" font-size=\"30px\">ROFILE\_</inline>\n\
       \  <inline color=\"#fec48c\" font-size=\"36px\">D</inline>\n  <inline color=\"\
@@ -10107,36 +10237,33 @@ Sheets:
         FieldOptions:
           SelectedFieldOptions:
           - FieldId: c3fcced5-5f86-43f2-b29e-22f4b296b5b8.17.1765739112388
-            Width: 124px
+            Width: 185px
           - FieldId: 43399075-17a7-4243-bb57-f2beb9a1a7f8.16.1765923784582
-            Width: 317px
+            Width: 350px
           - CustomLabel: Current Reservations
             FieldId: 6ba9a35e-fa2a-4227-8d01-496968256d34.current_reservation_count.12.1766159655221
-            Width: 141px
-          - CustomLabel: Recommended
-            FieldId: 6ba9a35e-fa2a-4227-8d01-496968256d34.reservation_count_candidate.15.1766421329054
-            Width: 131px
+            Width: 149px
           - CustomLabel: Scenario Target
             FieldId: 864c9ab4-240a-4738-a7c1-fee54eef6b70.10.1766504224609
-            Width: 126px
+            Width: 117px
           - CustomLabel: Total Hours
-            FieldId: 6ba9a35e-fa2a-4227-8d01-496968256d34.usage_amount_total.8.1766435594490
-            Width: 95px
+            FieldId: 22b7701f-1ef2-40b0-a2a4-e897c789486b.10.1767108523519
+            Width: 88px
           - CustomLabel: Current $
-            FieldId: 28d560b3-8501-47a9-bbcb-348c9f03ae4c.12.1766437128221
-            Width: 90px
+            FieldId: 28d560b3-8501-47a9-bbcb-348c9f03ae4c.6.1767110250866
+            Width: 86px
           - CustomLabel: Scenario OD $
-            FieldId: 7da2f4c3-ae05-4d1f-8a66-a6078c044b4d.16.1766434374458
-            Width: 121px
-          - CustomLabel: Scenario Reserved $
-            FieldId: 06568251-9264-4746-8a4a-eb1cda8d0fef.9.1766436623431
-            Width: 155px
+            FieldId: 7da2f4c3-ae05-4d1f-8a66-a6078c044b4d.7.1767110647683
+            Width: 111px
+          - CustomLabel: Scenario Res. $
+            FieldId: 06568251-9264-4746-8a4a-eb1cda8d0fef.10.1767115690244
+            Width: 127px
           - CustomLabel: Scenario Total $
-            FieldId: 45399f68-b42e-4749-9b14-a481e0630eaf.10.1766436675640
-            Width: 142px
-          - CustomLabel: Difference $
-            FieldId: 0af1fc12-1291-4d83-9ffc-6bcb4ef2f671.13.1766437572494
-            Width: 91px
+            FieldId: 45399f68-b42e-4749-9b14-a481e0630eaf.11.1767117065103
+            Width: 131px
+          - CustomLabel: Change Over Current
+            FieldId: 0af1fc12-1291-4d83-9ffc-6bcb4ef2f671.12.1767117512195
+            Width: 167px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -10157,11 +10284,6 @@ Sheets:
                 FieldId: 6ba9a35e-fa2a-4227-8d01-496968256d34.current_reservation_count.12.1766159655221
             - NumericalDimensionField:
                 Column:
-                  ColumnName: reservation_count_candidate
-                  DataSetIdentifier: msih_reservation_optimize
-                FieldId: 6ba9a35e-fa2a-4227-8d01-496968256d34.reservation_count_candidate.15.1766421329054
-            - NumericalDimensionField:
-                Column:
                   ColumnName: scenario_target
                   DataSetIdentifier: msih_reservation_optimize
                 FieldId: 864c9ab4-240a-4738-a7c1-fee54eef6b70.10.1766504224609
@@ -10170,9 +10292,9 @@ Sheets:
                 AggregationFunction:
                   SimpleNumericalAggregation: SUM
                 Column:
-                  ColumnName: usage_amount_total
+                  ColumnName: scenario_actual_usage_amount
                   DataSetIdentifier: msih_reservation_optimize
-                FieldId: 6ba9a35e-fa2a-4227-8d01-496968256d34.usage_amount_total.8.1766435594490
+                FieldId: 22b7701f-1ef2-40b0-a2a4-e897c789486b.10.1767108523519
                 FormatConfiguration:
                   FormatConfiguration:
                     NumberDisplayFormatConfiguration:
@@ -10184,10 +10306,12 @@ Sheets:
                         ThousandsSeparator:
                           Visibility: VISIBLE
             - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
                 Column:
                   ColumnName: scenario_actual_cost
                   DataSetIdentifier: msih_reservation_optimize
-                FieldId: 28d560b3-8501-47a9-bbcb-348c9f03ae4c.12.1766437128221
+                FieldId: 28d560b3-8501-47a9-bbcb-348c9f03ae4c.6.1767110250866
                 FormatConfiguration:
                   FormatConfiguration:
                     CurrencyDisplayFormatConfiguration:
@@ -10204,10 +10328,12 @@ Sheets:
                           Visibility: VISIBLE
                       Symbol: USD
             - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
                 Column:
-                  ColumnName: scenario_od_cost
+                  ColumnName: scenario_cost_od
                   DataSetIdentifier: msih_reservation_optimize
-                FieldId: 7da2f4c3-ae05-4d1f-8a66-a6078c044b4d.16.1766434374458
+                FieldId: 7da2f4c3-ae05-4d1f-8a66-a6078c044b4d.7.1767110647683
                 FormatConfiguration:
                   FormatConfiguration:
                     CurrencyDisplayFormatConfiguration:
@@ -10224,10 +10350,12 @@ Sheets:
                           Visibility: VISIBLE
                       Symbol: USD
             - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
                 Column:
-                  ColumnName: scenario_reserved_cost
+                  ColumnName: scenario_cost_reserved
                   DataSetIdentifier: msih_reservation_optimize
-                FieldId: 06568251-9264-4746-8a4a-eb1cda8d0fef.9.1766436623431
+                FieldId: 06568251-9264-4746-8a4a-eb1cda8d0fef.10.1767115690244
                 FormatConfiguration:
                   FormatConfiguration:
                     CurrencyDisplayFormatConfiguration:
@@ -10244,10 +10372,12 @@ Sheets:
                           Visibility: VISIBLE
                       Symbol: USD
             - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
                 Column:
                   ColumnName: scenario_total_cost
                   DataSetIdentifier: msih_reservation_optimize
-                FieldId: 45399f68-b42e-4749-9b14-a481e0630eaf.10.1766436675640
+                FieldId: 45399f68-b42e-4749-9b14-a481e0630eaf.11.1767117065103
                 FormatConfiguration:
                   FormatConfiguration:
                     CurrencyDisplayFormatConfiguration:
@@ -10264,10 +10394,12 @@ Sheets:
                           Visibility: VISIBLE
                       Symbol: USD
             - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
                 Column:
                   ColumnName: scenario_cost_delta
                   DataSetIdentifier: msih_reservation_optimize
-                FieldId: 0af1fc12-1291-4d83-9ffc-6bcb4ef2f671.13.1766437572494
+                FieldId: 0af1fc12-1291-4d83-9ffc-6bcb4ef2f671.12.1767117512195
                 FormatConfiguration:
                   FormatConfiguration:
                     CurrencyDisplayFormatConfiguration:
@@ -10285,9 +10417,14 @@ Sheets:
                       Symbol: USD
         SortConfiguration: {}
         TableOptions:
+          CellStyle:
+            Height: 27
           HeaderStyle:
             Height: 30
             TextWrap: WRAP
+        TotalOptions:
+          Placement: END
+          TotalsVisibility: HIDDEN
       Subtitle:
         FormatText:
           RichText: "<visual-subtitle>\n  Select a reservation recommendation from\
@@ -10300,11 +10437,11 @@ Sheets:
       Title:
         FormatText:
           RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Reservation\
-            \ scenario modeler for:\_</b>\n  </inline>\n  <inline color=\"#09add4\"\
+            \ scenario modeler for:\_\_\_</b>\n  </inline>\n  <inline color=\"#09add4\"\
             \ font-size=\"16px\">\n    <b>\n      <i>\n        <parameter>${EmlReservationProfile}</parameter>\n\
             \      </i>\n    </b>\n  </inline>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 60ce0d47-dfb9-4202-b799-621b42c34284
+      VisualId: e28b7e9b-6c48-4114-bd4e-372af59d81d6
   - LineChartVisual:
       Actions: []
       ChartConfiguration:
@@ -10347,6 +10484,7 @@ Sheets:
                         DisplayMode: POSITIVE
                       NullValueFormatConfiguration:
                         NullString: 'null'
+                      NumberScale: NONE
                       SeparatorConfiguration:
                         DecimalSeparator: DOT
                         ThousandsSeparator:
@@ -10358,7 +10496,7 @@ Sheets:
           Width: 286px
         PrimaryYAxisDisplayOptions:
           AxisOptions:
-            AxisOffset: 53px
+            AxisOffset: 68px
         PrimaryYAxisLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -10424,6 +10562,7 @@ Sheets:
           TooltipVisibility: VISIBLE
         Type: LINE
         XAxisDisplayOptions:
+          AxisOffset: 63px
           ScrollbarOptions:
             Visibility: HIDDEN
         XAxisLabelOptions:
@@ -10439,13 +10578,13 @@ Sheets:
       Subtitle:
         FormatText:
           RichText: "<visual-subtitle>\n  Select a reservation recommendation from\
-            \ the list above and adjust the target slider to fine-tune. Looking back\
-            \ over last\n  <parameter>${EmlLookbackDays}</parameter>\n  \_days\n</visual-subtitle>"
+            \ the list above. Looking back over last\n  <parameter>${EmlLookbackDays}</parameter>\n\
+            \  \_days\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Reservation\
-            \ optimization forecasting for:\_</b>\n  </inline>\n  <inline color=\"\
+            \ optimization forecasting for:\_\_\_</b>\n  </inline>\n  <inline color=\"\
             #09add4\" font-size=\"16px\">\n    <b>\n      <i>\n        <parameter>${EmlReservationProfile}</parameter>\n\
             \      </i>\n    </b>\n  </inline>\n</visual-title>"
         Visibility: VISIBLE
@@ -10470,14 +10609,14 @@ Sheets:
           SelectedFieldOptions:
           - CustomLabel: Usage Date
             FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.usage_date.8.1765934626929
-            Width: 143px
+            Width: 131px
           - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.11.1754685170416
             Width: 149px
           - CustomLabel: Linked Account
             FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1747068105054
-            Width: 198px
+            Width: 153px
           - FieldId: 20ff22f8-3fbc-4757-a942-3aaa4867812c.9.1765934899265
-            Width: 114px
+            Width: 134px
           - FieldId: 9ff8a33e-75c5-4003-8ca5-780feb6f4795.7.1765934588678
             Width: 132px
           - CustomLabel: Reservation ID
@@ -10633,9 +10772,6 @@ Sheets:
             - DestinationParameterName: EmlReservationProfile
               Value:
                 SourceField: d6da8534-e8ab-4daa-98d7-a3af2a67f8b5.17.1765835438608
-            - DestinationParameterName: EmlReservationTargetAccount
-              Value:
-                SourceField: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1747068105054
             - DestinationParameterName: EmlReservationTargetMinByProfile
               Value:
                 SourceField: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769712076
@@ -10652,28 +10788,30 @@ Sheets:
           - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.11.1754685170416
             Width: 149px
           - CustomLabel: Linked Account
-            FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1747068105054
-            Width: 212px
+            FieldId: d632f4c0-6119-46c3-9b63-39bb1fa91654.8.1767971688260
+            Width: 138px
           - FieldId: d6da8534-e8ab-4daa-98d7-a3af2a67f8b5.17.1765835438608
-            Width: 372px
-          - CustomLabel: Min. Concurrency
+            Width: 207px
+          - FieldId: ace9e980-4c4e-445b-a1a9-9faad13b1db6.9.1767972562070
+            Width: 384px
+          - CustomLabel: Minimum
             FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.12.1763762637702
-            Width: 102px
-          - CustomLabel: Median Concurrency
+            Width: 94px
+          - CustomLabel: Median
             FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769712076
-            Width: 103px
-          - CustomLabel: Max. Concurrency
+            Width: 81px
+          - CustomLabel: Maximum
             FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769251451
-            Width: 105px
+            Width: 92px
           - CustomLabel: Current Reservations
             FieldId: 610df661-ea6d-4c65-8bb2-b289db3ea493.17.1765836788436
-            Width: 100px
+            Width: 143px
           - CustomLabel: OD Cost
             FieldId: 33332fff-4cd4-4b4e-8420-e9ffd6e0a644.10.1747070078113
-            Width: 79px
+            Width: 106px
           - CustomLabel: Avg Unit $
             FieldId: 732f12f5-df1e-4d1b-b366-f461c19e01d5.8.1766428233482
-            Width: 98px
+            Width: 115px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -10684,14 +10822,19 @@ Sheets:
                 FieldId: c01482f3-3e86-4114-962a-121a16172e0b.11.1754685170416
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: Linked Account
+                  ColumnName: eml_linked_account_option
                   DataSetIdentifier: msih_view
-                FieldId: 635dc208-ae9d-469e-aa2d-b4cba1fe08e9.3.1747068105054
+                FieldId: d632f4c0-6119-46c3-9b63-39bb1fa91654.8.1767971688260
             - CategoricalDimensionField:
                 Column:
                   ColumnName: Reservation Profile
                   DataSetIdentifier: msih_view
                 FieldId: d6da8534-e8ab-4daa-98d7-a3af2a67f8b5.17.1765835438608
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Reservation Profile Account Owner
+                  DataSetIdentifier: msih_view
+                FieldId: ace9e980-4c4e-445b-a1a9-9faad13b1db6.9.1767972562070
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -10799,9 +10942,11 @@ Sheets:
           CellStyle:
             Height: 25
           HeaderStyle:
-            Height: 59
+            Height: 32
             TextWrap: WRAP
       Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Click on a profile to populate the charts below.</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -11232,8 +11377,8 @@ Sheets:
             16px\">\n    <b>\n      <parameter>${EmlLookbackDays}</parameter>\n  \
             \  </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_days for:</b>\n\
             \  </inline>\n  <inline color=\"#09add4\" font-size=\"16px\">\n    <b>\_\
-            </b>\n  </inline>\n  <inline color=\"#09add4\" font-size=\"16px\">\n \
-            \   <b>\n      <i>\n        <parameter>${EmlReservationProfile}</parameter>\n\
+            \_</b>\n  </inline>\n  <inline color=\"#09add4\" font-size=\"16px\">\n\
+            \    <b>\n      <i>\n        <parameter>${EmlReservationProfile}</parameter>\n\
             \      </i>\n    </b>\n  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 00305a71-ca16-46bc-bd62-2c0ee9636b30
@@ -11392,7 +11537,7 @@ Sheets:
         FormatText:
           RichText: "<visual-title>\n  <inline font-size=\"16px\">\n    <b>Distribution\
             \ of average channel concurrency rates per hour for:</b>\n  </inline>\n\
-            \  <inline color=\"#09add4\" font-size=\"16px\">\n    <b>\_</b>\n  </inline>\n\
+            \  <inline color=\"#09add4\" font-size=\"16px\">\n    <b>\_\_</b>\n  </inline>\n\
             \  <inline color=\"#09add4\" font-size=\"16px\">\n    <b>\n      <i>\n\
             \        <parameter>${EmlReservationProfile}</parameter>\n      </i>\n\
             \    </b>\n  </inline>\n</visual-title>"
@@ -11727,9 +11872,9 @@ Sheets:
             Category:
               CategoricalDimensionField:
                 Column:
-                  ColumnName: Reservation Profile
+                  ColumnName: Reservation Profile Account Owner
                   DataSetIdentifier: msih_view
-                FieldId: d6da8534-e8ab-4daa-98d7-a3af2a67f8b5.1.1765820537174
+                FieldId: ace9e980-4c4e-445b-a1a9-9faad13b1db6.1.1767972062359
             ComputationId: 0cbb349f-d634-4a16-84e7-7ad4203995ab
             Name: Top
             ResultSize: 10
@@ -11852,19 +11997,19 @@ Sheets:
         - ComparisonValue:
             TextColor:
               Solid:
-                Color: '#2CAD00'
+                Color: '#F7E65A'
                 Expression: percentDifference(SUM({Estimated Potential Savings}),[SUM({Estimated
                   Potential Savings}) DESC],1,[]) > 0.0
         - ComparisonValue:
             TextColor:
               Solid:
-                Color: '#DE3B00'
+                Color: '#219FD7'
                 Expression: percentDifference(SUM({Estimated Potential Savings}),[SUM({Estimated
                   Potential Savings}) DESC],1,[]) < 0.0
         - ComparisonValue:
             Icon:
               CustomCondition:
-                Color: '#2CAD00'
+                Color: '#F7E65A'
                 Expression: percentDifference(SUM({Estimated Potential Savings}),[SUM({Estimated
                   Potential Savings}) DESC],1,[]) > 0.0
                 IconOptions:
@@ -11872,7 +12017,7 @@ Sheets:
         - ComparisonValue:
             Icon:
               CustomCondition:
-                Color: '#DE3B00'
+                Color: '#219FD7'
                 Expression: percentDifference(SUM({Estimated Potential Savings}),[SUM({Estimated
                   Potential Savings}) DESC],1,[]) < 0.0
                 IconOptions:
@@ -12676,9 +12821,9 @@ Sheets:
             Category:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: Reservation Profile
+                  ColumnName: Reservation Profile Account Owner
                   DataSetIdentifier: msih_view
-                FieldId: d6da8534-e8ab-4daa-98d7-a3af2a67f8b5.3.1765820491311
+                FieldId: ace9e980-4c4e-445b-a1a9-9faad13b1db6.3.1767972121294
             Label: []
             Size:
             - NumericalMeasureField:
@@ -12748,7 +12893,7 @@ Sheets:
                           Visibility: VISIBLE
                       Suffix: '%'
         Legend:
-          Height: 168px
+          Height: 117px
           Position: BOTTOM
           Title:
             CustomLabel: Parameters
@@ -12771,7 +12916,7 @@ Sheets:
                 FieldId: eb367126-c83c-4975-b2e3-8b3f1d3d437d.3.1761335228103
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: d6da8534-e8ab-4daa-98d7-a3af2a67f8b5.3.1765820491311
+                FieldId: ace9e980-4c4e-445b-a1a9-9faad13b1db6.3.1767972121294
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
@@ -13377,10 +13522,16 @@ Sheets:
         Legend:
           Title:
             CustomLabel: Reservation Detail
-          Width: 409px
+          Width: 426px
         PrimaryYAxisDisplayOptions:
           AxisOptions:
             AxisOffset: 87px
+            DataOptions:
+              NumericAxisOptions:
+                Range:
+                  MinMax:
+                    Maximum: 1.0
+                    Minimum: 0.0
             TickLabelOptions:
               LabelOptions:
                 FontConfiguration:
@@ -14097,6 +14248,23 @@ Sheets:
       SourceParameterName: PayerAccount
       Title: Payer Account
       Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 835b6c7d-765d-4189-be4c-d334a735dcc5
+      SelectableValues:
+        Values:
+        - Amortized
+        - Invoice
+      SourceParameterName: CostModel
+      Title: Cost Model
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         InfoIconLabelOptions:
@@ -14147,11 +14315,13 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: a312a2ab-38df-4dec-aa3c-3b85fa26a65b
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 835b6c7d-765d-4189-be4c-d334a735dcc5
+          ElementType: PARAMETER_CONTROL
           RowSpan: 1
   SheetId: 2dcff3e2-075d-4408-80e1-4aee5a838720
   TextBoxes:
@@ -16801,6 +16971,23 @@ Sheets:
       SourceParameterName: PayerAccount
       Title: Payer Account
       Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 6398ebc2-acf5-41c3-92f0-7d98011dd3e4
+      SelectableValues:
+        Values:
+        - Amortized
+        - Invoice
+      SourceParameterName: CostModel
+      Title: Cost Model
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         TitleOptions:
@@ -16843,17 +17030,17 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 6b707864-0d99-4cca-a710-d6e4033d1dfb
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 61a7dc0e-5157-4b94-8bda-86078d955f3c
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 6398ebc2-acf5-41c3-92f0-7d98011dd3e4
+          ElementType: PARAMETER_CONTROL
           RowSpan: 1
   SheetId: f2c2a62e-5931-43de-bedb-55ffc619d174
   TextBoxes:
@@ -19554,6 +19741,25 @@ Sheets:
       SourceParameterName: PayerAccount
       Title: Payer Account
       Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: c56c367e-887c-4ad4-ab2e-f83cfe8f834c
+      SelectableValues:
+        Values:
+        - Amortized
+        - Invoice
+      SourceParameterName: CostModel
+      Title: Cost Model
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         TitleOptions:
@@ -19580,6 +19786,30 @@ Sheets:
       SourceParameterName: TopN
       StepSize: 1.0
       Title: Top N
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnSpan: 3
+          ElementId: 535fcc13-cf10-4e37-95c4-400436a843a6
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: f9609fd4-b50e-4de7-aabe-b5a5ac7c4a8d
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: 79d4416c-a98b-4321-80bc-d37aad90f4ad
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: a7ea02be-e22d-40a1-9a12-f82298b0780d
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: c56c367e-887c-4ad4-ab2e-f83cfe8f834c
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
   SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
   TextBoxes:
   - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"40px\">\n    <b>AWS\_\
@@ -19819,9 +20049,9 @@ Sheets:
                 Column:
                   ColumnName: usage_date
                   DataSetIdentifier: msih_view
-                DateGranularity: HOUR
+                DateGranularity: DAY
                 FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.usage_date.3.1765309932167
-                HierarchyId: 3e96372e-5959-4a5b-a96a-730193e3990b.usage_date.3.1765309932167
+                HierarchyId: 3f7a15d6-77d7-437f-9e2b-1e32355a010b
             Colors: []
             Values:
             - NumericalMeasureField:
@@ -19899,8 +20129,12 @@ Sheets:
                   Relative: MEDIUM
       ColumnHierarchies:
       - DateTimeHierarchy:
-          HierarchyId: 3e96372e-5959-4a5b-a96a-730193e3990b.usage_date.3.1765309932167
+          DrillDownFilters: []
+          HierarchyId: 3f7a15d6-77d7-437f-9e2b-1e32355a010b
       Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Use the arrow controls on the top right of the
+            chart to roll up to daily, weekly, monthly, etc.</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -22320,12 +22554,6 @@ Sheets:
       Actions: []
       ChartConfiguration:
         BarsArrangement: CLUSTERED
-        CategoryAxis:
-          ScrollbarOptions:
-            VisibleRange:
-              PercentRange:
-                From: 33.33333333333333
-                To: 100.0
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -22399,8 +22627,6 @@ Sheets:
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 403px
         ValueLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -23546,8 +23772,6 @@ Sheets:
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 423px
         ValueLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -23663,8 +23887,6 @@ Sheets:
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 411px
         ValueLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -24815,6 +25037,23 @@ Sheets:
       SourceParameterName: PayerAccount
       Title: Payer Account
       Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 6ca975ac-4a94-426e-bb53-126b91475175
+      SelectableValues:
+        Values:
+        - Amortized
+        - Invoice
+      SourceParameterName: CostModel
+      Title: Cost Model
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         TitleOptions:
@@ -24857,17 +25096,17 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 58c62de0-afa1-422e-aa76-3166b70d968a
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 124e4211-7b15-49d7-ae26-1b3f8c9d975b
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 6ca975ac-4a94-426e-bb53-126b91475175
+          ElementType: PARAMETER_CONTROL
           RowSpan: 1
   SheetId: ca1c935f-2308-4ef3-a2de-c67afcdba37b
   TextBoxes:
@@ -26974,6 +27213,23 @@ Sheets:
       SourceParameterName: PayerAccount
       Title: Payer Account
       Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 668916d7-f0a9-413a-8b9d-00ce33c7e412
+      SelectableValues:
+        Values:
+        - Amortized
+        - Invoice
+      SourceParameterName: CostModel
+      Title: Cost Model
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         TitleOptions:
@@ -27016,17 +27272,17 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 6
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 1ab2894b-a0b6-4ed7-834c-58d54c840ba1
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
+        - ColumnSpan: 2
           ElementId: 83465598-27b0-46b3-9a55-8d4376488eda
           ElementType: PARAMETER_CONTROL
-          RowIndex: 0
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 668916d7-f0a9-413a-8b9d-00ce33c7e412
+          ElementType: PARAMETER_CONTROL
           RowSpan: 1
   SheetId: e3d61b0f-5bdf-4753-be3e-749439f2de4d
   TextBoxes:
