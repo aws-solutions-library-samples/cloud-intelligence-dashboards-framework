@@ -64,3 +64,4 @@ sandbox/
 
 # Misc files added by VS Code or Kiro plugins
 sqlite_mcp_server.db
+.kiro/
