@@ -1,5 +1,5 @@
 dashboards:
-  MSIH-DEV:
+  MEDIA SERVICES INSIGHTS:
     dependsOn:
       datasets:
       - msih_reservation_optimize
