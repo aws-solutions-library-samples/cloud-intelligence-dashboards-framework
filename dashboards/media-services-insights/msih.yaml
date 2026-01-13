@@ -11,6 +11,9 @@ dashboards:
     theme: MIDNIGHT
     version: v1.2.0
     file: ./msih-definition.yaml
+    nonTaxonomyDatasets:
+    - msih_reservation_optimize
+    - msih_reservations
 datasets:
   msih_view:
     data:
