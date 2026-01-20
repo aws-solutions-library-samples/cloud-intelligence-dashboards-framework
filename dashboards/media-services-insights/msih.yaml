@@ -726,6 +726,7 @@ crawlers: {}
 views:
   msih_view:
     dependsOn:
+      tags: json
       cur2:
       - bill_billing_entity
       - bill_billing_period_start_date
