@@ -8,6 +8,24 @@
     <lastBuildDate>Mon, 19 Jan 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] CUDOS Dashboard v5.7.1</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---571
+      </link>
+      <pubDate>Mon, 27 Jan 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">c1d2e3f4-g5h6-7i8j-9k0l-m1n2o3p4q5r6</guid>
+      <description>CUDOS Dashboard v5.7.1</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Executive: Trends:</strong> Fix Week Number calculation to handle partial week at the end and beginning of the year</li>
+    <li><strong>Security:</strong> Fix for 'Shield Advanced Paid Subscriptions' visual to show only amount of paid subscriptions, fix for 'Shield Advanced Subscriptions per Payer Account' to show not only cost but also usage to see all the subscriptions across all payer accounts regardless if they are paid or not</li>
+  </ul>
+</div>
+    ]]></content:encoded>    
+    </item>
+    <item>
       <title>[Guidance] Generative AI Assistant with Cloud Intelligence Dashboards and Amazon Quick Suite</title>
       <link>
         https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/generative-ai.html
