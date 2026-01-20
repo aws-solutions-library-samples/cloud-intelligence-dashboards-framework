@@ -2,6 +2,11 @@
 
 # CUDOS v5
 
+# CUDOS - 5.7.1
+
+* **Executive: Trends**: Fix Week Number calculation to handle partial week at the end and beginning of the year
+* **Security**: Fix for 'Shield Advanced Paid Subscriptions' visual to show only amount of paid subscriptions, fix for 'Shield Advanced Subscriptions per Payer Account' to show not only cost but also usage to see all the subscriptions across all payer accounts regardless if they are paid or not
+
 # CUDOS - 5.7.0
 
 * **Security**: Added new AWS Shield and AWS Web Application Firewall section with comprehensive visuals including 'AWS Shield and AWS WAF Spend per Service', 'Shield Advanced Subscription Spend per Payer Account', 'Recommendations to consolidate Shield Advanced subscriptions', 'AWS Shield and AWS WAF Spend per Account', 'AWS Shield and AWS WAF Spend per Region', 'AWS Shield and AWS WAF Spend per Usage Type Group', 'AWS Shield and AWS WAF Detailed View', 'AWS Shield and AWS WAF Spend per Resource', 'AWS Shield and AWS WAF Resource Detailed View', 'Total Cost of Idle AWS WAF Web ACLs without Requests', and 'Idle AWS WAF Web ACLs without Requests'
