@@ -5,10 +5,216 @@ dashboards:
       - cora_view
     name: CORA - Cost Optimization Recommended Actions
     dashboardId: cora
-    category: Custom
+    category: Additional
     theme: MIDNIGHT
     version: v0.0.11
     file: ./cora-definition.yaml
-datasets: {}
+datasets:
+  cora_view:
+    data:
+      DataSetId: f3e97e44-d115-4f0a-b38a-fa039038deeb
+      Name: cora_view
+      PhysicalTableMap:
+        3803f554-6ebc-4256-96e7-ec0661db164b:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${account_map_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+        50abacdb-9086-41a9-a217-a2adf45e448c:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: cora_view
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: action_type
+              Type: STRING
+            - Name: currency_code
+              Type: STRING
+            - Name: current_resource_details
+              Type: STRING
+            - Name: current_resource_summary
+              Type: STRING
+            - Name: current_resource_type
+              Type: STRING
+            - Name: estimated_monthly_cost_after_discount
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: estimated_monthly_cost_before_discount
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: estimated_monthly_savings_after_discount
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: estimated_monthly_savings_before_discount
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: estimated_savings_percentage_after_discount
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: estimated_savings_percentage_before_discount
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: implementation_effort
+              Type: STRING
+            - Name: last_refresh_timestamp
+              Type: STRING
+            - Name: recommendation_id
+              Type: STRING
+            - Name: recommendation_lookback_period_in_days
+              Type: INTEGER
+            - Name: recommendation_source
+              Type: STRING
+            - Name: recommended_resource_details
+              Type: STRING
+            - Name: recommended_resource_summary
+              Type: STRING
+            - Name: recommended_resource_type
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: resource_arn
+              Type: STRING
+            - Name: restart_needed
+              Type: BOOLEAN
+            - Name: rollback_possible
+              Type: BOOLEAN
+            - Name: tags
+              Type: STRING
+            - Name: source_account_id
+              Type: STRING
+            - Name: report_name
+              Type: STRING
+            - Name: data
+              Type: STRING
+            - Name: date
+              Type: STRING
+      LogicalTableMap:
+        1bd322c2-8979-4c56-9a4b-0806425c2876:
+          Alias: Intermediate Table
+          DataTransforms:
+          - TagColumnOperation:
+              ColumnName: region
+              Tags:
+              - ColumnGeographicRole: STATE
+          - ProjectOperation:
+              ProjectedColumns:
+              - account_id
+              - action_type
+              - currency_code
+              - current_resource_details
+              - current_resource_summary
+              - current_resource_type
+              - estimated_monthly_cost_after_discount
+              - estimated_monthly_cost_before_discount
+              - estimated_monthly_savings_after_discount
+              - estimated_monthly_savings_before_discount
+              - estimated_savings_percentage_after_discount
+              - estimated_savings_percentage_before_discount
+              - implementation_effort
+              - last_refresh_timestamp
+              - recommendation_id
+              - recommendation_lookback_period_in_days
+              - recommendation_source
+              - recommended_resource_details
+              - recommended_resource_summary
+              - recommended_resource_type
+              - region
+              - resource_arn
+              - restart_needed
+              - rollback_possible
+              - tags
+              - source_account_id
+              - report_name
+              - data
+              - date
+              - account_id[account_map]
+              - account_name
+          Source:
+            JoinInstruction:
+              LeftOperand: e5febe5d-d4f1-40a7-a305-78afc5a50b0e
+              RightOperand: e3fec4a4-9703-4c30-9073-2901f7bcc4a5
+              Type: LEFT
+              OnClause: '{account_id} = {account_id[account_map]}'
+        e3fec4a4-9703-4c30-9073-2901f7bcc4a5:
+          Alias: account_map
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map]
+          Source:
+            PhysicalTableId: 3803f554-6ebc-4256-96e7-ec0661db164b
+        e5febe5d-d4f1-40a7-a305-78afc5a50b0e:
+          Alias: cora_view
+          Source:
+            PhysicalTableId: 50abacdb-9086-41a9-a217-a2adf45e448c
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - account_map
+      - cora_view
+    schedules:
+    - default
+    parameters:
+      account_map_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'account_map'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        error: You need to install Foundational Dashboards that provide account_map view.
+        default: cid_cur
+        description: Database of account_map table (from foundational dashboards)
+        global: True
+views:
+  cora_view:
+    data: |-
+      CREATE OR REPLACE VIEW "cora_view" AS
+      SELECT
+        "account_id"
+      , "action_type"
+      , "currency_code"
+      , "current_resource_details"
+      , "current_resource_summary"
+      , "current_resource_type"
+      , "estimated_monthly_cost_after_discount"
+      , "estimated_monthly_cost_before_discount"
+      , "estimated_monthly_savings_after_discount"
+      , "estimated_monthly_savings_before_discount"
+      , "estimated_savings_percentage_after_discount"
+      , "estimated_savings_percentage_before_discount"
+      , "implementation_effort"
+      , "last_refresh_timestamp"
+      , "recommendation_id"
+      , "recommendation_lookback_period_in_days"
+      , "recommendation_source"
+      , "recommended_resource_details"
+      , "recommended_resource_summary"
+      , "recommended_resource_type"
+      , "region"
+      , "resource_arn"
+      , "restart_needed"
+      , "rollback_possible"
+      , "tags"
+      , "source_account_id"
+      , "report_name"
+      , "data"
+      , "date"
+      FROM
+        "${data_exports_database_name}".coh
+      WHERE (CAST("date" AS date) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '6' MONTH))
+    parameters:
+      data_exports_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'coh'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table and Data Exports installed."
+        default: cid_data_export
+        description: Database of cid data exports
+        global: True
 crawlers: {}
-views: {}
