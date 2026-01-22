@@ -1,32 +1,17 @@
 variable "cid_dataexports_destination" {
   type = object({
-    # Prefix used for all named resources
-    resource_prefix = string
-    # Enable CUR 2.0 management
-    manage_cur2 = string
-    # Enable FOCUS management
-    manage_focus = string
-    # Enable Cost Optimization Hub management
-    manage_coh = string
-    # Enable Split Cost Allocation Data
-    enable_scad = string
-    # Path for IAM roles
-    role_path = string
-    # Time granularity for CUR 2.0
-    time_granularity = string
+    resource_prefix  = optional(string, "cid")    # Prefix used for all named resources
+    manage_cur2      = optional(string, "yes")    # Enable CUR 2.0 management
+    manage_focus     = optional(string, "no")     # Enable FOCUS management
+    manage_coh       = optional(string, "no")     # Enable Cost Optimization Hub management
+    enable_scad      = optional(string, "yes")    # Enable Split Cost Allocation Data
+    role_path        = optional(string, "/")      # Path for IAM roles
+    time_granularity = optional(string, "HOURLY") # Time granularity for CUR 2.0
   })
 
   description = "Configuration for data exports child account settings"
 
-  default = {
-    resource_prefix  = "cid"
-    manage_cur2      = "yes"
-    manage_focus     = "no"
-    manage_coh       = "no"
-    enable_scad      = "yes"
-    role_path        = "/"
-    time_granularity = "HOURLY"
-  }
+  default = {}
 
   validation {
     condition     = can(regex("^[a-z0-9]+[a-z0-9-]{1,61}[a-z0-9]+$", var.cid_dataexports_destination.resource_prefix))
@@ -61,33 +46,18 @@ variable "cid_dataexports_destination" {
 
 variable "cid_dataexports_source" {
   type = object({
-    # Prefix used for all named resources in management account
-    source_resource_prefix = string
-    # Enable CUR 2.0 management in management account
-    source_manage_cur2 = string
-    # Enable FOCUS management in management account
-    source_manage_focus = string
-    # Enable Cost Optimization Hub management in management account
-    source_manage_coh = string
-    # Enable Split Cost Allocation Data in management account
-    source_enable_scad = string
-    # Path for IAM roles in management account
-    source_role_path = string
-    # Time granularity for CUR 2.0 in management account
-    source_time_granularity = string
+    source_resource_prefix  = optional(string, "cid")    # Prefix used for all named resources in management account
+    source_manage_cur2      = optional(string, "yes")    # Enable CUR 2.0 management in management account
+    source_manage_focus     = optional(string, "no")     # Enable FOCUS management in management account
+    source_manage_coh       = optional(string, "no")     # Enable Cost Optimization Hub management in management account
+    source_enable_scad      = optional(string, "yes")    # Enable Split Cost Allocation Data in management account
+    source_role_path        = optional(string, "/")      # Path for IAM roles in management account
+    source_time_granularity = optional(string, "HOURLY") # Time granularity for CUR 2.0 in management account
   })
 
   description = "Configuration for data exports management account settings"
 
-  default = {
-    source_resource_prefix  = "cid"
-    source_manage_cur2      = "yes" #
-    source_manage_focus     = "no"
-    source_manage_coh       = "no"
-    source_enable_scad      = "yes"
-    source_role_path        = "/"
-    source_time_granularity = "HOURLY"
-  }
+  default = {}
 
   validation {
     condition     = can(regex("^[a-z0-9]+[a-z0-9-]{1,61}[a-z0-9]+$", var.cid_dataexports_source.source_resource_prefix))
@@ -123,117 +93,62 @@ variable "cid_dataexports_source" {
 variable "cloud_intelligence_dashboards" {
   type = object({
     # Prerequisites Variables
-    prerequisites_quicksight             = string
-    prerequisites_quicksight_permissions = string
-    lake_formation_enabled               = string
+    prerequisites_quicksight             = optional(string, "yes")
+    prerequisites_quicksight_permissions = optional(string, "yes")
+    lake_formation_enabled               = optional(string, "no")
 
     # CUR Parameters
-    cur_version                        = string
-    deploy_cudos_v5                    = string
-    deploy_cost_intelligence_dashboard = string
-    deploy_kpi_dashboard               = string
+    cur_version                        = optional(string, "2.0")
+    deploy_cudos_v5                    = optional(string, "yes")
+    deploy_cost_intelligence_dashboard = optional(string, "yes")
+    deploy_kpi_dashboard               = optional(string, "yes")
 
     # Optimization Parameters
-    optimization_data_collection_bucket_path = string
-    deploy_tao_dashboard                     = string
-    deploy_compute_optimizer_dashboard       = string
-    primary_tag_name                         = string
-    secondary_tag_name                       = string
+    optimization_data_collection_bucket_path = optional(string, "s3://cid-data-{account_id}")
+    deploy_tao_dashboard                     = optional(string, "no")
+    deploy_compute_optimizer_dashboard       = optional(string, "no")
+    primary_tag_name                         = optional(string, "owner")
+    secondary_tag_name                       = optional(string, "environment")
 
     # Technical Parameters
-    athena_workgroup                     = string
-    athena_query_results_bucket          = string
-    database_name                        = string
-    glue_data_catalog                    = string
-    suffix                               = string
-    quicksight_data_source_role_name     = string
-    quicksight_data_set_refresh_schedule = string
-    lambda_layer_bucket_prefix           = string
-    deploy_cudos_dashboard               = string
-    data_buckets_kms_keys_arns           = string
-    deployment_type                      = string
-    share_dashboard                      = string
+    athena_workgroup                     = optional(string, "")
+    athena_query_results_bucket          = optional(string, "")
+    database_name                        = optional(string, "")
+    glue_data_catalog                    = optional(string, "AwsDataCatalog")
+    suffix                               = optional(string, "")
+    quicksight_data_source_role_name     = optional(string, "CidQuickSightDataSourceRole")
+    quicksight_data_set_refresh_schedule = optional(string, "")
+    lambda_layer_bucket_prefix           = optional(string, "aws-managed-cost-intelligence-dashboards")
+    deploy_cudos_dashboard               = optional(string, "no")
+    data_buckets_kms_keys_arns           = optional(string, "")
+    deployment_type                      = optional(string, "Terraform")
+    share_dashboard                      = optional(string, "yes")
 
     # Legacy Parameters
-    keep_legacy_cur_table = string
-    cur_bucket_path       = string
-    cur_table_name        = string
-    permissions_boundary  = string
-    role_path             = string
+    keep_legacy_cur_table = optional(string, "no")
+    cur_bucket_path       = optional(string, "s3://cid-{account_id}-shared/cur/")
+    cur_table_name        = optional(string, "")
+    permissions_boundary  = optional(string, "")
+    role_path             = optional(string, "/")
   })
 
-  default = {
-    # Prerequisites Variables
-    prerequisites_quicksight             = "yes"
-    prerequisites_quicksight_permissions = "yes"
-    quicksight_user                      = null
-    lake_formation_enabled               = "no"
-
-    # CUR Parameters
-    cur_version                        = "2.0"
-    deploy_cudos_v5                    = "yes"
-    deploy_cost_intelligence_dashboard = "yes"
-    deploy_kpi_dashboard               = "yes"
-
-    # Optimization Parameters
-    optimization_data_collection_bucket_path = "s3://cid-data-{account_id}"
-    deploy_tao_dashboard                     = "no"
-    deploy_compute_optimizer_dashboard       = "no"
-    primary_tag_name                         = "owner"
-    secondary_tag_name                       = "environment"
-
-    # Technical Parameters
-    athena_workgroup                     = ""
-    athena_query_results_bucket          = ""
-    database_name                        = ""
-    glue_data_catalog                    = "AwsDataCatalog"
-    suffix                               = ""
-    quicksight_data_source_role_name     = "CidQuickSightDataSourceRole"
-    quicksight_data_set_refresh_schedule = ""
-    lambda_layer_bucket_prefix           = "aws-managed-cost-intelligence-dashboards"
-    deploy_cudos_dashboard               = "no"
-    data_buckets_kms_keys_arns           = ""
-    deployment_type                      = "Terraform"
-    share_dashboard                      = "yes"
-
-    # Legacy Parameters
-    keep_legacy_cur_table = "no"
-    cur_bucket_path       = "s3://cid-{account_id}-shared/cur/"
-    cur_table_name        = ""
-    permissions_boundary  = ""
-    role_path             = "/"
-  }
+  default = {}
 }
 
 variable "global_values" {
   type = object({
-    # AWS Account Id where DataExport will be replicated to
-    destination_account_id = string
-    # Comma separated list of source account IDs
-    source_account_ids = string
-    # AWS region where the dashboard will be deployed
-    aws_region = string
-    # Quicksight user to share the dashboard with
-    quicksight_user = string
-    # CloudFormation template using for the deployment, see description to get the semantic version number (e.g. 4.1.5) https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/cfn-templates/cid-cfn.yml
-    cid_cfn_version = string
-    # CloudFormation template using for the deployment, see description to get the semantic version number (e.g. 0.5.0) https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/blob/main/data-exports/deploy/data-exports-aggregation.yaml
-    data_export_version = string
-    # Environment name (e.g., dev, staging, prod)
-    environment = string
+    destination_account_id = optional(string)     # AWS Account Id where DataExport will be replicated to
+    source_account_ids     = optional(string, "") # Comma separated list of source account IDs
+    aws_region             = optional(string, "") # AWS region where the dashboard will be deployed
+    quicksight_user        = optional(string)     # Quicksight user to share the dashboard with
+    cid_cfn_version        = optional(string, "") # CloudFormation template using for the deployment, see description to get the semantic version number (e.g. 4.1.5) https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/cfn-templates/cid-cfn.yml
+    data_export_version    = optional(string, "") # CloudFormation template using for the deployment, see description to get the semantic version number (e.g. 0.5.0) https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/blob/main/data-exports/deploy/data-exports-aggregation.yaml
+    environment            = optional(string, "") # Environment name (e.g., dev, staging, prod)
   })
 
   description = "Global configuration values for AWS environment"
 
-  default = {
-    destination_account_id = null
-    source_account_ids     = ""
-    aws_region             = ""
-    quicksight_user        = null
-    cid_cfn_version        = ""
-    data_export_version    = ""
-    environment            = ""
-  }
+  default = {}
 
   validation {
     condition     = can(regex("^\\d{12}$", var.global_values.destination_account_id))
