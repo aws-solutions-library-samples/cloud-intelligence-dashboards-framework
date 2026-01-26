@@ -92,7 +92,7 @@ CalculatedFields:
 - DataSetIdentifier: msih_reservation_optimize
   Expression: |-
     ifelse(
-        maxOver({unit_cost_reserved}, [{Linked Account}, {Reservation Profile}], PRE_FILTER) > 0, maxOver({unit_cost_reserved}, [{Linked Account}, {Reservation Profile}], PRE_FILTER),
+        avgOver({unit_cost_reserved}, [{Linked Account}, {Reservation Profile}], PRE_FILTER) > 0, maxOver({unit_cost_reserved}, [{Linked Account}, {Reservation Profile}], PRE_FILTER),
         {cost_public} / {usage_amount_total} * ${EmlReservationSavingRate}
     ) * ifelse(${IncludePricingAdjustments} = "Yes", ${DiscCoefficient}, 1)
   Name: calc_unit_cost_reserved
@@ -594,6 +594,15 @@ CalculatedFields:
 - DataSetIdentifier: msih_view
   Expression: |-
     ifelse(
+        operation = "CHANNEL_INPUT", "Input",
+        operation = "CHANNEL_OUTPUT", "Output",
+        operation = "CHANNEL_FEATURE", "Feature",
+        "NA"
+    )
+  Name: Reservation Type
+- DataSetIdentifier: msih_view
+  Expression: |-
+    ifelse(
         contains({product_code}, "MediaLive"), {EML Unique Channel Name},
         {Resource Short ID}
     )
@@ -850,7 +859,7 @@ ColumnConfigurations:
 - Column:
     ColumnName: existing_reservation_count
     DataSetIdentifier: msih_view
-  Role: MEASURE
+  Role: DIMENSION
 DataSetIdentifierDeclarations:
 - DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-reservations
   Identifier: msih_reservations
@@ -1827,25 +1836,8 @@ FilterGroups:
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
+      - Scope: ALL_VISUALS
         SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
-        VisualIds:
-        - 7474bc8e-886d-42ec-a9df-cd53805e1829
-        - 782391c9-c903-472e-a0bc-994e86b0cfe5
-        - 628b738c-f09e-41bc-b541-52a4081d7ad0
-        - 68ac36bf-d68c-4f62-a5c2-0399194a1216
-        - 3994d999-a206-4851-9681-8343b8b3a63a
-        - e74ef977-2dc8-4b88-97a3-8007774ff8f1
-        - 2ce2a611-264d-4d88-8725-80f2098ed98c
-        - 4ca03e98-3639-46d4-b091-a09408add429
-        - c64f4a95-a84f-4f62-b8b6-c58bcfe67bc7
-        - 01c32206-5984-4bae-b4d6-7e7f4f3f3354
-        - 29a443a8-33c3-4cfb-8f35-87763caae38a
-        - 00305a71-ca16-46bc-bd62-2c0ee9636b30
-        - 7e96aa6e-d880-4c5f-a093-6b89eed1fc19
-        - f604407f-38df-4413-8cc5-c85411b4a439
-        - b170387f-88dd-4b5c-bac8-8f83407f6759
-        - 0a347fd6-a33c-45c1-8d9f-3ef4352dab54
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 1ba23446-1b17-4e4d-a1a7-439ba0e7be92
@@ -3895,10 +3887,9 @@ FilterGroups:
         DataSetIdentifier: msih_reservations
       Configuration:
         FilterListConfiguration:
-          CategoryValues:
-          - Output
           MatchOperator: CONTAINS
           NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
       FilterId: a7a21603-865a-4bcc-a9fc-89de4e6611af
   ScopeConfiguration:
     SelectedSheets:
@@ -3906,7 +3897,7 @@ FilterGroups:
       - Scope: ALL_VISUALS
         SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
   Status: ENABLED
-- CrossDataset: SINGLE_DATASET
+- CrossDataset: ALL_DATASETS
   FilterGroupId: 7c266c2f-25ba-4d7b-a4ca-1e996f129881
   Filters:
   - CategoryFilter:
@@ -3915,10 +3906,9 @@ FilterGroups:
         DataSetIdentifier: msih_reservations
       Configuration:
         FilterListConfiguration:
-          CategoryValues:
-          - us-east-1
           MatchOperator: CONTAINS
           NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
       FilterId: 99e43ddd-8968-4d63-a428-c7eda0e7db6f
   ScopeConfiguration:
     SelectedSheets:
@@ -3932,13 +3922,12 @@ FilterGroups:
   - CategoryFilter:
       Column:
         ColumnName: video_resolution
-        DataSetIdentifier: msih_reservations
+        DataSetIdentifier: msih_view
       Configuration:
         FilterListConfiguration:
-          CategoryValues:
-          - HD
           MatchOperator: CONTAINS
           NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
       FilterId: 05fcec32-3a4b-4914-be21-f0d6257fb399
   ScopeConfiguration:
     SelectedSheets:
@@ -3952,11 +3941,11 @@ FilterGroups:
   - CategoryFilter:
       Column:
         ColumnName: video_bit_rate
-        DataSetIdentifier: msih_reservations
+        DataSetIdentifier: msih_view
       Configuration:
         FilterListConfiguration:
           MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
+          NullOption: ALL_VALUES
           SelectAllOptions: FILTER_ALL_VALUES
       FilterId: c83dc0d5-8295-4836-b8f9-ec30eb0cb5a6
   ScopeConfiguration:
@@ -3971,7 +3960,7 @@ FilterGroups:
   - CategoryFilter:
       Column:
         ColumnName: video_frame_rate
-        DataSetIdentifier: msih_reservations
+        DataSetIdentifier: msih_view
       Configuration:
         FilterListConfiguration:
           MatchOperator: CONTAINS
@@ -6506,7 +6495,7 @@ FilterGroups:
       Configuration:
         FilterListConfiguration:
           MatchOperator: CONTAINS
-          NullOption: ALL_VALUES
+          NullOption: NON_NULLS_ONLY
           SelectAllOptions: FILTER_ALL_VALUES
       FilterId: 581847dc-cf9e-4727-9a7e-e4b024960a49
   ScopeConfiguration:
@@ -6515,30 +6504,6 @@ FilterGroups:
       - Scope: ALL_VISUALS
         SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
   Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: 530e8f5e-e0b7-45b6-bd80-ce1c96d685a0
-  Filters:
-  - TimeRangeFilter:
-      Column:
-        ColumnName: usage_time
-        DataSetIdentifier: msih_reservation_optimize
-      FilterId: 61693c93-5b3d-49e4-a878-97a2706cb4df
-      IncludeMaximum: false
-      IncludeMinimum: true
-      NullOption: NON_NULLS_ONLY
-      RangeMaximumValue:
-        StaticValue: 2025-12-27 19:00:00-05:00
-      RangeMinimumValue:
-        StaticValue: 2025-12-26 19:00:00-05:00
-      TimeGranularity: DAY
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
-        VisualIds:
-        - e28b7e9b-6c48-4114-bd4e-372af59d81d6
-  Status: DISABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: 30f67003-6704-4981-a909-abe20601d95c
   Filters:
@@ -6581,6 +6546,45 @@ FilterGroups:
         SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
         VisualIds:
         - 82e24148-3d62-4932-9143-8ece64c188c8
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 786509ed-f6bf-4586-b7e7-85aeac961013
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: eml_is_hourly_lookback_window
+        DataSetIdentifier: msih_reservation_optimize
+      FilterId: f50994b2-b591-4f31-8c54-1acdec5090ae
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
+        VisualIds:
+        - e28b7e9b-6c48-4114-bd4e-372af59d81d6
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: a30fcbca-7608-48c5-83d5-f85d958e33df
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: video_codec
+        DataSetIdentifier: msih_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: DOES_NOT_CONTAIN
+          NullOption: ALL_VALUES
+      FilterId: 325d996a-19c9-460f-acdb-ef4761c82ef8
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
+        VisualIds:
+        - 929997b4-773e-4113-924e-3de0663d91bb
   Status: ENABLED
 Options: {}
 ParameterDeclarations:
@@ -9733,126 +9737,126 @@ Sheets:
           ElementId: c64f4a95-a84f-4f62-b8b6-c58bcfe67bc7
           ElementType: VISUAL
           RowIndex: 52
-          RowSpan: 9
+          RowSpan: 8
         - ColumnIndex: 12
           ColumnSpan: 24
           ElementId: 3994d999-a206-4851-9681-8343b8b3a63a
           ElementType: VISUAL
           RowIndex: 52
-          RowSpan: 9
-        - ColumnIndex: 0
-          ColumnSpan: 3
-          ElementId: 37ebf190-66d8-44b5-9a9f-067ca44bd4a5
-          ElementType: PARAMETER_CONTROL
-          RowIndex: 61
-          RowSpan: 8
-        - ColumnIndex: 3
-          ColumnSpan: 33
-          ElementId: b8c3f4c2-e5bf-46d1-a9a3-037fac4f6430
-          ElementType: VISUAL
-          RowIndex: 61
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 12
           ElementId: fe170f8a-1f95-41f4-9194-6797d25a4122
           ElementType: VISUAL
-          RowIndex: 69
+          RowIndex: 60
           RowSpan: 9
         - ColumnIndex: 12
           ColumnSpan: 24
           ElementId: 08f5e817-7b3a-439d-b693-d70ce48cf026
           ElementType: VISUAL
-          RowIndex: 69
+          RowIndex: 60
           RowSpan: 9
+        - ColumnIndex: 0
+          ColumnSpan: 3
+          ElementId: 37ebf190-66d8-44b5-9a9f-067ca44bd4a5
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 69
+          RowSpan: 8
+        - ColumnIndex: 3
+          ColumnSpan: 33
+          ElementId: b8c3f4c2-e5bf-46d1-a9a3-037fac4f6430
+          ElementType: VISUAL
+          RowIndex: 69
+          RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 92cba787-a229-4ce3-b404-68482bceefc0
           ElementType: VISUAL
-          RowIndex: 78
+          RowIndex: 77
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 2eaa808d-cf20-413f-bd26-30c9fd06a297
           ElementType: TEXT_BOX
-          RowIndex: 86
+          RowIndex: 85
           RowSpan: 2
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 3f2bab35-3767-4932-b8ea-b11eec5dcdae
           ElementType: TEXT_BOX
-          RowIndex: 88
+          RowIndex: 87
           RowSpan: 11
         - ColumnIndex: 0
           ColumnSpan: 6
           ElementId: 83bc37ed-0a82-4aa8-aa80-fbc9f1399c6e
           ElementType: PARAMETER_CONTROL
-          RowIndex: 99
+          RowIndex: 98
           RowSpan: 3
         - ColumnIndex: 6
           ColumnSpan: 12
           ElementId: de4c06e6-11c6-4f4c-8ad2-a902e2c8c2e5
           ElementType: PARAMETER_CONTROL
-          RowIndex: 99
+          RowIndex: 98
           RowSpan: 3
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 7474bc8e-886d-42ec-a9df-cd53805e1829
           ElementType: VISUAL
-          RowIndex: 99
+          RowIndex: 98
           RowSpan: 11
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: b62f9d82-0ab3-40f5-a9bf-dc604ad9c176
           ElementType: VISUAL
-          RowIndex: 102
+          RowIndex: 101
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: b170387f-88dd-4b5c-bac8-8f83407f6759
           ElementType: VISUAL
-          RowIndex: 110
+          RowIndex: 109
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 29a443a8-33c3-4cfb-8f35-87763caae38a
           ElementType: VISUAL
-          RowIndex: 119
+          RowIndex: 118
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 00305a71-ca16-46bc-bd62-2c0ee9636b30
           ElementType: VISUAL
-          RowIndex: 125
+          RowIndex: 124
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 82e24148-3d62-4932-9143-8ece64c188c8
           ElementType: VISUAL
-          RowIndex: 133
+          RowIndex: 132
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: effbe11f-ef68-4976-90b5-32abcd2c3a34
           ElementType: PARAMETER_CONTROL
-          RowIndex: 141
+          RowIndex: 140
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: e28b7e9b-6c48-4114-bd4e-372af59d81d6
           ElementType: VISUAL
-          RowIndex: 144
+          RowIndex: 143
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 613ea48a-7412-4b6d-9714-237a69ef839b
           ElementType: TEXT_BOX
-          RowIndex: 150
+          RowIndex: 149
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 0a347fd6-a33c-45c1-8d9f-3ef4352dab54
           ElementType: VISUAL
-          RowIndex: 153
+          RowIndex: 152
           RowSpan: 14
   Name: MediaLive Reservation & Savings
   ParameterControls:
@@ -9938,24 +9942,8 @@ Sheets:
       Type: MULTI_SELECT
   - Dropdown:
       DisplayOptions:
-        SelectAllOptions:
-          Visibility: VISIBLE
-        TitleOptions:
-          FontConfiguration:
-            FontSize:
-              Relative: MEDIUM
-          Visibility: VISIBLE
-      ParameterControlId: e185c0cd-c3b6-49c1-89ce-819728f175a3
-      SelectableValues:
-        Values:
-        - Average
-        - Median
-        - Standard Deviation
-      SourceParameterName: EmlReservationUtilizationStat
-      Title: Statistical Method
-      Type: SINGLE_SELECT
-  - Dropdown:
-      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
         SelectAllOptions:
           Visibility: HIDDEN
         TitleOptions:
@@ -10021,49 +10009,65 @@ Sheets:
   - Configuration:
       GridLayout:
         Elements:
-        - ColumnSpan: 3
-          ElementId: ee98c904-1cc8-49b7-9d98-d1c0b6b4ba8b
-          ElementType: PARAMETER_CONTROL
-          RowSpan: 1
-        - ColumnSpan: 3
-          ElementId: c89d2be5-2c90-41b4-afb9-24e1c4e7f78e
-          ElementType: PARAMETER_CONTROL
-          RowSpan: 1
-        - ColumnSpan: 3
+        - ColumnIndex: 0
+          ColumnSpan: 3
           ElementId: 816820f9-485a-42e1-8c45-9a51361ff46a
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 3
-          ElementId: e185c0cd-c3b6-49c1-89ce-819728f175a3
+        - ColumnIndex: 3
+          ColumnSpan: 3
+          ElementId: c89d2be5-2c90-41b4-afb9-24e1c4e7f78e
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 3
-          ElementId: b7e883dd-55a1-470a-8e07-dbc5897898aa
-          ElementType: FILTER_CONTROL
-          RowSpan: 1
-        - ColumnSpan: 3
-          ElementId: 83a89852-9ab4-483c-a820-12d4bf06c294
-          ElementType: FILTER_CONTROL
-          RowSpan: 1
-        - ColumnSpan: 3
-          ElementId: 48950c30-205a-42ac-b827-159234f339d9
-          ElementType: FILTER_CONTROL
-          RowSpan: 1
-        - ColumnSpan: 3
-          ElementId: 7eceadb2-b2d4-4136-a22d-c98353660c89
-          ElementType: FILTER_CONTROL
-          RowSpan: 1
-        - ColumnSpan: 3
-          ElementId: 90a1da51-6c5b-4089-9b71-20af95f3c79d
-          ElementType: FILTER_CONTROL
-          RowSpan: 1
-        - ColumnSpan: 3
-          ElementId: 434fdae8-5bae-4e87-821b-b7a4126f4a3a
-          ElementType: FILTER_CONTROL
-          RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 6
+          ColumnSpan: 2
           ElementId: 3916b974-c284-4249-80e8-acca3e769bfe
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 8
+          ColumnSpan: 3
+          ElementId: ee98c904-1cc8-49b7-9d98-d1c0b6b4ba8b
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 0
+          ColumnSpan: 2
+          ElementId: 83a89852-9ab4-483c-a820-12d4bf06c294
+          ElementType: FILTER_CONTROL
+          RowIndex: 1
+          RowSpan: 1
+        - ColumnIndex: 2
+          ColumnSpan: 2
+          ElementId: b7e883dd-55a1-470a-8e07-dbc5897898aa
+          ElementType: FILTER_CONTROL
+          RowIndex: 1
+          RowSpan: 1
+        - ColumnIndex: 4
+          ColumnSpan: 2
+          ElementId: 434fdae8-5bae-4e87-821b-b7a4126f4a3a
+          ElementType: FILTER_CONTROL
+          RowIndex: 1
+          RowSpan: 1
+        - ColumnIndex: 6
+          ColumnSpan: 2
+          ElementId: 48950c30-205a-42ac-b827-159234f339d9
+          ElementType: FILTER_CONTROL
+          RowIndex: 1
+          RowSpan: 1
+        - ColumnIndex: 8
+          ColumnSpan: 2
+          ElementId: 7eceadb2-b2d4-4136-a22d-c98353660c89
+          ElementType: FILTER_CONTROL
+          RowIndex: 1
+          RowSpan: 1
+        - ColumnIndex: 10
+          ColumnSpan: 2
+          ElementId: 90a1da51-6c5b-4089-9b71-20af95f3c79d
+          ElementType: FILTER_CONTROL
+          RowIndex: 1
           RowSpan: 1
   SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
   TextBoxes:
@@ -10424,8 +10428,9 @@ Sheets:
             \ the list above and adjust the target slider to fine-tune. Looking back\
             \ over last\n  <parameter>${EmlLookbackDays}</parameter>\n  \_days.\n\
             \  <br/>\n  <br/>\n  <inline color=\"#cfc827\" font-size=\"14px\">\n \
-            \   <i>NOTE: Values can be distorted if the lookback period spans past\
-            \ recent new reservation purchases</i>\n  </inline>\n  <br/>\n</visual-subtitle>"
+            \   <b>NOTE: Values can be distorted if the lookback period spans past\
+            \ recent new reservation purchases. Values are estimations only and may\
+            \ vary based on final unit pricing.</b>\n  </inline>\n  <br/>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -10771,6 +10776,9 @@ Sheets:
             - DestinationParameterName: EmlReservationProfile
               Value:
                 SourceField: d6da8534-e8ab-4daa-98d7-a3af2a67f8b5.17.1765835438608
+            - DestinationParameterName: EmlReservationTargetScenario
+              Value:
+                SourceField: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769712076
         CustomActionId: 8bf267b4-5105-4980-9527-56dedac97130
         Name: SetProfile
         Status: ENABLED
@@ -10785,6 +10793,9 @@ Sheets:
             Width: 192px
           - FieldId: d6da8534-e8ab-4daa-98d7-a3af2a67f8b5.17.1765835438608
             Width: 396px
+          - CustomLabel: Current Reservations
+            FieldId: 610df661-ea6d-4c65-8bb2-b289db3ea493.10.1769197652040
+            Width: 183px
           - CustomLabel: Minimum
             FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.12.1763762637702
             Width: 94px
@@ -10794,9 +10805,6 @@ Sheets:
           - CustomLabel: Maximum
             FieldId: 7aaa749a-fd84-4a57-b1ad-886e0c2c6e4b.13.1763769251451
             Width: 92px
-          - CustomLabel: Current Reservations
-            FieldId: 610df661-ea6d-4c65-8bb2-b289db3ea493.17.1765836788436
-            Width: 143px
           - CustomLabel: OD Cost
             FieldId: 33332fff-4cd4-4b4e-8420-e9ffd6e0a644.10.1747070078113
             Width: 106px
@@ -10824,6 +10832,11 @@ Sheets:
                   ColumnName: Reservation Profile
                   DataSetIdentifier: msih_view
                 FieldId: d6da8534-e8ab-4daa-98d7-a3af2a67f8b5.17.1765835438608
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: existing_reservation_count
+                  DataSetIdentifier: msih_view
+                FieldId: 610df661-ea6d-4c65-8bb2-b289db3ea493.10.1769197652040
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -10877,13 +10890,6 @@ Sheets:
                       SeparatorConfiguration:
                         ThousandsSeparator:
                           Visibility: VISIBLE
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: MIN
-                Column:
-                  ColumnName: existing_reservation_count
-                  DataSetIdentifier: msih_view
-                FieldId: 610df661-ea6d-4c65-8bb2-b289db3ea493.17.1765836788436
             - NumericalMeasureField:
                 AggregationFunction:
                   SimpleNumericalAggregation: SUM
@@ -11393,11 +11399,8 @@ Sheets:
             \  </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>\_days for:</b>\n\
             \  </inline>\n  <inline color=\"#09add4\" font-size=\"16px\">\n    <b>\_\
             </b>\n  </inline>\n  <inline color=\"#09add4\" font-size=\"16px\">\n \
-            \   <b>\n      <i>\_</i>\n    </b>\n  </inline>\n  <inline color=\"#09add4\"\
-            \ font-size=\"16px\">\n    <b>\n      <i>\n        <parameter>${EmlLinkedAccountOption}</parameter>\n\
-            \      </i>\n    </b>\n  </inline>\n  <inline color=\"#09add4\" font-size=\"\
-            16px\">\n    <b>\n      <i>\_\_</i>\n    </b>\n  </inline>\n  <inline\
-            \ color=\"#09add4\" font-size=\"16px\">\n    <b>\n      <i>\n        <parameter>${EmlReservationProfile}</parameter>\n\
+            \   <b>\n      <i>\_\_</i>\n    </b>\n  </inline>\n  <inline color=\"\
+            #09add4\" font-size=\"16px\">\n    <b>\n      <i>\n        <parameter>${EmlReservationProfile}</parameter>\n\
             \      </i>\n    </b>\n  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 00305a71-ca16-46bc-bd62-2c0ee9636b30
@@ -11691,6 +11694,7 @@ Sheets:
           Width: 255px
         PrimaryYAxisDisplayOptions:
           AxisOptions:
+            AxisOffset: 72px
             DataOptions:
               NumericAxisOptions:
                 Scale:

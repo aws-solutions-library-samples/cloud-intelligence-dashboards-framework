@@ -5,7 +5,7 @@ dashboards:
       - msih_reservation_optimize
       - msih_reservations
       - msih_view
-    name: Media Services Insights Hub
+    name: Media Services Insights
     dashboardId: media-services-insights
     category: Advanced
     theme: MIDNIGHT
@@ -33,6 +33,8 @@ datasets:
               Type: STRING
             - Name: billing_period
               Type: DATETIME
+            - Name: tags_json
+              Type: STRING
             - Name: usage_date
               Type: DATETIME
             - Name: payer_account_id
@@ -160,7 +162,30 @@ datasets:
               Type: STRING
       ImportMode: SPICE
       LogicalTableMap:
-        18b59b60-32c6-4689-84ce-895a38f91124:
+        26a80ce9-0d75-4cb0-82f0-c74529f12769:
+          Alias: Intermediate Table
+          Source:
+            JoinInstruction:
+              LeftOperand: 3e96372e-5959-4a5b-a96a-730193e3990b
+              RightOperand: fe50ab11-682a-4611-b7a0-048682763adf
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+        3e96372e-5959-4a5b-a96a-730193e3990b:
+          Alias: msih_view
+          Source:
+            PhysicalTableId: 17740ffc-0df9-4dc9-8780-a77c9dadae18
+        43f7b42d-3957-4651-8f5c-278ecd1981cc:
+          Alias: account_map_payer
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map_payer]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: payer_account_name
+          Source:
+            PhysicalTableId: ca2f9216-c240-4505-9a10-3d7794d2633a
+        4f7ae8d7-2643-44db-b1da-d92afa489885:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -186,6 +211,7 @@ datasets:
               - year
               - month
               - billing_period
+              - tags_json
               - usage_date
               - payer_account_id
               - linked_account_id
@@ -239,33 +265,10 @@ datasets:
               - payer_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: 78fb34d8-5e3b-4fea-8bab-d6a5f5f20906
+              LeftOperand: 26a80ce9-0d75-4cb0-82f0-c74529f12769
               RightOperand: 43f7b42d-3957-4651-8f5c-278ecd1981cc
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
-        3e96372e-5959-4a5b-a96a-730193e3990b:
-          Alias: msih_view
-          Source:
-            PhysicalTableId: 17740ffc-0df9-4dc9-8780-a77c9dadae18
-        43f7b42d-3957-4651-8f5c-278ecd1981cc:
-          Alias: account_map_payer
-          DataTransforms:
-          - RenameColumnOperation:
-              ColumnName: account_id
-              NewColumnName: account_id[account_map_payer]
-          - RenameColumnOperation:
-              ColumnName: account_name
-              NewColumnName: payer_account_name
-          Source:
-            PhysicalTableId: ca2f9216-c240-4505-9a10-3d7794d2633a
-        78fb34d8-5e3b-4fea-8bab-d6a5f5f20906:
-          Alias: Intermediate Table
-          Source:
-            JoinInstruction:
-              LeftOperand: 3e96372e-5959-4a5b-a96a-730193e3990b
-              RightOperand: fe50ab11-682a-4611-b7a0-048682763adf
-              Type: LEFT
-              OnClause: '{linked_account_id} = {account_id}'
         fe50ab11-682a-4611-b7a0-048682763adf:
           Alias: account_map_linked
           DataTransforms:
@@ -295,8 +298,6 @@ datasets:
             InputColumns:
             - Name: reservation_arn
               Type: STRING
-            - Name: reservation_id
-              Type: STRING
             - Name: reservation_count
               Type: DECIMAL
               SubType: FLOAT
@@ -309,8 +310,6 @@ datasets:
             - Name: linked_account_id
               Type: STRING
             - Name: payer_account_id
-              Type: STRING
-            - Name: line_item_line_item_description
               Type: STRING
             - Name: line_item_usage_type
               Type: STRING
@@ -334,6 +333,8 @@ datasets:
               Type: STRING
             - Name: video_quality
               Type: STRING
+            - Name: is_active
+              Type: INTEGER
             - Name: is_renewal
               Type: INTEGER
             - Name: reservation_fee
@@ -342,6 +343,8 @@ datasets:
             - Name: effective_rate_adjust
               Type: DECIMAL
               SubType: FLOAT
+            - Name: reservation_id
+              Type: STRING
             - Name: usage_start_time
               Type: DATETIME
             - Name: usage_end_time
@@ -399,18 +402,7 @@ datasets:
               NewColumnName: payer_account_name
           Source:
             PhysicalTableId: fe517bcf-d790-49f8-b395-b744f079758f
-        6bab26bf-161f-47a2-9dd7-c83e7d9a20ee:
-          Alias: account_map
-          DataTransforms:
-          - RenameColumnOperation:
-              ColumnName: account_id
-              NewColumnName: account_id[account_map]
-          - RenameColumnOperation:
-              ColumnName: account_name
-              NewColumnName: linked_account_name
-          Source:
-            PhysicalTableId: 481b319c-c8f4-4e82-9ddf-fa705f6cf783
-        893090bb-f5a6-4e22-825c-b093eba6345c:
+        2ec2a3ce-4898-45f5-9ee7-f0ce35d402eb:
           Alias: Intermediate Table
           Source:
             JoinInstruction:
@@ -418,7 +410,7 @@ datasets:
               RightOperand: 6bab26bf-161f-47a2-9dd7-c83e7d9a20ee
               Type: LEFT
               OnClause: '{linked_account_id} = {account_id[account_map]}'
-        e5beb93a-6a25-40c2-ba8a-f0b5d497e1ee:
+        535870c6-7d13-4c6a-9ba7-45681756b69f:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -442,14 +434,12 @@ datasets:
           - ProjectOperation:
               ProjectedColumns:
               - reservation_arn
-              - reservation_id
               - reservation_count
               - reservation_start_time
               - reservation_end_time
               - reservation_first_start_time
               - linked_account_id
               - payer_account_id
-              - line_item_line_item_description
               - line_item_usage_type
               - region
               - video_region
@@ -461,9 +451,11 @@ datasets:
               - video_frame_rate
               - video_resolution
               - video_quality
+              - is_active
               - is_renewal
               - reservation_fee
               - effective_rate_adjust
+              - reservation_id
               - usage_start_time
               - usage_end_time
               - reservation_utilization_percent
@@ -478,10 +470,21 @@ datasets:
               - linked_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: 893090bb-f5a6-4e22-825c-b093eba6345c
+              LeftOperand: 2ec2a3ce-4898-45f5-9ee7-f0ce35d402eb
               RightOperand: 24baacd6-be68-44a1-ac29-318cfec3a2d9
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
+        6bab26bf-161f-47a2-9dd7-c83e7d9a20ee:
+          Alias: account_map
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: linked_account_name
+          Source:
+            PhysicalTableId: 481b319c-c8f4-4e82-9ddf-fa705f6cf783
         faff24db-9601-4a15-85e1-4b264d4626c3:
           Alias: msih_reservations
           Source:
@@ -614,7 +617,11 @@ datasets:
               Type: STRING
       ImportMode: SPICE
       LogicalTableMap:
-        31364820-0eaf-4435-b994-d712b591fb85:
+        6ba9a35e-fa2a-4227-8d01-496968256d34:
+          Alias: msih_reservation_optimize
+          Source:
+            PhysicalTableId: 47a7153e-a73a-4974-85b7-41db6720a217
+        776df613-7b66-4043-be70-267b0dddbdea:
           Alias: Intermediate Table
           Source:
             JoinInstruction:
@@ -622,10 +629,6 @@ datasets:
               RightOperand: e7038b62-397d-46f7-9fe2-dd369b97dde3
               Type: LEFT
               OnClause: '{linked_account_id} = {account_id[account_map_linked]}'
-        6ba9a35e-fa2a-4227-8d01-496968256d34:
-          Alias: msih_reservation_optimize
-          Source:
-            PhysicalTableId: 47a7153e-a73a-4974-85b7-41db6720a217
         929368f8-f032-493b-a61a-9aae152bf092:
           Alias: account_map_payer
           DataTransforms:
@@ -637,7 +640,7 @@ datasets:
               NewColumnName: payer_account_name
           Source:
             PhysicalTableId: 91eaa102-fc91-4283-adef-fe6697fd3cf5
-        b250dee3-46c4-4256-bd0c-dc2b8728afdb:
+        d25fed78-6b41-42f6-92af-b9c54f328e93:
           Alias: Intermediate Table (2)
           DataTransforms:
           - CreateColumnsOperation:
@@ -700,7 +703,7 @@ datasets:
               - payer_account_formatted
           Source:
             JoinInstruction:
-              LeftOperand: 31364820-0eaf-4435-b994-d712b591fb85
+              LeftOperand: 776df613-7b66-4043-be70-267b0dddbdea
               RightOperand: 929368f8-f032-493b-a61a-9aae152bf092
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
@@ -829,7 +832,7 @@ views:
         "year"
       , "month"
       , "bill_billing_period_start_date" "billing_period"
-      , ${cur_tags_json} tags_json --replace with 
+      , ${cur_tags_json} tags_json --replace with
       , "usage_date"
       , "bill_payer_account_id" "payer_account_id"
       , "line_item_usage_account_id" "linked_account_id"
@@ -915,14 +918,14 @@ views:
       WITH
         core AS (
          SELECT
-           "reservation_reservation_a_r_n"
+           "reservation_reservation_a_r_n" "reservation_arn"
          , "line_item_usage_amount"
          , CAST("line_item_usage_start_date" AS timestamp) "usage_start_time"
          , CAST("line_item_usage_end_date" AS timestamp) "usage_end_time"
          , "line_item_product_code"
          , "line_item_line_item_type"
-         , "reservation_start_time"
-         , "reservation_end_time"
+         , CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) "reservation_start_time"
+         , CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) "reservation_end_time"
          , "line_item_usage_account_id"
          , "bill_payer_account_id"
          , "line_item_line_item_description"
@@ -939,25 +942,42 @@ views:
       )
       , eml_ri_first_start_time AS (
          SELECT
-           "reservation_reservation_a_r_n"
-         , CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) "reservation_first_start_time"
-         , MIN(reservation_start_time) OVER (PARTITION BY reservation_reservation_a_r_n) first_start_time
+           "reservation_arn"
+         , MIN("reservation_start_time") "reservation_first_start_time"
          FROM
            "core"
          WHERE ((line_item_product_code = 'AWSElementalMediaLive') AND (line_item_line_item_type = 'RIFee'))
+         GROUP BY 1
+      )
+      , eml_reservation_count AS (
+         SELECT
+           "reservation_arn"
+         , "reservation_start_time"
+         , "reservation_end_time"
+         , sum("reservation_count") "reservation_count"
+         FROM
+           (
+            SELECT DISTINCT
+              "reservation_arn"
+            , "reservation_start_time"
+            , "reservation_end_time"
+            , ROUND(("line_item_usage_amount" / DATE_DIFF('hour', date_trunc('hour', "usage_start_time"), date_trunc('hour', "usage_end_time")))) "reservation_count"
+            FROM
+              "core"
+            WHERE (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_line_item_type" = 'RIFee'))
+         )
+         GROUP BY 1, 2, 3
       )
       , eml_ri_inventory AS (
          SELECT
-           c."reservation_reservation_a_r_n" reservation_arn
-         , SPLIT_PART(c."reservation_reservation_a_r_n", ':', 7) "reservation_id"
-         , ROUND(("line_item_usage_amount" / DATE_DIFF('hour', date_trunc('hour', CAST("usage_start_time" AS timestamp)), date_trunc('hour', CAST("usage_end_time" AS timestamp))))) "reservation_count"
-         , CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) "reservation_start_time"
-         , CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) "reservation_end_time"
+           c."reservation_arn"
+         , "reservation_count"
+         , c."reservation_start_time"
+         , c."reservation_end_time"
          , "reservation_first_start_time"
          , "line_item_usage_account_id" "linked_account_id"
          , "bill_payer_account_id" "payer_account_id"
-         , "line_item_line_item_description"
-         , "line_item_usage_type"
+         , (CASE WHEN ("line_item_usage_type" LIKE '%-R') THEN substring("line_item_usage_type", 1, (length("line_item_usage_type") - 2)) ELSE "line_item_usage_type" END) "line_item_usage_type"
          , "product"['region'] "region"
          , "product"['region'] "video_region"
          , "line_item_operation"
@@ -968,18 +988,20 @@ views:
          , concat(regexp_extract("line_item_usage_type", '-([0-9]*?)-', 1), ' fps') "video_frame_rate"
          , (CASE WHEN (strpos("line_item_usage_type", '-4K-') > 0) THEN '4K' WHEN (strpos("line_item_usage_type", '-8K-') > 0) THEN '8K' WHEN (strpos("line_item_usage_type", '-SD-') > 0) THEN 'SD' WHEN (strpos("line_item_usage_type", '-HD-') > 0) THEN 'HD' WHEN (strpos("line_item_usage_type", '-HDR10PLUS-') > 0) THEN 'HDR 10+' WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND (strpos("line_item_usage_type", '-IDLE-') > 0)) THEN null ELSE null END) "video_resolution"
          , (CASE WHEN (strpos("line_item_usage_type", '-S') > 0) THEN 'Standard' WHEN (strpos("line_item_usage_type", '-E') > 0) THEN 'Enhanced' ELSE null END) "video_quality"
+         , (CASE WHEN (c."reservation_end_time" < now()) THEN 0 ELSE 1 END) "is_active"
          , (CASE WHEN (substring("line_item_usage_type", (length("line_item_usage_type") - 1)) = '-R') THEN 1 ELSE 0 END) "is_renewal"
          , SUM("line_item_unblended_cost") "reservation_fee"
          , ROUND(AVG(((CASE WHEN ("line_item_net_unblended_cost" IS NULL) THEN "line_item_unblended_cost" ELSE "line_item_net_unblended_cost" END) / "line_item_unblended_cost")), 2) "effective_rate_adjust"
          FROM
-           ("core" c
-         LEFT JOIN "eml_ri_first_start_time" fst ON (fst."reservation_reservation_a_r_n" = c."reservation_reservation_a_r_n"))
+           (("core" c
+         LEFT JOIN "eml_ri_first_start_time" fst ON (fst."reservation_arn" = c."reservation_arn"))
+         LEFT JOIN "eml_reservation_count" n ON ((n."reservation_arn" = c."reservation_arn") AND (n."reservation_start_time" = c."reservation_start_time")))
          WHERE (("line_item_product_code" = 'AWSElementalMediaLive') AND (line_item_line_item_type = 'RIFee'))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
       )
       , eml_usage AS (
          SELECT
-           SPLIT_PART("reservation_reservation_a_r_n", ':', 7) "reservation_id"
+           "reservation_arn"
          , "usage_start_time"
          , "usage_end_time"
          , "line_item_usage_type"
@@ -991,28 +1013,19 @@ views:
          WHERE (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_line_item_type" = 'DiscountedUsage'))
          GROUP BY 1, 2, 3, 4
       )
-      , eml_reservation_count AS (
-         SELECT DISTINCT
-           SPLIT_PART("reservation_reservation_a_r_n", ':', 7) "reservation_id"
-         , CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) "reservation_start_time"
-         , CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) "reservation_end_time"
-         , ROUND(("line_item_usage_amount" / DATE_DIFF('hour', date_trunc('hour', "usage_start_time"), date_trunc('hour', "usage_end_time")))) "reservation_count"
-         FROM
-           "core"
-         WHERE (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_line_item_type" = 'RIFee'))
-      )
       , eml_ri_utilization AS (
          SELECT
            u.*
-         , c."reservation_start_time"
-         , c."reservation_end_time"
-         , ROUND((u."total_usage" / (c."reservation_count" * DATE_DIFF('hour', date_trunc('hour', "usage_start_time"), date_trunc('hour', "usage_end_time")))), 2) "reservation_utilization_percent"
+         , n."reservation_start_time"
+         , n."reservation_end_time"
+         , ROUND((u."total_usage" / ("reservation_count" * DATE_DIFF('hour', date_trunc('hour', "usage_start_time"), date_trunc('hour', "usage_end_time")))), 2) "reservation_utilization_percent"
          FROM
            ("eml_usage" u
-         INNER JOIN "eml_reservation_count" c ON ((u."reservation_id" = c."reservation_id") AND ((date_trunc('day', u."usage_start_time") >= date_trunc('day', c."reservation_start_time")) AND (date_trunc('day', u."usage_end_time") <= date_trunc('day', c."reservation_end_time")))))
+         INNER JOIN "eml_reservation_count" n ON ((u."reservation_arn" = n."reservation_arn") AND (date_trunc('day', u."usage_start_time") >= date_trunc('day', n."reservation_start_time")) AND (date_trunc('day', u."usage_end_time") <= date_trunc('day', n."reservation_end_time"))))
       )
       SELECT
         i.*
+      , SPLIT_PART(i."reservation_arn", ':', 7) "reservation_id"
       , u."usage_start_time"
       , u."usage_end_time"
       , COALESCE(u."reservation_utilization_percent", 0) "reservation_utilization_percent"
@@ -1023,7 +1036,7 @@ views:
       , ROUND((1 - ("reservation_effective_cost" / ("on_demand_cost" * "effective_rate_adjust"))), 4) "effective_savings_rate"
       FROM
         ("eml_ri_inventory" i
-      LEFT JOIN eml_ri_utilization u ON ((i."reservation_id" = u."reservation_id") AND ((date_trunc('day', u."usage_start_time") >= date_trunc('day', i."reservation_start_time")) AND (date_trunc('day', u."usage_end_time") <= date_trunc('day', i."reservation_end_time")))))
+      LEFT JOIN eml_ri_utilization u ON ((i."reservation_arn" = u."reservation_arn") AND ((date_trunc('day', u."usage_start_time") >= date_trunc('day', i."reservation_start_time")) AND (date_trunc('day', u."usage_end_time") <= date_trunc('day', i."reservation_end_time")))))
   msih_reservation_optimize:
     dependsOn:
       cur2:
@@ -1085,7 +1098,15 @@ views:
          WHERE (("line_item_operation" IN ('CHANNEL_INPUT', 'CHANNEL_OUTPUT', 'CHANNEL_FEATURE')) AND ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage', 'EdpDiscount', 'PrivateRateDiscount')) AND (("line_item_line_item_type" <> 'EdpDiscount') AND (substring("line_item_usage_type", (length("line_item_usage_type") - 1)) <> '-R')) AND (CAST("line_item_usage_end_date" AS date) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)))
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
       )
-      , ri_inventory AS (
+      , "all_eml_accounts" AS (
+         SELECT DISTINCT
+           "bill_payer_account_id" "payer_account_id"
+         , "line_item_usage_account_id" "linked_account_id"
+         FROM
+           "core"
+         WHERE ("line_item_line_item_type" = 'Usage')
+      )
+      , "ri_inventory" AS (
          SELECT
            "usage_time"
          , "usage_profile"
@@ -1103,18 +1124,18 @@ views:
             SELECT DISTINCT
               "bill_payer_account_id" "payer_account_id"
             , "line_item_usage_account_id" "linked_account_id"
-            , CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) "reservation_start_time"
-            , CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) "reservation_end_time"
-            , SPLIT_PART("reservation_reservation_a_r_n", ':', 7) "reservation_id"
+            , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) ELSE null END) "reservation_start_time"
+            , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) ELSE null END) "reservation_end_time"
+            , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN SPLIT_PART("reservation_reservation_a_r_n", ':', 7) ELSE null END) "reservation_id"
             , (CASE WHEN (substring("line_item_usage_type", (length("line_item_usage_type") - 1)) = '-R') THEN substring("line_item_usage_type", 1, (length("line_item_usage_type") - 2)) ELSE "line_item_usage_type" END) "usage_profile"
-            , ROUND(("line_item_usage_amount" / DATE_DIFF('hour', date_trunc('second', CAST("line_item_usage_start_date" AS timestamp)), date_trunc('second', CAST("line_item_usage_end_date" AS timestamp))))) "reservation_count"
+            , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN ROUND(("line_item_usage_amount" / DATE_DIFF('hour', date_trunc('second', CAST("line_item_usage_start_date" AS timestamp)), date_trunc('second', CAST("line_item_usage_end_date" AS timestamp))))) ELSE 0 END) "reservation_count"
             FROM
               "core" c
-            WHERE (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_line_item_type" = 'RIFee'))
-         )  r ON ("usage_time" BETWEEN "reservation_start_time" AND "reservation_end_time"))
+            WHERE ("line_item_line_item_type" IN ('RIFee', 'Usage'))
+         )  r ON ((h."usage_time" BETWEEN "reservation_start_time" AND "reservation_end_time") OR ("reservation_start_time" IS NULL)))
          GROUP BY 1, 2, 3, 4, 5
       )
-      , latest_reservation_count AS (
+      , "latest_reservation_count" AS (
          SELECT
            r2."payer_account_id"
          , r2."linked_account_id"
@@ -1134,11 +1155,13 @@ views:
             GROUP BY 1, 2, 3
          )  "rlat" ON (("r2"."linked_account_id" = "rlat"."linked_account_id") AND ("r2"."usage_profile" = "rlat"."usage_profile") AND ("usage_time" = "latest_time")))
       )
-      , candidate_concur_seq AS (
+      , "candidate_concur_seq" AS (
          SELECT
            "linked_account_id"
          , "usage_profile"
          , d "reservation_count_candidate"
+         , min_seq
+         , max_seq
          FROM
            (UNNEST(sequence(0, 1000)) t (d)
          INNER JOIN (
@@ -1162,8 +1185,8 @@ views:
       , (CASE WHEN ("usage_amount_total" <> 0) THEN (("cost_reserved" + "cost_od_unblended") / "usage_amount_total") ELSE null END) "unit_cost_combined_unblended"
       , (CASE WHEN ("usage_amount_total" <> 0) THEN (("cost_reserved" + "cost_od_net_unblended") / "usage_amount_total") ELSE null END) "unit_cost_combined_net_unblended"
       , "reservation_count"
-      , "current_reservation_count"
-      , "current_reservation_count_payer"
+      , COALESCE("current_reservation_count", 0) "current_reservation_count"
+      , COALESCE("current_reservation_count_payer", 0) "current_reservation_count_payer"
       , "reservation_count_candidate"
       , "last_refresh_date"
       FROM
