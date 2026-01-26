@@ -278,6 +278,9 @@ views:
          , ROW ('group2')
       )  ignored_table_name ("group")
   rls_all_users_view:
+    dependsOn:
+      views:
+      - rls_all_permissions
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".rls_all_users_view AS 
       WITH user_groups AS (

@@ -230,6 +230,15 @@ def open(ctx, dashboard_id, **kwargs):
 
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
+@click.option('--dashboard-id', help='QuickSight dashboard id', default=None)
+@cid_command
+def refresh(ctx, dashboard_id, **kwargs):
+    """Refresh datasets for a dashboard"""
+    ctx.obj.refresh_datasets(dashboard_id, **kwargs)
+
+
+@click.option('-v', '--verbose', count=True)
+@click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
 @cid_command
 def cleanup(ctx, **kwargs):
     """Delete unused resources (QuickSight datasets, Athena views)"""

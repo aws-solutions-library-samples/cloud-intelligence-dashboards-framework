@@ -5,28 +5,73 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Mon, 24 Nov 2025 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 19 Jan 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
-      <title>[Update] Media Services Insights Hub v1.2.0</title>
+      <title>[Update] CUDOS Dashboard v5.7.1</title>
       <link>
-        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-media-services-insights
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---571
       </link>
-      <pubDate>Tue, 30 Dec 2024 12:00:00 GMT</pubDate>
+      <pubDate>Mon, 27 Jan 2026 12:00:00 GMT</pubDate>
       <category><![CDATA[Dashboard Update]]></category>
-      <guid isPermaLink="false">39ca37db-1813-4120-bc54-270ae162f6ca</guid>
-      <description>Media Services Insights Hub v1.2.0</description>
+      <guid isPermaLink="false">c1d2e3f4-g5h6-7i8j-9k0l-m1n2o3p4q5r6</guid>
+      <description>CUDOS Dashboard v5.7.1</description>
       <content:encoded><![CDATA[
 <div>
   <ul>
-    <li><strong>MediaLive:</strong>Hourly-based analysis for fine tuning reservations</li>
-    <li><strong>Other:</strong>UI enhncements</li>
-    <li><strong>Note:</strong>Requires --force --recursive for updating to incorporate dataset changes</li>
+    <li><strong>Executive: Trends:</strong> Fix Week Number calculation to handle partial week at the end and beginning of the year</li>
+    <li><strong>Security:</strong> Fix for 'Shield Advanced Paid Subscriptions' visual to show only amount of paid subscriptions, fix for 'Shield Advanced Subscriptions per Payer Account' to show not only cost but also usage to see all the subscriptions across all payer accounts regardless if they are paid or not</li>
   </ul>
 </div>
     ]]></content:encoded>    
     </item>
-
+    <item>
+      <title>[Guidance] Generative AI Assistant with Cloud Intelligence Dashboards and Amazon Quick Suite</title>
+      <link>
+        https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/generative-ai.html
+      </link>
+      <pubDate>Mon, 19 Jan 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Documentation]]></category>
+      <guid isPermaLink="false">6g9h0i1j-4k5l-7m8n-9o0p-1q2r3s4t5u6v</guid>
+      <description>Generative AI Assistant with Cloud Intelligence Dashboards and Amazon Quick Suite</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    Unlock the power of generative AI for your cloud operations by integrating Cloud Intelligence Dashboards (CID) with Amazon Quick Suite generative AI capabilities. This innovative approach transforms how cloud operations teams analyze, understand, and optimize their AWS environments.
+  </p>
+  <p>
+    Instead of manually navigating through multiple dashboards and correlating data points, you can now ask natural language questions and receive intelligent, data-driven insights across FinOps, cost efficiency, security, performance, and operational excellence topics. The AI-powered CID Operations Advisor provides comprehensive analysis by understanding your specific cloud environment and delivering actionable recommendations tailored to your business needs.
+  </p>
+  <h3>Key benefits include:</h3>
+  <ul>
+    <li><strong>Intelligent Cross-Dashboard Analysis:</strong> Correlate insights across CUDOS, Cost Intelligence, KPI, CORA, TAO, AWS Health Events, Graviton Savings and more</li>
+    <li><strong>Natural Language Queries:</strong> Ask complex questions in plain English and receive detailed, data-backed responses</li>
+    <li><strong>Proactive Recommendations:</strong> Identify optimization opportunities, security risks, and operational improvements before they impact your business</li>
+    <li><strong>Team Productivity Enhancement:</strong> Accelerate cloud operations with AI-powered analysis and recommendations</li>
+  </ul>
+  <p>
+    To learn more follow <a href="https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/generative-ai.html">https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/generative-ai.html</a>
+  </p>
+</div>
+    ]]></content:encoded>    
+    </item>
+    <item>
+      <title>[Update] CORA Dashboard v0.0.11</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cora.md#cora---v0011
+      </link>
+      <pubDate>Mon, 19 Jan 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">5f8a9b2c-3d4e-6f7g-8h9i-0j1k2l3m4n5o</guid>
+      <description>CORA v0.0.11</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>Fix for <strong>Top Potential Savings Over Time</strong> visual to show all data in the dataset</li>
+  </ul>
+</div>
+    ]]></content:encoded>    
+    </item>
     <item>
       <title>[Update] Media Services Insights Hub v1.1.3</title>
       <link>
