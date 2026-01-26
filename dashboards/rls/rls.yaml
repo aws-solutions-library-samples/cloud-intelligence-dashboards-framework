@@ -67,6 +67,11 @@ datasets:
               Type: STRING
             - Name: permission_type
               Type: STRING
+      LogicalTableMap:
+        3ed793b5-9318-41ff-b172-e762a9967ec0:
+          Alias: rls_all_users_view
+          Source:
+            PhysicalTableId: a4a17683-2fe9-4d08-9935-95ed1af884bb
       ImportMode: SPICE
     dependsOn:
       views:
