@@ -367,6 +367,7 @@ Conditions:
         - !Equals [!Ref "AWS::Region", "eu-central-2"]
         - !Equals [!Ref "AWS::Region", "eu-south-1"]
         - !Equals [!Ref "AWS::Region", "eu-south-2"]
+        - !Equals [!Ref "AWS::Region", "il-central-1"]
         - !Equals [!Ref "AWS::Region", "cn-north-1"]
         - !Equals [!Ref "AWS::Region", "us-gov-east-1"]
         - !Equals [!Ref "AWS::Region", "us-gov-west-1"]
@@ -397,6 +398,7 @@ Mappings:
     eu-central-2:   {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
     eu-south-1:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
     eu-south-2:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
+    il-central-1:   {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
 
     # specific regions
     cn-north-1:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1} # China
