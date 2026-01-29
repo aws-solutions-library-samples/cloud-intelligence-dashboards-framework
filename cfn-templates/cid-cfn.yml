@@ -596,8 +596,25 @@ Resources:
         rules_to_suppress:
           - id: 'W35'
             reason: "Data buckets would generate too much logs"
-          - id: 'W51'
-            reason: "No policy needed"
+
+  MyAthenaQueryResultsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: NeedAthenaQueryResultsBucket
+    Properties:
+      Bucket: !Ref MyAthenaQueryResultsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !Sub 'arn:${AWS::Partition}:s3:::${MyAthenaQueryResultsBucket}'
+              - !Sub 'arn:${AWS::Partition}:s3:::${MyAthenaQueryResultsBucket}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
 
   MyAthenaWorkGroup:
     Type: AWS::Athena::WorkGroup
@@ -1924,8 +1941,25 @@ Resources:
         rules_to_suppress:
           - id: 'W35'
             reason: "Data buckets would generate too much logs"
-          - id: 'W51'
-            reason: "No policy needed"
+
+  LocalAssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: NeedLocalAssets
+    Properties:
+      Bucket: !Ref LocalAssetsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !Sub 'arn:${AWS::Partition}:s3:::${LocalAssetsBucket}'
+              - !Sub 'arn:${AWS::Partition}:s3:::${LocalAssetsBucket}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
   PullAssetsLambdaRole:
     Type: AWS::IAM::Role
     Condition: NeedLocalAssets
