@@ -7,4 +7,3 @@ tqdm
 tzlocal>=4.0
 InquirerPy
 filelock>=3.20.3
-urllib3>=2.6.3
