@@ -600,6 +600,7 @@ Resources:
   MyAthenaQueryResultsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Condition: NeedAthenaQueryResultsBucket
+    DependsOn: MyAthenaQueryResultsBucket
     Properties:
       Bucket: !Ref MyAthenaQueryResultsBucket
       PolicyDocument:
@@ -610,8 +611,8 @@ Resources:
             Principal: '*'
             Action: 's3:*'
             Resource:
-              - !Sub 'arn:${AWS::Partition}:s3:::${MyAthenaQueryResultsBucket}'
-              - !Sub 'arn:${AWS::Partition}:s3:::${MyAthenaQueryResultsBucket}/*'
+              - !GetAtt MyAthenaQueryResultsBucket.Arn
+              - !Sub '${MyAthenaQueryResultsBucket.Arn}/*'
             Condition:
               Bool:
                 'aws:SecureTransport': 'false'
@@ -1945,6 +1946,7 @@ Resources:
   LocalAssetsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Condition: NeedLocalAssets
+    DependsOn: LocalAssetsBucket
     Properties:
       Bucket: !Ref LocalAssetsBucket
       PolicyDocument:
@@ -1955,11 +1957,12 @@ Resources:
             Principal: '*'
             Action: 's3:*'
             Resource:
-              - !Sub 'arn:${AWS::Partition}:s3:::${LocalAssetsBucket}'
-              - !Sub 'arn:${AWS::Partition}:s3:::${LocalAssetsBucket}/*'
+              - !GetAtt LocalAssetsBucket.Arn
+              - !Sub '${LocalAssetsBucket.Arn}/*'
             Condition:
               Bool:
                 'aws:SecureTransport': 'false'
+
   PullAssetsLambdaRole:
     Type: AWS::IAM::Role
     Condition: NeedLocalAssets
