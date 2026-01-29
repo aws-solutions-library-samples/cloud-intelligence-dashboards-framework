@@ -40,6 +40,10 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-session-name: ${{ secrets.AWS_SESSION_NAME }}
           aws-region: ${{ secrets.AWS_REGION }}
+      - name: Print AWS Account Info
+        run: |
+          echo "AWS Account ID: $(aws sts get-caller-identity --query Account --output text)"
+          echo "AWS Region: $AWS_REGION"
       - name: Basic check
         run: |
           cid-cmd status
