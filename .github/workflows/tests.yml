@@ -42,6 +42,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Basic check
         run: |
+          echo "::add-mask::$(aws sts get-caller-identity --query Account --output text)"
           cid-cmd status
       - name:  Install Bats
         run: |
