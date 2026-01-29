@@ -2,7 +2,7 @@
 
 
 account_id=$(aws sts get-caller-identity --query "Account" --output text )
-database_name="${database_name:-cid_cur}" # If variable not set or null, use default
+database_name="${database_name:-cid_data_export}" # If variable not set or null, use default
 cur_database_name="${cur_database_name:-cid_data_export}" # If variable not set or null, use default
 quicksight_user="${quicksight_user:-cicd-staging}" # If variable not set or null, use default
 quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If variable not set or null, use default
