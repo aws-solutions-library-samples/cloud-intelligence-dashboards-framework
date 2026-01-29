@@ -600,7 +600,6 @@ Resources:
   MyAthenaQueryResultsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Condition: NeedAthenaQueryResultsBucket
-    DependsOn: MyAthenaQueryResultsBucket
     Properties:
       Bucket: !Ref MyAthenaQueryResultsBucket
       PolicyDocument:
@@ -1946,7 +1945,6 @@ Resources:
   LocalAssetsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Condition: NeedLocalAssets
-    DependsOn: LocalAssetsBucket
     Properties:
       Bucket: !Ref LocalAssetsBucket
       PolicyDocument:
