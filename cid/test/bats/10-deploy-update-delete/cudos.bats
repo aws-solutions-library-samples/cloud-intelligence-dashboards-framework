@@ -62,7 +62,7 @@ cur_table="${cur_table:-cur2}" # If variable not set or null, use default. FIXME
 @test "Update works" {
   run cid-cmd -vv --yes update --force --recursive  \
     --dashboard-id cudos-v5 \
-    --cur-database $database_name \
+    --cur-database $cur_database_name \
     --cur-table-name $cur_table \
     --athena-database $database_name\
     --athena-workgroup primary\
