@@ -885,41 +885,8 @@ FilterGroups:
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
+      - Scope: ALL_VISUALS
         SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0726aa53-2fa3-4951-b723-f56cf406f36c
-        - 974c25c8-9b8c-4200-be8b-d95501f5e29a
-        - 18a4e7d9-4d28-42c5-aee1-44035a25d670
-        - 567b4615-80ca-4324-abf6-b8fcc23a144a
-        - 8c80a6e0-e8bb-490b-bdfa-9ea7f0564211
-        - cd9f301f-c680-4f46-b6b3-7c39ce9ab4c8
-        - a85dac46-9170-4210-86d2-6541eb469382
-        - 4530a3ed-7f34-4836-800b-2c4ef6ca5a0d
-        - 7e8e3667-e1a8-4d05-b835-15903877c6f4
-        - 2b6aa749-de98-491f-b7b1-88157bba4cdb
-        - 42a805dd-baee-42bf-bc52-7815c167ded1
-        - 69b8678f-c89d-4c16-b0b5-7a26180d4145
-        - 0443807d-d72f-406a-9dc2-277b6cf797ce
-        - b0f9ae03-0b4a-4c62-ac83-0cb315123e4c
-        - ebde42d1-bc49-45c2-a2a1-90da88797608
-        - 40e2f9fc-4218-4657-a1af-10a57d518fb4
-        - 4e1b97a6-473c-4065-8642-ab52d9cd40d4
-        - 040ed2ac-c254-4442-8422-04320f57a0e6
-        - a29ea26a-4694-49c3-9621-056019ed8311
-        - 007aa56c-7776-4e3d-b257-f6b4bfab38b1
-        - 124311f3-1cd9-409e-80e5-5d86a269c80f
-        - 50fc3474-92c4-4b51-9425-7cb28161ecf5
-        - 94e86068-6f36-43ad-86eb-acb2fb36511e
-        - 33840f47-9898-4157-a0d1-8be2bf8f5a43
-        - 4f3a4024-8f92-4170-a908-f3f9a63d9208
-        - 3a9e14d8-d583-4dc4-a127-ac674428b312
-        - cf7fd8ae-e17a-43c6-ade0-a652630287a0
-        - 4cdde237-c815-46f3-8e5b-180a67fdb46a
-        - 69f36150-5d95-46ab-8318-6360736eb90b
-        - 31c27c72-08bd-403f-a91b-ef70ff548789
-        - 7ca15ee4-b492-4af0-8467-4919dcde6cdb
-        - a9f516ae-fc19-4734-a210-3a2d247bee93
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 6d58f644-b64e-46c7-bc68-7bde1dd45009
@@ -3945,7 +3912,7 @@ FilterGroups:
       Configuration:
         FilterListConfiguration:
           MatchOperator: CONTAINS
-          NullOption: ALL_VALUES
+          NullOption: NON_NULLS_ONLY
           SelectAllOptions: FILTER_ALL_VALUES
       FilterId: c83dc0d5-8295-4836-b8f9-ec30eb0cb5a6
   ScopeConfiguration:
@@ -4962,27 +4929,6 @@ FilterGroups:
         - fde0cbcd-1393-48f3-9b52-d63a7c83f2c1
   Status: ENABLED
 - CrossDataset: ALL_DATASETS
-  FilterGroupId: 94237351-07b6-46f3-8217-f9ac4a4b19ed
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: 2b7009a1-5702-4d09-8f89-a2356bc84dc0
-        DataSetIdentifier: msih_reservations
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: f54ba456-3131-4d93-97b6-23477bda8995
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - fde0cbcd-1393-48f3-9b52-d63a7c83f2c1
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
   FilterGroupId: e8c24fdb-5294-4fbe-b660-4e9810c1cbc5
   Filters:
   - CategoryFilter:
@@ -5282,9 +5228,10 @@ FilterGroups:
         DataSetIdentifier: msih_view
       Configuration:
         FilterListConfiguration:
+          CategoryValues:
+          - 10 mbps
           MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
+          NullOption: ALL_VALUES
       FilterId: 3c834f68-6441-406e-af9f-f047fa3eb32d
   ScopeConfiguration:
     SelectedSheets:
@@ -5602,7 +5549,7 @@ FilterGroups:
         - ebde42d1-bc49-45c2-a2a1-90da88797608
         - 040ed2ac-c254-4442-8422-04320f57a0e6
         - 1013e15e-b75c-42e3-880c-013926d9c7b7
-        - 0149b573-fc2e-45d5-8053-70822a356f39
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: aa76d8f2-f6a5-4711-844b-3f65d967a398
@@ -5632,7 +5579,7 @@ FilterGroups:
         - 7e8e3667-e1a8-4d05-b835-15903877c6f4
         - ebde42d1-bc49-45c2-a2a1-90da88797608
         - 1013e15e-b75c-42e3-880c-013926d9c7b7
-        - 0149b573-fc2e-45d5-8053-70822a356f39
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 187d207f-a21a-4c80-a203-179e4d163e4c
@@ -5662,7 +5609,7 @@ FilterGroups:
         - 7e8e3667-e1a8-4d05-b835-15903877c6f4
         - ebde42d1-bc49-45c2-a2a1-90da88797608
         - 1013e15e-b75c-42e3-880c-013926d9c7b7
-        - 0149b573-fc2e-45d5-8053-70822a356f39
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: e2e17dda-1fb9-479b-b825-30a4cd43fc7b
@@ -5692,7 +5639,7 @@ FilterGroups:
         - ebde42d1-bc49-45c2-a2a1-90da88797608
         - 7e8e3667-e1a8-4d05-b835-15903877c6f4
         - 1013e15e-b75c-42e3-880c-013926d9c7b7
-        - 0149b573-fc2e-45d5-8053-70822a356f39
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: be929ae1-ddfd-4ea8-8163-dbdae667e855
@@ -5722,7 +5669,7 @@ FilterGroups:
         - 7e8e3667-e1a8-4d05-b835-15903877c6f4
         - ebde42d1-bc49-45c2-a2a1-90da88797608
         - 1013e15e-b75c-42e3-880c-013926d9c7b7
-        - 0149b573-fc2e-45d5-8053-70822a356f39
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: bf00a2d3-d856-4139-b01e-7c4a75408642
@@ -5752,7 +5699,7 @@ FilterGroups:
         - 7e8e3667-e1a8-4d05-b835-15903877c6f4
         - ebde42d1-bc49-45c2-a2a1-90da88797608
         - 1013e15e-b75c-42e3-880c-013926d9c7b7
-        - 0149b573-fc2e-45d5-8053-70822a356f39
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 87552cb8-c509-4a8a-b444-242981cf2c96
@@ -5782,7 +5729,7 @@ FilterGroups:
         - 7e8e3667-e1a8-4d05-b835-15903877c6f4
         - ebde42d1-bc49-45c2-a2a1-90da88797608
         - 1013e15e-b75c-42e3-880c-013926d9c7b7
-        - 0149b573-fc2e-45d5-8053-70822a356f39
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 6f82f5db-8dd1-44f7-9eef-f43e831eed4d
@@ -5812,7 +5759,7 @@ FilterGroups:
         - ebde42d1-bc49-45c2-a2a1-90da88797608
         - 040ed2ac-c254-4442-8422-04320f57a0e6
         - 1013e15e-b75c-42e3-880c-013926d9c7b7
-        - 0149b573-fc2e-45d5-8053-70822a356f39
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 5eec7a89-7219-4cd5-8f1d-2d923f2216ca
@@ -5881,29 +5828,7 @@ FilterGroups:
         - 7e8e3667-e1a8-4d05-b835-15903877c6f4
         - ebde42d1-bc49-45c2-a2a1-90da88797608
         - 1013e15e-b75c-42e3-880c-013926d9c7b7
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: 7ee96683-8146-4a21-b69f-33a33748e18c
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: product_code
-        DataSetIdentifier: msih_view
-      Configuration:
-        FilterListConfiguration:
-          CategoryValues:
-          - AWSElementalMediaLive
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-      FilterId: ee241b00-7dfd-434e-9282-39c7e2da6b83
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 1013e15e-b75c-42e3-880c-013926d9c7b7
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 5d36280e-5427-45cb-9f8d-adf09e76e3fd
@@ -5920,112 +5845,6 @@ FilterGroups:
           MatchOperator: DOES_NOT_CONTAIN
           NullOption: NON_NULLS_ONLY
       FilterId: 4eabebfc-578c-491c-a217-534f94919828
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 1013e15e-b75c-42e3-880c-013926d9c7b7
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: b4851d51-1530-48b5-ae6a-1567c6df502a
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: video_resolution
-        DataSetIdentifier: msih_reservations
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: 0974a5a4-5502-47e1-8370-584da1d1bada
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 1013e15e-b75c-42e3-880c-013926d9c7b7
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: cfefa24a-ea72-426f-9288-c5d5b92fa9b6
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: video_bit_rate
-        DataSetIdentifier: msih_reservations
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: 49303070-6759-4161-89ea-507a72009f57
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 1013e15e-b75c-42e3-880c-013926d9c7b7
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: 1fd59f4a-2017-4e51-8751-46a80183ddec
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: 2b7009a1-5702-4d09-8f89-a2356bc84dc0
-        DataSetIdentifier: msih_reservations
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: 064639d1-dd35-4007-a220-630721afd842
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 1013e15e-b75c-42e3-880c-013926d9c7b7
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: 76ed56e2-8e2c-4b7b-bc0b-b997b853693c
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: video_frame_rate
-        DataSetIdentifier: msih_reservations
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: 56d3ae5b-5990-4df9-af85-9c6206f7ec59
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 1013e15e-b75c-42e3-880c-013926d9c7b7
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: 0ce2b46c-38ce-48f9-962c-f3cdd9427f45
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: product_code
-        DataSetIdentifier: msih_view
-      Configuration:
-        FilterListConfiguration:
-          CategoryValues:
-          - AWSElementalMediaLive
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-      FilterId: 49a14d39-3eeb-40f6-badc-32e307f70eb3
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
@@ -6087,238 +5906,6 @@ FilterGroups:
       MatchOperator: EQUALS
       NullOption: ALL_VALUES
       Value: 1.0
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 1013e15e-b75c-42e3-880c-013926d9c7b7
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: 0a7fda5f-844a-452a-b985-fb971d9475e2
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: product_code
-        DataSetIdentifier: msih_view
-      Configuration:
-        FilterListConfiguration:
-          CategoryValues:
-          - AWSElementalMediaLive
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-      FilterId: cfd90560-ff05-43ee-bf33-540f68c9b2ca
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: bb97ab3f-dbf6-4d7e-a6bb-8044d0aadafc
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: operation
-        DataSetIdentifier: msih_view
-      Configuration:
-        FilterListConfiguration:
-          CategoryValues:
-          - INACTIVE_CHANNEL
-          - INACTIVE_INPUT
-          MatchOperator: DOES_NOT_CONTAIN
-          NullOption: NON_NULLS_ONLY
-      FilterId: b60aac65-b917-4a18-8977-b64924fc5260
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: 11e51896-9c74-4ff3-9bff-1a24469ef817
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: video_resolution
-        DataSetIdentifier: msih_reservations
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: fb11bad6-e90d-4032-b123-bde826ea330d
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: 41bcecf3-415c-4336-b7b3-0988f787539c
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: video_bit_rate
-        DataSetIdentifier: msih_reservations
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: e449d945-0a8c-4a61-a71a-487bac644079
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: c13d63c4-22d1-4708-8fc1-ed8734d4d034
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: 2b7009a1-5702-4d09-8f89-a2356bc84dc0
-        DataSetIdentifier: msih_reservations
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: 3f24d9c7-bccb-429e-81b1-26345cba8bec
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: 97ce77bf-75ed-4b97-acff-2be27b83725e
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: video_frame_rate
-        DataSetIdentifier: msih_reservations
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: 28e913d5-acae-4c6e-9288-f93abcf50f7c
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: ALL_DATASETS
-  FilterGroupId: 20301c62-e173-4da5-8fa6-5779e5863ad6
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: product_code
-        DataSetIdentifier: msih_view
-      Configuration:
-        FilterListConfiguration:
-          CategoryValues:
-          - AWSElementalMediaLive
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-      FilterId: 7b2358b3-17fa-4372-92a9-a7c4bc665d41
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: bf32b229-c2aa-42d4-b2da-daac00c73bb2
-  Filters:
-  - NumericEqualityFilter:
-      Column:
-        ColumnName: is_transcode_or_idle_usage
-        DataSetIdentifier: msih_view
-      FilterId: a757ebf9-1feb-49e1-886f-cbef635729ae
-      MatchOperator: EQUALS
-      NullOption: ALL_VALUES
-      Value: 1.0
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: 7d5a00d0-0c25-4233-832d-dc8c82ad8fac
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: charge_type
-        DataSetIdentifier: msih_view
-      Configuration:
-        FilterListConfiguration:
-          CategoryValues:
-          - EdpDiscount
-          MatchOperator: DOES_NOT_CONTAIN
-          NullOption: NON_NULLS_ONLY
-      FilterId: 0e4eafd3-df2e-492f-a925-b8995d27e11a
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: 9e28ccb1-3123-45fa-a667-057d891a151a
-  Filters:
-  - NumericEqualityFilter:
-      Column:
-        ColumnName: eml_is_hourly_lookback_window
-        DataSetIdentifier: msih_view
-      FilterId: 06f7b773-cdef-49a4-8289-c66267be706e
-      MatchOperator: EQUALS
-      NullOption: ALL_VALUES
-      Value: 1.0
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
-        VisualIds:
-        - 0149b573-fc2e-45d5-8053-70822a356f39
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: fa29c4ff-88e2-4407-8c5a-a8898c5d1e36
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: charge_type
-        DataSetIdentifier: msih_view
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: 77905526-444e-4bbf-8fc4-e3c6207ef9c1
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
@@ -6585,6 +6172,108 @@ FilterGroups:
         SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
         VisualIds:
         - 929997b4-773e-4113-924e-3de0663d91bb
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: 729deea8-adf9-4d72-a346-f45cd310e996
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: video_bit_rate
+        DataSetIdentifier: msih_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: DOES_NOT_CONTAIN
+          NullOption: ALL_VALUES
+      FilterId: f44d007c-c8ed-4fe9-9eef-04dae8bace5d
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: 6e4f317a-8235-4103-a048-e1a4fcb3f224
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: bf1dc806-9142-48bb-a823-1ff1acb12a01
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: operation
+        DataSetIdentifier: msih_view
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - INACTIVE_CHANNEL
+          - INACTIVE_INPUT
+          MatchOperator: DOES_NOT_CONTAIN
+          NullOption: NON_NULLS_ONLY
+      FilterId: 764fda02-d7c1-4e50-aa61-2ab1ed487643
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
+        VisualIds:
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 5d74e5c3-c3dd-40c4-abb0-6bbd22c45c21
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: is_transcode_or_idle_usage
+        DataSetIdentifier: msih_view
+      FilterId: 67a58d70-0a11-440f-b05c-34c7f18a4850
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
+        VisualIds:
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 098b107f-6556-448e-8f59-d5bb02ae4223
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: charge_type
+        DataSetIdentifier: msih_view
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - EdpDiscount
+          - RIFee
+          MatchOperator: DOES_NOT_CONTAIN
+          NullOption: NON_NULLS_ONLY
+      FilterId: 06fa9a29-a08f-4052-a111-b976175e3470
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
+        VisualIds:
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: f007a42a-f951-4916-aefd-ffc2fa09a0c3
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: eml_is_hourly_lookback_window
+        DataSetIdentifier: msih_view
+      FilterId: 14c51ff1-8287-4e21-8276-037702639750
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
+        VisualIds:
+        - ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   Status: ENABLED
 Options: {}
 ParameterDeclarations:
@@ -9580,6 +9269,12 @@ Sheets:
       Title: Resolution
       Type: MULTI_SELECT
   - List:
+      CascadingControlConfiguration:
+        SourceControls:
+        - ColumnToMatch:
+            ColumnName: video_bit_rate
+            DataSetIdentifier: msih_view
+          SourceSheetControlId: f7c1c65d-0f93-48e2-af18-f491eb40869d
       DisplayOptions:
         InfoIconLabelOptions:
           Visibility: HIDDEN
@@ -9627,6 +9322,21 @@ Sheets:
       FilterControlId: 434fdae8-5bae-4e87-821b-b7a4126f4a3a
       SourceFilterId: 581847dc-cf9e-4727-9a7e-e4b024960a49
       Title: Codec
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: f7c1c65d-0f93-48e2-af18-f491eb40869d
+      SourceFilterId: f44d007c-c8ed-4fe9-9eef-04dae8bace5d
+      Title: DO NOT CHANGE
       Type: MULTI_SELECT
   Layouts:
   - Configuration:
@@ -9858,6 +9568,12 @@ Sheets:
           ElementType: VISUAL
           RowIndex: 152
           RowSpan: 14
+        - ColumnIndex: 0
+          ColumnSpan: 1
+          ElementId: f7c1c65d-0f93-48e2-af18-f491eb40869d
+          ElementType: FILTER_CONTROL
+          RowIndex: 166
+          RowSpan: 1
   Name: MediaLive Reservation & Savings
   ParameterControls:
   - List:
@@ -14344,13 +14060,17 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 8
+          ColumnSpan: 2
           ElementId: a312a2ab-38df-4dec-aa3c-3b85fa26a65b
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 10
+          ColumnSpan: 2
           ElementId: 835b6c7d-765d-4189-be4c-d334a735dcc5
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
   SheetId: 2dcff3e2-075d-4408-80e1-4aee5a838720
   TextBoxes:
@@ -17059,17 +16779,23 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 6
+          ColumnSpan: 2
           ElementId: 6b707864-0d99-4cca-a710-d6e4033d1dfb
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 8
+          ColumnSpan: 2
           ElementId: 61a7dc0e-5157-4b94-8bda-86078d955f3c
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 10
+          ColumnSpan: 2
           ElementId: 6398ebc2-acf5-41c3-92f0-7d98011dd3e4
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
   SheetId: f2c2a62e-5931-43de-bedb-55ffc619d174
   TextBoxes:
@@ -19427,59 +19153,68 @@ Sheets:
           ColumnSpan: 16
           ElementId: 6c8025f5-8a4f-4882-9007-39f396a76ea2
           ElementType: FILTER_CONTROL
+          Padding: 8px
           RowIndex: 66
           RowSpan: 8
         - ColumnIndex: 16
           ColumnSpan: 5
           ElementId: 8aee4d29-c683-4fa7-b67c-69fe63e338a9
           ElementType: FILTER_CONTROL
+          Padding: 8px
           RowIndex: 66
           RowSpan: 4
         - ColumnIndex: 21
           ColumnSpan: 5
           ElementId: 619a12b8-c704-460c-9a4a-951da171689f
           ElementType: FILTER_CONTROL
+          Padding: 8px
           RowIndex: 66
           RowSpan: 4
         - ColumnIndex: 26
           ColumnSpan: 5
           ElementId: dce87544-ab95-405e-a7d9-237dcfd544d7
           ElementType: FILTER_CONTROL
+          Padding: 8px
           RowIndex: 66
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 5
           ElementId: ed7686af-dea6-4c5c-8b93-a5117dd35a13
           ElementType: FILTER_CONTROL
+          Padding: 8px
           RowIndex: 66
           RowSpan: 4
         - ColumnIndex: 16
           ColumnSpan: 5
           ElementId: aaf60424-a738-4c63-b82f-74303f397e3e
           ElementType: FILTER_CONTROL
+          Padding: 8px
           RowIndex: 70
           RowSpan: 4
         - ColumnIndex: 21
           ColumnSpan: 5
           ElementId: 58a87cdb-69d0-4c77-8764-676bc3efc387
           ElementType: FILTER_CONTROL
+          Padding: 8px
           RowIndex: 70
           RowSpan: 4
         - ColumnIndex: 26
           ColumnSpan: 5
           ElementId: 386d5da0-094e-4b7a-ba8c-db8197dab34a
           ElementType: FILTER_CONTROL
+          Padding: 8px
           RowIndex: 70
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 5
           ElementId: 3a8655e7-877f-4004-b4ce-a64db3c394a4
           ElementType: FILTER_CONTROL
+          Padding: 8px
           RowIndex: 70
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 18
-          ElementId: 0149b573-fc2e-45d5-8053-70822a356f39
+          ElementId: ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
           ElementType: VISUAL
           RowIndex: 74
           RowSpan: 9
@@ -19489,12 +19224,6 @@ Sheets:
           ElementType: VISUAL
           RowIndex: 74
           RowSpan: 9
-        - ColumnIndex: 0
-          ColumnSpan: 18
-          ElementId: 31c27c72-08bd-403f-a91b-ef70ff548789
-          ElementType: VISUAL
-          RowIndex: 83
-          RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: cd9f301f-c680-4f46-b6b3-7c39ce9ab4c8
@@ -19502,15 +19231,9 @@ Sheets:
           RowIndex: 83
           RowSpan: 9
         - ColumnIndex: 0
-          ColumnSpan: 16
-          ElementId: 4cdde237-c815-46f3-8e5b-180a67fdb46a
+          ColumnSpan: 18
+          ElementId: 31c27c72-08bd-403f-a91b-ef70ff548789
           ElementType: VISUAL
-          RowIndex: 92
-          RowSpan: 9
-        - ColumnIndex: 16
-          ColumnSpan: 4
-          ElementId: f15ec21e-aca5-4418-9acc-a6cd986d70b7
-          ElementType: PARAMETER_CONTROL
           RowIndex: 92
           RowSpan: 9
         - ColumnIndex: 20
@@ -19520,118 +19243,130 @@ Sheets:
           RowIndex: 92
           RowSpan: 9
         - ColumnIndex: 0
+          ColumnSpan: 16
+          ElementId: 4cdde237-c815-46f3-8e5b-180a67fdb46a
+          ElementType: VISUAL
+          RowIndex: 101
+          RowSpan: 9
+        - ColumnIndex: 16
+          ColumnSpan: 4
+          ElementId: f15ec21e-aca5-4418-9acc-a6cd986d70b7
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 101
+          RowSpan: 9
+        - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 4530a3ed-7f34-4836-800b-2c4ef6ca5a0d
           ElementType: VISUAL
-          RowIndex: 101
+          RowIndex: 110
           RowSpan: 10
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: ebde42d1-bc49-45c2-a2a1-90da88797608
           ElementType: VISUAL
-          RowIndex: 101
+          RowIndex: 110
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 040ed2ac-c254-4442-8422-04320f57a0e6
           ElementType: VISUAL
-          RowIndex: 111
+          RowIndex: 120
           RowSpan: 10
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 7e8e3667-e1a8-4d05-b835-15903877c6f4
           ElementType: VISUAL
-          RowIndex: 111
+          RowIndex: 120
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 325a9c8b-145f-4eff-a6cd-13d6d611ed94
           ElementType: TEXT_BOX
-          RowIndex: 121
+          RowIndex: 130
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: b0f9ae03-0b4a-4c62-ac83-0cb315123e4c
           ElementType: VISUAL
-          RowIndex: 124
+          RowIndex: 133
           RowSpan: 13
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 4e1b97a6-473c-4065-8642-ab52d9cd40d4
           ElementType: VISUAL
-          RowIndex: 137
+          RowIndex: 146
           RowSpan: 13
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 40e2f9fc-4218-4657-a1af-10a57d518fb4
           ElementType: VISUAL
-          RowIndex: 137
+          RowIndex: 146
           RowSpan: 13
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 0726aa53-2fa3-4951-b723-f56cf406f36c
           ElementType: VISUAL
-          RowIndex: 150
+          RowIndex: 159
           RowSpan: 13
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 974c25c8-9b8c-4200-be8b-d95501f5e29a
           ElementType: VISUAL
-          RowIndex: 150
+          RowIndex: 159
           RowSpan: 13
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 33840f47-9898-4157-a0d1-8be2bf8f5a43
           ElementType: VISUAL
-          RowIndex: 163
+          RowIndex: 172
           RowSpan: 11
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 0e3cebf0-8e51-4f8a-8a6d-d7decda31c44
           ElementType: TEXT_BOX
-          RowIndex: 174
+          RowIndex: 183
           RowSpan: 5
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 7ca15ee4-b492-4af0-8467-4919dcde6cdb
           ElementType: VISUAL
-          RowIndex: 179
+          RowIndex: 188
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: a9f516ae-fc19-4734-a210-3a2d247bee93
           ElementType: VISUAL
-          RowIndex: 179
+          RowIndex: 188
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 16
           ElementId: 4f3a4024-8f92-4170-a908-f3f9a63d9208
           ElementType: VISUAL
-          RowIndex: 188
+          RowIndex: 197
           RowSpan: 9
         - ColumnIndex: 16
           ColumnSpan: 4
           ElementId: af8ada51-0cd6-4d0e-be49-5550c7204191
           ElementType: PARAMETER_CONTROL
-          RowIndex: 188
+          RowIndex: 197
           RowSpan: 9
         - ColumnIndex: 20
           ColumnSpan: 16
           ElementId: 69f36150-5d95-46ab-8318-6360736eb90b
           ElementType: VISUAL
-          RowIndex: 188
+          RowIndex: 197
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 3a9e14d8-d583-4dc4-a127-ac674428b312
           ElementType: VISUAL
-          RowIndex: 197
+          RowIndex: 206
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 1
           ElementId: 9092e27c-0b70-4dff-aff0-4f01911b1902
           ElementType: FILTER_CONTROL
-          RowIndex: 206
+          RowIndex: 215
           RowSpan: 1
   Name: MediaLive
   ParameterControls:
@@ -19819,25 +19554,35 @@ Sheets:
   - Configuration:
       GridLayout:
         Elements:
-        - ColumnSpan: 3
+        - ColumnIndex: 0
+          ColumnSpan: 3
           ElementId: 535fcc13-cf10-4e37-95c4-400436a843a6
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 3
+        - ColumnIndex: 3
+          ColumnSpan: 3
           ElementId: f9609fd4-b50e-4de7-aabe-b5a5ac7c4a8d
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 3
+        - ColumnIndex: 6
+          ColumnSpan: 3
           ElementId: 79d4416c-a98b-4321-80bc-d37aad90f4ad
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 3
+        - ColumnIndex: 9
+          ColumnSpan: 3
           ElementId: a7ea02be-e22d-40a1-9a12-f82298b0780d
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 0
+          ColumnSpan: 2
           ElementId: c56c367e-887c-4ad4-ab2e-f83cfe8f834c
           ElementType: PARAMETER_CONTROL
+          RowIndex: 1
           RowSpan: 1
   SheetId: 861efd5e-f283-49ed-9822-a6adf49c93e6
   TextBoxes:
@@ -20060,9 +19805,8 @@ Sheets:
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
-        BarsArrangement: STACKED_PERCENT
+        BarsArrangement: STACKED
         CategoryAxis:
-          AxisOffset: 87px
           ScrollbarOptions:
             Visibility: VISIBLE
         CategoryLabelOptions:
@@ -20078,9 +19822,9 @@ Sheets:
                 Column:
                   ColumnName: usage_date
                   DataSetIdentifier: msih_view
-                DateGranularity: DAY
+                DateGranularity: HOUR
                 FieldId: 3e96372e-5959-4a5b-a96a-730193e3990b.usage_date.3.1765309932167
-                HierarchyId: 3f7a15d6-77d7-437f-9e2b-1e32355a010b
+                HierarchyId: acb87039-e729-44cd-826c-3174773eb6f5
             Colors: []
             Values:
             - NumericalMeasureField:
@@ -20150,7 +19894,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 82px
+          AxisOffset: 71px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -20159,7 +19903,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 3f7a15d6-77d7-437f-9e2b-1e32355a010b
+          HierarchyId: acb87039-e729-44cd-826c-3174773eb6f5
       Subtitle:
         FormatText:
           RichText: <visual-subtitle>Use the arrow controls on the top right of the
@@ -20174,7 +19918,7 @@ Sheets:
               </inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 0149b573-fc2e-45d5-8053-70822a356f39
+      VisualId: ac7bf58e-130d-4ae7-98b1-1ed0c3f764f6
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -22620,6 +22364,7 @@ Sheets:
                   DataSetIdentifier: msih_view
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.usage_quantity.2.1742863085397
         Legend:
+          Height: 39px
           Position: BOTTOM
           Title:
             CustomLabel: Month
@@ -23455,6 +23200,8 @@ Sheets:
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 71px
         ValueLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -25125,17 +24872,23 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 6
+          ColumnSpan: 2
           ElementId: 58c62de0-afa1-422e-aa76-3166b70d968a
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 8
+          ColumnSpan: 2
           ElementId: 124e4211-7b15-49d7-ae26-1b3f8c9d975b
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 10
+          ColumnSpan: 2
           ElementId: 6ca975ac-4a94-426e-bb53-126b91475175
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
   SheetId: ca1c935f-2308-4ef3-a2de-c67afcdba37b
   TextBoxes:
@@ -27301,17 +27054,23 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 6
+          ColumnSpan: 2
           ElementId: 1ab2894b-a0b6-4ed7-834c-58d54c840ba1
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 8
+          ColumnSpan: 2
           ElementId: 83465598-27b0-46b3-9a55-8d4376488eda
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 2
+        - ColumnIndex: 10
+          ColumnSpan: 2
           ElementId: 668916d7-f0a9-413a-8b9d-00ce33c7e412
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
   SheetId: e3d61b0f-5bdf-4753-be3e-749439f2de4d
   TextBoxes:
