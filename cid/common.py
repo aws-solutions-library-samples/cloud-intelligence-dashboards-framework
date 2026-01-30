@@ -57,8 +57,8 @@ class Cid():
             'profile_name': None,
             'region_name': None,
             'aws_access_key_id': None,
-            'aws_secret_access_key': None,
-            'aws_session_token': None
+            'aws_secret_access_key': None,  #nosec B105
+            'aws_session_token': None  #nosec B105
         }
         for key in params.keys():
             value = get_parameters().get(key.replace('_', '-'), '<NO VALUE>')

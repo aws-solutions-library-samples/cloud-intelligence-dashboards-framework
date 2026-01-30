@@ -19,10 +19,10 @@ jobs:
       max-parallel: 1
       matrix:
         include:
-          - {python-version: '3.9',  os: ubuntu-latest, dashboard: cudos }
-          - {python-version: '3.10', os: macos-latest,  dashboard: cudos }
+          - {python-version: '3.10', os: ubuntu-latest, dashboard: cudos }
           - {python-version: '3.11', os: ubuntu-latest, dashboard: cudos }
           - {python-version: '3.12', os: macos-latest,  dashboard: cudos }
+          - {python-version: '3.13', os: ubuntu-latest, dashboard: cudos }
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v3
@@ -42,6 +42,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Basic check
         run: |
+          echo "::add-mask::$(aws sts get-caller-identity --query Account --output text)"
           cid-cmd status
       - name:  Install Bats
         run: |
