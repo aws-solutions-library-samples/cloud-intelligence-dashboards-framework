@@ -467,7 +467,9 @@ Resources:
           Action:
           - s3:CreateBucket
           - s3:DeleteBucket
+          - s3:DeleteBucketPolicy
           - s3:GetBucketLocation
+          - s3:GetBucketPolicy
           - s3:GetObject
           - s3:ListBucket
           - s3:PutBucketAcl
