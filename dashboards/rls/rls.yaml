@@ -10,27 +10,32 @@ dashboards:
     version: v0.0.1
     file: ./rls-definition.yaml
     theme: MIDNIGHT
-datasets:
+datasets:  
   rls_dataset:
     data:
       DataSetId: 770b6f30-9498-49e2-9878-5ac9e3258b2c
       Name: rls_dataset
       PhysicalTableMap:
         625fab9d-ce94-4690-a7bf-142b0996ddda:
-          RelationalTable:
+          CustomSql:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: ${athena_database_name}
-            Name: rls_dataset
-            InputColumns:
-            - Name: UserName
-              Type: STRING
-            - Name: GroupName
-              Type: STRING
-            - Name: account_id
-              Type: STRING
-            - Name: payer_id
-              Type: STRING
+            Name: rls_dataset_query
+            SqlQuery: |
+              SELECT
+                "UserName",
+                "GroupName",
+                account_id,
+                payer_id
+              FROM "${athena_database_name}".rls_dataset
+            Columns:
+              - Name: UserName
+                Type: STRING
+              - Name: GroupName
+                Type: STRING
+              - Name: account_id
+                Type: STRING
+              - Name: payer_id
+                Type: STRING
       LogicalTableMap:
         ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804:
           Alias: rls_dataset
