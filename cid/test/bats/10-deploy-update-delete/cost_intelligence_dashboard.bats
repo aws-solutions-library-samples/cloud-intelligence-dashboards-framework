@@ -2,7 +2,7 @@
 
 
 account_id=$(aws sts get-caller-identity --query "Account" --output text )
-database_name="${database_name:-athenacurcfn_cur1}" # If variable not set or null, use default
+database_name="${database_name:-cid_data_export}" # If variable not set or null, use default
 
 @test "Install" {
   run cid-cmd -vv deploy  \

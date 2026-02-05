@@ -1,6 +1,6 @@
 # https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/cfn-templates/cid-cfn.yml
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deployment of Cloud Intelligence Dashboards v4.4.5 - AWS Solution SO9011
+Description: Deployment of Cloud Intelligence Dashboards v4.4.6 - AWS Solution SO9011
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -367,6 +367,7 @@ Conditions:
         - !Equals [!Ref "AWS::Region", "eu-central-2"]
         - !Equals [!Ref "AWS::Region", "eu-south-1"]
         - !Equals [!Ref "AWS::Region", "eu-south-2"]
+        - !Equals [!Ref "AWS::Region", "il-central-1"]
         - !Equals [!Ref "AWS::Region", "cn-north-1"]
         - !Equals [!Ref "AWS::Region", "us-gov-east-1"]
         - !Equals [!Ref "AWS::Region", "us-gov-west-1"]
@@ -397,6 +398,7 @@ Mappings:
     eu-central-2:   {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
     eu-south-1:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
     eu-south-2:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
+    il-central-1:   {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
 
     # specific regions
     cn-north-1:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1} # China
@@ -594,8 +596,25 @@ Resources:
         rules_to_suppress:
           - id: 'W35'
             reason: "Data buckets would generate too much logs"
-          - id: 'W51'
-            reason: "No policy needed"
+
+  MyAthenaQueryResultsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: NeedAthenaQueryResultsBucket
+    Properties:
+      Bucket: !Ref MyAthenaQueryResultsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt MyAthenaQueryResultsBucket.Arn
+              - !Sub '${MyAthenaQueryResultsBucket.Arn}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
 
   MyAthenaWorkGroup:
     Type: AWS::Athena::WorkGroup
@@ -1922,8 +1941,26 @@ Resources:
         rules_to_suppress:
           - id: 'W35'
             reason: "Data buckets would generate too much logs"
-          - id: 'W51'
-            reason: "No policy needed"
+
+  LocalAssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: NeedLocalAssets
+    Properties:
+      Bucket: !Ref LocalAssetsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt LocalAssetsBucket.Arn
+              - !Sub '${LocalAssetsBucket.Arn}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
+
   PullAssetsLambdaRole:
     Type: AWS::IAM::Role
     Condition: NeedLocalAssets
@@ -2075,7 +2112,7 @@ Resources:
       SourceBucket: !Ref ReferenceAssetsBucket
       DestinationBucket: !Ref LocalAssetsBucket
       Keys:
-        - 'cid-resource-lambda-layer/cid-4.4.5.zip' #replace version here if needed
+        - 'cid-resource-lambda-layer/cid-4.4.6.zip' #replace version here if needed
 
   CidResourceLambdaLayer:
     Type: AWS::Lambda::LayerVersion
@@ -2090,7 +2127,7 @@ Resources:
             - LambdaLayerBucketPrefixIsManaged
             - !FindInMap [RegionMap, !Ref 'AWS::Region', BucketName]
             - !Sub '${LambdaLayerBucketPrefix}-${AWS::Region}' # Region added for backward compatibility
-        S3Key: 'cid-resource-lambda-layer/cid-4.4.5.zip' #replace version here if needed
+        S3Key: 'cid-resource-lambda-layer/cid-4.4.6.zip' #replace version here if needed
       CompatibleRuntimes:
         - python3.10
         - python3.11
