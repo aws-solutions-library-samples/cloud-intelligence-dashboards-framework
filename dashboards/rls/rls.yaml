@@ -250,8 +250,8 @@ views:
       SELECT
         Id account_id,
         ManagementAccountId payer_id,
-        TRY(SPLIT(FILTER(HierarchyTags, (x) -> (x.key = 'cid_users'))[1].value, ',')) "emails",
-        TRY(SPLIT(FILTER(HierarchyTags, (x) -> (x.key = 'cid_groups'))[1].value, ',')) "groups"
+        TRY(SPLIT(FILTER(HierarchyTags, (x) -> (x.key = 'cid_users'))[1].value, ':')) "emails",
+        TRY(SPLIT(FILTER(HierarchyTags, (x) -> (x.key = 'cid_groups'))[1].value, ':')) "groups"
       FROM
         "${data_collection_database_name}"."organization_data"
     parameters:
