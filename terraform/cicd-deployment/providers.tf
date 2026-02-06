@@ -9,6 +9,7 @@ terraform {
 }
 
 provider "aws" {
+  alias  = "management"
   region = var.global_values.aws_region
 
   default_tags {
@@ -17,7 +18,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias  = "destination_account"
+  alias  = "datacollection"
   region = var.global_values.aws_region
 
   dynamic "assume_role" {

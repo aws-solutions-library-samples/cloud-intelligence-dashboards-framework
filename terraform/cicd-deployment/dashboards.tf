@@ -5,7 +5,7 @@
 module "cid_dataexports_destination" {
   source = "./modules/cloudformation_stack"
   providers = {
-    aws = aws.destination_account
+    aws = aws.datacollection
   }
 
   config = local.foundational_stacks.cid_dataexports_destination
@@ -15,7 +15,7 @@ module "cid_dataexports_destination" {
 module "cid_dataexports_source" {
   source = "./modules/cloudformation_stack"
   providers = {
-    aws = aws
+    aws = aws.management
   }
 
   config     = local.foundational_stacks.cid_dataexports_source
@@ -26,7 +26,7 @@ module "cid_dataexports_source" {
 module "cloud_intelligence_dashboards" {
   source = "./modules/cloudformation_stack"
   providers = {
-    aws = aws.destination_account
+    aws = aws.datacollection
   }
 
   config = local.foundational_stacks.cloud_intelligence_dashboards
@@ -44,7 +44,7 @@ module "cloud_intelligence_dashboards" {
 module "trends_dashboard" {
   source = "./modules/cloudformation_stack"
   providers = {
-    aws = aws.destination_account
+    aws = aws.datacollection
   }
 
   config     = local.additional_dashboards.trends
@@ -55,7 +55,7 @@ module "trends_dashboard" {
 module "datatransfer_dashboard" {
   source = "./modules/cloudformation_stack"
   providers = {
-    aws = aws.destination_account
+    aws = aws.datacollection
   }
 
   config     = local.additional_dashboards.datatransfer
@@ -66,7 +66,7 @@ module "datatransfer_dashboard" {
 module "marketplace_dashboard" {
   source = "./modules/cloudformation_stack"
   providers = {
-    aws = aws.destination_account
+    aws = aws.datacollection
   }
 
   config     = local.additional_dashboards.marketplace
@@ -77,7 +77,7 @@ module "marketplace_dashboard" {
 module "connect_dashboard" {
   source = "./modules/cloudformation_stack"
   providers = {
-    aws = aws.destination_account
+    aws = aws.datacollection
   }
 
   config     = local.additional_dashboards.connect
@@ -88,7 +88,7 @@ module "connect_dashboard" {
 module "containers_dashboard" {
   source = "./modules/cloudformation_stack"
   providers = {
-    aws = aws.destination_account
+    aws = aws.datacollection
   }
 
   config     = local.additional_dashboards.containers
