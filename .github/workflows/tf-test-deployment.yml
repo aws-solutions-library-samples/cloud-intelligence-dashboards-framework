@@ -87,11 +87,12 @@ jobs:
 
           cat > providers.tf << EOF
           provider "aws" {
+            alias  = "management"
             region = "${{ secrets.AWS_REGION_TF }}"
           }
 
           provider "aws" {
-            alias  = "destination_account"
+            alias  = "datacollection"
             region = "${{ secrets.AWS_REGION_TF }}"
           }
           EOF
@@ -271,11 +272,12 @@ jobs:
           
           cat > providers.tf << EOF
           provider "aws" {
+            alias  = "management"
             region = "${{ secrets.AWS_REGION_TF }}"
           }
 
           provider "aws" {
-            alias  = "destination_account"
+            alias  = "datacollection"
             region = "${{ secrets.AWS_REGION_TF }}"
           }
           EOF
