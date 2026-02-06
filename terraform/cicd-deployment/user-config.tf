@@ -92,7 +92,7 @@ variable "dashboards" {
     # Additional
     trends       = "yes"
     datatransfer = "yes"
-    marketplace  = "no"
+    marketplace  = "yes"
     connect      = "yes"
     containers   = "yes"
   }
