@@ -18,12 +18,17 @@ LOCAL_ASSETS_BUCKET_PREFIX="${LOCAL_ASSETS_BUCKET_PREFIX:-cid-${ACCOUNT_ID}-test
 export AWS_DEFAULT_REGION="${S3_REGION}"
 export AWS_REGION="${S3_REGION}"  # Some AWS tools use this variable instead
 
-# Create a temporary directory for modified Terraform files
-TEMP_DIR=$(mktemp -d)
-echo "Creating temporary Terraform directory at $TEMP_DIR"
-
-# Copy Terraform files to temporary directory
-cp -r ./terraform/cicd-deployment/* "$TEMP_DIR/"
+# Create a temporary directory for modified Terraform files (for standalone execution)
+# or use existing directory if backend.tf already exists (CI execution)
+if [ -f "./terraform/cicd-deployment/backend.tf" ]; then
+  echo "Found existing backend.tf, using existing directory (CI mode)"
+  TEMP_DIR="./terraform/cicd-deployment"
+else
+  echo "No backend.tf found, creating temporary directory (standalone mode)"
+  TEMP_DIR=$(mktemp -d)
+  cp -r ./terraform/cicd-deployment/* "$TEMP_DIR/"
+fi
+echo "Using Terraform directory at $TEMP_DIR"
 
 # Modify variables.tf to use local lambda layer if specified
 if [ ! -z "${LOCAL_ASSETS_BUCKET_PREFIX}" ]; then
@@ -66,8 +71,8 @@ if [ -f "$TEMP_DIR/variables.tf" ]; then
   grep -A1 "resource_prefix  = " "$TEMP_DIR/variables.tf" | head -2
 fi
 
-# Configure backend based on environment variable
-if [ -f "$TEMP_DIR/backend.tf" ]; then
+# Configure backend if not already present (standalone execution)
+if [ ! -f "$TEMP_DIR/backend.tf" ]; then
   if [ "$BACKEND_TYPE" == "s3" ]; then
     echo "Configuring S3 backend..."
     cat > "$TEMP_DIR/backend.tf" << EOF
@@ -89,23 +94,25 @@ terraform {
 }
 EOF
   fi
+else
+  echo "Using existing backend.tf (CI mode)"
 fi
 
-# Modify provider.tf to use the same account for both providers and set region
-cat > "$TEMP_DIR/local_override.tf" << EOF
+# Override providers to use S3_REGION for standalone execution
+if [ ! -f "$TEMP_DIR/providers.tf" ] || [[ "$TEMP_DIR" == /tmp/* ]]; then
+  echo "Creating providers.tf with region ${S3_REGION}..."
+  cat > "$TEMP_DIR/local_override.tf" << EOF
 provider "aws" {
+  alias  = "management"
   region = "${S3_REGION}"
 }
 
 provider "aws" {
-  alias  = "destination_account"
+  alias  = "datacollection"
   region = "${S3_REGION}"
-}
-
-terraform {
-  required_version = ">= 1.0.0"
 }
 EOF
+fi
 
 
 
@@ -187,6 +194,6 @@ terraform plan "${TFVARS_FILES[@]}" -out=tfplan
 echo "Applying Terraform plan..."
 terraform apply -auto-approve tfplan
 
-# Save the temp directory path for cleanup script
+# Save reference for cleanup script
 echo "$TEMP_DIR" > "$SCRIPT_DIR/.temp_dir"
 echo "Deployment completed successfully."

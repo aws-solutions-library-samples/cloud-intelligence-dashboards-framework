@@ -19,57 +19,21 @@ echo "Account ID: $ACCOUNT_ID"
 # Get the script directory and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Get the temp directory from the deploy script
-if [ -f "$SCRIPT_DIR/.temp_dir" ]; then
-  TEMP_DIR=$(cat "$SCRIPT_DIR/.temp_dir")
-  if [ ! -d "$TEMP_DIR" ]; then
-    echo "Temp directory $TEMP_DIR not found. Creating a new one..."
-    TEMP_DIR=$(mktemp -d)
-    cp -r "$TERRAFORM_DIR"/* "$TEMP_DIR/"
-    
-    # Configure backend based on environment variable
-    if [ -f "$TEMP_DIR/backend.tf" ]; then
-      if [ "$BACKEND_TYPE" == "s3" ]; then
-        echo "Configuring S3 backend..."
-        cat > "$TEMP_DIR/backend.tf" << EOF
-terraform {
-  backend "s3" {
-    bucket = "$S3_BUCKET"
-    key    = "$S3_KEY"
-    region = "$BACKEND_REGION"
-  }
-}
-EOF
-      else
-        echo "Configuring local backend..."
-        TFSTATE_DIR="$SCRIPT_DIR/tfstate"
-        mkdir -p "$TFSTATE_DIR"
-        cat > "$TEMP_DIR/backend.tf" << EOF
-terraform {
-  backend "local" {
-    path = "$TFSTATE_DIR/terraform.tfstate"
-  }
-}
-EOF
-      fi
-    fi
-    
-    # Initialize Terraform
-    cd "$TEMP_DIR"
-    terraform init -reconfigure
-  fi
+# Use existing directory or create temp directory based on execution mode
+if [ -f "./terraform/cicd-deployment/backend.tf" ]; then
+  echo "Found existing backend.tf, using existing directory (CI mode)"
+  TEMP_DIR="./terraform/cicd-deployment"
 else
-  echo "No temp directory found from deploy script. Creating a new one..."
+  echo "No backend.tf found, creating temporary directory (standalone mode)"
   TEMP_DIR=$(mktemp -d)
   PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
   TERRAFORM_DIR="$PROJECT_ROOT/cicd-deployment"
   cp -r "$TERRAFORM_DIR"/* "$TEMP_DIR/"
   
-  # Configure backend based on environment variable
-  if [ -f "$TEMP_DIR/backend.tf" ]; then
-    if [ "$BACKEND_TYPE" == "s3" ]; then
-      echo "Configuring S3 backend..."
-      cat > "$TEMP_DIR/backend.tf" << EOF
+  # Configure backend for standalone execution
+  if [ "$BACKEND_TYPE" == "s3" ]; then
+    echo "Configuring S3 backend..."
+    cat > "$TEMP_DIR/backend.tf" << EOF
 terraform {
   backend "s3" {
     bucket = "$S3_BUCKET"
@@ -78,24 +42,34 @@ terraform {
   }
 }
 EOF
-    else
-      echo "Configuring local backend..."
-      TFSTATE_DIR="$SCRIPT_DIR/tfstate"
-      mkdir -p "$TFSTATE_DIR"
-      cat > "$TEMP_DIR/backend.tf" << EOF
+  else
+    echo "Configuring local backend..."
+    TFSTATE_DIR="$SCRIPT_DIR/tfstate"
+    mkdir -p "$TFSTATE_DIR"
+    cat > "$TEMP_DIR/backend.tf" << EOF
 terraform {
   backend "local" {
     path = "$TFSTATE_DIR/terraform.tfstate"
   }
 }
 EOF
-    fi
   fi
   
-  # Initialize Terraform
-  cd "$TEMP_DIR"
-  terraform init -reconfigure
+  # Override providers to use S3_REGION for standalone execution
+  echo "Creating provider override with region ${S3_REGION}..."
+  cat > "$TEMP_DIR/local_override.tf" << EOF
+provider "aws" {
+  alias  = "management"
+  region = "${S3_REGION}"
+}
+
+provider "aws" {
+  alias  = "datacollection"
+  region = "${S3_REGION}"
+}
+EOF
 fi
+echo "Using Terraform directory at $TEMP_DIR"
 
 echo "Cleaning up resources..."
 echo "Backend bucket (protected): $S3_BUCKET"
@@ -217,9 +191,11 @@ else
   echo "Data-exports bucket already deleted or doesn't exist"
 fi
 
-# Clean up temporary directory
-echo "Cleaning up temporary Terraform directory"
-rm -rf "$TEMP_DIR"
+# Clean up temporary directory if created for standalone execution
+if [[ "$TEMP_DIR" == /tmp/* ]]; then
+  echo "Cleaning up temporary Terraform directory"
+  rm -rf "$TEMP_DIR"
+fi
 rm -f "$SCRIPT_DIR/.temp_dir"
 
 echo "Cleanup completed successfully."
