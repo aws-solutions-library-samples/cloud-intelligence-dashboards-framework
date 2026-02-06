@@ -191,8 +191,47 @@ These require a foundational dashboard to be deployed first and use the same CUR
 - **`dashboards.tf`** - 🏗️ **Don't edit** - Resource definitions
 - **`locals.tf`** - 🏗️ **Don't edit** - Internal logic and configurations
 - **`outputs.tf`** - 📊 **Don't edit** - Output definitions
-- **`providers.tf`** - 🔧 **Don't edit** - Provider configurations
-- **`backend.tf`** - 💾 **Don't edit** - Backend configuration
+- **`backend.tf`** - 💾 **CREATE THIS** - Backend configuration (see instructions below)
+- **`providers.tf`** - 🔧 **CREATE THIS** - Provider configurations (see instructions below)
+
+### Backend and Provider Configuration
+
+The module requires backend and provider configuration files that are not included in the repository. You need to create these files before deployment:
+
+#### Create `backend.tf`
+```hcl
+terraform {
+  backend "s3" {
+    bucket = "your-terraform-state-bucket"
+    key    = "cid-dashboards/terraform.tfstate"
+    region = "us-east-1"
+    encrypt = true
+  }
+}
+```
+
+#### Create `providers.tf`
+```hcl
+terraform {
+  required_version = ">= 1.0.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0.0"
+    }
+  }
+}
+
+provider "aws" {
+  alias  = "management"
+  region = var.global_values.aws_region
+}
+
+provider "aws" {
+  alias  = "datacollection"
+  region = var.global_values.aws_region
+}
+```
 
 ### Advanced Configuration
 
