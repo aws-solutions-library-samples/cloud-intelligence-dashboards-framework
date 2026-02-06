@@ -4,20 +4,25 @@
 
 
 ## Table of Contents
-1. [Overview](#Overview)
-1. [Architecture of Foundational Dashboards](#Architecture-of-Foundational-Dashboards)
-1. [Cost](#Cost)
-1. [Prerequisites](#Prerequisites)
-1. [Regions](#Regions)
-1. [Deployment Steps](#Deployment-Steps)
-1. [Terraform Configuration](#Terraform-Configuration)
-1. [Cleanup](#Cleanup)
-1. [FAQ](#FAQ)
-1. [Changelogs](#Changelogs)
-1. [Feedback](#Feedback)
-1. [Security](#Security)
-1. [License](#License)
-1. [Notices](#Notices)
+1. [Overview](#overview)
+1. [Architecture of Foundational Dashboards](#architecture-of-foundational-dashboards)
+1. [Architecture of Advanced Dashboards](#architecture-of-advanced-dashboards)
+1. [Prerequisites](#prerequisites)
+1. [Deployment Steps](#deployment-steps)
+1. [Terraform Configuration](#terraform-configuration)
+   - [Quick Start for Users](#quick-start-for-users)
+   - [Dashboard Types](#dashboard-types)
+   - [File Structure](#file-structure)
+   - [Backend and Provider Configuration](#backend-and-provider-configuration)
+   - [Standalone Dashboard Deployments](#standalone-dashboard-deployments)
+   - [Advanced Configuration](#advanced-configuration)
+1. [Cleanup](#cleanup)
+1. [FAQ](#faq)
+1. [Changelogs](#changelogs)
+1. [Feedback](#feedback)
+1. [Security](#security)
+1. [License](#license)
+1. [Notices](#notices)
 
 ## Overview
 The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best practices for governance, and achieve operational excellence across all your organization.
@@ -75,37 +80,6 @@ You need access to AWS Accounts. We recommend deployment of the Dashboards in a 
 If you do not have access to the Management/Payer Account, you can still collect the data across multiple Linked accounts using the same approach.
 
 The ownership of CID is usually with the FinOps team, who do not have administrative access. However, they require specific privileges to install and operate CID dashboards. To assist the Admin team in granting the necessary privileges to the CID owners, a CFN template is provided. This template, located at [CFN template](cfn-templates/cid-admin-policies.yaml), takes an IAM role name as a parameter and adds the required policies to the role.
-
-
-## Regions
-Make sure you are installing data collection in the same region where you are going to use the data to avoid cross-region charges.
-CFN deployment is only available in a limited number of regions, while CLI deployment is region agnostic.
-
-| Region Name | Region Code | Support CLI  | Support CFN |
-|:------------ | :-------------| :-------------| :------------- |
-| Africa (Cape Town) | af-south-1 | :heavy_check_mark: |   |
-| Asia Pacific (Tokyo) | ap-northeast-1 | :heavy_check_mark: | :heavy_check_mark: |
-| Asia Pacific (Seoul) | ap-northeast-2 | :heavy_check_mark: | :heavy_check_mark: |
-| Asia Pacific (Mumbai) | ap-south-1 | :heavy_check_mark: | :heavy_check_mark: |
-| Asia Pacific (Singapore) | ap-southeast-1 | :heavy_check_mark: | :heavy_check_mark: |
-| Asia Pacific (Sydney) | ap-southeast-2 | :heavy_check_mark: | :heavy_check_mark: |
-| Asia Pacific (Jakarta) | ap-southeast-3 | :heavy_check_mark: |   |
-| Canada (Central) | ca-central-1 | :heavy_check_mark: | :heavy_check_mark: |
-| China (Beijing) | cn-north-1 | :heavy_check_mark: |   |
-| Europe (Frankfurt) | eu-central-1 | :heavy_check_mark: | :heavy_check_mark: |
-| Europe (Zurich) | eu-central-2 | :heavy_check_mark: |   |
-| Europe (Stockholm) | eu-north-1 | :heavy_check_mark: | :heavy_check_mark: |
-| Europe (Milan) | eu-south-1 | :heavy_check_mark: |   |
-| Europe (Spain) | eu-south-2 | :heavy_check_mark: |   |
-| Europe (Ireland) | eu-west-1 | :heavy_check_mark: | :heavy_check_mark: |
-| Europe (London) | eu-west-2 | :heavy_check_mark: | :heavy_check_mark: |
-| Europe (Paris) | eu-west-3 | :heavy_check_mark: | :heavy_check_mark: |
-| South America (São Paulo) | sa-east-1 | :heavy_check_mark: | :heavy_check_mark: |
-| US East (N. Virginia) | us-east-1 | :heavy_check_mark: | :heavy_check_mark: |
-| US East (Ohio) | us-east-2 | :heavy_check_mark: | :heavy_check_mark: |
-| AWS GovCloud (US-East) | us-gov-east-1 | :heavy_check_mark: |   |
-| AWS GovCloud (US-West) | us-gov-west-1 | :heavy_check_mark: |   |
-| US West (Oregon) | us-west-2 | :heavy_check_mark: | :heavy_check_mark: |
 
 
 ## Deployment Steps
