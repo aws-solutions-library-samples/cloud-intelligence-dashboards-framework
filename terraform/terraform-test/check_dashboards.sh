@@ -37,36 +37,43 @@ marketplace="no"
 connect="no"
 containers="no"
 
-# Check terraform.tfvars for dashboard settings
-if [ -f "terraform.tfvars" ]; then
+# Check user-config.tf first, then fall back to terraform.tfvars
+CONFIG_FILE=""
+if [ -f "user-config.tf" ]; then
+  CONFIG_FILE="user-config.tf"
+  echo "Found user-config.tf, extracting dashboard settings..."
+elif [ -f "terraform.tfvars" ]; then
+  CONFIG_FILE="terraform.tfvars"
   echo "Found terraform.tfvars, extracting dashboard settings..."
-  
+fi
+
+if [ -n "$CONFIG_FILE" ]; then
   # Extract foundational dashboards
-  if grep -q "cudos_v5" terraform.tfvars; then
-    deploy_cudos_v5=$(grep "cudos_v5" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  if grep -q "cudos_v5" "$CONFIG_FILE"; then
+    deploy_cudos_v5=$(grep "cudos_v5" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
-  if grep -q "cost_intelligence" terraform.tfvars; then
-    deploy_cost_intelligence_dashboard=$(grep "cost_intelligence" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  if grep -q "cost_intelligence" "$CONFIG_FILE"; then
+    deploy_cost_intelligence_dashboard=$(grep "cost_intelligence" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
-  if grep -q "kpi" terraform.tfvars; then
-    deploy_kpi_dashboard=$(grep "kpi" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  if grep -q "kpi" "$CONFIG_FILE"; then
+    deploy_kpi_dashboard=$(grep "kpi" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
   
   # Extract additional dashboards
-  if grep -q "trends" terraform.tfvars; then
-    trends=$(grep "trends" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  if grep -q "trends" "$CONFIG_FILE"; then
+    trends=$(grep "trends" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
-  if grep -q "datatransfer" terraform.tfvars; then
-    datatransfer=$(grep "datatransfer" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  if grep -q "datatransfer" "$CONFIG_FILE"; then
+    datatransfer=$(grep "datatransfer" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
-  if grep -q "marketplace" terraform.tfvars; then
-    marketplace=$(grep "marketplace" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  if grep -q "marketplace" "$CONFIG_FILE"; then
+    marketplace=$(grep "marketplace" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
-  if grep -q "connect" terraform.tfvars; then
-    connect=$(grep "connect" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  if grep -q "connect" "$CONFIG_FILE"; then
+    connect=$(grep "connect" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
-  if grep -q "containers" terraform.tfvars; then
-    containers=$(grep "containers" terraform.tfvars | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  if grep -q "containers" "$CONFIG_FILE"; then
+    containers=$(grep "containers" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
 fi
 

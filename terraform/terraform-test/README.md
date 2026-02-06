@@ -13,7 +13,7 @@ This testing framework provides comprehensive validation for CID Terraform deplo
 ## Test Workflow
 
 ### 1. Environment Setup
-- Extracts configuration from `variables.tf` 
+- Extracts configuration from `user-config.tf` or `terraform.tfvars`
 - Builds local lambda layer (optional)
 - Uploads local CID templates to test bucket
 - Generates `terraform.tfvars` with dynamic values
@@ -56,7 +56,7 @@ This testing framework provides comprehensive validation for CID Terraform deplo
 
 ### Dashboard Configuration
 
-The test automatically extracts dashboard settings from `variables.tf`:
+The test automatically extracts dashboard settings from `user-config.tf` (or falls back to `terraform.tfvars`):
 
 - **Foundational**: CUDOS v5, Cost Intelligence, KPI
 - **Additional**: Trends, DataTransfer, Marketplace, Connect, Containers
@@ -140,11 +140,8 @@ export BUILD_LOCAL_LAYER="false"
 ### Selective Testing
 
 ```bash
-# Test specific dashboards by modifying variables.tf defaults
-# Or set environment variables for dashboard selection
-export deploy_cudos_v5="yes"
-export deploy_cost_intelligence_dashboard="no"
-export trends="yes"
+# Test specific dashboards by editing user-config.tf
+# The test script will automatically detect your dashboard configuration
 ```
 
 ### Debugging

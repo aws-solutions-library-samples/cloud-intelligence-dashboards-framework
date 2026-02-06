@@ -62,22 +62,6 @@ This foundational architecture is recommended for starting and allows deployment
 This advanced data collection architecture allows deployment of [Advanced Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html#advanced-dashboards) like Trusted Advisor Dashboard, Health, Graviton, Compute Optimizer Dashboard and many more.
 
 
-## Cost
-The following table provides a sample cost breakdown for deploying of Foundational Dashboards with the default parameters in the US East (N. Virginia) Region for one month. 
-
-| AWS Service                     | Dimensions                    |  Cost [USD]      |
-|---------------------------------|-------------------------------|------------------|
-| S3 (CUR Storage)                | Monthly storage               | $5-10/month*     |
-| AWS Glue Crawler                | Daily scans                   | $3/month*        |
-| AWS Athena                      | Daily scans                   | $15/month*       |
-| QuickSight Enterprise (Authors) | 3 authors  ($24/month/author) | $72/month**      |
-| QuickSight Enterprise (Readers) | 15 readers ($3/month/reader)  | $45/month**      |
-| QuickSight SPICE Capacity       | 100 GB                        | $10-20/month*    |
-| **Total Estimated Monthly Cost** |                              | **$100-$200**    |
-
-\* Costs are relative to the size of your Cost and Usage Report (CUR) data  
-\** Costs are relative to the number of users
-
 **Additional Notes:**
 -
  Free trial available for 30 days for 4 QuickSight users
@@ -236,7 +220,7 @@ which the services operate. For more information about AWS security, visit [AWS 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
 
 ## License
-This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE) file.
+This library is licensed under the MIT-0 License. See the [LICENSE](../../LICENSE) file.
 
 ## Notices
 Dashboards and their content: (a) are for informational purposes only, (b) represent current AWS product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS content, products or services are provided "as is" without warranties, representations, or conditions of any kind, whether express or implied. The responsibilities and liabilities of AWS to its customers are controlled by AWS agreements, and this document is not part of, nor does it modify, any agreement between AWS and its customers.
