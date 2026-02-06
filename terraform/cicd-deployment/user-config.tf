@@ -66,14 +66,21 @@ variable "global_values" {
   }
 }
 
+variable "allow_standalone_dashboard" {
+  description = "Set to true to allow deploying dashboards without their dependencies (for standalone deployments or when dependencies exist elsewhere)"
+  type        = bool
+  default     = false
+}
+
 variable "dashboards" {
   type = object({
-    # Foundational Dashboards (at least one required)
+    # Foundational Dashboards (recommended to deploy at least one first)
+    # These create shared resources that additional dashboards may reference
     cudos_v5          = string
     cost_intelligence = string
     kpi               = string
 
-    # Additional Dashboards
+    # Additional Dashboards (can be deployed standalone if foundational dashboards exist)
     trends       = string
     datatransfer = string
     marketplace  = string
@@ -81,7 +88,7 @@ variable "dashboards" {
     containers   = string
   })
 
-  description = "Dashboard deployment configuration - at least one foundational dashboard required"
+  description = "Dashboard deployment configuration - choose which dashboards to deploy"
 
   default = {
     # Foundational
@@ -108,9 +115,34 @@ variable "dashboards" {
     condition = anytrue([
       var.dashboards.cudos_v5 == "yes",
       var.dashboards.cost_intelligence == "yes",
-      var.dashboards.kpi == "yes"
+      var.dashboards.kpi == "yes",
+      var.dashboards.trends == "yes",
+      var.dashboards.datatransfer == "yes",
+      var.dashboards.marketplace == "yes",
+      var.dashboards.connect == "yes",
+      var.dashboards.containers == "yes"
     ])
-    error_message = "At least one foundational dashboard (cudos_v5, cost_intelligence, or kpi) must be enabled"
+    error_message = "At least one dashboard must be enabled"
+  }
+
+  # Validate foundational dashboard requirement unless explicitly overridden
+  validation {
+    condition = (
+      var.allow_standalone_dashboard ||
+      anytrue([
+        var.dashboards.cudos_v5 == "yes",
+        var.dashboards.cost_intelligence == "yes",
+        var.dashboards.kpi == "yes"
+      ]) ||
+      !anytrue([
+        var.dashboards.trends == "yes",
+        var.dashboards.datatransfer == "yes",
+        var.dashboards.marketplace == "yes",
+        var.dashboards.connect == "yes",
+        var.dashboards.containers == "yes"
+      ])
+    )
+    error_message = "Additional dashboards require at least one foundational dashboard (cudos_v5, cost_intelligence, or kpi) to be enabled, OR set 'allow_standalone_dashboard = true' if foundational dashboards are already deployed elsewhere."
   }
 }
 

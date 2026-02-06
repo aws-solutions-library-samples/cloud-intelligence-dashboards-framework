@@ -152,6 +152,9 @@ dashboards = {
   connect      = "no"   # Amazon Connect Cost Insight
   containers   = "no"   # SCAD Containers Cost Allocation
 }
+
+# For standalone dashboard deployments (advanced use case)
+# allow_standalone_dashboard = true  # Uncomment if deploying without foundational dashboards
 ```
 
 #### 2. Deploy
@@ -232,6 +235,32 @@ provider "aws" {
   region = var.global_values.aws_region
 }
 ```
+
+### Standalone Dashboard Deployments
+
+For advanced use cases where you want to deploy individual dashboards without foundational dashboards (e.g., when foundational dashboards are already deployed elsewhere):
+
+```hcl
+# Enable standalone deployment
+allow_standalone_dashboard = true
+
+# Deploy only specific dashboards
+dashboards = {
+  # Disable foundational dashboards
+  cudos_v5          = "no"
+  cost_intelligence = "no"
+  kpi               = "no"
+  
+  # Enable only the dashboard you want
+  trends       = "yes"  # Deploy only Trends Dashboard
+  datatransfer = "no"
+  marketplace  = "no"
+  connect      = "no"
+  containers   = "no"
+}
+```
+
+**Note**: This is typically used when foundational dashboards are already deployed in your environment and you want to add additional dashboards incrementally.
 
 ### Advanced Configuration
 
