@@ -190,7 +190,7 @@ class AbstractCUR(CidBase):
                 if tag_type not in self.fields:
                     logging.debug(f'skipping {tag_type} scan')
 
-                display_name = "Account Tags" if tag_type == "tags" else tag_type
+                display_name = "Account Tags (tags column)" if tag_type == "tags" else tag_type
                 cid_print(f'Scanning {display_name} in {self.table_name}.')
                 try:
                     if tag_type == 'tags':
