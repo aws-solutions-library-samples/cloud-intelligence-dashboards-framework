@@ -1352,6 +1352,7 @@ Resources:
                   - athena:GetQueryResultsStream
                   - athena:ListTableMetadata
                   - athena:GetTableMetadata
+                  - athena:GetWorkGroup
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:athena:${AWS::Region}:${AWS::AccountId}:datacatalog/${GlueDataCatalog}'
                   - Fn::If:
