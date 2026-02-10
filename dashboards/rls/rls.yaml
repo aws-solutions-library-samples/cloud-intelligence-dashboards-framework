@@ -29,7 +29,7 @@ datasets:
               Type: STRING
             - Name: account_id
               Type: STRING
-            - Name: payer_id
+            - Name: payer_account_id
               Type: STRING
       LogicalTableMap:
         ba97c5ca-ff05-4d15-8cca-ffd0b8e3d804:
@@ -63,7 +63,7 @@ datasets:
               Type: STRING
             - Name: account_id
               Type: STRING
-            - Name: payer_id
+            - Name: payer_account_id
               Type: STRING
             - Name: permission_type
               Type: STRING
@@ -90,7 +90,7 @@ views:
         qs.username as "UserName"
       , rls."group" as "GroupName"
       , rls.account_ids account_id
-      , rls.payer_ids payer_id
+      , rls.payer_account_ids payer_account_id
       FROM
         (rls_all_permissions rls
       LEFT JOIN "${data_collection_database_name}".quicksight_user_data qs ON (qs.email = rls.email))
@@ -117,7 +117,7 @@ views:
            email
          , '' "group"
          , account_id
-         , '' payer_id
+         , '' payer_account_id
          FROM
            (rls_org_view
          CROSS JOIN UNNEST(emails) t (email))
@@ -127,18 +127,18 @@ views:
            email
          , '' "group"
          , '' account_id
-         , account_id payer_id
+         , account_id payer_account_id
          FROM
            (rls_org_view
          CROSS JOIN UNNEST(emails) t (email))
-         WHERE (account_id = payer_id)
+         WHERE (account_id = payer_account_id)
       )
       , rls_full_access_per_email AS (
          SELECT
            email
          , '' "group"
          , '' account_id
-         , '' payer_id
+         , '' payer_account_id
          FROM
            rls_full_access_users
       )
@@ -147,7 +147,7 @@ views:
            '' email
          , "group"
          , account_id
-         , '' payer_id
+         , '' payer_account_id
          FROM
            (rls_org_view
          CROSS JOIN UNNEST("groups") t ("group"))
@@ -157,18 +157,18 @@ views:
            '' email
          , "group"
          , '' account_id
-         , account_id payer_id
+         , account_id payer_account_id
          FROM
            (rls_org_view
          CROSS JOIN UNNEST("groups") t ("group"))
-         WHERE (account_id = payer_id)
+         WHERE (account_id = payer_account_id)
 
       )
       , rls_full_access_per_group AS (
          SELECT
            "group"
          , '' account_id
-         , '' payer_id
+         , '' payer_account_id
          FROM
            rls_full_access_groups
       )
@@ -177,14 +177,14 @@ views:
         email
       , "group"
       , ARRAY_JOIN(ARRAY_AGG(account_id) FILTER (WHERE ((account_id IS NOT NULL) AND (account_id <> ''))), ',') account_ids
-      , ARRAY_JOIN(ARRAY_AGG(payer_id) FILTER (WHERE ((payer_id IS NOT NULL) AND (payer_id <> ''))), ',') payer_ids
+      , ARRAY_JOIN(ARRAY_AGG(payer_account_id) FILTER (WHERE ((payer_account_id IS NOT NULL) AND (payer_account_id <> ''))), ',') payer_account_ids
       FROM
         (
          SELECT
            email
          , '' "group"
          , account_id
-         , payer_id
+         , payer_account_id
          FROM
            rls_account_permissions_per_email
          WHERE ((NOT (email IN (SELECT email
@@ -201,7 +201,7 @@ views:
            email
          , '' "group"
          , account_id
-         , payer_id
+         , payer_account_id
          FROM
            rls_management_account_permissions_per_email
          WHERE (NOT (email IN (SELECT email
@@ -215,7 +215,7 @@ views:
           '' email
          , "group"
          , account_id
-         , payer_id
+         , payer_account_id
          FROM
            rls_account_permissions_per_group
          WHERE ((NOT ("group" IN (SELECT "group" FROM rls_management_account_permissions_per_group)))
@@ -227,7 +227,7 @@ views:
            '' email
          , "group"
          , account_id
-         , payer_id
+         , payer_account_id
          FROM
            rls_management_account_permissions_per_group
          WHERE (NOT ("group" IN (SELECT "group" FROM rls_full_access_per_group)))
@@ -238,7 +238,7 @@ views:
            '' email
          , "group"
          , account_id
-         , payer_id
+         , payer_account_id
       FROM
         rls_full_access_per_group
 
@@ -249,9 +249,9 @@ views:
       CREATE OR REPLACE VIEW "${athena_database_name}".rls_org_view AS
       SELECT
         Id account_id,
-        ManagementAccountId payer_id,
-        TRY(SPLIT(FILTER(HierarchyTags, (x) -> (x.key = 'cid_users'))[1].value, ',')) "emails",
-        TRY(SPLIT(FILTER(HierarchyTags, (x) -> (x.key = 'cid_groups'))[1].value, ',')) "groups"
+        ManagementAccountId payer_account_id,
+        TRY(SPLIT(FILTER(HierarchyTags, (x) -> (x.key = 'cid_users'))[1].value, ':')) "emails",
+        TRY(SPLIT(FILTER(HierarchyTags, (x) -> (x.key = 'cid_groups'))[1].value, ':')) "groups"
       FROM
         "${data_collection_database_name}"."organization_data"
     parameters:
@@ -309,7 +309,7 @@ views:
           qs.username,
           rls."group" AS groupname,
           rls.account_ids,
-          rls.payer_ids,
+          rls.payer_account_ids,
           'direct' AS permission_type
         FROM "${data_collection_database_name}".quicksight_user_data qs
           INNER JOIN rls_all_permissions rls
@@ -323,7 +323,7 @@ views:
           qs.username,
           rls."group" AS groupname,
           rls.account_ids,
-          rls.payer_ids,
+          rls.payer_account_ids,
           'group' AS permission_type
         FROM "${data_collection_database_name}".quicksight_user_data qs
           INNER JOIN user_groups ug
@@ -336,7 +336,7 @@ views:
         up.username AS "UserName",
         up.groupname AS "GroupName",
         TRIM(account_id_split) AS account_id,
-        TRIM(payer_id_split) AS payer_id,
+        TRIM(payer_account_id_split) AS payer_account_id,
         up.permission_type
       FROM user_permissions up
         CROSS JOIN UNNEST(
@@ -348,11 +348,11 @@ views:
         ) AS t(account_id_split)
         CROSS JOIN UNNEST(
           CASE 
-            WHEN up.payer_ids IS NOT NULL AND up.payer_ids != '' 
-            THEN SPLIT(up.payer_ids, ',') 
+            WHEN up.payer_account_ids IS NOT NULL AND up.payer_account_ids != '' 
+            THEN SPLIT(up.payer_account_ids, ',') 
             ELSE ARRAY[CAST(NULL AS VARCHAR)]
           END
-        ) AS t2(payer_id_split)
+        ) AS t2(payer_account_id_split)
     parameters:
       data_collection_database_name:
         type: athena

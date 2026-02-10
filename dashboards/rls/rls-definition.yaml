@@ -16,7 +16,7 @@ CalculatedFields:
     )
   Name: Group
 - DataSetIdentifier: rls_all_users_view
-  Expression: ifelse({payer_id} = '' or isNull({payer_id}), 'empty (ANY)', {payer_id})
+  Expression: ifelse({payer_account_id} = '' or isNull({payer_account_id}), 'empty (ANY)', {payer_account_id})
   Name: Payer ID
 - DataSetIdentifier: rls_dataset
   Expression: ifelse({_account_id_is_null}=1, 'empty (FULL ACCESS)', {account_id})
@@ -31,12 +31,12 @@ CalculatedFields:
             'ANY USER have '
         ),
         ifelse(
-            {_account_id_is_null} = 1 AND {_payer_id_is_null} = 1, 'Full Access (All Payers all Accounts)',
-            {_account_id_is_null} = 1 AND {_payer_id_is_null} = 0, ifelse(contains({payer_id}, ','),
-                                                                        concat('Access To Payers: ', {payer_id}),
-                                                                        concat('Access To Payer: ', {payer_id})
+            {_account_id_is_null} = 1 AND {_payer_account_id_is_null} = 1, 'Full Access (All Payers all Accounts)',
+            {_account_id_is_null} = 1 AND {_payer_account_id_is_null} = 0, ifelse(contains({payer_account_id}, ','),
+                                                                        concat('Access To Payers: ', {payer_account_id}),
+                                                                        concat('Access To Payer: ', {payer_account_id})
             ),
-            {_account_id_is_null} = 0 AND {_payer_id_is_null} = 1, ifelse(contains({account_id}, ','),
+            {_account_id_is_null} = 0 AND {_payer_account_id_is_null} = 1, ifelse(contains({account_id}, ','),
                                                                         concat('Access To Account: ', {account_id}),
                                                                         concat('Access To Account: ', {account_id})
             ),
@@ -45,14 +45,14 @@ CalculatedFields:
     )
   Name: Description
 - DataSetIdentifier: rls_dataset
-  Expression: ifelse({_payer_id_is_null} = 1, 'empty (FULL ACCESS)', {payer_id})
+  Expression: ifelse({_payer_account_id_is_null} = 1, 'empty (FULL ACCESS)', {payer_account_id})
   Name: Payer ID(s)
 - DataSetIdentifier: rls_dataset
   Expression: ifelse(isNull({account_id}) OR {account_id} = '', 1, 0)
   Name: _account_id_is_null
 - DataSetIdentifier: rls_dataset
-  Expression: ifelse(isNull({payer_id}) OR {payer_id} = '', 1, 0)
-  Name: _payer_id_is_null
+  Expression: ifelse(isNull({payer_account_id}) OR {payer_account_id} = '', 1, 0)
+  Name: _payer_account_id_is_null
 ColumnConfigurations:
 - Column:
     ColumnName: account_id
@@ -65,7 +65,7 @@ ColumnConfigurations:
   FormatConfiguration:
     StringFormatConfiguration: {}
 - Column:
-    ColumnName: payer_id
+    ColumnName: payer_account_id
     DataSetIdentifier: rls_all_users_view
   FormatConfiguration:
     StringFormatConfiguration: {}
@@ -80,7 +80,7 @@ ColumnConfigurations:
   FormatConfiguration:
     StringFormatConfiguration: {}
 - Column:
-    ColumnName: payer_id
+    ColumnName: payer_account_id
     DataSetIdentifier: rls_dataset
   FormatConfiguration:
     StringFormatConfiguration: {}
@@ -174,11 +174,11 @@ Sheets:
           </li>
           <li class="ql-indent-0">
             <b>Full access</b>
-            : Users with empty account_id and payer_id fields have unrestricted access (recommended for Security, FinOps, and Platform teams)
+            : Users with empty account_id and payer_account_id fields have unrestricted access (recommended for Security, FinOps, and Platform teams)
           </li>
           <li class="ql-indent-0">
             <b>Organization access</b>
-            : Users with empty account_id but populated payer_id have access to all accounts in the specified AWS Organization
+            : Users with empty account_id but populated payer_account_id have access to all accounts in the specified AWS Organization
           </li>
         </ul>
         <br/>
