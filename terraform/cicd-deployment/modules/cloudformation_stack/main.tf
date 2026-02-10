@@ -12,10 +12,5 @@ resource "aws_cloudformation_stack" "dashboard" {
     delete = var.config.timeouts.delete
   }
 
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes        = [tags]
-  }
-
   tags = var.config.tags
 }

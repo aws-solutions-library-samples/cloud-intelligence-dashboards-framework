@@ -179,7 +179,7 @@ locals {
   }
 
   enabled_additional_dashboards = {
-    for k, v in local.additional_dashboards : k => v if v.enabled == "yes"
+    for k, v in local.additional_dashboards : k => v if v.enabled
   }
 
   # Common tags for all resources
