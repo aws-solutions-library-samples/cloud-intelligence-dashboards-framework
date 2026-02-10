@@ -1,98 +1,249 @@
-# Cloud Intelligence Dashboards (CUDOS Framework)
+# AWS Cloud Intelligence Dashboards (CID) Terraform Module
 
-[![PyPI version](https://badge.fury.io/py/cid-cmd.svg)](https://badge.fury.io/py/cid-cmd)
+This Terraform module deploys the AWS Cloud Intelligence Dashboards (formerly CUDOS) infrastructure using CloudFormation stacks. It provides a streamlined way to set up cost management and optimization dashboards in your AWS environment.
 
+## Architecture Overview
 
-## Table of Contents
-1. [Overview](#overview)
-1. [Architecture of Foundational Dashboards](#architecture-of-foundational-dashboards)
-1. [Architecture of Advanced Dashboards](#architecture-of-advanced-dashboards)
-1. [Prerequisites](#prerequisites)
-1. [Deployment Steps](#deployment-steps)
-1. [Terraform Configuration](#terraform-configuration)
-   - [Quick Start for Users](#quick-start-for-users)
-   - [Dashboard Types](#dashboard-types)
-   - [File Structure](#file-structure)
-   - [Backend and Provider Configuration](#backend-and-provider-configuration)
-   - [Standalone Dashboard Deployments](#standalone-dashboard-deployments)
-   - [Advanced Configuration](#advanced-configuration)
-1. [Cleanup](#cleanup)
-1. [FAQ](#faq)
-1. [Changelogs](#changelogs)
-1. [Feedback](#feedback)
-1. [Security](#security)
-1. [License](#license)
-1. [Notices](#notices)
+The module creates the following CloudFormation stacks across two AWS accounts:
 
-## Overview
-The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best practices for governance, and achieve operational excellence across all your organization.
+1. **Data Exports Destination Stack** - Deployed in the Data Collection account to manage data aggregation
+2. **Data Exports Source Stack** - Deployed in the Payer account to collect cost data
+3. **Cloud Intelligence Dashboards Stack** - Deployed in the Data Collection account for QuickSight dashboards
 
-Cloud Intelligence Dashboards Framework provides AWS customers with [more then 20 Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html).
-* Foundational Dashboards - A set of main Dashboards that only require Cost and Usage Report(CUR)
-* Advanced Dashboards - Require CID Data Collection and CUR
-* Additional Dashboards - Require various custom datasources or created for very specific use cases
-* Additional CUR-based Dashboards - Require only CUR data and a foundational dashboard deployment
-
-We recommend starting with deployment of [Foundational Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboard-foundational.html). Then deploy [Data Collection](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html) and [Advanced Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html#advanced-dashboards). Check for [Additional](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html#additional) Dashboards and Additional CUR-based Dashboards.
-
-
-[![Documentation >](assets/images/documentation.svg)](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html)
-
-
-## Architecture of Foundational Dashboards
-
-![Foundational Architecture](assets/images/foundational-architecture.png  "Foundational Architecture")
-1. [AWS Data Exports](https://aws.amazon.com/aws-cost-management/aws-data-exports/) delivers daily the Cost & Usage Report (CUR2) to an [Amazon S3 Bucket](https://aws.amazon.com/s3/) in the Management Account.
-2. [Amazon S3](https://aws.amazon.com/s3/) replication rule copies Export data to a dedicated Data Collection Account S3 bucket automatically.
-3. [Amazon Athena](https://aws.amazon.com/athena/) allows querying data directly from the S3 bucket using an [AWS Glue](https://aws.amazon.com/glue/) table schema definition.
-4. [Amazon QuickSight](https://aws.amazon.com/quicksight/) creates datasets from [Amazon Athena](https://aws.amazon.com/athena/), refreshes daily and caches in [SPICE](https://docs.aws.amazon.com/quicksight/latest/user/spice.html)(Super-fast, Parallel, In-memory Calculation Engine) for [Amazon QuickSight](https://aws.amazon.com/quicksight/)
-5. User Teams (Executives, FinOps, Engineers) can access Cloud Intelligence Dashboards in [Amazon QuickSight](https://aws.amazon.com/quicksight/). Access is secured through [AWS IAM](https://aws.amazon.com/iam/), IIC ([AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/), formerly SSO), and optional [Row Level Security](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/row-level-security.html).
-
-This foundational architecture is recommended for starting and allows deployment of [Foundational Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboard-foundational.html) like CUDOS, CID and KPI.
-
-## Architecture of Advanced Dashboards
-![Advanced Architecture](assets/images/advanced-architecture.png  "Foundational Architecture")
-
-1. [AWS Data Exports](https://aws.amazon.com/aws-cost-management/aws-data-exports/) delivers daily the Cost & Usage Report (CUR2) to an [Amazon S3 Bucket](https://aws.amazon.com/s3/) in the Management Account.
-2. [Amazon S3](https://aws.amazon.com/s3/) replication rule copies Export data to a dedicated Data Collection Account S3 bucket automatically.
-3. [Amazon Athena](https://aws.amazon.com/athena/) allows querying data directly from the S3 bucket using an [AWS Glue](https://aws.amazon.com/glue/) table schema definition.
-4. [Amazon QuickSight](https://aws.amazon.com/quicksight/) creates datasets from [Amazon Athena](https://aws.amazon.com/athena/), refreshes daily and caches in [SPICE](https://docs.aws.amazon.com/quicksight/latest/user/spice.html)(Super-fast, Parallel, In-memory Calculation Engine) for [Amazon QuickSight](https://aws.amazon.com/quicksight/)
-5. User Teams (Executives, FinOps, Engineers) can access Cloud Intelligence Dashboards in [Amazon QuickSight](https://aws.amazon.com/quicksight/). Access is secured through [AWS IAM](https://aws.amazon.com/iam/), IIC ([AWS IAM Identity Center](https://aws.amazon.com/iam/identity-center/), formerly SSO), and optional [Row Level Security](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/row-level-security.html).
-6. Optionally, the Advanced data collection can be deployed to enable advanced dashboards based on [AWS Trusted Advisor](https://aws.amazon.com/premiumsupport/trustedadvisor/), [AWS Health](https://aws.amazon.com/premiumsupport/technology/aws-health-dashboard/) Events and other sources. Additional data is retrieved from [AWS Organizations](https://aws.amazon.com/organizations/) or Linked Accounts. In this case [Amazon EventBridge](https://aws.amazon.com/eventbridge/) rule triggers an [AWS Step Functions](https://aws.amazon.com/step-functions/) workflow for data collection modules on a configurable schedule.
-7. The "Account Collector" [AWS Lambda](https://aws.amazon.com/lambda/) in AWS Step Functions retrieves linked account details using AWS Organizations API.
-8. The "Data Collection" Lambda function in AWS Step Functions assumes a role in each linked account to retrieve account-specific data via [AWS SDK](https://aws.amazon.com/developer/tools/).
-9. Retrieved data is stored in a centralized Amazon S3 Bucket.
-10. [Advanced Cloud Intelligence Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html#advanced-dashboards) leverage Amazon Athena and Amazon QuickSight for comprehensive data analysis.
-
-This advanced data collection architecture allows deployment of [Advanced Dashboards](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html#advanced-dashboards) like Trusted Advisor Dashboard, Health, Graviton, Compute Optimizer Dashboard and many more.
-
-
-**Additional Notes:**
--
- Free trial available for 30 days for 4 QuickSight users
-- Actual costs may vary based on specific usage and data volume
-
-Please use the AWS Pricing Calculator for precise estimation.
+This architecture follows AWS best practices by separating the Payer account (Source/Management account) from the dashboard visualization (Data Collection account). For a detailed architecture diagram, see the [CID Architecture Documentation](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html#architecture).
 
 ## Prerequisites
-You need access to AWS Accounts. We recommend deployment of the Dashboards in a dedicated Data Collection Account, other than your Management (Payer) Account. We provide CloudFormation templates to copy CUR 2.0 data from your Management Account to a dedicated one. You can use it to aggregate data from multiple Management (Payer) Accounts or multiple Linked Accounts.
 
-If you do not have access to the Management/Payer Account, you can still collect the data across multiple Linked accounts using the same approach.
+* Terraform >= 1.0
+* Access to deploy resources in both accounts:
+  * **Payer account**: Permissions to create IAM roles, S3 buckets, and access billing data
+  * **Data Collection account**: Permissions to create CloudFormation stacks, S3 buckets, and manage QuickSight
+* QuickSight Enterprise subscription in the Data Collection account
+* A configured QuickSight user in the Data Collection account
+* Terraform provider configuration for both accounts:
+  * Provider with "management" alias for the Payer account
+  * Provider with "datacollection" alias for the Data Collection account
 
-The ownership of CID is usually with the FinOps team, who do not have administrative access. However, they require specific privileges to install and operate CID dashboards. To assist the Admin team in granting the necessary privileges to the CID owners, a CFN template is provided. This template, located at [CFN template](cfn-templates/cid-admin-policies.yaml), takes an IAM role name as a parameter and adds the required policies to the role.
+## Quick Start
 
+1. Configure your AWS credentials for both accounts
+2. Edit `user-config.tf` with your configuration values
+3. Create required `backend.tf` and `providers.tf` files
+4. Run the standard Terraform workflow:
 
-## Deployment Steps
-There are several ways we can deploy dashboards:
-1. Using cid-cmd tool from the command line
-1. [CloudFormation Template](./cfn-templates/cid-cfn.yml) using cid-cmd tool in Amazon Lambda. (Recommended)
-1. [Terraform Configuration](#Terraform-Configuration) for infrastructure as code deployment
+```bash
+terraform init
+terraform plan
+terraform apply
+```
 
-Please refer to the deployment documentation [here](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html).
+## Configuration
 
+### Required Configuration
+
+**Edit `user-config.tf`** - This is the main file you need to modify:
+
+```hcl
+# Update these values for your environment
+global_values = {
+  destination_account_id = "123456789012"     # 12-digit Data Collection account ID
+  source_account_ids     = "987654321098"     # Comma-separated list of Payer account IDs
+  aws_region            = "us-east-1"         # AWS region for deployment
+  quicksight_user       = "user@example.com" # QuickSight username
+  cid_cfn_version       = "4.4.6"           # CID CloudFormation version
+  data_export_version   = "0.9.0"           # Data Export version
+  environment           = "prod"              # Environment (dev, staging, prod)
+}
+
+# Choose which dashboards to deploy
+dashboards = {
+  # Foundational (at least one required)
+  cudos_v5          = "yes"  # CUDOS v5 Dashboard
+  cost_intelligence = "no"  # Cost Intelligence Dashboard  
+  kpi               = "no"  # KPI Dashboard
+  
+  # Additional CUR-based Dashboards
+  trends       = "yes"  # Trends Dashboard
+  datatransfer = "yes"  # Data Transfer Cost Analysis
+  marketplace  = "yes"  # AWS Marketplace Dashboard
+  connect      = "yes"  # Amazon Connect Cost Insight
+  containers   = "yes"  # SCAD Containers Cost Allocation
+}
+```
+
+> **Note:** To get the latest version numbers for `cid_cfn_version` and `data_export_version`, you can use the following commands:
+>
+> ```bash
+> CID_VERSION=$(curl -s https://raw.githubusercontent.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/main/cfn-templates/cid-cfn.yml | grep Description | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+> echo "cid_cfn_version = \"$CID_VERSION\""
+>
+> EXPORT_VERSION=$(curl -s https://raw.githubusercontent.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/main/data-exports/deploy/data-exports-aggregation.yaml | grep Description | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+> echo "data_export_version = \"$EXPORT_VERSION\""
+> ```
+
+### Required Infrastructure Files
+
+You need to create these files before deployment:
+
+#### Create `backend.tf`
+```hcl
+terraform {
+  backend "s3" {
+    bucket = "your-terraform-state-bucket"
+    key    = "cid-dashboards/terraform.tfstate"
+    region = "us-east-1"
+    encrypt = true
+  }
+}
+```
+
+#### Create `providers.tf`
+```hcl
+terraform {
+  required_version = ">= 1.0.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0.0"
+    }
+  }
+}
+
+provider "aws" {
+  alias  = "management"
+  region = var.global_values.aws_region
+  # Payer account credentials
+}
+
+provider "aws" {
+  alias  = "datacollection"
+  region = var.global_values.aws_region
+  # Data Collection account credentials
+  assume_role {
+    role_arn = "arn:aws:iam::${var.global_values.destination_account_id}:role/YourCrossAccountRole"
+  }
+}
+```
+
+## File Structure
+
+- **`user-config.tf`** - 📝 **EDIT THIS** - Main configuration file for users
+- **`variables.tf`** - ⚙️ **Advanced users only** - Technical/internal variables
+- **`dashboards.tf`** - 🏗️ **Don't edit** - Resource definitions
+- **`locals.tf`** - 🏗️ **Don't edit** - Internal logic and configurations
+- **`outputs.tf`** - 📊 **Don't edit** - Output definitions
+- **`backend.tf`** - 💾 **CREATE THIS** - Backend configuration
+- **`providers.tf`** - 🔧 **CREATE THIS** - Provider configurations
+
+## Cross-Account Setup
+
+This module implements a cross-account architecture:
+
+1. **Payer Account**: Contains the billing data and CUR reports
+   * Deploys the Data Exports Source stack
+   * Creates IAM roles for cross-account access
+   * Sets up S3 bucket policies for data sharing
+
+2. **Data Collection Account**: Contains the dashboards and visualization
+   * Deploys the Data Exports Destination stack
+   * Deploys the Cloud Intelligence Dashboards stack
+   * Hosts the QuickSight dashboards and datasets
+
+The cross-account setup ensures proper separation of concerns and follows AWS security best practices.
+
+## Available Dashboards
+
+The module can deploy the following dashboards in the Data Collection account:
+
+### Foundational Dashboards
+At least one foundational dashboard is required as they generate the CUR data needed by additional dashboards.
+
+| Dashboard | Variable | Default | Description |
+|-----------|----------|---------|-------------|
+| CUDOS v5 | `cudos_v5` | yes | Comprehensive cost analysis |
+| Cost Intelligence | `cost_intelligence` | yes | Advanced cost insights |
+| KPI | `kpi` | yes | Key performance indicators |
+
+### Additional CUR-based Dashboards
+These require a foundational dashboard to be deployed first and use the same CUR data.
+
+| Dashboard | Variable | Default | Description |
+|-----------|----------|---------|-------------|
+| Trends | `trends` | yes | Trends Dashboard |
+| Data Transfer | `datatransfer` | yes | Data Transfer Cost Analysis |
+| Marketplace | `marketplace` | yes | AWS Marketplace Dashboard |
+| Connect | `connect` | yes | Amazon Connect Cost Insight |
+| Containers | `containers` | yes | SCAD Containers Cost Allocation |
+
+## Advanced Configuration
+
+### Standalone Dashboard Deployments
+
+For advanced use cases where you want to deploy individual dashboards without foundational dashboards:
+
+```hcl
+# Enable standalone deployment in user-config.tf
+allow_standalone_dashboard = true
+
+# Deploy only specific dashboards
+dashboards = {
+  # Disable foundational dashboards
+  cudos_v5          = "no"
+  cost_intelligence = "no"
+  kpi               = "no"
+  
+  # Enable only the dashboard you want
+  trends       = "yes"  # Deploy only Trends Dashboard
+  datatransfer = "no"
+  marketplace  = "no"
+  connect      = "no"
+  containers   = "no"
+}
+```
+
+**Note**: This is typically used when foundational dashboards are already deployed in your environment and you want to add additional dashboards incrementally.
+
+### Technical Parameters
+
+If you need to modify technical parameters, you can edit `variables.tf`, but this is typically not needed for standard deployments. The following parameters are managed internally by the CID deployment and **must not be changed**:
+
+| Parameter | Purpose |
+|-----------|---------|
+| `athena_workgroup` | Used by Athena to run queries |
+| `athena_query_results_bucket` | Stores Athena query results for QuickSight |
+| `database_name` | Athena/Glue database used by dashboards |
+| `cur_table_name` | Name of the legacy CUR table if applicable |
+| `suffix` | Unique stack identifier |
+| `lambda_layer_bucket_prefix` | Bucket prefix for Lambda layers |
+| `deployment_type` | Deployment mechanism (Terraform/CFN) |
+
+## Outputs
+
+After successful deployment, the module provides the following outputs:
+
+| Output | Description |
+|--------|-------------|
+| `cid_dataexports_destination_outputs` | Outputs from destination stack |
+| `cid_dataexports_source_outputs` | Outputs from source stack |
+| `cloud_intelligence_dashboards_outputs` | QuickSight dashboard outputs |
+| `dashboard_summary` | Summary of all deployed dashboards (foundational and additional) |
+| `additional_dashboards_stacks` | Additional dashboard CloudFormation stacks (trends, datatransfer, marketplace, connect, containers) |
+
+Access the dashboard URLs from the outputs to view your dashboards in QuickSight.
+
+## Important Notes
+
+* Stack creation can take up to 60 minutes
+* All stacks require `CAPABILITY_IAM` and `CAPABILITY_NAMED_IAM` permissions
+* The module uses S3 for Terraform state storage
+* QuickSight Enterprise subscription is required in the Data Collection account
+* Cross-account IAM roles are created automatically
+
+## FAQ
 
 <details>
-<summary><strong>Migration from Non-Modular to Modular Configuration - Click to Expand</strong></summary><br>
+<summary><b>How do I migrate from the non-modular configuration?</b></summary>
+
 If you're upgrading from the previous non-modular Terraform configuration, please note the following breaking changes:
 
 #### Configuration Structure Changes
@@ -148,180 +299,132 @@ If you're upgrading from the previous non-modular Terraform configuration, pleas
 
 </details>
 
+<details>
+<summary><b>How do I backfill historical cost data?</b></summary>
 
+To backfill historical data for the Data Export, follow the instructions in the [CID Documentation Backfill Data Export section](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html#backfill-data-export).
 
+This process allows you to populate your dashboards with historical cost and usage data, ensuring you have a complete view of your AWS spending over time.
 
-## Terraform Configuration
+</details>
 
-### Quick Start for Users
+<details>
+<summary><b>Can I deploy everything in a single account instead of using cross-account setup?</b></summary>
 
-#### 1. Configure Your Deployment
+While the cross-account setup is recommended for production environments, you can deploy the entire solution in your Payer account without requiring a separate Data Collection account. This single-account approach is simpler for testing or development purposes. To do this:
 
-**Edit `user-config.tf`** - This is the main file you need to modify:
+1. **Update user-config.tf**:
+   ```hcl
+   global_values = {
+     destination_account_id = "123456789012"      # Your Payer account ID
+     source_account_ids     = "123456789012"      # Same Payer account ID
+     aws_region             = "us-east-1"         # AWS region for deployment
+     quicksight_user        = "user/example"      # QuickSight username
+     cid_cfn_version        = "4.4.6"             # CID CloudFormation version
+     data_export_version    = "0.9.0"             # Data Export version
+     environment            = "dev"               # Environment (dev, staging, prod)
+   }
+   ```
 
-```hcl
-# Update these values for your environment
-global_values = {
-  destination_account_id = "123456789012"     # Your AWS Account ID
-  source_account_ids     = "123456789012"     # Same or different account IDs
-  aws_region            = "us-east-1"         # Your preferred region
-  quicksight_user       = "user@example.com" # Your QuickSight username
-  cid_cfn_version       = "4.3.6"           # CID version to deploy
-  data_export_version   = "0.5.0"           # Data export version
-  environment           = "prod"              # dev, staging, or prod
-}
+2. **Simplify providers.tf**:
+   ```hcl
+   provider "aws" {
+     alias  = "management"
+     region = var.global_values.aws_region
+   }
 
-# Choose which dashboards to deploy
-dashboards = {
-  # Foundational (at least one required)
-  cudos_v5          = "yes"  # CUDOS v5 Dashboard
-  cost_intelligence = "no"   # Cost Intelligence Dashboard  
-  kpi               = "no"   # KPI Dashboard
-  
-  # Additional CUR-based Dashboards
-  trends       = "yes"  # Trends Dashboard
-  datatransfer = "no"   # Data Transfer Cost Analysis
-  marketplace  = "no"   # AWS Marketplace Dashboard
-  connect      = "no"   # Amazon Connect Cost Insight
-  containers   = "no"   # SCAD Containers Cost Allocation
-}
+   provider "aws" {
+     alias  = "datacollection"
+     region = var.global_values.aws_region
+     # No assume_role needed as everything is deployed in the Payer account
+   }
+   ```
 
-# For standalone dashboard deployments (advanced use case)
-# allow_standalone_dashboard = true  # Uncomment if deploying without foundational dashboards
-```
+> **Note:** Single-account deployment in your Payer account is simpler for testing but lacks the security benefits and separation of concerns provided by the recommended cross-account architecture. For production environments, we strongly recommend the cross-account approach.
 
-#### 2. Deploy
+</details>
 
-```bash
-terraform init
-terraform plan
-terraform apply
-```
+<details>
+<summary><b>Is there an automated tool for single-account deployment?</b></summary>
 
-### Dashboard Types
+Yes, we provide a testing framework in the `terraform-test` directory that simplifies single-account deployment for testing purposes. This framework includes scripts that automatically handle the necessary modifications to deploy everything in a single account.
 
-#### Foundational Dashboards
-At least one foundational dashboard is required as they generate the CUR data needed by additional dashboards.
+For detailed instructions on using this testing framework, refer to the [README.md in the terraform-test directory](../terraform-test/README.md).
 
-| Dashboard | Description |
-|-----------|-------------|
-| `cudos_v5` | CUDOS v5 Dashboard - Comprehensive cost analysis |
-| `cost_intelligence` | Cost Intelligence Dashboard - Advanced cost insights |
-| `kpi` | KPI Dashboard - Key performance indicators |
+</details>
 
-#### Additional CUR-based Dashboards
-These require a foundational dashboard to be deployed first and use the same CUR data.
+<details>
+<summary><b>How do I deploy resources manually to specific accounts?</b></summary>
 
-| Dashboard | Description | Dataset |
-|-----------|-------------|---------|
-| `trends` | Trends Dashboard | daily-anomaly-detection |
-| `datatransfer` | Data Transfer Cost Analysis | data_transfer_view |
-| `marketplace` | AWS Marketplace Dashboard | marketplace_view |
-| `connect` | Amazon Connect Cost Insight | resource_connect_view |
-| `containers` | SCAD Containers Cost Allocation | scad_cca_summary_view |
+For users who need granular control over deployment or want to deploy resources manually to specific accounts, you can split the Terraform module into individual components:
 
-### File Structure
+### Manual Deployment Steps:
 
-- **`user-config.tf`** - 📝 **EDIT THIS** - Main configuration file for users
-- **`variables.tf`** - ⚙️ **Advanced users only** - Technical/internal variables
-- **`dashboards.tf`** - 🏗️ **Don't edit** - Resource definitions
-- **`locals.tf`** - 🏗️ **Don't edit** - Internal logic and configurations
-- **`outputs.tf`** - 📊 **Don't edit** - Output definitions
-- **`backend.tf`** - 💾 **CREATE THIS** - Backend configuration (see instructions below)
-- **`providers.tf`** - 🔧 **CREATE THIS** - Provider configurations (see instructions below)
+1. **Split the main.tf file** into separate files for each stack:
+   ```
+   data-exports-destination.tf  # For Data Collection account
+   data-exports-source.tf       # For Payer account  
+   dashboards.tf               # For Data Collection account
+   ```
 
-### Backend and Provider Configuration
+2. **Create separate variable files** for each component:
+   ```
+   variables-destination.tf
+   variables-source.tf
+   variables-dashboards.tf
+   ```
 
-The module requires backend and provider configuration files that are not included in the repository. You need to create these files before deployment:
+3. **Split outputs.tf** into component-specific output files:
+   ```
+   outputs-destination.tf
+   outputs-source.tf
+   outputs-dashboards.tf
+   ```
 
-#### Create `backend.tf`
-```hcl
-terraform {
-  backend "s3" {
-    bucket = "your-terraform-state-bucket"
-    key    = "cid-dashboards/terraform.tfstate"
-    region = "us-east-1"
-    encrypt = true
-  }
-}
-```
+4. **Configure separate provider configurations** for each account:
+   ```hcl
+   # For Payer account deployment
+   provider "aws" {
+     region = "us-east-1"
+     # Payer account credentials
+   }
+   
+   # For Data Collection account deployment
+   provider "aws" {
+     region = "us-east-1"
+     # Data Collection account credentials
+   }
+   ```
 
-#### Create `providers.tf`
-```hcl
-terraform {
-  required_version = ">= 1.0.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0.0"
-    }
-  }
-}
+5. **Deploy in sequence**:
+   ```bash
+   # Step 1: Deploy Data Exports Destination (Data Collection account)
+   terraform init
+   terraform apply -target=aws_cloudformation_stack.cid_dataexports_destination
+   
+   # Step 2: Deploy Data Exports Source (Payer account)
+   # Switch to Payer account credentials
+   terraform apply -target=aws_cloudformation_stack.cid_dataexports_source
+   
+   # Step 3: Deploy Dashboards (Data Collection account)
+   # Switch back to Data Collection account credentials
+   terraform apply -target=aws_cloudformation_stack.cloud_intelligence_dashboards
+   ```
 
-provider "aws" {
-  alias  = "management"
-  region = var.global_values.aws_region
-}
+### Important Considerations:
 
-provider "aws" {
-  alias  = "datacollection"
-  region = var.global_values.aws_region
-}
-```
+- **Dependencies**: Ensure proper dependency order (Destination → Source → Dashboards)
+- **Cross-account references**: You'll need to manually manage cross-account resource references
+- **State management**: Consider using separate state files for each account
+- **Credentials**: Manually switch AWS credentials/profiles between deployments
+- **Complexity**: This approach requires advanced Terraform knowledge and careful coordination
 
-### Standalone Dashboard Deployments
+**Note**: Manual deployment is significantly more complex than the automated cross-account approach provided by this module. We recommend using the standard module unless you have specific requirements that necessitate manual control.
 
-For advanced use cases where you want to deploy individual dashboards without foundational dashboards (e.g., when foundational dashboards are already deployed elsewhere):
+</details>
 
-```hcl
-# Enable standalone deployment
-allow_standalone_dashboard = true
+## Additional Resources
 
-# Deploy only specific dashboards
-dashboards = {
-  # Disable foundational dashboards
-  cudos_v5          = "no"
-  cost_intelligence = "no"
-  kpi               = "no"
-  
-  # Enable only the dashboard you want
-  trends       = "yes"  # Deploy only Trends Dashboard
-  datatransfer = "no"
-  marketplace  = "no"
-  connect      = "no"
-  containers   = "no"
-}
-```
-
-**Note**: This is typically used when foundational dashboards are already deployed in your environment and you want to add additional dashboards incrementally.
-
-### Advanced Configuration
-
-If you need to modify technical parameters, you can edit `variables.tf`, but this is typically not needed for standard deployments.
-
-## Cleanup
-Please refer to the documentation [here](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboard-teardown.html).
-
-## FAQ
-Please refer to the documentation [here](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/faq.html).
-
-## Changelogs
-For dashboards please check change log [here](changes/)
-For CID deployment tool, including CLI and CFN please check [Releases](/releases)
-
-## Feedback
-Please reference to [this page](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/feedback-support.html)
-
-## Security
-When you build systems on AWS infrastructure, security responsibilities are shared between you and AWS. This [shared responsibility
-model](https://aws.amazon.com/compliance/shared-responsibility-model/) reduces your operational burden because AWS operates, manages, and
-controls the components including the host operating system, the virtualization layer, and the physical security of the facilities in
-which the services operate. For more information about AWS security, visit [AWS Cloud Security](http://aws.amazon.com/security/).
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
-## License
-This library is licensed under the MIT-0 License. See the [LICENSE](../../LICENSE) file.
-
-## Notices
-Dashboards and their content: (a) are for informational purposes only, (b) represent current AWS product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS content, products or services are provided "as is" without warranties, representations, or conditions of any kind, whether express or implied. The responsibilities and liabilities of AWS to its customers are controlled by AWS agreements, and this document is not part of, nor does it modify, any agreement between AWS and its customers.
+* [AWS Cloud Intelligence Dashboards Documentation](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/)
+* [Foundational Dashboards Deployment Documentation](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboard-foundational.html)
+* [QuickSight Documentation](https://docs.aws.amazon.com/quicksight/latest/user/welcome.html)
