@@ -90,7 +90,66 @@ There are several ways we can deploy dashboards:
 
 Please refer to the deployment documentation [here](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html).
 
-[![Deployment Guide >](assets/images/deployment-guide-button.svg)](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html)
+
+<details>
+<summary><strong>Migration from Non-Modular to Modular Configuration - Click to Expand</strong></summary><br>
+If you're upgrading from the previous non-modular Terraform configuration, please note the following breaking changes:
+
+#### Configuration Structure Changes
+- **Previous (Non-Modular)**: Configuration was scattered across multiple `.tf` files
+- **New (Modular)**: Simplified modular structure with `user-config.tf` as the main configuration file
+
+#### Required Actions for Migration
+
+1. **Backup your existing configuration**:
+   ```bash
+   # Backup your old scattered .tf files
+   cp *.tf backup/
+   ```
+
+2. **Configure the new `user-config.tf`** with your existing values:
+   ```hcl
+   # Edit user-config.tf with your existing values
+   global_values = {
+     destination_account_id = "your-account-id"     # From your old config
+     source_account_ids     = "your-source-ids"     # From your old config
+     aws_region            = "your-region"          # From your old config
+     quicksight_user       = "your-qs-user"        # From your old config
+     cid_cfn_version       = "4.4.6"               # Updated version
+     data_export_version   = "0.9.0"               # Updated version
+     environment           = "prod"                 # From your old config
+   }
+   
+   dashboards = {
+     # Foundational (at least one required)
+     cudos_v5          = "yes"  # If you had CUDOS enabled
+     cost_intelligence = "no"   # Based on your previous setup or desired to deploy
+     kpi               = "no"   # Based on your previous setup or desired to deploy
+     
+     # Additional CUR-based Dashboards
+     trends       = "no"   # Based on your previous setup or desired to deploy
+     datatransfer = "no"   # Based on your previous setup or desired to deploy
+     marketplace  = "no"   # Based on your previous setup or desired to deploy
+     connect      = "no"   # Based on your previous setup or desired to deploy
+     containers   = "no"   # Based on your previous setup or desired to deploy
+   }
+   ```
+
+3. **Update your backend and providers** (if needed):
+   - Ensure your `backend.tf` and `providers.tf` are compatible
+   - Check provider version requirements
+
+4. **Plan before applying**:
+   ```bash
+   terraform plan
+   # Review changes carefully before applying
+   terraform apply
+   ```
+
+</details>
+
+
+
 
 ## Terraform Configuration
 
