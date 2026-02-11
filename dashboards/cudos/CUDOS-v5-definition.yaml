@@ -81782,7 +81782,7 @@ Sheets:
       \ font-size=\"40px\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/cudos-cid-kpi.html#foundational-cudos-dashboard\"\
       \ target=\"_blank\">\n        <b>CUDOS</b>\n      </a>\n    </inline>\n  </block>\n\
       \  <br/>\n  <block align=\"center\">\n    <inline font-size=\"40px\">\n    \
-      \  <b>v5.7.0</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"center\"\
+      \  <b>v5.7.1</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"center\"\
       >\n    <inline font-size=\"40px\">\n      <b>Cost and Usage Dashboards Operations\
       \ Solution</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"center\"\
       />\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n\
