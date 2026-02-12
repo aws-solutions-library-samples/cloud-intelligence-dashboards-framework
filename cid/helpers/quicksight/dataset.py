@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 DATASET_PROPERTIES = [
     'AwsAccountId', 'DataSetId', 'Name', 'PhysicalTableMap', 'LogicalTableMap', 'ImportMode', 'ColumnGroups',
     'RowLevelPermissionDataSet', 'RowLevelPermissionTagConfiguration', 'FieldFolders', 'ColumnLevelPermissionRules',
-    'DataSetUsageConfiguration', 'DatasetParameters', 'PerformanceConfiguration'
+    'DataSetUsageConfiguration', 'DatasetParameters', 'PerformanceConfiguration', 'UseAs'
 ]
 
 
