@@ -5089,74 +5089,66 @@ views:
           description: "Enter Tags"
           global: True
   focus_consolidation_view:
-    data: |-
-      CREATE VIEW focus_consolidation_view AS
-      SELECT
-        availabilityzone
-      , billedcost
-      , billingaccountid
-      , billingaccountname
-      , billingaccounttype
-      , billingcurrency
-      , billingperiodend
-      , billingperiodstart
-      , capacityreservationid
-      , capacityreservationstatus
-      , chargecategory
-      , chargeclass
-      , chargedescription
-      , chargefrequency
-      , chargeperiodend
-      , chargeperiodstart
-      , commitmentdiscountcategory
-      , commitmentdiscountid
-      , commitmentdiscountname
-      , commitmentdiscountquantity
-      , commitmentdiscounttype
-      , commitmentdiscountunit
-      , commitmentdiscountstatus
-      , consumedquantity
-      , consumedunit
-      , contractedcost
-      , contractedunitprice
-      , effectivecost
-      , invoiceid
-      , invoiceissuername
-      , listcost
-      , listunitprice
-      , pricingcategory
-      , pricingcurrency
-      , pricingcurrencycontractedunitprice
-      , pricingcurrencyeffectivecost
-      , pricingcurrencylistunitprice
-      , pricingquantity
-      , pricingunit
-      , providername
-      , publishername
-      , regionid
-      , regionname
-      , resourceid
-      , resourcename
-      , resourcetype
-      , servicecategory
-      , servicename
-      , servicesubcategory
-      , skuid
-      , skumeter
-      , skupriceid
-      , skupricedetails
-      , subaccountid
-      , subaccountname
-      , subaccounttype
-      , tags
-      , billing_period
-      FROM
-        "${data_exports_database_name}"."focus"
-    parameters:
-        data_exports_database_name:
-          type: athena
-          query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'focus'
-          error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
-          default: cid_data_export
-          description: "Enter the name of the database"
-          global: True
+    type: dynamic_focus_consolidation
+    # FOCUS 1.2 target columns with their expected Athena types.
+    # This is the schema of the resulting focus_consolidation_view.
+    # To customize the view, add or remove columns here.
+    columns:
+      availabilityzone: string
+      billedcost: double
+      billingaccountid: string
+      billingaccountname: string
+      billingaccounttype: string
+      billingcurrency: string
+      billingperiodend: timestamp
+      billingperiodstart: timestamp
+      capacityreservationid: string
+      capacityreservationstatus: string
+      chargecategory: string
+      chargeclass: string
+      chargedescription: string
+      chargefrequency: string
+      chargeperiodend: timestamp
+      chargeperiodstart: timestamp
+      commitmentdiscountcategory: string
+      commitmentdiscountid: string
+      commitmentdiscountname: string
+      commitmentdiscountquantity: double
+      commitmentdiscounttype: string
+      commitmentdiscountunit: string
+      commitmentdiscountstatus: string
+      consumedquantity: double
+      consumedunit: string
+      contractedcost: double
+      contractedunitprice: double
+      effectivecost: double
+      invoiceid: string
+      invoiceissuername: string
+      listcost: double
+      listunitprice: double
+      pricingcategory: string
+      pricingcurrency: string
+      pricingcurrencycontractedunitprice: double
+      pricingcurrencyeffectivecost: double
+      pricingcurrencylistunitprice: double
+      pricingquantity: double
+      pricingunit: string
+      providername: string
+      publishername: string
+      regionid: string
+      regionname: string
+      resourceid: string
+      resourcename: string
+      resourcetype: string
+      servicecategory: string
+      servicename: string
+      servicesubcategory: string
+      skuid: string
+      skumeter: string
+      skupriceid: string
+      skupricedetails: map<string,string>
+      subaccountid: string
+      subaccountname: string
+      subaccounttype: string
+      tags: map<string,string>
+      billing_period: string

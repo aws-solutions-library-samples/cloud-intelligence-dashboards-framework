@@ -1822,6 +1822,19 @@ class Cid():
             logger.info(f"Definition is unavailable {view_name}")
             return
         logger.debug(f'View definition: {view_definition}')
+
+        # Dynamic FOCUS consolidation view: discover tables and generate SQL dynamically
+        if view_definition.get('type') == 'dynamic_focus_consolidation':
+            from cid.helpers.focus_consolidation import FocusConsolidationView
+            columns = view_definition.get('columns')
+            focus_view = FocusConsolidationView(athena=self.athena, columns=columns)
+            if focus_view.create_or_update_view():
+                assert self.athena.wait_for_view(view_name), f"Failed to create/update {view_name}"
+                logger.info(f'Dynamic view "{view_name}" created/updated')
+            else:
+                logger.warning(f'Dynamic view "{view_name}" was not created (no FOCUS tables found)')
+            return
+
         dependencies = view_definition.get('dependsOn', {})
 
         # Process CUR columns
