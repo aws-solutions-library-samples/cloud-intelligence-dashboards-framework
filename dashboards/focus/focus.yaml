@@ -4629,6 +4629,8 @@ datasets:
               Type: STRING
             - Name: skupriceid
               Type: STRING
+            - Name: skupricedetails_json
+              Type: STRING
             - Name: subaccountid
               Type: STRING
             - Name: subaccountname
@@ -4705,6 +4707,7 @@ datasets:
               - skuid
               - skumeter
               - skupriceid
+              - skupricedetails_json
               - subaccountid
               - subaccountname
               - subaccounttype
@@ -4822,6 +4825,8 @@ datasets:
               Type: STRING
             - Name: skupriceid
               Type: STRING
+            - Name: skupricedetails_json
+              Type: STRING
             - Name: subaccountid
               Type: STRING
             - Name: subaccountname
@@ -4893,6 +4898,7 @@ datasets:
               - skuid
               - skumeter
               - skupriceid
+              - skupricedetails_json
               - subaccountid
               - subaccountname
               - subaccounttype
@@ -4965,6 +4971,7 @@ views:
       , skuid
       , skumeter
       , skupriceid
+      , CAST(CAST(skupricedetails AS JSON) AS VARCHAR) skupricedetails_json
       , subaccountid
       , subaccountname
       , subaccounttype
@@ -4986,7 +4993,7 @@ views:
       FROM
         focus_consolidation_view
       WHERE (((current_date - INTERVAL  '30' DAY) <= chargeperiodstart) AND (resourceid <> '') AND (CAST(concat(billing_period, '-01') AS date) >= "date_trunc"('month', (current_date - INTERVAL  '30' DAY))))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43
     parameters:
         resource_tags:
           type: tags_json
@@ -5042,6 +5049,7 @@ views:
       , skuid
       , skumeter
       , skupriceid
+      , CAST(CAST(skupricedetails AS JSON) AS VARCHAR) skupricedetails_json
       , subaccountid
       , subaccountname
       , subaccounttype
@@ -5092,6 +5100,8 @@ views:
       , billingcurrency
       , billingperiodend
       , billingperiodstart
+      , capacityreservationid
+      , capacityreservationstatus
       , chargecategory
       , chargeclass
       , chargedescription
@@ -5134,6 +5144,7 @@ views:
       , skuid
       , skumeter
       , skupriceid
+      , skupricedetails
       , subaccountid
       , subaccountname
       , subaccounttype
