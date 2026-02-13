@@ -57,10 +57,13 @@ def format_field_name(field_name: str, ignore_prefix: bool=False) -> str:
             i += 1
     title = ' '.join(result)
     title = title.replace('Aws ', 'AWS ')
+    # replace prefixes to make filter titles shorter on the dashboards. We don't do the same replacement for group by patching to avoid name overlap there 
     if ignore_prefix:
         new_title = title
         if title.startswith('Cost Category '):
             new_title = title.replace('Cost Category ', '')
+        elif title.startswith('Account Tag '):
+            new_title = title.replace('Account Tag ', '')
         elif title.startswith('Tag '):
             new_title = title.replace('Tag ', '')
         if title.lower() not in ('service', 'region', 'account'): # leave prefix for special terms

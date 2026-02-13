@@ -9,7 +9,7 @@ echo "Account ID: $ACCOUNT_ID"
 BACKEND_TYPE=${BACKEND_TYPE:-"local"}  # Can be "local" or "s3"
 S3_BUCKET=${S3_BUCKET:-""}
 S3_KEY=${S3_KEY:-"terraform/cid-test/terraform.tfstate"}
-S3_REGION=${S3_REGION:-"eu-west-2"}  # Default to eu-west-2
+S3_REGION=${S3_REGION:-$(aws configure get region)}  # Use configured region as default
 BACKEND_REGION=${BACKEND_REGION:-"us-east-1"}  # Backend bucket region
 TEMPLATE_PREFIX="${TEMPLATE_PREFIX:-cid-testing/templates}"
 LOCAL_ASSETS_BUCKET_PREFIX="${LOCAL_ASSETS_BUCKET_PREFIX:-cid-${ACCOUNT_ID}-test}"
@@ -18,12 +18,17 @@ LOCAL_ASSETS_BUCKET_PREFIX="${LOCAL_ASSETS_BUCKET_PREFIX:-cid-${ACCOUNT_ID}-test
 export AWS_DEFAULT_REGION="${S3_REGION}"
 export AWS_REGION="${S3_REGION}"  # Some AWS tools use this variable instead
 
-# Create a temporary directory for modified Terraform files
-TEMP_DIR=$(mktemp -d)
-echo "Creating temporary Terraform directory at $TEMP_DIR"
-
-# Copy Terraform files to temporary directory
-cp -r ./terraform/cicd-deployment/* "$TEMP_DIR/"
+# Create a temporary directory for modified Terraform files (for standalone execution)
+# or use existing directory if backend.tf already exists (CI execution)
+if [ -f "./terraform/cicd-deployment/backend.tf" ]; then
+  echo "Found existing backend.tf, using existing directory (CI mode)"
+  TEMP_DIR="./terraform/cicd-deployment"
+else
+  echo "No backend.tf found, creating temporary directory (standalone mode)"
+  TEMP_DIR=$(mktemp -d)
+  cp -r ./terraform/cicd-deployment/* "$TEMP_DIR/"
+fi
+echo "Using Terraform directory at $TEMP_DIR"
 
 # Modify variables.tf to use local lambda layer if specified
 if [ ! -z "${LOCAL_ASSETS_BUCKET_PREFIX}" ]; then
@@ -66,8 +71,8 @@ if [ -f "$TEMP_DIR/variables.tf" ]; then
   grep -A1 "resource_prefix  = " "$TEMP_DIR/variables.tf" | head -2
 fi
 
-# Configure backend based on environment variable
-if [ -f "$TEMP_DIR/backend.tf" ]; then
+# Configure backend if not already present (standalone execution)
+if [ ! -f "$TEMP_DIR/backend.tf" ]; then
   if [ "$BACKEND_TYPE" == "s3" ]; then
     echo "Configuring S3 backend..."
     cat > "$TEMP_DIR/backend.tf" << EOF
@@ -89,57 +94,57 @@ terraform {
 }
 EOF
   fi
+else
+  echo "Using existing backend.tf (CI mode)"
 fi
 
-# Modify provider.tf to use the same account for both providers and set region
-cat > "$TEMP_DIR/local_override.tf" << EOF
+# Override providers to use S3_REGION for standalone execution
+if [ ! -f "$TEMP_DIR/providers.tf" ] || [[ "$TEMP_DIR" == /tmp/* ]]; then
+  echo "Creating providers.tf with region ${S3_REGION}..."
+  cat > "$TEMP_DIR/local_override.tf" << EOF
 provider "aws" {
+  alias  = "management"
   region = "${S3_REGION}"
 }
 
 provider "aws" {
-  alias  = "destination_account"
+  alias  = "datacollection"
   region = "${S3_REGION}"
-}
-
-terraform {
-  required_version = ">= 1.0.0"
 }
 EOF
+fi
 
-# Debug region settings
-echo "Using AWS region: ${S3_REGION}"
-echo "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
+
 
 # First check if the file exists and what it contains
-echo "Examining main.tf file..."
-if [ -f "$TEMP_DIR/main.tf" ]; then
+echo "Examining dashboards.tf file..."
+if [ -f "$TEMP_DIR/dashboards.tf" ]; then
   # Create a backup of the original file
-  cp "$TEMP_DIR/main.tf" "$TEMP_DIR/main.tf.original"
+  cp "$TEMP_DIR/dashboards.tf" "$TEMP_DIR/dashboards.tf.original"
   
   # Use grep to find the resource and then use awk to comment it out
-  grep -n "resource \"aws_cloudformation_stack\" \"cid_dataexports_source\"" "$TEMP_DIR/main.tf" | while read -r line; do
+  grep -n "resource \"aws_cloudformation_stack\" \"cid_dataexports_source\"" "$TEMP_DIR/dashboards.tf" | while read -r line; do
     line_num=$(echo "$line" | cut -d: -f1)
     echo "Found cid_dataexports_source at line $line_num"
     
     # Use awk to comment out the resource block
-    awk -v line="$line_num" 'NR==line {print "# SKIPPED FOR LOCAL TESTING\n# " $0; next} {print}' "$TEMP_DIR/main.tf.original" > "$TEMP_DIR/main.tf.tmp"
-    mv "$TEMP_DIR/main.tf.tmp" "$TEMP_DIR/main.tf"
+    awk -v line="$line_num" 'NR==line {print "# SKIPPED FOR LOCAL TESTING\n# " $0; next} {print}' "$TEMP_DIR/dashboards.tf.original" > "$TEMP_DIR/dashboards.tf.tmp"
+    mv "$TEMP_DIR/dashboards.tf.tmp" "$TEMP_DIR/dashboards.tf"
     
     # Find the closing brace of the resource block
-    end_line=$(tail -n +$line_num "$TEMP_DIR/main.tf" | grep -n "^}" | head -1 | cut -d: -f1)
+    end_line=$(tail -n +$line_num "$TEMP_DIR/dashboards.tf" | grep -n "^}" | head -1 | cut -d: -f1)
     end_line=$((line_num + end_line - 1))
     echo "Resource block ends at line $end_line"
     
     # Comment out all lines in the resource block
-    awk -v start="$line_num" -v end="$end_line" 'NR>start && NR<=end {print "# " $0; next} {print}' "$TEMP_DIR/main.tf" > "$TEMP_DIR/main.tf.tmp"
-    mv "$TEMP_DIR/main.tf.tmp" "$TEMP_DIR/main.tf"
+    awk -v start="$line_num" -v end="$end_line" 'NR>start && NR<=end {print "# " $0; next} {print}' "$TEMP_DIR/dashboards.tf" > "$TEMP_DIR/dashboards.tf.tmp"
+    mv "$TEMP_DIR/dashboards.tf.tmp" "$TEMP_DIR/dashboards.tf"
   done
   
   # Update dependencies
-  sed -i.bak 's/aws_cloudformation_stack.cid_dataexports_source,/# aws_cloudformation_stack.cid_dataexports_source,/g' "$TEMP_DIR/main.tf"
+  sed -i.bak 's/aws_cloudformation_stack.cid_dataexports_source,/# aws_cloudformation_stack.cid_dataexports_source,/g' "$TEMP_DIR/dashboards.tf"
 else
-  echo "Error: main.tf not found in $TEMP_DIR"
+  echo "Error: dashboards.tf not found in $TEMP_DIR"
   exit 1
 fi
 
@@ -189,6 +194,6 @@ terraform plan "${TFVARS_FILES[@]}" -out=tfplan
 echo "Applying Terraform plan..."
 terraform apply -auto-approve tfplan
 
-# Save the temp directory path for cleanup script
+# Save reference for cleanup script
 echo "$TEMP_DIR" > "$SCRIPT_DIR/.temp_dir"
 echo "Deployment completed successfully."

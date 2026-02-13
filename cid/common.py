@@ -57,8 +57,8 @@ class Cid():
             'profile_name': None,
             'region_name': None,
             'aws_access_key_id': None,
-            'aws_secret_access_key': None,
-            'aws_session_token': None
+            'aws_secret_access_key': None,  #nosec B105
+            'aws_session_token': None  #nosec B105
         }
         for key in params.keys():
             value = get_parameters().get(key.replace('_', '-'), '<NO VALUE>')
@@ -1931,15 +1931,18 @@ class Cid():
                 .replace('resource_tags_', '')
                 .replace('cost_category_', '')
                 .replace("'user_","'tag_")
+                .replace('accountTag/', '')
                 .replace("'aws_","'tag_aws_")
                 .split("['")[-1].split("']")[0]
             )
             if not tag_name.startswith('tag_'):
                 if tag.startswith('cost_category'):
                     tag_name = 'cost_category_' + tag_name
+                elif tag.startswith('tags'):
+                    tag_name = 'account_tag_' + tag_name
                 else:
                     tag_name = 'tag_' + tag_name
-            return tag_name.replace(':', '_')
+            return re.sub(r'\W', '_', tag_name)
 
         resource_tags = get_parameters().get(param_name, None)
         tags_and_names = {_tag_to_name(tag):tag  for tag in sorted(options)}
@@ -1950,7 +1953,7 @@ class Cid():
         if resource_tags is None:
             resource_tags = get_parameter(
                 param_name,
-                message='Enter Cost Allocation Tags to be added to datasets(WARNING: this can affect performance. Choose only the strict minimum)',
+                message='Select Cost Allocation Tags to be added to datasets(WARNING: this can affect performance. Choose only the strict minimum)',
                 multi=True,
                 choices=sorted(list(set(tags_and_names.keys()))),
                 default=resource_tags or [],

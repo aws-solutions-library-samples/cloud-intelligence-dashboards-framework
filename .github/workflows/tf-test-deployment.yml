@@ -39,11 +39,15 @@ jobs:
       - name: Get CID versions
         id: versions
         run: |
-          CFN_VERSION=$(grep "Description.*Cloud Intelligence Dashboards" ./cfn-templates/cid-cfn.yml | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+          # Extract CID CFN version from local cid-cfn.yml file (line 3)
+          CFN_VERSION=$(sed -n '3p' ./cfn-templates/cid-cfn.yml | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/v//' || echo "1.0.0")
           echo "cid_cfn_version=$CFN_VERSION" >> $GITHUB_OUTPUT
+          echo "Using local CID CFN version: $CFN_VERSION"
           
-          EXPORT_VERSION=$(curl -s https://raw.githubusercontent.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/main/data-exports/deploy/data-exports-aggregation.yaml | grep Description | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+          # Get latest data export version from external S3 public URL
+          EXPORT_VERSION=$(curl -s https://raw.githubusercontent.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/main/data-exports/deploy/data-exports-aggregation.yaml | grep Description | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1 || echo "0.5.0")
           echo "data_export_version=$EXPORT_VERSION" >> $GITHUB_OUTPUT
+          echo "Using latest data export version: $EXPORT_VERSION"
 
       - name: Create terraform.tfvars file
         run: |
@@ -83,11 +87,12 @@ jobs:
 
           cat > providers.tf << EOF
           provider "aws" {
+            alias  = "management"
             region = "${{ secrets.AWS_REGION_TF }}"
           }
 
           provider "aws" {
-            alias  = "destination_account"
+            alias  = "datacollection"
             region = "${{ secrets.AWS_REGION_TF }}"
           }
           EOF
@@ -112,11 +117,22 @@ jobs:
           export S3_REGION="${{ secrets.AWS_REGION_TF }}"
           export BACKEND_REGION="${{ secrets.AWS_REGION }}"
           
-          # Check for existing CloudFormation stacks (single-account deployment)
-          STACKS_TO_CHECK=("CID-DataExports-Destination" "Cloud-Intelligence-Dashboards")
+          # Check for existing CloudFormation stacks
+          # Foundational stacks
+          FOUNDATIONAL_STACKS=("CID-DataExports-Destination" "Cloud-Intelligence-Dashboards")
+          # Additional CUR-based dashboard stacks
+          ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Cost-Allocation-Dashboard")
+          # Other optional stacks
+          OTHER_STACKS=("CID-DataExports-Source" "CID-DataCollection" "CID-OptimizationDataCollection")
+          # All stacks to check
+          STACKS_TO_CHECK=("${FOUNDATIONAL_STACKS[@]}" "${ADDITIONAL_STACKS[@]}" "${OTHER_STACKS[@]}")
+          GOOD_STATES=("CREATE_COMPLETE" "UPDATE_COMPLETE")
+          FAILED_STATES=("CREATE_FAILED" "ROLLBACK_COMPLETE" "ROLLBACK_FAILED" "DELETE_FAILED" "UPDATE_ROLLBACK_COMPLETE" "UPDATE_ROLLBACK_FAILED" "IMPORT_ROLLBACK_COMPLETE" "IMPORT_ROLLBACK_FAILED")
           IN_PROGRESS_STATES=("CREATE_IN_PROGRESS" "DELETE_IN_PROGRESS" "UPDATE_IN_PROGRESS" "UPDATE_ROLLBACK_IN_PROGRESS" "REVIEW_IN_PROGRESS" "IMPORT_IN_PROGRESS" "IMPORT_ROLLBACK_IN_PROGRESS")
           
           FOUND_STACKS=()
+          GOOD_STACKS=()
+          FAILED_STACKS=()
           IN_PROGRESS_STACKS=()
           
           for stack in "${STACKS_TO_CHECK[@]}"; do
@@ -124,26 +140,43 @@ jobs:
               echo "Found existing stack: $stack (Status: $STACK_STATUS)"
               FOUND_STACKS+=("$stack")
               
-              if [[ " ${IN_PROGRESS_STATES[*]} " =~ " ${STACK_STATUS} " ]]; then
+              if [[ " ${GOOD_STATES[*]} " =~ " ${STACK_STATUS} " ]]; then
+                GOOD_STACKS+=("$stack")
+              elif [[ " ${FAILED_STATES[*]} " =~ " ${STACK_STATUS} " ]]; then
+                FAILED_STACKS+=("$stack")
+              elif [[ " ${IN_PROGRESS_STATES[*]} " =~ " ${STACK_STATUS} " ]]; then
                 IN_PROGRESS_STACKS+=("$stack")
               fi
             fi
           done
           
-          # Exit if any stacks are in progress
-          if [ ${#IN_PROGRESS_STACKS[@]} -gt 0 ]; then
-            echo "ERROR: Found stacks in progress states:"
-            for stack in "${IN_PROGRESS_STACKS[@]}"; do
-              echo "  - $stack"
-            done
-            echo "Cannot proceed while stacks are in progress. Please wait for completion."
-            exit 1
-          fi
-          
-          # Auto-cleanup any existing stacks (regardless of state)
           if [ ${#FOUND_STACKS[@]} -gt 0 ]; then
-            echo "Found existing stacks. Running cleanup before deployment..."
-            bash ./terraform/terraform-test/cleanup.sh
+            # Handle in-progress stacks first
+            if [ ${#IN_PROGRESS_STACKS[@]} -gt 0 ]; then
+              echo "ERROR: Found stacks in progress states:"
+              for stack in "${IN_PROGRESS_STACKS[@]}"; do
+                echo "  - $stack"
+              done
+              echo "Cannot proceed while stacks are in progress. Please wait for completion."
+              exit 1
+            # Auto-cleanup if any stacks are in failed states
+            elif [ ${#FAILED_STACKS[@]} -gt 0 ]; then
+              echo "Found stacks in failed states. Auto-cleaning up:"
+              for stack in "${FAILED_STACKS[@]}"; do
+                echo "  - $stack"
+              done
+              echo "Running cleanup..."
+              bash ./terraform/terraform-test/cleanup.sh
+              echo "Cleanup completed. Proceeding with fresh deployment..."
+            # Auto-cleanup for any existing stacks (CI/CD should always start fresh)
+            else
+              echo "Found existing stacks (${#GOOD_STACKS[@]} total). Auto-cleaning up for fresh CI/CD deployment:"
+              for stack in "${GOOD_STACKS[@]}"; do
+                echo "  - $stack"
+              done
+              bash ./terraform/terraform-test/cleanup.sh
+              echo "Cleanup completed. Proceeding with fresh deployment..."
+            fi
           else
             echo "No existing stacks found. Proceeding with fresh deployment."
           fi
@@ -191,11 +224,15 @@ jobs:
       - name: Get CID versions
         id: versions
         run: |
-          CFN_VERSION=$(grep "Description.*Cloud Intelligence Dashboards" ./cfn-templates/cid-cfn.yml | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+          # Extract CID CFN version from local cid-cfn.yml file (line 3)
+          CFN_VERSION=$(sed -n '3p' ./cfn-templates/cid-cfn.yml | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/v//' || echo "1.0.0")
           echo "cid_cfn_version=$CFN_VERSION" >> $GITHUB_OUTPUT
+          echo "Using local CID CFN version: $CFN_VERSION"
           
-          EXPORT_VERSION=$(curl -s https://raw.githubusercontent.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/main/data-exports/deploy/data-exports-aggregation.yaml | grep Description | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+          # Get latest data export version from external S3 public URL
+          EXPORT_VERSION=$(curl -s https://raw.githubusercontent.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/main/data-exports/deploy/data-exports-aggregation.yaml | grep Description | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1 || echo "0.5.0")
           echo "data_export_version=$EXPORT_VERSION" >> $GITHUB_OUTPUT
+          echo "Using latest data export version: $EXPORT_VERSION"
 
       - name: Create terraform.tfvars file
         run: |
@@ -235,11 +272,12 @@ jobs:
           
           cat > providers.tf << EOF
           provider "aws" {
+            alias  = "management"
             region = "${{ secrets.AWS_REGION_TF }}"
           }
 
           provider "aws" {
-            alias  = "destination_account"
+            alias  = "datacollection"
             region = "${{ secrets.AWS_REGION_TF }}"
           }
           EOF
