@@ -280,6 +280,33 @@ class FocusConsolidationView:
     # Orchestration
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _match_tables(tables, table_labels, selected_labels):
+        """Match user-provided labels against discovered table labels.
+
+        Supports both the canonical format ("database"."table") and the
+        simplified format (database.table) that is easier to pass via
+        CloudFormation parameters or CLI.
+        """
+        # Build a lookup: normalized label -> index
+        label_index = {}
+        for i, label in enumerate(table_labels):
+            label_index[label] = i
+            # Also index the unquoted form: database.table
+            stripped = label.replace('"', '')
+            label_index[stripped] = i
+
+        matched = []
+        for sel in selected_labels:
+            sel_stripped = sel.replace('"', '')
+            if sel in label_index:
+                matched.append(tables[label_index[sel]])
+            elif sel_stripped in label_index:
+                matched.append(tables[label_index[sel_stripped]])
+            else:
+                logger.warning(f'focus-tables: "{sel}" did not match any discovered table, skipping')
+        return matched
+
     def create_or_update_view(self):
         """Main entry point. Discovers tables, generates SQL, executes it.
 
@@ -293,7 +320,12 @@ class FocusConsolidationView:
             logger.warning('No FOCUS tables discovered. Cannot create focus_consolidation_view.')
             return False
 
-        # Let user select which tables to include
+        # Let user select which tables to include.
+        # Interactive (CLI): starts with nothing pre-selected so user makes an explicit choice.
+        # Non-interactive (CFN/Lambda): if focus-tables param is not set, auto-include
+        # all discovered tables. The focus-tables parameter can be set explicitly
+        # (via CLI or CFN Dashboard properties) to override. Accepts both
+        # "database"."table" and database.table formats.
         table_labels = [f'"{t["database"]}"."{t["table_name"]}"' for t in tables]
         selected_labels = get_parameter(
             param_name='focus-tables',
@@ -302,12 +334,21 @@ class FocusConsolidationView:
             default=[],
             multi=True,
         )
+        # Non-interactive with no explicit selection — use all discovered tables
+        if not selected_labels and not isatty():
+            logger.info('Non-interactive mode: auto-selecting all discovered FOCUS tables')
+            selected_labels = table_labels
         if not selected_labels:
             logger.warning('No FOCUS tables selected. Cannot create focus_consolidation_view.')
             return False
 
-        selected_tables = [t for t, label in zip(tables, table_labels) if label in selected_labels]
-        logger.info(f'Creating focus_consolidation_view from: {", ".join(selected_labels)}')
+        selected_tables = self._match_tables(tables, table_labels, selected_labels)
+        if not selected_tables:
+            logger.warning('No FOCUS tables matched the selection. Cannot create focus_consolidation_view.')
+            return False
+
+        matched_labels = [f'"{t["database"]}"."{t["table_name"]}"' for t in selected_tables]
+        logger.info(f'Creating focus_consolidation_view from: {", ".join(matched_labels)}')
 
         sql = self.generate_view_sql(selected_tables)
         logger.debug(f'Generated SQL:\n{sql}')
