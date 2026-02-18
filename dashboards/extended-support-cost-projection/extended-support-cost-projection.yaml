@@ -6,9 +6,16 @@ dashboards:
       - rds_extended_support_view
       - opensearch_extended_support_view
       - elasticache_extended_support_view
+      - extended_support_tagging_view
     name: Extended Support Cost Projection
     dashboardId: extended-support-cost-projection
     category: Advanced
+    taxonomyDataset: extended_support_tagging_view
+    nonTaxonomyDatasets:
+    - rds_extended_support_view
+    - eks_extended_support_view
+    - opensearch_extended_support_view
+    - elasticache_extended_support_view
     nonTaxonomyColumns:
     - tags_json
     file: ./extended-support-cost-projection-definition.yaml
@@ -422,9 +429,42 @@ datasets:
       - opensearch_extended_support_view
     schedules:
     - default
+  extended_support_tagging_view:
+    data:
+      DataSetId: 0655eb28-3f36-4a5d-8e8a-c2d70cd09fc7
+      Name: extended_support_tagging_view
+      PhysicalTableMap:
+        5a574f8c-5e74-4da8-97cc-4f6802a7d360:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: extended_support_tagging_view
+            InputColumns:
+            - Name: line_item_product_code
+              Type: STRING
+            - Name: tags_json
+              Type: STRING
+      LogicalTableMap:
+        30248d27-4a3a-4350-bf1d-dd382f040c95:
+          Alias: extended_support_tagging_view
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - line_item_product_code
+              - tags_json
+          Source:
+            PhysicalTableId: 5a574f8c-5e74-4da8-97cc-4f6802a7d360
+      ImportMode: SPICE
+    dependsOn:
+      views:
+      - extended_support_tagging_view
+    schedules:
+    - default
 views:
   elasticache_extended_support_view:
     dependsOn:
+      tags: json
       cur2:
         - product_product_family
         - product_servicecode
@@ -468,7 +508,7 @@ views:
            preprocessed_elasticache_clusters
          WHERE (collection_date = max_collection_date)
       )
-      , elasticache_resources (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, engine, engineversion, instance_type, item_description, cacheclusterid, resource_id, original_usage_type, on_demand_rate_per_unit, usage_amount, ext_sup_year_1_2_price, ext_sup_year_3_price) AS (
+      , elasticache_resources (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, engine, engineversion, instance_type, item_description, cacheclusterid, resource_id, original_usage_type, on_demand_rate_per_unit, tags_json, usage_amount, ext_sup_year_1_2_price, ext_sup_year_3_price) AS (
          SELECT
            c.bill_billing_period_start_date billing_period
          , date_trunc('day', c.line_item_usage_start_date) usage_date
@@ -484,6 +524,7 @@ views:
          , c.line_item_resource_id resource_id
          , c.line_item_usage_type original_usage_type
          , round(CAST(c.pricing_public_on_demand_rate AS double), 4) on_demand_rate_per_unit
+         , ${cur_tags_json} tags_json
          , sum(line_item_usage_amount) usage_amount
          , sum(((line_item_usage_amount * round(CAST(c.pricing_public_on_demand_rate AS double), 4)) * 8E-1)) ext_sup_year_1_2_price
          , sum(((line_item_usage_amount * round(CAST(c.pricing_public_on_demand_rate AS double), 4)) * 1.6E0)) ext_sup_year_3_price
@@ -492,7 +533,7 @@ views:
          INNER JOIN sanitised_elasticache_clusters ecsu ON ((c.bill_payer_account_id = ecsu.payer_id) AND (c.line_item_usage_account_id = ecsu.accountid) AND (c.product['region'] = ecsu.region) AND (split_part(c.line_item_resource_id, ':', 7) = ecsu.cacheclusterid)))
          INNER JOIN account_map accmap ON (c.line_item_usage_account_id = accmap.account_id))
          WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND (c.product_servicecode = 'AmazonElastiCache') AND (c.product_product_family = 'Cache Instance') AND (c.product['cache_engine'] = 'Redis') AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage')))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
       )
       SELECT
         ecr.billing_period
@@ -520,6 +561,7 @@ views:
       , ext_sup_year_1_2_price
       , (CASE WHEN ((current_timestamp >= erc.year_3_start) AND (current_timestamp < erc.end_of_extended_support)) THEN ext_sup_year_3_price ELSE 0 END) year_3_cost
       , ext_sup_year_3_price
+      , ecr.tags_json
       FROM
         (elasticache_resources ecr
       INNER JOIN engine_release_calendar erc ON (concat(ecr.engine, ' OSS v', substr(ecr.engineversion, 1, 1)) = erc.engineversion))
@@ -533,6 +575,7 @@ views:
           global: True
   eks_extended_support_view:
     dependsOn:
+      tags: json
       cur2:
         - pricing_unit
         - product['region']
@@ -584,7 +627,7 @@ views:
              FROM preprocessed_eks_clusters_inventory
              WHERE collection_date = max_collection_date
       )
-      , eks_clusters_usage (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, cluster_name, k8s_version, item_description, usage_unit, resource_id, original_usage_type, usage_amount) AS (
+      , eks_clusters_usage (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, cluster_name, k8s_version, item_description, usage_unit, resource_id, original_usage_type, tags_json, usage_amount) AS (
          SELECT
            c.bill_billing_period_start_date
          , date_trunc('day', c.line_item_usage_start_date)
@@ -598,13 +641,14 @@ views:
          , c.pricing_unit
          , c.line_item_resource_id
          , c.line_item_usage_type
+         , ${cur_tags_json} tags_json
          , sum(c.line_item_usage_amount)
          FROM
            ("${cur2_database}"."${cur2_table_name}" c
          INNER JOIN eks_clusters_inventory eksinv ON ((c.bill_payer_account_id = eksinv.payer_id) AND (c.line_item_usage_account_id = eksinv.accountid) AND (c.product['region'] = eksinv.region) AND (c.line_item_resource_id = eksinv.cluster_arn)))
          INNER JOIN account_map accmap on c.line_item_usage_account_id = accmap.account_id
          WHERE (((c.bill_billing_period_start_date >= ("date_trunc"('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND (c.product_servicecode = 'AmazonEKS') AND (c.line_item_line_item_type IN ('Usage')) AND ((c.product_product_family = 'Compute') AND (c.line_item_usage_type LIKE '%AmazonEKS-Hours:perCluster')))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
       )
       SELECT
         ekscus.billing_period
@@ -624,6 +668,7 @@ views:
       , (ekscus.usage_amount * 6E-1) extended_support_cost
       , rc.end_of_extended_support
       , (CASE WHEN (current_timestamp >= rc.end_of_extended_support) THEN 'Y' ELSE 'N' END) is_out_of_extended_support
+      , ekscus.tags_json
       FROM
         (eks_clusters_usage ekscus
       INNER JOIN eks_k8s_release_calendar rc ON (ekscus.k8s_version = rc.k8s_version))
@@ -637,6 +682,7 @@ views:
           global: True
   rds_extended_support_view:
     dependsOn:
+      tags: json
       cur2:
         - pricing_unit
         - product['database_engine']
@@ -827,7 +873,7 @@ views:
              , engineversion
            FROM sanitised_rds_clusters
       )
-      , rds_resources (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, rds_type, deployment_option, engine, engineversion, instance_type_family, instance_type, item_description, vcpus, usage_unit, dbresourceidentifier, resource_id, original_deployment_option, original_usage_type, usage_amount, vcpu_acu_hours) AS (
+      , rds_resources (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, rds_type, deployment_option, engine, engineversion, instance_type_family, instance_type, item_description, vcpus, usage_unit, dbresourceidentifier, resource_id, original_deployment_option, original_usage_type, tags_json, usage_amount, vcpu_acu_hours) AS (
          SELECT
            c.bill_billing_period_start_date billing_period
          , date_trunc('day', c.line_item_usage_start_date) usage_date
@@ -848,6 +894,7 @@ views:
          , c.line_item_resource_id resource_id
          , c.product['deployment_option'] original_deployment_option
          , c.line_item_usage_type original_usage_type
+         , ${cur_tags_json} tags_json
          , sum(c.line_item_usage_amount) usage_amount
          , sum((CASE WHEN (c.pricing_unit = 'ACU-Hr') THEN c.line_item_usage_amount WHEN (c.line_item_usage_type LIKE '%Multi-AZUsage%') THEN (CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount * 2) ELSE (CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount) END)) vcpu_acu_hours
          FROM
@@ -855,7 +902,7 @@ views:
          INNER JOIN all_sanitised_rds_resources rdsu ON ((c.bill_payer_account_id = rdsu.payer_id) AND (c.line_item_usage_account_id = rdsu.accountid) AND (c.product['region'] = rdsu.region) AND (split_part(c.line_item_resource_id, ':', 7) = rdsu.dbresourceidentifier)))
          INNER JOIN account_map accmap ON (c.line_item_usage_account_id = accmap.account_id))
          WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND (c.product_servicecode = 'AmazonRDS') AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage')) AND ((c.product_product_family = 'Database Instance') OR ((c.product_product_family like 'Serverless%') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage'))))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
       )
       SELECT
         rdsr.billing_period
@@ -889,6 +936,7 @@ views:
       , (CASE WHEN ((current_timestamp >= erc.year_1_start) AND (current_timestamp < erc.year_3_start)) THEN (rdsr.vcpu_acu_hours * rp.year_1_2_pricing) ELSE 0 END) year_1_2_cost
       , rp.year_3_pricing
       , (CASE WHEN ((current_timestamp >= erc.year_3_start) AND (current_timestamp < erc.end_of_extended_support)) THEN (rdsr.vcpu_acu_hours * rp.year_3_pricing) ELSE 0 END) year_3_cost
+      , rdsr.tags_json
       FROM
         ((rds_resources rdsr
       INNER JOIN regions_pricing rp ON (rdsr.region_code = rp.region_code))
@@ -907,6 +955,7 @@ views:
           global: True
   opensearch_extended_support_view:
     dependsOn:
+      tags: json
       cur2:
         - pricing_unit
         - product_product_family
@@ -1044,7 +1093,7 @@ views:
            preprocessed_opensearch_domains
          WHERE (collection_date = max_collection_date)
       )
-      , opensearch_resources (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, domainidentifier, domainname, resourceid, engineversion, instance_type, instance_size, norm_factor, usage_unit, item_description, original_usage_type, usage_amount, nihs) AS (
+      , opensearch_resources (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, domainidentifier, domainname, resourceid, engineversion, instance_type, instance_size, norm_factor, usage_unit, item_description, original_usage_type, tags_json, usage_amount, nihs) AS (
          SELECT
            c.bill_billing_period_start_date billing_period
          , date_trunc('day', c.line_item_usage_start_date) usage_date
@@ -1062,6 +1111,7 @@ views:
          , c.pricing_unit
          , c.line_item_line_item_description item_description
          , c.line_item_usage_type original_usage_type
+         , ${cur_tags_json} tags_json
          , sum(c.line_item_usage_amount) usage_amount
          , sum((isnf.normalization_factor * c.line_item_usage_amount))
          FROM
@@ -1070,7 +1120,7 @@ views:
          INNER JOIN account_map accmap ON (c.line_item_usage_account_id = accmap.account_id))
          INNER JOIN instance_size_norm_factors isnf ON (regexp_extract(c.product_instance_type, '.+?\.(.+?)\.search', 1) = isnf.instance_size))
          WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND ((c.product_servicecode = 'AmazonES') AND (product_product_family = 'Amazon OpenSearch Service Instance') AND (line_item_operation = 'ESDomain')) AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage')) AND (NOT (c.line_item_usage_type IN ('OpenSearchExtendedSupport'))))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17
       )
       SELECT
         osr.billing_period
@@ -1095,6 +1145,7 @@ views:
       , erc.end_of_extended_support
       , rp.nih_pricing
       , (osr.nihs * rp.nih_pricing) projected_extended_support_cost
+      , osr.tags_json
       FROM
         ((opensearch_resources osr
       INNER JOIN regions_pricing rp ON (osr.region_code = rp.region_code))
@@ -1107,3 +1158,18 @@ views:
           default: optimization_data
           description: "Enter the name of the data collection database"
           global: True
+  extended_support_tagging_view:
+    dependsOn:
+      tags: json
+      cur2:
+        - line_item_product_code
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".extended_support_tagging_view AS
+      SELECT
+        line_item_product_code
+      , ${cur_tags_json} tags_json
+      , count(1) rows
+      FROM
+        "${cur2_database}"."${cur2_table_name}" cur
+      WHERE ((COALESCE(line_item_product_code, '') <> '') AND ((bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(split_part("billing_period", '-', 1), '-', split_part("billing_period", '-', 2), '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '7' MONTH))))
+      GROUP BY 1, 2

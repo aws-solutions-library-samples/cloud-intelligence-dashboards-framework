@@ -397,6 +397,8 @@ DataSetIdentifierDeclarations:
   Identifier: opensearch_extended_support_view
 - DataSetArn: arn:aws:quicksight:::dataset/321e897c-7912-4cfd-bd4c-d15d0f948127
   Identifier: eks_extended_support_view
+- DataSetArn: arn:aws:quicksight:::dataset/0655eb28-3f36-4a5d-8e8a-c2d70cd09fc7
+  Identifier: extended_support_tagging_view
 FilterGroups:
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 2f17da6a-9382-4592-95af-15eec49e9596
