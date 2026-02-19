@@ -19153,63 +19153,54 @@ Sheets:
           ColumnSpan: 16
           ElementId: 6c8025f5-8a4f-4882-9007-39f396a76ea2
           ElementType: FILTER_CONTROL
-          Padding: 8px
           RowIndex: 66
           RowSpan: 8
         - ColumnIndex: 16
           ColumnSpan: 5
           ElementId: 8aee4d29-c683-4fa7-b67c-69fe63e338a9
           ElementType: FILTER_CONTROL
-          Padding: 8px
           RowIndex: 66
           RowSpan: 4
         - ColumnIndex: 21
           ColumnSpan: 5
           ElementId: 619a12b8-c704-460c-9a4a-951da171689f
           ElementType: FILTER_CONTROL
-          Padding: 8px
           RowIndex: 66
           RowSpan: 4
         - ColumnIndex: 26
           ColumnSpan: 5
           ElementId: dce87544-ab95-405e-a7d9-237dcfd544d7
           ElementType: FILTER_CONTROL
-          Padding: 8px
           RowIndex: 66
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 5
           ElementId: ed7686af-dea6-4c5c-8b93-a5117dd35a13
           ElementType: FILTER_CONTROL
-          Padding: 8px
           RowIndex: 66
           RowSpan: 4
         - ColumnIndex: 16
           ColumnSpan: 5
           ElementId: aaf60424-a738-4c63-b82f-74303f397e3e
           ElementType: FILTER_CONTROL
-          Padding: 8px
           RowIndex: 70
           RowSpan: 4
         - ColumnIndex: 21
           ColumnSpan: 5
           ElementId: 58a87cdb-69d0-4c77-8764-676bc3efc387
           ElementType: FILTER_CONTROL
-          Padding: 8px
           RowIndex: 70
           RowSpan: 4
         - ColumnIndex: 26
           ColumnSpan: 5
           ElementId: 386d5da0-094e-4b7a-ba8c-db8197dab34a
           ElementType: FILTER_CONTROL
-          Padding: 8px
           RowIndex: 70
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 5
           ElementId: 3a8655e7-877f-4004-b4ce-a64db3c394a4
           ElementType: FILTER_CONTROL
-          Padding: 8px
           RowIndex: 70
           RowSpan: 4
         - ColumnIndex: 0
@@ -29684,7 +29675,7 @@ Sheets:
     SheetTextBoxId: 8738ed95-db68-48f4-9115-f7a8dcb618cf
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"64px\"\
       >\n      <b>Media Services Insights Hub</b>\n    </inline>\n  </block>\n  <br/>\n\
-      \  <block align=\"center\">\n    <inline font-size=\"64px\">v1.2.0</inline>\n\
+      \  <block align=\"center\">\n    <inline font-size=\"64px\">v1.2.1</inline>\n\
       \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
       >\_</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
       \ align=\"center\">\n    <inline color=\"#09add4\" font-size=\"24px\">\n   \
