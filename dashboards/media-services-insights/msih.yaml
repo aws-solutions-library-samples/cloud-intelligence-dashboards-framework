@@ -9,12 +9,416 @@ dashboards:
     dashboardId: media-services-insights
     category: Advanced
     theme: MIDNIGHT
-    version: v1.2.0
+    version: v1.3.0
     file: ./msih-definition.yaml
     nonTaxonomyDatasets:
     - msih_reservation_optimize
     - msih_reservations
 datasets:
+  msih_reservation_optimize:
+    data:
+      DataSetId: 353c4e2d-6526-45fa-a7b6-21f72060f385
+      Name: msih_reservation_optimize
+      PhysicalTableMap:
+        47a7153e-a73a-4974-85b7-41db6720a217:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: msih_reservation_optimize
+            InputColumns:
+            - Name: payer_account_id
+              Type: STRING
+            - Name: usage_time
+              Type: DATETIME
+            - Name: usage_hour_of_day
+              Type: INTEGER
+            - Name: usage_profile
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: operation
+              Type: STRING
+            - Name: video_pipeline
+              Type: STRING
+            - Name: video_flow_direction
+              Type: STRING
+            - Name: video_bit_rate
+              Type: STRING
+            - Name: video_codec
+              Type: STRING
+            - Name: video_frame_rate
+              Type: STRING
+            - Name: video_resolution
+              Type: STRING
+            - Name: video_quality
+              Type: STRING
+            - Name: usage_amount_od
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: usage_amount_reserved
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: usage_amount_total
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_od_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_od_net_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_reserved
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_net_reserved
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_total_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_total_net_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: cost_public
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: candidate_od_hours
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: total_reservation_candidates
+              Type: INTEGER
+            - Name: unit_cost_od_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit_cost_od_net_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit_cost_reserved
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit_cost_net_reserved
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit_cost_combined_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit_cost_combined_net_unblended
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: reservation_count
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: current_reservation_count
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: reservation_count_candidate
+              Type: INTEGER
+            - Name: last_refresh_date
+              Type: DATETIME
+        91eaa102-fc91-4283-adef-fe6697fd3cf5:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        6ba9a35e-fa2a-4227-8d01-496968256d34:
+          Alias: msih_reservation_optimize
+          Source:
+            PhysicalTableId: 47a7153e-a73a-4974-85b7-41db6720a217
+        929368f8-f032-493b-a61a-9aae152bf092:
+          Alias: account_map_payer
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map_payer]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: payer_account_name
+          Source:
+            PhysicalTableId: 91eaa102-fc91-4283-adef-fe6697fd3cf5
+        cb883dd4-1972-4472-8adc-f44adbcb3010:
+          Alias: Intermediate Table
+          DataTransforms:
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: payer_account_formatted
+                ColumnId: 83456603-3b9e-4796-accd-8fc1e98b94db
+                Expression: |-
+                  ifelse(
+                      strlen({payer_account_name})=0 or {payer_account_name} = {payer_account_id}, {payer_account_id},
+                      concat({payer_account_name}, " (", {payer_account_id}, ")")
+                  )
+          - ProjectOperation:
+              ProjectedColumns:
+              - payer_account_id
+              - usage_time
+              - usage_hour_of_day
+              - usage_profile
+              - region
+              - operation
+              - video_pipeline
+              - video_flow_direction
+              - video_bit_rate
+              - video_codec
+              - video_frame_rate
+              - video_resolution
+              - video_quality
+              - usage_amount_od
+              - usage_amount_reserved
+              - usage_amount_total
+              - cost_od_unblended
+              - cost_od_net_unblended
+              - cost_reserved
+              - cost_net_reserved
+              - cost_total_unblended
+              - cost_total_net_unblended
+              - cost_public
+              - candidate_od_hours
+              - total_reservation_candidates
+              - unit_cost_od_unblended
+              - unit_cost_od_net_unblended
+              - unit_cost_reserved
+              - unit_cost_net_reserved
+              - unit_cost_combined_unblended
+              - unit_cost_combined_net_unblended
+              - reservation_count
+              - current_reservation_count
+              - reservation_count_candidate
+              - last_refresh_date
+              - payer_account_name
+              - payer_account_formatted
+          Source:
+            JoinInstruction:
+              LeftOperand: 6ba9a35e-fa2a-4227-8d01-496968256d34
+              RightOperand: 929368f8-f032-493b-a61a-9aae152bf092
+              Type: LEFT
+              OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
+    dependsOn:
+      views:
+      - msih_reservation_optimize
+      - account_map
+    schedules:
+    - default
+  msih_reservations:
+    data:
+      DataSetId: media-services-insights-reservations
+      Name: msih_reservations
+      PhysicalTableMap:
+        09e670d1-8b16-4a2f-9e17-2d9ef290ec84:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: msih_reservations
+            InputColumns:
+            - Name: reservation_arn
+              Type: STRING
+            - Name: reservation_count
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: reservation_start_time
+              Type: DATETIME
+            - Name: reservation_end_time
+              Type: DATETIME
+            - Name: reservation_first_start_time
+              Type: DATETIME
+            - Name: linked_account_id
+              Type: STRING
+            - Name: payer_account_id
+              Type: STRING
+            - Name: line_item_usage_type
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: video_region
+              Type: STRING
+            - Name: line_item_operation
+              Type: STRING
+            - Name: video_pipeline
+              Type: STRING
+            - Name: video_flow_direction
+              Type: STRING
+            - Name: video_bit_rate
+              Type: STRING
+            - Name: video_codec
+              Type: STRING
+            - Name: video_frame_rate
+              Type: STRING
+            - Name: video_resolution
+              Type: STRING
+            - Name: video_quality
+              Type: STRING
+            - Name: is_active
+              Type: INTEGER
+            - Name: is_renewal
+              Type: INTEGER
+            - Name: reservation_fee
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: effective_rate_adjust
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: reservation_id
+              Type: STRING
+            - Name: usage_start_time
+              Type: DATETIME
+            - Name: usage_end_time
+              Type: DATETIME
+            - Name: reservation_utilization_percent
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: on_demand_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: reservation_effective_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: effective_od_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: effective_savings
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: effective_savings_rate
+              Type: DECIMAL
+              SubType: FLOAT
+        481b319c-c8f4-4e82-9ddf-fa705f6cf783:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+        fe517bcf-d790-49f8-b395-b744f079758f:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        24baacd6-be68-44a1-ac29-318cfec3a2d9:
+          Alias: account_map_payer
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map_payer]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: payer_account_name
+          Source:
+            PhysicalTableId: fe517bcf-d790-49f8-b395-b744f079758f
+        2ec2a3ce-4898-45f5-9ee7-f0ce35d402eb:
+          Alias: Intermediate Table
+          Source:
+            JoinInstruction:
+              LeftOperand: faff24db-9601-4a15-85e1-4b264d4626c3
+              RightOperand: 6bab26bf-161f-47a2-9dd7-c83e7d9a20ee
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id[account_map]}'
+        535870c6-7d13-4c6a-9ba7-45681756b69f:
+          Alias: Intermediate Table (2)
+          DataTransforms:
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: payer_account_formatted
+                ColumnId: 7bbfe0d0-23b5-4597-9c47-53a253fd264a
+                Expression: |-
+                  ifelse(
+                      strlen({payer_account_name})=0 or {payer_account_name} = {payer_account_id}, {payer_account_id},
+                      concat({payer_account_name}, " (", {payer_account_id}, ")")
+                  )
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: linked_account_formatted
+                ColumnId: 2ae7d50b-a8b7-4360-8503-8bff79820039
+                Expression: |-
+                  ifelse(
+                      strlen({linked_account_name})=0 or {linked_account_name} = {linked_account_id}, {linked_account_id},
+                      concat({linked_account_name}, " (", {linked_account_id}, ")")
+                  )
+          - ProjectOperation:
+              ProjectedColumns:
+              - reservation_arn
+              - reservation_count
+              - reservation_start_time
+              - reservation_end_time
+              - reservation_first_start_time
+              - linked_account_id
+              - payer_account_id
+              - line_item_usage_type
+              - region
+              - video_region
+              - line_item_operation
+              - video_pipeline
+              - video_flow_direction
+              - video_bit_rate
+              - video_codec
+              - video_frame_rate
+              - video_resolution
+              - video_quality
+              - is_active
+              - is_renewal
+              - reservation_fee
+              - effective_rate_adjust
+              - reservation_id
+              - usage_start_time
+              - usage_end_time
+              - reservation_utilization_percent
+              - on_demand_cost
+              - reservation_effective_cost
+              - effective_od_cost
+              - effective_savings
+              - effective_savings_rate
+              - linked_account_name
+              - payer_account_name
+              - payer_account_formatted
+              - linked_account_formatted
+          Source:
+            JoinInstruction:
+              LeftOperand: 2ec2a3ce-4898-45f5-9ee7-f0ce35d402eb
+              RightOperand: 24baacd6-be68-44a1-ac29-318cfec3a2d9
+              Type: LEFT
+              OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
+        6bab26bf-161f-47a2-9dd7-c83e7d9a20ee:
+          Alias: account_map
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: linked_account_name
+          Source:
+            PhysicalTableId: 481b319c-c8f4-4e82-9ddf-fa705f6cf783
+        faff24db-9601-4a15-85e1-4b264d4626c3:
+          Alias: msih_reservations
+          Source:
+            PhysicalTableId: 09e670d1-8b16-4a2f-9e17-2d9ef290ec84
+    dependsOn:
+      views:
+      - msih_reservations
+      - account_map
+      - account_map
+    schedules:
+    - default
   msih_view:
     data:
       DataSetId: media-services-insights-main
@@ -280,447 +684,6 @@ datasets:
     dependsOn:
       views:
       - msih_view
-      - account_map
-      - account_map
-    schedules:
-    - default
-  msih_reservations:
-    data:
-      DataSetId: media-services-insights-reservations
-      Name: msih_reservations
-      PhysicalTableMap:
-        09e670d1-8b16-4a2f-9e17-2d9ef290ec84:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: ${athena_database_name}
-            Name: msih_reservations
-            InputColumns:
-            - Name: reservation_arn
-              Type: STRING
-            - Name: reservation_count
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: reservation_start_time
-              Type: DATETIME
-            - Name: reservation_end_time
-              Type: DATETIME
-            - Name: reservation_first_start_time
-              Type: DATETIME
-            - Name: linked_account_id
-              Type: STRING
-            - Name: payer_account_id
-              Type: STRING
-            - Name: line_item_usage_type
-              Type: STRING
-            - Name: region
-              Type: STRING
-            - Name: video_region
-              Type: STRING
-            - Name: line_item_operation
-              Type: STRING
-            - Name: video_pipeline
-              Type: STRING
-            - Name: video_flow_direction
-              Type: STRING
-            - Name: video_bit_rate
-              Type: STRING
-            - Name: video_codec
-              Type: STRING
-            - Name: video_frame_rate
-              Type: STRING
-            - Name: video_resolution
-              Type: STRING
-            - Name: video_quality
-              Type: STRING
-            - Name: is_active
-              Type: INTEGER
-            - Name: is_renewal
-              Type: INTEGER
-            - Name: reservation_fee
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: effective_rate_adjust
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: reservation_id
-              Type: STRING
-            - Name: usage_start_time
-              Type: DATETIME
-            - Name: usage_end_time
-              Type: DATETIME
-            - Name: reservation_utilization_percent
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: on_demand_cost
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: reservation_effective_cost
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: effective_od_cost
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: effective_savings
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: effective_savings_rate
-              Type: DECIMAL
-              SubType: FLOAT
-        481b319c-c8f4-4e82-9ddf-fa705f6cf783:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: ${athena_database_name}
-            Name: account_map
-            InputColumns:
-            - Name: account_id
-              Type: STRING
-            - Name: account_name
-              Type: STRING
-        fe517bcf-d790-49f8-b395-b744f079758f:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: ${athena_database_name}
-            Name: account_map
-            InputColumns:
-            - Name: account_id
-              Type: STRING
-            - Name: account_name
-              Type: STRING
-      ImportMode: SPICE
-      LogicalTableMap:
-        24baacd6-be68-44a1-ac29-318cfec3a2d9:
-          Alias: account_map_payer
-          DataTransforms:
-          - RenameColumnOperation:
-              ColumnName: account_id
-              NewColumnName: account_id[account_map_payer]
-          - RenameColumnOperation:
-              ColumnName: account_name
-              NewColumnName: payer_account_name
-          Source:
-            PhysicalTableId: fe517bcf-d790-49f8-b395-b744f079758f
-        2ec2a3ce-4898-45f5-9ee7-f0ce35d402eb:
-          Alias: Intermediate Table
-          Source:
-            JoinInstruction:
-              LeftOperand: faff24db-9601-4a15-85e1-4b264d4626c3
-              RightOperand: 6bab26bf-161f-47a2-9dd7-c83e7d9a20ee
-              Type: LEFT
-              OnClause: '{linked_account_id} = {account_id[account_map]}'
-        535870c6-7d13-4c6a-9ba7-45681756b69f:
-          Alias: Intermediate Table (2)
-          DataTransforms:
-          - CreateColumnsOperation:
-              Columns:
-              - ColumnName: payer_account_formatted
-                ColumnId: 7bbfe0d0-23b5-4597-9c47-53a253fd264a
-                Expression: |-
-                  ifelse(
-                      strlen({payer_account_name})=0 or {payer_account_name} = {payer_account_id}, {payer_account_id},
-                      concat({payer_account_name}, " (", {payer_account_id}, ")")
-                  )
-          - CreateColumnsOperation:
-              Columns:
-              - ColumnName: linked_account_formatted
-                ColumnId: 2ae7d50b-a8b7-4360-8503-8bff79820039
-                Expression: |-
-                  ifelse(
-                      strlen({linked_account_name})=0 or {linked_account_name} = {linked_account_id}, {linked_account_id},
-                      concat({linked_account_name}, " (", {linked_account_id}, ")")
-                  )
-          - ProjectOperation:
-              ProjectedColumns:
-              - reservation_arn
-              - reservation_count
-              - reservation_start_time
-              - reservation_end_time
-              - reservation_first_start_time
-              - linked_account_id
-              - payer_account_id
-              - line_item_usage_type
-              - region
-              - video_region
-              - line_item_operation
-              - video_pipeline
-              - video_flow_direction
-              - video_bit_rate
-              - video_codec
-              - video_frame_rate
-              - video_resolution
-              - video_quality
-              - is_active
-              - is_renewal
-              - reservation_fee
-              - effective_rate_adjust
-              - reservation_id
-              - usage_start_time
-              - usage_end_time
-              - reservation_utilization_percent
-              - on_demand_cost
-              - reservation_effective_cost
-              - effective_od_cost
-              - effective_savings
-              - effective_savings_rate
-              - linked_account_name
-              - payer_account_name
-              - payer_account_formatted
-              - linked_account_formatted
-          Source:
-            JoinInstruction:
-              LeftOperand: 2ec2a3ce-4898-45f5-9ee7-f0ce35d402eb
-              RightOperand: 24baacd6-be68-44a1-ac29-318cfec3a2d9
-              Type: LEFT
-              OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
-        6bab26bf-161f-47a2-9dd7-c83e7d9a20ee:
-          Alias: account_map
-          DataTransforms:
-          - RenameColumnOperation:
-              ColumnName: account_id
-              NewColumnName: account_id[account_map]
-          - RenameColumnOperation:
-              ColumnName: account_name
-              NewColumnName: linked_account_name
-          Source:
-            PhysicalTableId: 481b319c-c8f4-4e82-9ddf-fa705f6cf783
-        faff24db-9601-4a15-85e1-4b264d4626c3:
-          Alias: msih_reservations
-          Source:
-            PhysicalTableId: 09e670d1-8b16-4a2f-9e17-2d9ef290ec84
-    dependsOn:
-      views:
-      - msih_reservations
-      - account_map
-      - account_map
-    schedules:
-    - default
-  msih_reservation_optimize:
-    data:
-      DataSetId: 353c4e2d-6526-45fa-a7b6-21f72060f385
-      Name: msih_reservation_optimize
-      PhysicalTableMap:
-        47a7153e-a73a-4974-85b7-41db6720a217:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: ${athena_database_name}
-            Name: msih_reservation_optimize
-            InputColumns:
-            - Name: payer_account_id
-              Type: STRING
-            - Name: linked_account_id
-              Type: STRING
-            - Name: usage_time
-              Type: DATETIME
-            - Name: usage_hour_of_day
-              Type: INTEGER
-            - Name: usage_profile
-              Type: STRING
-            - Name: region
-              Type: STRING
-            - Name: operation
-              Type: STRING
-            - Name: video_pipeline
-              Type: STRING
-            - Name: video_flow_direction
-              Type: STRING
-            - Name: video_bit_rate
-              Type: STRING
-            - Name: video_codec
-              Type: STRING
-            - Name: video_frame_rate
-              Type: STRING
-            - Name: video_resolution
-              Type: STRING
-            - Name: video_quality
-              Type: STRING
-            - Name: usage_amount_od
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: usage_amount_reserved
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: usage_amount_total
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: cost_od_unblended
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: cost_od_net_unblended
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: cost_reserved
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: cost_total_unblended
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: cost_total_net_unblended
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: cost_public
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: total_reservation_candidates
-              Type: INTEGER
-            - Name: unit_cost_od_unblended
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: unit_cost_od_net_unblended
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: unit_cost_reserved
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: unit_cost_combined_unblended
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: unit_cost_combined_net_unblended
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: reservation_count
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: current_reservation_count
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: current_reservation_count_payer
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: reservation_count_candidate
-              Type: INTEGER
-            - Name: last_refresh_date
-              Type: DATETIME
-        629857f4-594a-436e-b28e-b14cba791f14:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: ${athena_database_name}
-            Name: account_map
-            InputColumns:
-            - Name: account_id
-              Type: STRING
-            - Name: account_name
-              Type: STRING
-        91eaa102-fc91-4283-adef-fe6697fd3cf5:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: ${athena_database_name}
-            Name: account_map
-            InputColumns:
-            - Name: account_id
-              Type: STRING
-            - Name: account_name
-              Type: STRING
-      ImportMode: SPICE
-      LogicalTableMap:
-        6ba9a35e-fa2a-4227-8d01-496968256d34:
-          Alias: msih_reservation_optimize
-          Source:
-            PhysicalTableId: 47a7153e-a73a-4974-85b7-41db6720a217
-        776df613-7b66-4043-be70-267b0dddbdea:
-          Alias: Intermediate Table
-          Source:
-            JoinInstruction:
-              LeftOperand: 6ba9a35e-fa2a-4227-8d01-496968256d34
-              RightOperand: e7038b62-397d-46f7-9fe2-dd369b97dde3
-              Type: LEFT
-              OnClause: '{linked_account_id} = {account_id[account_map_linked]}'
-        929368f8-f032-493b-a61a-9aae152bf092:
-          Alias: account_map_payer
-          DataTransforms:
-          - RenameColumnOperation:
-              ColumnName: account_id
-              NewColumnName: account_id[account_map_payer]
-          - RenameColumnOperation:
-              ColumnName: account_name
-              NewColumnName: payer_account_name
-          Source:
-            PhysicalTableId: 91eaa102-fc91-4283-adef-fe6697fd3cf5
-        d25fed78-6b41-42f6-92af-b9c54f328e93:
-          Alias: Intermediate Table (2)
-          DataTransforms:
-          - CreateColumnsOperation:
-              Columns:
-              - ColumnName: linked_account_formatted
-                ColumnId: dfe2c505-49cf-42b8-ad3d-231115e4a399
-                Expression: |-
-                  ifelse(
-                      strlen({linked_account_name})=0 or {linked_account_name} = {linked_account_id}, {linked_account_id},
-                      concat({linked_account_name}, " (", {linked_account_id}, ")")
-                  )
-          - CreateColumnsOperation:
-              Columns:
-              - ColumnName: payer_account_formatted
-                ColumnId: 83456603-3b9e-4796-accd-8fc1e98b94db
-                Expression: |-
-                  ifelse(
-                      strlen({payer_account_name})=0 or {payer_account_name} = {payer_account_id}, {payer_account_id},
-                      concat({payer_account_name}, " (", {payer_account_id}, ")")
-                  )
-          - ProjectOperation:
-              ProjectedColumns:
-              - payer_account_id
-              - linked_account_id
-              - usage_time
-              - usage_hour_of_day
-              - usage_profile
-              - region
-              - operation
-              - video_pipeline
-              - video_flow_direction
-              - video_bit_rate
-              - video_codec
-              - video_frame_rate
-              - video_resolution
-              - video_quality
-              - usage_amount_od
-              - usage_amount_reserved
-              - usage_amount_total
-              - cost_od_unblended
-              - cost_od_net_unblended
-              - cost_reserved
-              - cost_total_unblended
-              - cost_total_net_unblended
-              - cost_public
-              - total_reservation_candidates
-              - unit_cost_od_unblended
-              - unit_cost_od_net_unblended
-              - unit_cost_reserved
-              - unit_cost_combined_unblended
-              - unit_cost_combined_net_unblended
-              - reservation_count
-              - current_reservation_count
-              - current_reservation_count_payer
-              - reservation_count_candidate
-              - last_refresh_date
-              - linked_account_name
-              - payer_account_name
-              - linked_account_formatted
-              - payer_account_formatted
-          Source:
-            JoinInstruction:
-              LeftOperand: 776df613-7b66-4043-be70-267b0dddbdea
-              RightOperand: 929368f8-f032-493b-a61a-9aae152bf092
-              Type: LEFT
-              OnClause: '{payer_account_id} = {account_id[account_map_payer]}'
-        e7038b62-397d-46f7-9fe2-dd369b97dde3:
-          Alias: account_map_linked
-          DataTransforms:
-          - RenameColumnOperation:
-              ColumnName: account_id
-              NewColumnName: account_id[account_map_linked]
-          - RenameColumnOperation:
-              ColumnName: account_name
-              NewColumnName: linked_account_name
-          Source:
-            PhysicalTableId: 629857f4-594a-436e-b28e-b14cba791f14
-    dependsOn:
-      views:
-      - msih_reservation_optimize
       - account_map
       - account_map
     schedules:
@@ -1046,7 +1009,6 @@ views:
       - line_item_operation
       - line_item_product_code
       - line_item_unblended_cost
-      - line_item_usage_account_id
       - line_item_usage_amount
       - line_item_usage_end_date
       - line_item_usage_start_date
@@ -1055,6 +1017,7 @@ views:
       - product
       - reservation_effective_cost
       - reservation_end_time
+      - reservation_net_effective_cost
       - reservation_reservation_a_r_n
       - reservation_start_time
     data: |-
@@ -1071,7 +1034,6 @@ views:
       , "pre_process" AS (
          SELECT
            "bill_payer_account_id" "payer_account_id"
-         , "line_item_usage_account_id" "linked_account_id"
          , "line_item_usage_start_date" "usage_time"
          , hour("line_item_usage_start_date") "usage_hour_of_day"
          , "line_item_usage_type" "usage_profile"
@@ -1090,18 +1052,17 @@ views:
          , sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "line_item_unblended_cost" ELSE 0 END)) "cost_od_unblended"
          , sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "line_item_net_unblended_cost" ELSE 0 END)) "cost_od_net_unblended"
          , sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "reservation_effective_cost" ELSE 0 END)) "cost_reserved"
+         , sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "reservation_net_effective_cost" ELSE 0 END)) "cost_net_reserved"
          , (sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "reservation_effective_cost" ELSE 0 END)) + sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "line_item_unblended_cost" ELSE 0 END))) "cost_total_unblended"
          , (sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "reservation_effective_cost" ELSE 0 END)) + sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "line_item_net_unblended_cost" ELSE 0 END))) "cost_total_net_unblended"
          , sum((CASE WHEN ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage')) THEN "pricing_public_on_demand_cost_adjusted" ELSE 0 END)) "cost_public"
          FROM
            "core"
-         WHERE (("line_item_operation" IN ('CHANNEL_INPUT', 'CHANNEL_OUTPUT', 'CHANNEL_FEATURE')) AND ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage', 'EdpDiscount', 'PrivateRateDiscount')) AND (("line_item_line_item_type" <> 'EdpDiscount') AND (substring("line_item_usage_type", (length("line_item_usage_type") - 1)) <> '-R')) AND (CAST("line_item_usage_end_date" AS date) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+         WHERE (("line_item_operation" IN ('CHANNEL_INPUT', 'CHANNEL_OUTPUT', 'CHANNEL_FEATURE')) AND ("line_item_line_item_type" IN ('Usage', 'DiscountedUsage', 'EdpDiscount', 'PrivateRateDiscount')) AND (("line_item_line_item_type" <> 'EdpDiscount') AND (substring("line_item_usage_type", (length("line_item_usage_type") - 1)) <> '-R')) AND (CAST("line_item_usage_end_date" AS date) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '13' MONTH)))
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
       )
       , "all_eml_accounts" AS (
-         SELECT DISTINCT
-           "bill_payer_account_id" "payer_account_id"
-         , "line_item_usage_account_id" "linked_account_id"
+         SELECT DISTINCT "bill_payer_account_id" "payer_account_id"
          FROM
            "core"
          WHERE ("line_item_line_item_type" = 'Usage')
@@ -1112,7 +1073,6 @@ views:
          , "usage_profile"
          , 0 "is_renewal"
          , "payer_account_id"
-         , "linked_account_id"
          , sum("reservation_count") "reservation_count"
          FROM
            ((
@@ -1123,7 +1083,6 @@ views:
          LEFT JOIN (
             SELECT DISTINCT
               "bill_payer_account_id" "payer_account_id"
-            , "line_item_usage_account_id" "linked_account_id"
             , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN CAST(SPLIT_PART("reservation_start_time", 'T', 1) AS date) ELSE null END) "reservation_start_time"
             , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) ELSE null END) "reservation_end_time"
             , (CASE WHEN ("line_item_line_item_type" = 'RIFee') THEN SPLIT_PART("reservation_reservation_a_r_n", ':', 7) ELSE null END) "reservation_id"
@@ -1133,31 +1092,28 @@ views:
               "core" c
             WHERE ("line_item_line_item_type" IN ('RIFee', 'Usage'))
          )  r ON ((h."usage_time" BETWEEN "reservation_start_time" AND "reservation_end_time") OR ("reservation_start_time" IS NULL)))
-         GROUP BY 1, 2, 3, 4, 5
+         GROUP BY 1, 2, 3, 4
       )
       , "latest_reservation_count" AS (
          SELECT
            r2."payer_account_id"
-         , r2."linked_account_id"
          , r2."usage_profile"
-         , "reservation_count" "current_reservation_count"
          , SUM("reservation_count") OVER (PARTITION BY r2."payer_account_id", r2."usage_profile") "current_reservation_count_payer"
          FROM
            ("ri_inventory" r2
          INNER JOIN (
             SELECT
               "payer_account_id"
-            , "linked_account_id"
             , "usage_profile"
             , MAX("usage_time") "latest_time"
             FROM
               "ri_inventory"
-            GROUP BY 1, 2, 3
-         )  "rlat" ON (("r2"."linked_account_id" = "rlat"."linked_account_id") AND ("r2"."usage_profile" = "rlat"."usage_profile") AND ("usage_time" = "latest_time")))
+            GROUP BY 1, 2
+         )  "rlat" ON (("r2"."payer_account_id" = "rlat"."payer_account_id") AND ("r2"."usage_profile" = "rlat"."usage_profile") AND ("usage_time" = "latest_time")))
       )
       , "candidate_concur_seq" AS (
          SELECT
-           "linked_account_id"
+           "payer_account_id"
          , "usage_profile"
          , d "reservation_count_candidate"
          , min_seq
@@ -1166,7 +1122,7 @@ views:
            (UNNEST(sequence(0, 1000)) t (d)
          INNER JOIN (
             SELECT
-              "linked_account_id"
+              "payer_account_id"
             , "usage_profile"
             , MIN("usage_amount_total") "min_seq"
             , MAX("usage_amount_total") "max_seq"
@@ -1174,26 +1130,27 @@ views:
               "pre_process"
             GROUP BY 1, 2
          )  mm ON (1 = 1))
-         WHERE ((d >= ("min_seq" * 9.5E-1)) AND (d <= ("max_seq" * 1.05E0)))
+         WHERE (d <= ("max_seq" * 1.5E0))
       )
       SELECT
         p.*
-      , count("reservation_count_candidate") OVER (PARTITION BY p."linked_account_id", p."usage_time", p."usage_profile") "total_reservation_candidates"
+      , (CASE WHEN ("usage_amount_total" > "reservation_count_candidate") THEN ("usage_amount_total" - "reservation_count_candidate") ELSE 0 END) "candidate_od_hours"
+      , count("reservation_count_candidate") OVER (PARTITION BY p."payer_account_id", p.usage_time, p."usage_profile") "total_reservation_candidates"
       , (CASE WHEN ("usage_amount_od" <> 0) THEN ("cost_od_unblended" / "usage_amount_od") ELSE null END) "unit_cost_od_unblended"
       , (CASE WHEN ("usage_amount_od" <> 0) THEN ("cost_od_net_unblended" / "usage_amount_od") ELSE null END) "unit_cost_od_net_unblended"
       , (CASE WHEN ("usage_amount_reserved" <> 0) THEN ("cost_reserved" / "usage_amount_reserved") ELSE null END) "unit_cost_reserved"
+      , (CASE WHEN ("usage_amount_reserved" <> 0) THEN ("cost_net_reserved" / "usage_amount_reserved") ELSE null END) "unit_cost_net_reserved"
       , (CASE WHEN ("usage_amount_total" <> 0) THEN (("cost_reserved" + "cost_od_unblended") / "usage_amount_total") ELSE null END) "unit_cost_combined_unblended"
       , (CASE WHEN ("usage_amount_total" <> 0) THEN (("cost_reserved" + "cost_od_net_unblended") / "usage_amount_total") ELSE null END) "unit_cost_combined_net_unblended"
       , "reservation_count"
-      , COALESCE("current_reservation_count", 0) "current_reservation_count"
-      , COALESCE("current_reservation_count_payer", 0) "current_reservation_count_payer"
+      , COALESCE("current_reservation_count_payer", 0) "current_reservation_count"
       , "reservation_count_candidate"
       , "last_refresh_date"
       FROM
         (((("pre_process" p
-      LEFT JOIN "candidate_concur_seq" cs ON ((p."linked_account_id" = cs."linked_account_id") AND (p."usage_profile" = cs."usage_profile")))
-      LEFT JOIN "ri_inventory" r ON ((p."usage_profile" = r."usage_profile") AND (p."linked_account_id" = r."linked_account_id") AND (p."usage_time" = r."usage_time")))
-      LEFT JOIN "latest_reservation_count" rl ON ((p."usage_profile" = rl."usage_profile") AND (p."linked_account_id" = rl."linked_account_id")))
+      LEFT JOIN "candidate_concur_seq" cs ON ((p."payer_account_id" = cs."payer_account_id") AND (p."usage_profile" = cs."usage_profile")))
+      LEFT JOIN "ri_inventory" r ON ((p."usage_profile" = r."usage_profile") AND (p."payer_account_id" = r."payer_account_id") AND (p."usage_time" = r."usage_time")))
+      LEFT JOIN "latest_reservation_count" rl ON ((p."usage_profile" = rl."usage_profile") AND (p."payer_account_id" = rl."payer_account_id")))
       INNER JOIN (
          SELECT
            "bill_payer_account_id"
