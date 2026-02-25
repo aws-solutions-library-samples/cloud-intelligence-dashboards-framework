@@ -29067,18 +29067,6 @@ Sheets:
               SelectedColumns:
               - ColumnName: Usage Category
                 DataSetIdentifier: msih_view
-              - ColumnName: Usage Category
-                DataSetIdentifier: msih_view
-              - ColumnName: Usage Category
-                DataSetIdentifier: msih_view
-              - ColumnName: Usage Category
-                DataSetIdentifier: msih_view
-              - ColumnName: Usage Category
-                DataSetIdentifier: msih_view
-              - ColumnName: Usage Category
-                DataSetIdentifier: msih_view
-              - ColumnName: Usage Category
-                DataSetIdentifier: msih_view
               - ColumnName: Payer Account
                 DataSetIdentifier: msih_view
               - ColumnName: Linked Account
@@ -29093,12 +29081,6 @@ Sheets:
                 DataSetIdentifier: msih_view
               SelectedFields:
               - f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.0.1742821088563
-              - 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752634125112
-              - 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752634125112
-              - 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752634125112
-              - 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752634125112
-              - 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752634125112
-              - 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752634125112
               - 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752634125112
               - 50b2a3c6-8a80-41bd-890b-521da908785a.2.1752634125112
             TargetVisualsConfiguration:
