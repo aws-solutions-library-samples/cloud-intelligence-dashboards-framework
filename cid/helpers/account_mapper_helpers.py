@@ -85,7 +85,7 @@ _athena_data_cache: Dict[str, Any] = {
 
 class Account:
     """
-    Represents an AWS account with metadata and business hierarchy information.
+    Represents an AWS account with metadata and business taxonomy information.
     
     The Account class ensures that account IDs are properly formatted (12 digits with
     leading zeros) and provides class-level storage for all account instances to enable
@@ -97,7 +97,7 @@ class Account:
         _payer_account_id (str): Payer account ID (12 digits)
         _payer_account_name (str): Payer account name
         _account_tags (dict): Account tags
-        _business_unit (dict): Business unit hierarchy information
+        _business_unit (dict): Business unit taxonomy information
         
     Class Attributes:
         _all_accounts (dict): Class-level storage of all Account instances
@@ -265,10 +265,10 @@ class Account:
     
     def set_business_unit(self, bu_name: str, bu_value: str) -> None:
         """
-        Set a business unit hierarchy level for this account.
+        Set a business unit taxonomy dimension for this account.
         
         Args:
-            bu_name: Business unit level name (e.g., 'level_1', 'level_2')
+            bu_name: Business unit dimension name (e.g., 'level_1', 'level_2')
             bu_value: Business unit value
         """
         self._business_unit[bu_name] = bu_value
@@ -279,7 +279,7 @@ class Account:
         Get all business unit information for this account.
         
         Returns:
-            Dictionary of business unit levels and values
+            Dictionary of business unit dimensions and values
         """
         return self._business_unit
     
@@ -336,7 +336,7 @@ class TransformEngine:
     """
     Orchestrates data transformation according to configured rules.
     
-    The TransformEngine applies hierarchy rules to organization data, creating
+    The TransformEngine applies taxonomy rules to organization data, creating
     Account instances with business unit information and converting them to a
     DataFrame for output.
     
@@ -369,11 +369,11 @@ class TransformEngine:
         1. Reset any existing Account instances
         2. Create Account instances for each account in org_data
         3. Set basic account information (name, payer)
-        4. Apply all hierarchy rules
+        4. Apply all taxonomy rules
         5. Convert to DataFrame
         
         Returns:
-            DataFrame containing account map with all hierarchy levels
+            DataFrame containing account map with all taxonomy dimensions
             
         Raises:
             ValueError: If configuration is invalid or required data is missing
@@ -410,7 +410,7 @@ class TransformEngine:
                 payer_id = row.get('payer_id', '')
                 if payer_id:
                     account.set_payer_id(str(payer_id))
-                    # Note: payer_name is only set if used in a hierarchy rule
+                    # Note: payer_name is only set if used in a taxonomy rule
                 
                 account_count += 1
                 
@@ -424,8 +424,8 @@ class TransformEngine:
         
         logger.info("Created %d Account instances", account_count)
         
-        # Apply hierarchy rules
-        self.apply_hierarchy_rules()
+        # Apply taxonomy rules
+        self.apply_taxonomy_rules()
         
         # Convert to DataFrame
         result_df = Account.to_dataframe()
@@ -433,57 +433,57 @@ class TransformEngine:
         
         return result_df
     
-    def apply_hierarchy_rules(self) -> None:
+    def apply_taxonomy_rules(self) -> None:
         """
-        Apply all configured hierarchy level rules.
+        Apply all configured taxonomy dimension rules.
         
-        This method iterates through all configured hierarchy levels and applies
+        This method iterates through all configured taxonomy dimensions and applies
         the appropriate extraction rule for each account.
         """
         rules_config = self.config.get('rules', {})
-        hierarchy_levels = rules_config.get('hierarchy_levels', [])
+        taxonomy_dimensions = rules_config.get('taxonomy_dimensions', [])
         
-        if not hierarchy_levels:
-            logger.warning("No hierarchy levels configured")
+        if not taxonomy_dimensions:
+            logger.warning("No taxonomy dimensions configured")
             return
         
-        logger.info("Applying %d hierarchy rules", len(hierarchy_levels))
+        logger.info("Applying %d taxonomy rules", len(taxonomy_dimensions))
         
-        # Sort levels by level number to ensure correct order
-        sorted_levels = sorted(hierarchy_levels, key=lambda x: x.get('level', 0))
+        # Sort dimensions by level number to ensure correct order
+        sorted_dimensions = sorted(taxonomy_dimensions, key=lambda x: x.get('level', 0))
         
         # Get all accounts
         all_accounts = Account.get_all_accounts()
         
         # Apply each rule to each account
-        for level_config in sorted_levels:
-            level_num = level_config.get('level')
-            level_name = level_config.get('name', f'level_{level_num}')
+        for dimension_config in sorted_dimensions:
+            dimension_num = dimension_config.get('level')
+            dimension_name = dimension_config.get('name', f'level_{dimension_num}')
             
-            logger.debug("Applying rule for %s", level_name)
+            logger.debug("Applying rule for %s", dimension_name)
             
             success_count = 0
             for account_id in all_accounts.keys():
                 try:
-                    # Apply the rule for this level
-                    value = self.apply_single_rule(level_config, account_id)
+                    # Apply the rule for this dimension
+                    value = self.apply_single_rule(dimension_config, account_id)
                     
                     if value is not None:
                         # Create Account instance to set the business unit
                         account = Account(account_id)
-                        account.set_business_unit(level_name, value)
+                        account.set_business_unit(dimension_name, value)
                         success_count += 1
                     
                 except Exception as e:
                     logger.error(
                         "Error applying rule %s to account %s: %s",
-                        level_name, account_id, str(e),
+                        dimension_name, account_id, str(e),
                         exc_info=True
                     )
             
             logger.info(
                 "Applied rule %s: %d/%d accounts successful",
-                level_name, success_count, len(all_accounts)
+                dimension_name, success_count, len(all_accounts)
             )
     
     def apply_single_rule(self, rule: Dict[str, Any], account_id: str) -> Optional[str]:
@@ -808,115 +808,711 @@ class DataLoader:
             raise RuntimeError(f"Failed to get columns: {e}") from e
 
 class ConfigManager:
-    """Manages application configuration loading, saving, and validation."""
+    """
+    Manages account mapper configuration storage and retrieval from Athena views.
     
-    def __init__(self, config_path: str = "config.json"):
+    The ConfigManager handles reading and writing configuration to Athena views
+    instead of files. Configuration is stored in a view named {view_name}_config
+    using a two-row-type structure with metadata and dimension rows.
+    
+    Attributes:
+        athena (Athena): CID Athena helper instance
+        view_name (str): Base view name (default: "account_map")
+    """
+    
+    def __init__(self, athena: Athena, view_name: str = "account_map"):
         """
-        Initialize configuration manager.
+        Initialize configuration manager with Athena helper and view name.
         
         Args:
-            config_path: Path to configuration file (default: config.json)
+            athena: CID Athena helper instance
+            view_name: Base view name for configuration (default: "account_map")
         """
-        self.config_path = Path(config_path)
-        self._config: Optional[dict] = None
+        self.athena = athena
+        self.view_name = view_name
+        self.config_view_name = f"{view_name}_config"
+        logger.info("ConfigManager initialized for view: %s", self.config_view_name)
     
-    def load(self) -> dict:
+    def load_from_view(self, database: str) -> Optional[dict]:
         """
-        Load configuration from file.
+        Load configuration from Athena config view.
         
-        Returns:
-            Configuration dictionary
+        Args:
+            database: Database containing the config view
             
-        Raises:
-            FileNotFoundError: If configuration file doesn't exist
-            json.JSONDecodeError: If configuration file is invalid JSON
+        Returns:
+            Configuration dictionary if view exists, None otherwise
+            
+        Example:
+            >>> config_mgr = ConfigManager(athena, "account_map")
+            >>> config = config_mgr.load_from_view("my_database")
+            >>> if config:
+            ...     print(config['metadata']['source_table'])
         """
+        if not self.config_view_exists(database):
+            logger.info("Config view %s.%s does not exist", database, self.config_view_name)
+            return None
+        
         try:
-            with open(self.config_path, 'r') as f:
-                self._config = json.load(f)
-            logger.info(f"Configuration loaded from {self.config_path}")
-            return self._config
-        except FileNotFoundError:
-            logger.error(f"Configuration file not found: {self.config_path}")
-            raise
-        except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in configuration file: {e}")
-            raise
+            logger.info("Loading configuration from %s.%s", database, self.config_view_name)
+            
+            # Query the config view
+            query = f'SELECT * FROM "{database}"."{self.config_view_name}"'
+            results = self.athena.query(
+                sql=query,
+                database=database,
+                include_header=True
+            )
+            
+            if not results or len(results) < 2:
+                logger.warning("Config view is empty")
+                return None
+            
+            # Convert results to list of dicts
+            header = results[0]
+            rows = []
+            for row in results[1:]:
+                row_dict = dict(zip(header, row))
+                rows.append(row_dict)
+            
+            # Parse rows into config structure
+            config = self.parse_config_rows(rows)
+            logger.info("Successfully loaded configuration with %d taxonomy dimensions", 
+                       len(config.get('taxonomy_dimensions', [])))
+            
+            return config
+            
+        except Exception as e:
+            logger.error("Failed to load configuration from view: %s", str(e), exc_info=True)
+            return None
     
-    def save(self, config: dict) -> bool:
+    def save_to_view(self, config: dict, database: str) -> bool:
         """
-        Save configuration to file.
+        Save configuration to Athena config view.
         
         Args:
             config: Configuration dictionary to save
+            database: Target database for the config view
             
         Returns:
             True if save was successful, False otherwise
+            
+        Example:
+            >>> config = {
+            ...     'metadata': {
+            ...         'source_table': 'organization_data',
+            ...         'source_database': 'cur_database'
+            ...     },
+            ...     'taxonomy_dimensions': [
+            ...         {'name': 'business_unit', 'source_type': 'tag', 'source_value': 'BusinessUnit'}
+            ...     ]
+            ... }
+            >>> config_mgr.save_to_view(config, "my_database")
+            True
         """
         try:
-            # Ensure parent directory exists
-            self.config_path.parent.mkdir(parents=True, exist_ok=True)
+            logger.info("Saving configuration to %s.%s", database, self.config_view_name)
             
-            # Write configuration with pretty formatting
-            with open(self.config_path, 'w') as f:
-                json.dump(config, f, indent=2)
+            # Generate config rows from config dict
+            rows = self.generate_config_rows(config)
             
-            self._config = config
-            logger.info(f"Configuration saved to {self.config_path}")
-            return True
+            # Generate SQL for config view
+            sql = self._generate_config_view_sql(rows, database)
+            sql_size = len(sql.encode('utf-8'))
+            
+            logger.info("Generated config view SQL (%d bytes)", sql_size)
+            
+            # Check if we need to split the view
+            if sql_size > 262144:  # Athena's max SQL size
+                logger.warning("Config view SQL exceeds size limit, splitting into parts")
+                return self._create_split_config_view(rows, database)
+            else:
+                # Create single config view
+                self.athena.query(sql=sql, database=database)
+                logger.info("Successfully created config view")
+                return True
+                
         except Exception as e:
-            logger.error(f"Failed to save configuration: {e}")
+            logger.error("Failed to save configuration to view: %s", str(e), exc_info=True)
             return False
     
-    def exists(self) -> bool:
+    def config_view_exists(self, database: str) -> bool:
         """
-        Check if configuration file exists.
+        Check if configuration view exists in the database.
         
+        Args:
+            database: Database to check
+            
         Returns:
-            True if configuration file exists, False otherwise
+            True if config view exists, False otherwise
         """
-        return self.config_path.exists()
-    
-    def is_valid(self) -> bool:
-        """
-        Validate current configuration.
-        
-        Returns:
-            True if configuration is valid, False otherwise
-        """        
-        if not self.exists():
+        try:
+            # Check if it's a view
+            check_sql = f"SHOW VIEWS IN {database} LIKE '{self.config_view_name}'"
+            results = self.athena.query(
+                sql=check_sql,
+                database=database,
+                include_header=False
+            )
+            
+            if len(results) > 0:
+                return True
+            
+            # Check if it's a table
+            check_sql = f"SHOW TABLES IN {database} LIKE '{self.config_view_name}'"
+            results = self.athena.query(
+                sql=check_sql,
+                database=database,
+                include_header=False
+            )
+            
+            return len(results) > 0
+            
+        except Exception as e:
+            logger.warning("Could not check if config view exists: %s", str(e))
             return False
+    
+    def parse_config_rows(self, rows: List[dict]) -> dict:
+        """
+        Parse config rows from view into structured configuration dictionary.
+        
+        The config view uses a two-row-type structure:
+        - Metadata rows: config_type='metadata', stores file_source_view, source_table, source_database
+        - Dimension rows: config_type='dimension', stores key_name, source_type, source_value
+        
+        Args:
+            rows: List of row dictionaries from config view
+            
+        Returns:
+            Structured configuration dictionary
+            
+        Example:
+            >>> rows = [
+            ...     {'config_type': 'metadata', 'key_name': 'source_table', 
+            ...      'source_type': 'source', 'source_value': 'organization_data'},
+            ...     {'config_type': 'dimension', 'key_name': 'business_unit',
+            ...      'source_type': 'tag', 'source_value': 'BusinessUnit'}
+            ... ]
+            >>> config = config_mgr.parse_config_rows(rows)
+            >>> config['metadata']['source_table']
+            'organization_data'
+        """
+        config = {
+            'metadata': {},
+            'taxonomy_dimensions': []
+        }
+        
+        for row in rows:
+            config_type = row.get('config_type', '')
+            key_name = row.get('key_name', '')
+            source_type = row.get('source_type', '')
+            source_value = row.get('source_value', '')
+            
+            if config_type == 'metadata':
+                # Store metadata fields
+                config['metadata'][key_name] = source_value
+            elif config_type == 'dimension':
+                # Store taxonomy dimension
+                dimension = {
+                    'name': key_name,
+                    'source_type': source_type,
+                    'source_value': source_value
+                }
+                config['taxonomy_dimensions'].append(dimension)
+        
+        return config
+    
+    def generate_config_rows(self, config: dict) -> List[dict]:
+        """
+        Generate config rows from structured configuration dictionary.
+        
+        Args:
+            config: Configuration dictionary with metadata and taxonomy_dimensions
+            
+        Returns:
+            List of row dictionaries for config view
+            
+        Example:
+            >>> config = {
+            ...     'metadata': {'source_table': 'organization_data'},
+            ...     'taxonomy_dimensions': [
+            ...         {'name': 'business_unit', 'source_type': 'tag', 'source_value': 'BusinessUnit'}
+            ...     ]
+            ... }
+            >>> rows = config_mgr.generate_config_rows(config)
+            >>> rows[0]['config_type']
+            'metadata'
+        """
+        rows = []
+        
+        # Generate metadata rows
+        metadata = config.get('metadata', {})
+        for key_name, source_value in metadata.items():
+            rows.append({
+                'config_type': 'metadata',
+                'key_name': key_name,
+                'source_type': 'source',
+                'source_value': str(source_value)
+            })
+        
+        # Generate dimension rows
+        taxonomy_dimensions = config.get('taxonomy_dimensions', [])
+        for dimension in taxonomy_dimensions:
+            rows.append({
+                'config_type': 'dimension',
+                'key_name': dimension.get('name', ''),
+                'source_type': dimension.get('source_type', ''),
+                'source_value': dimension.get('source_value', '')
+            })
+        
+        return rows
+    
+    def _generate_config_view_sql(self, rows: List[dict], database: str) -> str:
+        """
+        Generate CREATE OR REPLACE VIEW SQL for config view using VALUES clause.
+        
+        Args:
+            rows: List of row dictionaries
+            database: Target database
+            
+        Returns:
+            Complete SQL statement
+        """
+        # Generate VALUES rows
+        values_rows = []
+        for row in rows:
+            config_type = row['config_type'].replace("'", "''")
+            key_name = row['key_name'].replace("'", "''")
+            source_type = row['source_type'].replace("'", "''")
+            source_value = row['source_value'].replace("'", "''")
+            
+            values_rows.append(
+                f"('{config_type}', '{key_name}', '{source_type}', '{source_value}')"
+            )
+        
+        values_clause = ',\n  '.join(values_rows)
+        
+        # Build complete SQL
+        sql = f"""CREATE OR REPLACE VIEW {database}.{self.config_view_name} AS
+SELECT * FROM (
+  VALUES
+  {values_clause}
+) AS t (config_type, key_name, source_type, source_value)"""
+        
+        return sql
+    
+    def _create_split_config_view(self, rows: List[dict], database: str) -> bool:
+        """
+        Create split config views when SQL exceeds size limit.
+        
+        Args:
+            rows: List of row dictionaries
+            database: Target database
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Calculate how many rows per part
+            chunk_size = len(rows) // 2
+            part_num = 1
+            part_views = []
+            
+            while chunk_size > 0:
+                # Try splitting with current chunk size
+                chunks = [rows[i:i + chunk_size] for i in range(0, len(rows), chunk_size)]
+                
+                # Check if all chunks fit
+                all_fit = True
+                for chunk in chunks:
+                    part_view_name = f"{self.config_view_name}_part{part_num}"
+                    sql = self._generate_config_view_sql(chunk, database)
+                    sql_size = len(sql.encode('utf-8'))
+                    
+                    if sql_size > 262144:
+                        all_fit = False
+                        chunk_size = chunk_size // 2
+                        break
+                
+                if all_fit:
+                    # Create all part views
+                    part_num = 1
+                    for chunk in chunks:
+                        part_view_name = f"{self.config_view_name}_part{part_num}"
+                        sql = self._generate_config_view_sql(chunk, database)
+                        self.athena.query(sql=sql, database=database)
+                        part_views.append(part_view_name)
+                        logger.info("Created config view part %d", part_num)
+                        part_num += 1
+                    
+                    # Create UNION view
+                    union_parts = [f'SELECT * FROM {database}."{vn}"' for vn in part_views]
+                    union_query = '\nUNION ALL\n'.join(union_parts)
+                    union_sql = f"CREATE OR REPLACE VIEW {database}.{self.config_view_name} AS\n{union_query}"
+                    
+                    self.athena.query(sql=union_sql, database=database)
+                    logger.info("Created UNION config view from %d parts", len(part_views))
+                    
+                    return True
+            
+            logger.error("Could not split config view into small enough parts")
+            return False
+            
+        except Exception as e:
+            logger.error("Failed to create split config view: %s", str(e), exc_info=True)
+            return False
+    
+    def validate_config(self, config: dict) -> Tuple[bool, List[str]]:
+        """
+        Validate configuration completeness and correctness.
+        
+        Args:
+            config: Configuration dictionary to validate
+            
+        Returns:
+            Tuple of (is_valid, list_of_errors)
+            
+        Example:
+            >>> config = {'metadata': {}, 'taxonomy_dimensions': []}
+            >>> is_valid, errors = config_mgr.validate_config(config)
+            >>> if not is_valid:
+            ...     print("Errors:", errors)
+        """
+        errors = []
+        
+        # Check required metadata fields
+        metadata = config.get('metadata', {})
+        required_metadata = ['source_table', 'source_database']
+        
+        for field in required_metadata:
+            if field not in metadata or not metadata[field]:
+                errors.append(f"Missing required metadata field: {field}")
+        
+        # Check taxonomy dimensions
+        taxonomy_dimensions = config.get('taxonomy_dimensions', [])
+        
+        if not taxonomy_dimensions:
+            errors.append("No taxonomy dimensions configured")
+        
+        # Validate dimension names are valid SQL identifiers
+        dimension_names = set()
+        for dimension in taxonomy_dimensions:
+            name = dimension.get('name', '')
+            
+            if not name:
+                errors.append("Taxonomy dimension missing name")
+                continue
+            
+            # Check for valid SQL identifier
+            if not self._is_valid_sql_identifier(name):
+                errors.append(f"Invalid SQL identifier for dimension name: {name}")
+            
+            # Check for duplicates
+            if name in dimension_names:
+                errors.append(f"Duplicate taxonomy dimension name: {name}")
+            dimension_names.add(name)
+            
+            # Check required fields
+            if not dimension.get('source_type'):
+                errors.append(f"Dimension {name} missing source_type")
+            if not dimension.get('source_value'):
+                errors.append(f"Dimension {name} missing source_value")
+        
+        is_valid = len(errors) == 0
+        return is_valid, errors
+    
+    def _is_valid_sql_identifier(self, name: str) -> bool:
+        """
+        Check if a name is a valid SQL identifier.
+        
+        Args:
+            name: Name to validate
+            
+        Returns:
+            True if valid, False otherwise
+        """
+        import re
+        
+        # SQL identifier rules:
+        # - Must start with letter or underscore
+        # - Can contain letters, digits, underscores
+        # - Cannot be a SQL reserved word
+        
+        if not name:
+            return False
+        
+        # Check pattern
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
+            return False
+        
+        # Check against common SQL reserved words
+        reserved_words = {
+            'select', 'from', 'where', 'insert', 'update', 'delete', 'create',
+            'drop', 'alter', 'table', 'view', 'index', 'database', 'schema',
+            'grant', 'revoke', 'union', 'join', 'inner', 'outer', 'left', 'right',
+            'on', 'as', 'and', 'or', 'not', 'null', 'true', 'false', 'order',
+            'group', 'by', 'having', 'limit', 'offset', 'distinct', 'all', 'any',
+            'exists', 'in', 'between', 'like', 'is', 'case', 'when', 'then', 'else',
+            'end', 'cast', 'convert'
+        }
+        
+        if name.lower() in reserved_words:
+            return False
+        
+        return True
+
+
+class AutoDiscovery:
+    """
+    Handles automatic discovery of databases, tables, tag keys, and file columns.
+    
+    The AutoDiscovery class provides intelligent auto-selection logic that automatically
+    chooses resources when only one option exists, and presents interactive prompts
+    when multiple options are available.
+    
+    Attributes:
+        athena (Athena): CID Athena helper instance for querying metadata
+    """
+    
+    def __init__(self, athena: Athena):
+        """
+        Initialize AutoDiscovery with Athena helper.
+        
+        Args:
+            athena: CID Athena helper instance
+        """
+        self.athena = athena
+    
+    def discover_databases(self, preferred: Optional[str] = None) -> str:
+        """
+        Discover and select database with auto-selection logic.
+        
+        If a preferred database is provided and exists, it will be used.
+        If only one database exists, it will be auto-selected.
+        If multiple databases exist, an interactive prompt will be shown.
+        
+        Args:
+            preferred: Optional preferred database name to validate and use
+            
+        Returns:
+            Selected database name
+            
+        Raises:
+            Exception: If no databases are found
+        """
+        # Validate preferred database if provided
+        if preferred:
+            if self.athena.get_database(preferred):
+                logger.info(f"Using preferred database: {preferred}")
+                return preferred
+            else:
+                logger.warning(f"Preferred database '{preferred}' not found, discovering alternatives...")
+        
+        # Get list of available databases
+        databases = self.athena.list_databases()
+        
+        if len(databases) == 0:
+            raise Exception("No databases found in Athena")
+        elif len(databases) == 1:
+            logger.info(f"Auto-selected database: {databases[0]}")
+            return databases[0]
+        else:
+            # Multiple databases - prompt user to select
+            return inquirer.select(
+                message="Select database:",
+                choices=databases,
+                default=databases[0]
+            ).execute()
+    
+    def discover_tables(self, database: str, preferred: Optional[str] = None) -> str:
+        """
+        Discover and select table with auto-selection logic.
+        
+        If a preferred table is provided and exists, it will be used.
+        If only one table exists in the database, it will be auto-selected.
+        If multiple tables exist, an interactive prompt will be shown.
+        
+        Args:
+            database: Database name to search for tables
+            preferred: Optional preferred table name to validate and use
+            
+        Returns:
+            Selected table name
+            
+        Raises:
+            Exception: If no tables are found in the database
+        """
+        # Validate preferred table if provided
+        if preferred:
+            metadata = self.athena.get_table_metadata(preferred, database)
+            if metadata:
+                logger.info(f"Using preferred table: {preferred}")
+                return preferred
+            else:
+                logger.warning(f"Preferred table '{preferred}' not found in database '{database}', discovering alternatives...")
+        
+        # Get list of available tables
+        table_metadata = self.athena.list_table_metadata(database)
+        
+        if not table_metadata or len(table_metadata) == 0:
+            raise Exception(f"No tables found in database '{database}'")
+        
+        # Extract table names from metadata
+        tables = [table['Name'] for table in table_metadata]
+        
+        if len(tables) == 1:
+            logger.info(f"Auto-selected table: {tables[0]}")
+            return tables[0]
+        else:
+            # Multiple tables - prompt user to select
+            return inquirer.select(
+                message=f"Select table from database '{database}':",
+                choices=tables,
+                default=tables[0]
+            ).execute()
+    
+    def discover_tag_keys(self, database: str, table: str, tag_column: str = 'hierarchytags') -> List[str]:
+        """
+        Discover available tag keys from the source table.
+        
+        Queries sample rows from the table and parses the tag column to extract
+        all unique tag keys.
+        
+        Args:
+            database: Database name containing the table
+            table: Table name to query
+            tag_column: Name of the column containing tags (default: 'hierarchytags')
+            
+        Returns:
+            Sorted list of unique tag keys
+            
+        Raises:
+            Exception: If unable to query the table or parse tags
+        """
+        logger.info(f"Discovering tag keys from {database}.{table}.{tag_column}")
         
         try:
-            config = self.load()
-            is_valid, errors = validate_config(config)
+            # Query sample rows to extract tag keys
+            query = f"""
+                SELECT {tag_column}
+                FROM "{database}"."{table}"
+                WHERE {tag_column} IS NOT NULL
+                LIMIT 100
+            """
             
-            if not is_valid:
-                logger.warning(f"Configuration validation failed: {errors}")
+            results = self.athena.query(query)
             
-            return is_valid
+            if not results:
+                logger.warning(f"No data found in {tag_column} column")
+                return []
+            
+            # Extract unique tag keys
+            tag_keys = set()
+            
+            for row in results:
+                tags_value = row[0] if row else None
+                
+                if not tags_value:
+                    continue
+                
+                # Parse tags - handle both string and list formats
+                if isinstance(tags_value, str):
+                    parsed_tags = parse_athena_tags(tags_value)
+                    for tag_item in parsed_tags:
+                        if 'key' in tag_item:
+                            tag_keys.add(tag_item['key'])
+                elif isinstance(tags_value, list):
+                    for tag_item in tags_value:
+                        if isinstance(tag_item, dict) and 'key' in tag_item:
+                            tag_keys.add(tag_item['key'])
+            
+            tag_keys_list = sorted(list(tag_keys))
+            logger.info(f"Found {len(tag_keys_list)} unique tag keys")
+            
+            return tag_keys_list
+            
         except Exception as e:
-            logger.error(f"Error validating configuration: {e}")
-            return False
+            logger.error(f"Failed to discover tag keys: {str(e)}")
+            raise
     
-    def get_missing_fields(self) -> list:
+    def discover_account_id_column(self, df: pd.DataFrame) -> Optional[str]:
         """
-        Get list of missing required fields in configuration.
+        Auto-detect account ID column in dataframe using pattern matching.
         
+        Checks for common account ID column name patterns (case-insensitive):
+        - account_id
+        - accountid
+        - account
+        - id
+        - aws_account_id
+        
+        Args:
+            df: DataFrame to search for account ID column
+            
         Returns:
-            List of missing field paths (e.g., ['general.aws_region', 'athena.database'])
+            Name of the detected account ID column, or None if not found
         """
+        # Common account ID column patterns (case-insensitive)
+        patterns = [
+            'account_id',
+            'accountid', 
+            'account',
+            'id',
+            'aws_account_id'
+        ]
         
-        if not self.exists():
-            return ["Configuration file does not exist"]
+        # Get lowercase column names for comparison
+        columns_lower = {col.lower(): col for col in df.columns}
         
-        try:
-            config = self.load()
-            is_valid, errors = validate_config(config)
-            return errors if not is_valid else []
-        except Exception as e:
-            logger.error(f"Error checking missing fields: {e}")
-            return [str(e)]
+        # Check each pattern in order
+        for pattern in patterns:
+            if pattern in columns_lower:
+                detected_column = columns_lower[pattern]
+                logger.info(f"Auto-detected account ID column: {detected_column}")
+                return detected_column
+        
+        logger.warning("No account ID column auto-detected")
+        return None
+    
+    def prompt_file_selection(self, extensions: Optional[List[str]] = None) -> str:
+        """
+        Present file selection with InquirerPy autocomplete.
+        
+        Shows only files with specified extensions using recursive glob search.
+        Defaults to common data file formats: .json, .csv, .xlsx, .xls
+        
+        Args:
+            extensions: List of file extensions to filter (e.g., ['.json', '.csv'])
+                       If None, defaults to ['.json', '.csv', '.xlsx', '.xls']
+            
+        Returns:
+            Selected file path
+        """
+        if extensions is None:
+            extensions = ['.json', '.csv', '.xlsx', '.xls']
+        
+        # Ensure extensions start with dot
+        extensions = [ext if ext.startswith('.') else f'.{ext}' for ext in extensions]
+        
+        logger.info(f"Searching for files with extensions: {extensions}")
+        
+        # Use InquirerPy filepath with filter
+        def file_filter(path_str: str) -> bool:
+            """Filter function to show only files with specified extensions."""
+            path = Path(path_str)
+            return path.is_file() and path.suffix.lower() in extensions
+        
+        selected_file = inquirer.filepath(
+            message="Select file:",
+            default="./",
+            validate=lambda path: Path(path).is_file() and Path(path).suffix.lower() in extensions,
+            filter=file_filter,
+            only_files=True
+        ).execute()
+        
+        logger.info(f"Selected file: {selected_file}")
+        return selected_file
+
 
 class AthenaWriter:
     """
@@ -1029,12 +1625,12 @@ class AthenaWriter:
     
     def _uses_file_source(self) -> bool:
         """
-        Check if any hierarchy rules use file sources.
+        Check if any taxonomy rules use file sources.
         
         Returns:
             True if any rule uses 'file' source, False otherwise
         """
-        rules = self.config.get('rules', {}).get('hierarchy_levels', [])
+        rules = self.config.get('rules', {}).get('taxonomy_dimensions', [])
         return any(rule.get('source') == 'file' for rule in rules)
     
     def _create_transformation_view(self, view_name: str, database: str) -> bool:
@@ -1042,7 +1638,7 @@ class AthenaWriter:
         Create an Athena view using SQL transformations on the source table.
         
         This generates a CREATE OR REPLACE VIEW statement that transforms the
-        source table according to the configured hierarchy rules.
+        source table according to the configured taxonomy rules.
         
         Args:
             view_name: Name for the view
@@ -1211,7 +1807,7 @@ class AthenaWriter:
         Generate SQL for transformation view.
         
         This creates a SELECT statement that transforms the source table
-        according to the configured hierarchy rules.
+        according to the configured taxonomy rules.
         
         Args:
             view_name: Name for the view
@@ -1222,12 +1818,12 @@ class AthenaWriter:
         """
         source_database = self.config['athena']['database']
         source_table = self.config['athena']['table']
-        rules = self.config.get('rules', {}).get('hierarchy_levels', [])
+        rules = self.config.get('rules', {}).get('taxonomy_dimensions', [])
         
         # Sort rules by level
         sorted_rules = sorted(rules, key=lambda x: x.get('level', 0))
         
-        # Build SELECT clause with base columns and hierarchy transformations
+        # Build SELECT clause with base columns and taxonomy transformations
         select_parts = [
             'base.id AS "account_id"',
             'base.name AS "account_name"',
@@ -1244,21 +1840,21 @@ class AthenaWriter:
             else:
                 non_tag_rules.append(rule)
         
-        # Add non-tag hierarchy level transformations
+        # Add non-tag taxonomy dimension transformations
         for rule in non_tag_rules:
-            level_name = rule.get('name', f"level_{rule.get('level')}")
+            dimension_name = rule.get('name', f"level_{rule.get('level')}")
             source = rule.get('source')
             parameters = rule.get('parameters', {})
             
             sql_expr = self._generate_column_expression(source, parameters, 'base')
-            select_parts.append(f'{sql_expr} AS "{level_name}"')
+            select_parts.append(f'{sql_expr} AS "{dimension_name}"')
         
         # Add tag-based columns using LEFT JOINs
         for rule in tag_rules:
-            level_name = rule.get('name', f"level_{rule.get('level')}")
+            dimension_name = rule.get('name', f"level_{rule.get('level')}")
             tag_key = rule.get('parameters', {}).get('tag_key', '')
             alias = f"tag_{rule.get('level', 0)}"
-            select_parts.append(f'{alias}.value AS "{level_name}"')
+            select_parts.append(f'{alias}.value AS "{dimension_name}"')
         
         # Build FROM clause with JOINs for tags
         from_clause = f'FROM "{source_database}"."{source_table}" base'
@@ -1288,7 +1884,7 @@ SELECT
     
     def _generate_column_expression(self, source: str, parameters: dict, table_alias: str = '') -> str:
         """
-        Generate SQL expression for a hierarchy level based on source type.
+        Generate SQL expression for a taxonomy dimension based on source type.
         
         Args:
             source: Source type ('athena_tags', 'athena_name', 'athena_payer')
@@ -2265,7 +2861,7 @@ def _select_index_with_preview(sample_accounts: List[Dict[str, str]], separator:
     Args:
         sample_accounts: List of account dicts with 'id' and 'name'
         separator: Separator character to use
-        level_name: Name of the hierarchy level being configured
+        dimension_name: Name of the taxonomy dimension being configured
         
     Returns:
         Selected index (int)
@@ -2696,32 +3292,32 @@ def configure_rules(config: dict) -> dict:
         Updated configuration dictionary
     """
     if 'rules' not in config:
-        config['rules'] = {'hierarchy_levels': []}
+        config['rules'] = {'taxonomy_dimensions': []}
     
-    if 'hierarchy_levels' not in config['rules']:
-        config['rules']['hierarchy_levels'] = []
+    if 'taxonomy_dimensions' not in config['rules']:
+        config['rules']['taxonomy_dimensions'] = []
     
     while True:
         print("\n📊 Business Rules Configuration\n")
         
-        # Display current hierarchy levels
-        if config['rules']['hierarchy_levels']:
-            print("Current Hierarchy Levels:")
-            for level in config['rules']['hierarchy_levels']:
-                print(f"  Level {level['level']}: {level['name']} (source: {level['source']})")
+        # Display current taxonomy dimensions
+        if config['rules']['taxonomy_dimensions']:
+            print("Current Taxonomy Dimensions:")
+            for dimension in config['rules']['taxonomy_dimensions']:
+                print(f"  Level {dimension['level']}: {dimension['name']} (source: {dimension['source']})")
             print()
         else:
-            print("No hierarchy levels configured yet.\n")
+            print("No taxonomy dimensions configured yet.\n")
         
         # Menu choices
         choices = [
-            Choice(value="add", name="➕ Add Hierarchy Level"),
+            Choice(value="add", name="➕ Add Taxonomy Dimension"),
         ]
         
-        if config['rules']['hierarchy_levels']:
+        if config['rules']['taxonomy_dimensions']:
             choices.extend([
-                Choice(value="modify", name="✏️  Modify Hierarchy Level"),
-                Choice(value="remove", name="❌ Remove Hierarchy Level"),
+                Choice(value="modify", name="✏️  Modify Taxonomy Dimension"),
+                Choice(value="remove", name="❌ Remove Taxonomy Dimension"),
             ])
         
         choices.append(Choice(value="done", name="✅ Done"))
@@ -2732,20 +3328,20 @@ def configure_rules(config: dict) -> dict:
         ).execute()
         
         if action == "add":
-            config = add_hierarchy_level(config)
+            config = add_taxonomy_dimension(config)
         elif action == "modify":
-            config = modify_hierarchy_level(config)
+            config = modify_taxonomy_dimension(config)
         elif action == "remove":
-            config = remove_hierarchy_level(config)
+            config = remove_taxonomy_dimension(config)
         elif action == "done":
             break
     
     print("\n✅ Business rules updated\n")
     return config
 
-def add_hierarchy_level(config: dict) -> dict:
+def add_taxonomy_dimension(config: dict) -> dict:
     """
-    Add a new hierarchy level.
+    Add a new taxonomy dimension.
     
     Args:
         config: Current configuration dictionary
@@ -2753,17 +3349,17 @@ def add_hierarchy_level(config: dict) -> dict:
     Returns:
         Updated configuration dictionary
     """
-    print("\n➕ Add Hierarchy Level\n")
+    print("\n➕ Add Taxonomy Dimension\n")
     
     # Automatically determine next level number
-    existing_levels = [level['level'] for level in config['rules']['hierarchy_levels']]
+    existing_levels = [dimension['level'] for dimension in config['rules']['taxonomy_dimensions']]
     level_num = max(existing_levels) + 1 if existing_levels else 1
     
     print(f"📊 Creating Level {level_num}\n")
     
     # Level name
     level_name = inquirer.text(
-        message="Level Name (e.g., 'Business Unit', 'Department'):",
+        message="Dimension Name (e.g., 'Business Unit', 'Department'):",
         default=f"Level {level_num}"
     ).execute()
     
@@ -2830,7 +3426,7 @@ def add_hierarchy_level(config: dict) -> dict:
             print(f"\n✅ Found {len(file_columns)} columns in file\n")
             
             parameters['column_name'] = inquirer.select(
-                message="Select Column for Hierarchy Level:",
+                message="Select Column for Taxonomy Dimension:",
                 choices=file_columns,
                 default=file_columns[0]
             ).execute()
@@ -2912,25 +3508,25 @@ def add_hierarchy_level(config: dict) -> dict:
                 print(f"⚠️  Could not fetch payer IDs: {e}")
                 parameters['use_custom_names'] = False
     
-    # Create new level
-    new_level = {
+    # Create new dimension
+    new_dimension = {
         'level': int(level_num),
         'name': level_name,
         'source': source,
         'parameters': parameters
     }
     
-    config['rules']['hierarchy_levels'].append(new_level)
+    config['rules']['taxonomy_dimensions'].append(new_dimension)
     
     # Sort by level number
-    config['rules']['hierarchy_levels'].sort(key=lambda x: x['level'])
+    config['rules']['taxonomy_dimensions'].sort(key=lambda x: x['level'])
     
     print(f"\n✅ Added level {level_num}: {level_name}\n")
     return config
 
-def modify_hierarchy_level(config: dict) -> dict:
+def modify_taxonomy_dimension(config: dict) -> dict:
     """
-    Modify an existing hierarchy level.
+    Modify an existing taxonomy dimension.
     
     Args:
         config: Current configuration dictionary
@@ -2938,43 +3534,43 @@ def modify_hierarchy_level(config: dict) -> dict:
     Returns:
         Updated configuration dictionary
     """
-    if not config['rules']['hierarchy_levels']:
-        print("\n⚠️  No hierarchy levels to modify\n")
+    if not config['rules']['taxonomy_dimensions']:
+        print("\n⚠️  No taxonomy dimensions to modify\n")
         return config
     
-    print("\n✏️  Modify Hierarchy Level\n")
+    print("\n✏️  Modify Taxonomy Dimension\n")
     
-    # Select level to modify
+    # Select dimension to modify
     choices = [
         Choice(
             value=idx,
-            name=f"Level {level['level']}: {level['name']} (source: {level['source']})"
+            name=f"Level {dimension['level']}: {dimension['name']} (source: {dimension['source']})"
         )
-        for idx, level in enumerate(config['rules']['hierarchy_levels'])
+        for idx, dimension in enumerate(config['rules']['taxonomy_dimensions'])
     ]
     
     idx = inquirer.select(
-        message="Select level to modify:",
+        message="Select dimension to modify:",
         choices=choices
     ).execute()
     
-    # Remove the old level
-    old_level = config['rules']['hierarchy_levels'].pop(idx)
+    # Remove the old dimension
+    old_dimension = config['rules']['taxonomy_dimensions'].pop(idx)
     
     # Add it back with modifications (reuse add logic)
-    print(f"\nModifying: Level {old_level['level']}: {old_level['name']}\n")
+    print(f"\nModifying: Level {old_dimension['level']}: {old_dimension['name']}\n")
     
     # Level number
     level_num = inquirer.number(
         message="Level Number:",
-        default=old_level['level'],
+        default=old_dimension['level'],
         min_allowed=1
     ).execute()
     
     # Level name
     level_name = inquirer.text(
-        message="Level Name:",
-        default=old_level['name']
+        message="Dimension Name:",
+        default=old_dimension['name']
     ).execute()
     
     # Source type
@@ -2986,12 +3582,12 @@ def modify_hierarchy_level(config: dict) -> dict:
             Choice(value="athena_payer", name="Payer Account Information"),
             Choice(value="file", name="External File")
         ],
-        default=old_level['source']
+        default=old_dimension['source']
     ).execute()
     
     # Get parameters based on source type
     parameters = {}
-    old_params = old_level.get('parameters', {})
+    old_params = old_dimension.get('parameters', {})
     
     if source == "athena_tags":
         # Try to get available tag keys from Athena
@@ -3112,7 +3708,7 @@ def modify_hierarchy_level(config: dict) -> dict:
             
             default_col = old_params.get('column_name', '') if old_params.get('column_name', '') in file_columns else file_columns[0]
             parameters['column_name'] = inquirer.select(
-                message="Select Column for Hierarchy Level:",
+                message="Select Column for Taxonomy Dimension:",
                 choices=file_columns,
                 default=default_col
             ).execute()
@@ -3149,17 +3745,17 @@ def modify_hierarchy_level(config: dict) -> dict:
         'parameters': parameters
     }
     
-    config['rules']['hierarchy_levels'].append(modified_level)
+    config['rules']['taxonomy_dimensions'].append(modified_dimension)
     
     # Sort by level number
-    config['rules']['hierarchy_levels'].sort(key=lambda x: x['level'])
+    config['rules']['taxonomy_dimensions'].sort(key=lambda x: x['level'])
     
     print(f"\n✅ Modified level {level_num}: {level_name}\n")
     return config
 
-def remove_hierarchy_level(config: dict) -> dict:
+def remove_taxonomy_dimension(config: dict) -> dict:
     """
-    Remove a hierarchy level.
+    Remove a taxonomy dimension.
     
     Args:
         config: Current configuration dictionary
@@ -3167,29 +3763,29 @@ def remove_hierarchy_level(config: dict) -> dict:
     Returns:
         Updated configuration dictionary
     """
-    if not config['rules']['hierarchy_levels']:
-        print("\n⚠️  No hierarchy levels to remove\n")
+    if not config['rules']['taxonomy_dimensions']:
+        print("\n⚠️  No taxonomy dimensions to remove\n")
         return config
     
-    print("\n❌ Remove Hierarchy Level\n")
+    print("\n❌ Remove Taxonomy Dimension\n")
     
-    # Select level to remove
+    # Select dimension to remove
     choices = [
         Choice(
             value=idx,
-            name=f"Level {level['level']}: {level['name']} (source: {level['source']})"
+            name=f"Level {dimension['level']}: {dimension['name']} (source: {dimension['source']})"
         )
-        for idx, level in enumerate(config['rules']['hierarchy_levels'])
+        for idx, dimension in enumerate(config['rules']['taxonomy_dimensions'])
     ]
     
     idx = inquirer.select(
-        message="Select level to remove:",
+        message="Select dimension to remove:",
         choices=choices
     ).execute()
     
-    removed_level = config['rules']['hierarchy_levels'].pop(idx)
+    removed_dimension = config['rules']['taxonomy_dimensions'].pop(idx)
     
-    print(f"\n✅ Removed level {removed_level['level']}: {removed_level['name']}\n")
+    print(f"\n✅ Removed level {removed_dimension['level']}: {removed_dimension['name']}\n")
     return config
 
 def configure_s3_output(config: dict) -> dict:
@@ -3281,12 +3877,12 @@ def show_configuration_summary(config: dict):
         print()
     
     # Business Rules
-    if 'rules' in config and config['rules'].get('hierarchy_levels'):
+    if 'rules' in config and config['rules'].get('taxonomy_dimensions'):
         print("📊 Business Rules Configuration:")
-        print(f"  Hierarchy Levels: {len(config['rules']['hierarchy_levels'])}")
-        for level in config['rules']['hierarchy_levels']:
-            print(f"    Level {level['level']}: {level['name']}")
-            print(f"      Source: {level['source']}")
+        print(f"  Taxonomy Dimensions: {len(config['rules']['taxonomy_dimensions'])}")
+        for dimension in config['rules']['taxonomy_dimensions']:
+            print(f"    Level {dimension['level']}: {dimension['name']}")
+            print(f"      Source: {dimension['source']}")
             if level.get('parameters'):
                 for key, value in level['parameters'].items():
                     print(f"      {key}: {value}")
@@ -3423,63 +4019,63 @@ def validate_rules_config(rules_config: dict) -> List[str]:
     """
     errors = []
     
-    # hierarchy_levels is required
-    if 'hierarchy_levels' not in rules_config:
-        errors.append("rules.hierarchy_levels is required")
+    # taxonomy_dimensions is required
+    if 'taxonomy_dimensions' not in rules_config:
+        errors.append("rules.taxonomy_dimensions is required")
         return errors
     
-    hierarchy_levels = rules_config['hierarchy_levels']
+    taxonomy_dimensions = rules_config['taxonomy_dimensions']
     
-    if not isinstance(hierarchy_levels, list):
-        errors.append("rules.hierarchy_levels must be a list")
+    if not isinstance(taxonomy_dimensions, list):
+        errors.append("rules.taxonomy_dimensions must be a list")
         return errors
     
-    if len(hierarchy_levels) == 0:
-        errors.append("rules.hierarchy_levels must contain at least one level")
+    if len(taxonomy_dimensions) == 0:
+        errors.append("rules.taxonomy_dimensions must contain at least one dimension")
         return errors
     
-    # Validate each hierarchy level
-    for idx, level in enumerate(hierarchy_levels):
-        level_errors = validate_hierarchy_level(level, idx)
-        errors.extend(level_errors)
+    # Validate each taxonomy dimension
+    for idx, dimension in enumerate(taxonomy_dimensions):
+        dimension_errors = validate_taxonomy_dimension(dimension, idx)
+        errors.extend(dimension_errors)
     
     return errors
 
-def validate_hierarchy_level(level: dict, index: int) -> List[str]:
+def validate_taxonomy_dimension(dimension: dict, index: int) -> List[str]:
     """
-    Validate a single hierarchy level configuration.
+    Validate a single taxonomy dimension configuration.
     
     Args:
-        level: Hierarchy level configuration dictionary
-        index: Index of the level in the list (for error messages)
+        dimension: Taxonomy dimension configuration dictionary
+        index: Index of the dimension in the list (for error messages)
         
     Returns:
         List of validation errors
     """
     errors = []
-    prefix = f"rules.hierarchy_levels[{index}]"
+    prefix = f"rules.taxonomy_dimensions[{index}]"
     
     # Required fields
-    if 'level' not in level:
+    if 'level' not in dimension:
         errors.append(f"{prefix}.level is required")
-    elif not isinstance(level['level'], int):
+    elif not isinstance(dimension['level'], int):
         errors.append(f"{prefix}.level must be an integer")
     
-    if 'name' not in level or not level['name']:
+    if 'name' not in dimension or not dimension['name']:
         errors.append(f"{prefix}.name is required")
     
-    if 'source' not in level or not level['source']:
+    if 'source' not in dimension or not dimension['source']:
         errors.append(f"{prefix}.source is required")
     else:
         # Validate source type and parameters
-        source = level['source']
+        source = dimension['source']
         valid_sources = ['athena_tags', 'athena_name', 'athena_payer', 'file']
         
         if source not in valid_sources:
             errors.append(f"{prefix}.source must be one of {valid_sources}")
         else:
             # Validate parameters based on source type
-            params = level.get('parameters', {})
+            params = dimension.get('parameters', {})
             
             if source == 'athena_tags':
                 if 'tag_key' not in params or not params['tag_key']:
