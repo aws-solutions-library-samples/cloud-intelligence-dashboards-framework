@@ -1,0 +1,2017 @@
+dashboards:
+  PRICING CHANGE ANALYSIS:
+    dependsOn:
+      datasets:
+      - pricing_changes
+    name: Pricing Change Analysis (PCA) Dashboard
+    dashboardId: pricing-change-analysis
+    category: ADVANCED
+    theme: MIDNIGHT
+    version: v1.0.1
+    data: |-
+      AnalysisDefaults:
+        DefaultNewSheetConfiguration:
+          InteractiveLayoutConfiguration:
+            Grid:
+              CanvasSizeOptions:
+                ScreenCanvasSizeOptions:
+                  OptimizedViewPortWidth: 1600px
+                  ResizeOption: FIXED
+          SheetContentType: INTERACTIVE
+      CalculatedFields:
+      - DataSetIdentifier: pricing_changes
+        Expression: '{current_cost_type}'
+        Name: Post-Price Adjustment
+      - DataSetIdentifier: pricing_changes
+        Expression: '{previous_cost_type}'
+        Name: Pre-Price Adjustment
+      - DataSetIdentifier: pricing_changes
+        Expression: ifelse(${CostType} = 'Unblended', {aws_service_unblended_cost},{aws_service_net_unblended_cost})
+        Name: aws_service_cost_type
+      - DataSetIdentifier: pricing_changes
+        Expression: SUM({current_cost_type})/SUM({aws_service_cost_type})
+        Name: aws_service_percent
+      - DataSetIdentifier: pricing_changes
+        Expression: ABS(SUM({cost_difference_type})/SUM({aws_service_cost_type}))
+        Name: aws_service_savings_percent
+      - DataSetIdentifier: pricing_changes
+        Expression: ifelse(${CostType} = 'Unblended', {cost_difference},  {cost_difference_net})
+        Name: cost_difference_type
+      - DataSetIdentifier: pricing_changes
+        Expression: ifelse(${CostType} = 'Unblended', {current_unblended_cost},  {current_net_unblended_cost})
+        Name: current_cost_type
+      - DataSetIdentifier: pricing_changes
+        Expression: sum({current_net_unblended_cost})/sum({usage_amount})
+        Name: effective_net_unblended_rate
+      - DataSetIdentifier: pricing_changes
+        Expression: ifelse(${CostType} = 'Unblended', {line_item_unblended_rate},  {net_unblended_rate})
+        Name: line_item_rate_type
+      - DataSetIdentifier: pricing_changes
+        Expression: ifelse(${CostType} = 'Unblended', {previous_unblended_cost},  {previous_net_unblended_cost})
+        Name: previous_cost_type
+      ColumnConfigurations:
+      - Column:
+          ColumnName: bill_month
+          DataSetIdentifier: pricing_changes
+        Role: DIMENSION
+      - Column:
+          ColumnName: line_item_unblended_rate
+          DataSetIdentifier: pricing_changes
+        Role: MEASURE
+      - Column:
+          ColumnName: net_unblended_rate
+          DataSetIdentifier: pricing_changes
+        FormatConfiguration:
+          StringFormatConfiguration:
+            NullValueFormatConfiguration:
+              NullString: 'null'
+      DataSetIdentifierDeclarations:
+      - DataSetArn: arn:aws:quicksight:::dataset/bfa0c9aa-60e7-4fdb-970c-87c4ba2e9d4d
+        Identifier: pricing_changes
+      FilterGroups:
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: c5d5c709-9b85-4fa3-8f26-ebaddd60764b
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: product_product_name
+              DataSetIdentifier: pricing_changes
+            Configuration:
+              FilterListConfiguration:
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+                SelectAllOptions: FILTER_ALL_VALUES
+            DefaultFilterControlConfiguration:
+              ControlOptions:
+                DefaultDropdownOptions:
+                  DisplayOptions:
+                    SelectAllOptions:
+                      Visibility: VISIBLE
+                    TitleOptions:
+                      FontConfiguration:
+                        FontSize:
+                          Relative: MEDIUM
+                      Visibility: VISIBLE
+                  Type: MULTI_SELECT
+              Title: Service Name
+            FilterId: eb5881c0-a56e-4a63-9ce4-50b3a02fbcb0
+        ScopeConfiguration:
+          AllSheets: {}
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: ed149b71-e5cc-49d6-8875-cefbb4316f91
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: account_name
+              DataSetIdentifier: pricing_changes
+            Configuration:
+              FilterListConfiguration:
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+                SelectAllOptions: FILTER_ALL_VALUES
+            DefaultFilterControlConfiguration:
+              ControlOptions:
+                DefaultDropdownOptions:
+                  DisplayOptions:
+                    SelectAllOptions:
+                      Visibility: VISIBLE
+                    TitleOptions:
+                      FontConfiguration:
+                        FontSize:
+                          Relative: MEDIUM
+                      Visibility: VISIBLE
+                  Type: MULTI_SELECT
+              Title: Linked Account Name
+            FilterId: 025b6786-5db9-40a4-894e-77b0aa4fa320
+        ScopeConfiguration:
+          AllSheets: {}
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 5fc0e062-c00b-4b69-a57f-cb74086ac9ab
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: account_id
+              DataSetIdentifier: pricing_changes
+            Configuration:
+              FilterListConfiguration:
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+                SelectAllOptions: FILTER_ALL_VALUES
+            DefaultFilterControlConfiguration:
+              ControlOptions:
+                DefaultDropdownOptions:
+                  DisplayOptions:
+                    SelectAllOptions:
+                      Visibility: VISIBLE
+                    TitleOptions:
+                      FontConfiguration:
+                        FontSize:
+                          Relative: MEDIUM
+                      Visibility: VISIBLE
+                  Type: MULTI_SELECT
+              Title: Linked Account ID
+            FilterId: 9831821c-78e1-4d16-9452-a6a68e7818d6
+        ScopeConfiguration:
+          AllSheets: {}
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 9fb011f0-06fe-4680-875b-b7ba631526eb
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: payer_account_number
+              DataSetIdentifier: pricing_changes
+            Configuration:
+              FilterListConfiguration:
+                MatchOperator: CONTAINS
+                NullOption: NON_NULLS_ONLY
+                SelectAllOptions: FILTER_ALL_VALUES
+            DefaultFilterControlConfiguration:
+              ControlOptions:
+                DefaultDropdownOptions:
+                  DisplayOptions:
+                    SelectAllOptions:
+                      Visibility: VISIBLE
+                    TitleOptions:
+                      FontConfiguration:
+                        FontSize:
+                          Relative: MEDIUM
+                      Visibility: VISIBLE
+                  Type: MULTI_SELECT
+              Title: Payer Account ID
+            FilterId: d8d51925-0519-4502-a1ce-d0a41a34831b
+        ScopeConfiguration:
+          AllSheets: {}
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 4e2d1f06-4ef9-4774-bc2e-5cd2be4dbb78
+        Filters:
+        - RelativeDatesFilter:
+            AnchorDateConfiguration:
+              AnchorOption: NOW
+            Column:
+              ColumnName: bill_month
+              DataSetIdentifier: pricing_changes
+            ExcludePeriodConfiguration:
+              Amount: 2
+              Granularity: MONTH
+              Status: ENABLED
+            FilterId: b134961d-60cf-404c-9735-41913036f737
+            MinimumGranularity: DAY
+            NullOption: NON_NULLS_ONLY
+            RelativeDateType: LAST
+            RelativeDateValue: 3
+            TimeGranularity: MONTH
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: 54618636-e6a1-4525-a2d7-66f0d4680199
+              VisualIds:
+              - 70624a38-e715-4dd7-b74c-31689bf9ae2a
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 4467d16b-16a8-475a-a7d0-95e71d0b0b6f
+        Filters:
+        - RelativeDatesFilter:
+            AnchorDateConfiguration:
+              AnchorOption: NOW
+            Column:
+              ColumnName: bill_month
+              DataSetIdentifier: pricing_changes
+            ExcludePeriodConfiguration:
+              Amount: 1
+              Granularity: MONTH
+              Status: ENABLED
+            FilterId: e0bcf71b-6826-4ac0-936d-76bc1a6835cc
+            MinimumGranularity: DAY
+            NullOption: NON_NULLS_ONLY
+            RelativeDateType: LAST
+            RelativeDateValue: 2
+            TimeGranularity: MONTH
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: 54618636-e6a1-4525-a2d7-66f0d4680199
+              VisualIds:
+              - 1c666850-3e51-4b6e-9e98-082eec347075
+        Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: aff7b88d-6750-41ff-a6b7-9f32ccfc05a8
+        Filters:
+        - CategoryFilter:
+            Column:
+              ColumnName: product_sku
+              DataSetIdentifier: pricing_changes
+            Configuration:
+              FilterListConfiguration:
+                MatchOperator: DOES_NOT_CONTAIN
+                NullOption: ALL_VALUES
+            FilterId: 26f24ea5-306a-4428-9718-e2e08ad9c7e8
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: SELECTED_VISUALS
+              SheetId: 54618636-e6a1-4525-a2d7-66f0d4680199
+              VisualIds:
+              - 3479cb60-3929-4d30-8e60-218116cb8f7e
+              - bf9ce663-2ec4-4baa-b794-f863fb07c07a
+              - 1c666850-3e51-4b6e-9e98-082eec347075
+              - c488ca45-5ad1-48f5-a8a8-c46b62b18a12
+              - 0642d583-ca3b-4131-9c60-cdf8aec6f655
+              - c391e01e-5378-492a-b65d-9fabae8eb115
+              - f146a26a-b3bc-4ba3-9f56-e4be67b36000
+              - 70624a38-e715-4dd7-b74c-31689bf9ae2a
+              - b493c218-f91c-45ae-ba28-ee5bad9e0294
+              - ccf2a886-3f34-456c-97fe-a0082a0eaddc
+        Status: ENABLED
+      Options:
+        CustomActionDefaults:
+          highlightOperation:
+            Trigger: DATA_POINT_CLICK
+        ExcludedDataSetArns: []
+        QBusinessInsightsStatus: DISABLED
+        WeekStart: SUNDAY
+      ParameterDeclarations:
+      - StringParameterDeclaration:
+          DefaultValues: {}
+          Name: Payer
+          ParameterValueType: MULTI_VALUED
+          ValueWhenUnset:
+            ValueWhenUnsetOption: 'NULL'
+      - StringParameterDeclaration:
+          DefaultValues: {}
+          Name: AccountName
+          ParameterValueType: MULTI_VALUED
+          ValueWhenUnset:
+            ValueWhenUnsetOption: 'NULL'
+      - StringParameterDeclaration:
+          DefaultValues: {}
+          Name: LinkedAccountIDs
+          ParameterValueType: MULTI_VALUED
+          ValueWhenUnset:
+            ValueWhenUnsetOption: 'NULL'
+      - StringParameterDeclaration:
+          DefaultValues: {}
+          Name: ProductName
+          ParameterValueType: MULTI_VALUED
+          ValueWhenUnset:
+            ValueWhenUnsetOption: 'NULL'
+      - StringParameterDeclaration:
+          DefaultValues:
+            StaticValues:
+            - Unblended
+          Name: CostType
+          ParameterValueType: SINGLE_VALUED
+          ValueWhenUnset:
+            ValueWhenUnsetOption: 'NULL'
+      Sheets:
+      - ContentType: INTERACTIVE
+        FilterControls:
+        - CrossSheet:
+            FilterControlId: e7ca1ef2-4601-4fdc-a56e-c662338a6578
+            SourceFilterId: eb5881c0-a56e-4a63-9ce4-50b3a02fbcb0
+        - CrossSheet:
+            FilterControlId: 6ebac8ba-9877-4462-9da3-1d6934236dae
+            SourceFilterId: 025b6786-5db9-40a4-894e-77b0aa4fa320
+        - CrossSheet:
+            FilterControlId: bac8e792-1aa6-4f13-a260-129778e79bde
+            SourceFilterId: 9831821c-78e1-4d16-9452-a6a68e7818d6
+        - CrossSheet:
+            FilterControlId: 3aa652d1-0df1-4cc7-b6b0-34997e18746c
+            SourceFilterId: d8d51925-0519-4502-a1ce-d0a41a34831b
+        Layouts:
+        - Configuration:
+            GridLayout:
+              Elements:
+              - ColumnIndex: 0
+                ColumnSpan: 36
+                ElementId: 250631a6-3ee1-4186-a21d-fea2febc0086
+                ElementType: TEXT_BOX
+                RowIndex: 0
+                RowSpan: 2
+              - ColumnIndex: 0
+                ColumnSpan: 36
+                ElementId: f2a2b736-8897-4854-91f8-d4b83eef0315
+                ElementType: TEXT_BOX
+                RowIndex: 2
+                RowSpan: 4
+              - ColumnIndex: 0
+                ColumnSpan: 27
+                ElementId: b493c218-f91c-45ae-ba28-ee5bad9e0294
+                ElementType: VISUAL
+                RowIndex: 6
+                RowSpan: 8
+              - ColumnIndex: 27
+                ColumnSpan: 9
+                ElementId: 1c666850-3e51-4b6e-9e98-082eec347075
+                ElementType: VISUAL
+                RowIndex: 6
+                RowSpan: 4
+              - ColumnIndex: 27
+                ColumnSpan: 9
+                ElementId: 70624a38-e715-4dd7-b74c-31689bf9ae2a
+                ElementType: VISUAL
+                RowIndex: 10
+                RowSpan: 4
+              - ColumnIndex: 0
+                ColumnSpan: 18
+                ElementId: c488ca45-5ad1-48f5-a8a8-c46b62b18a12
+                ElementType: VISUAL
+                RowIndex: 14
+                RowSpan: 12
+              - ColumnIndex: 18
+                ColumnSpan: 18
+                ElementId: 0642d583-ca3b-4131-9c60-cdf8aec6f655
+                ElementType: VISUAL
+                RowIndex: 14
+                RowSpan: 12
+              - ColumnIndex: 0
+                ColumnSpan: 18
+                ElementId: c391e01e-5378-492a-b65d-9fabae8eb115
+                ElementType: VISUAL
+                RowIndex: 26
+                RowSpan: 12
+              - ColumnIndex: 18
+                ColumnSpan: 18
+                ElementId: bf9ce663-2ec4-4baa-b794-f863fb07c07a
+                ElementType: VISUAL
+                RowIndex: 26
+                RowSpan: 12
+              - ColumnIndex: 0
+                ColumnSpan: 18
+                ElementId: f146a26a-b3bc-4ba3-9f56-e4be67b36000
+                ElementType: VISUAL
+                RowIndex: 38
+                RowSpan: 12
+              - ColumnIndex: 18
+                ColumnSpan: 18
+                ElementId: 3479cb60-3929-4d30-8e60-218116cb8f7e
+                ElementType: VISUAL
+                RowIndex: 38
+                RowSpan: 12
+              - ColumnIndex: 0
+                ColumnSpan: 36
+                ElementId: ccf2a886-3f34-456c-97fe-a0082a0eaddc
+                ElementType: VISUAL
+                RowIndex: 50
+                RowSpan: 12
+        Name: Pricing Change Analysis
+        ParameterControls:
+        - Dropdown:
+            DisplayOptions:
+              InfoIconLabelOptions:
+                Visibility: HIDDEN
+              SelectAllOptions:
+                Visibility: HIDDEN
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            ParameterControlId: 5bca216d-d11a-41cb-8de2-a6e6c5a74ab0
+            SelectableValues:
+              Values:
+              - Net Unblended
+              - Unblended
+            SourceParameterName: CostType
+            Title: Cost Type
+            Type: SINGLE_SELECT
+        SheetControlLayouts:
+        - Configuration:
+            GridLayout:
+              Elements:
+              - ColumnIndex: 0
+                ColumnSpan: 2
+                ElementId: 3aa652d1-0df1-4cc7-b6b0-34997e18746c
+                ElementType: FILTER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
+              - ColumnIndex: 2
+                ColumnSpan: 2
+                ElementId: bac8e792-1aa6-4f13-a260-129778e79bde
+                ElementType: FILTER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
+              - ColumnIndex: 4
+                ColumnSpan: 2
+                ElementId: 6ebac8ba-9877-4462-9da3-1d6934236dae
+                ElementType: FILTER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
+              - ColumnIndex: 6
+                ColumnSpan: 2
+                ElementId: e7ca1ef2-4601-4fdc-a56e-c662338a6578
+                ElementType: FILTER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
+              - ColumnSpan: 2
+                ElementId: 5bca216d-d11a-41cb-8de2-a6e6c5a74ab0
+                ElementType: PARAMETER_CONTROL
+                RowSpan: 1
+        SheetId: 54618636-e6a1-4525-a2d7-66f0d4680199
+        TextBoxes:
+        - Content: "<text-box>\n  <inline color=\"#f9a713\" font-size=\"14px\">\n    <b>Navigating\
+            \ the Dashboard</b>\n  </inline>\n  <br/>\n  <inline color=\"Accent\" font-size=\"\
+            14px\">This dashboard provides analysis into AWS pricing changes and their financial\
+            \ impact across your AWS workloads. It allows analysis of cost differences resulting\
+            \ from AWS price adjustments across multiple services, accounts, and time periods.\_\
+            </inline>\n  <br/>\n  <br/>\n  <inline color=\"Accent\" font-size=\"14px\">\n\
+            \    <expression>${CostType}</expression>\n  </inline>\n  <inline color=\"Accent\"\
+            \ font-size=\"14px\">\_costs do not include any discounts applied to usage,\
+            \ while Net Unblended costs reflect the cost after discounts.</inline>\n  <br/>\n\
+            \  <br/>\n  <inline color=\"Accent\" font-size=\"14px\">\n    <b>IMPORTANT:\_\
+            </b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"14px\">This dashboard\
+            \ is updated monthly, and contains cost data only for pricing SKUs that had\
+            \ a pricing change in the last 18 months. It does not include non-service items\
+            \ including Marketplace, Support, and taxes.</inline>\n</text-box>"
+          SheetTextBoxId: f2a2b736-8897-4854-91f8-d4b83eef0315
+        - Content: "<text-box>\n  <inline font-size=\"40px\">\n    <b>AWS Pricing Change</b>\n\
+            \  </inline>\n  <inline font-size=\"40px\">\n    <b/>\n  </inline>\n  <inline\
+            \ font-size=\"40px\">\n    <b>\_Analysis Dashboard</b>\n  </inline>\n</text-box>"
+          SheetTextBoxId: 250631a6-3ee1-4186-a21d-fea2febc0086
+        Visuals:
+        - BarChartVisual:
+            Actions: []
+            ChartConfiguration:
+              BarsArrangement: STACKED
+              CategoryLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: product_region
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_region.1.1752458132155
+                  CustomLabel: Region
+              DataLabels:
+                Overlap: DISABLE_OVERLAP
+                Visibility: HIDDEN
+              FieldWells:
+                BarChartAggregatedFieldWells:
+                  Category:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_region
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_region.1.1752458132155
+                  Colors:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_product_name
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.2.1756928686508
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: cost_difference_type
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756414182706
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          CurrencyDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NegativeValueConfiguration:
+                              DisplayMode: POSITIVE
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            SeparatorConfiguration:
+                              DecimalSeparator: DOT
+                              ThousandsSeparator:
+                                Symbol: COMMA
+                                Visibility: VISIBLE
+                            Symbol: USD
+              Legend:
+                Title:
+                  CustomLabel: AWS Service
+                Width: 155px
+              Orientation: VERTICAL
+              SortConfiguration:
+                CategoryItemsLimit:
+                  OtherCategories: INCLUDE
+                CategorySort:
+                - FieldSort:
+                    Direction: ASC
+                    FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756414182706
+                ColorItemsLimit:
+                  OtherCategories: INCLUDE
+                SmallMultiplesLimitConfiguration:
+                  OtherCategories: INCLUDE
+              Tooltip:
+                FieldBasedTooltip:
+                  AggregationVisibility: HIDDEN
+                  TooltipFields:
+                  - FieldTooltipItem:
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_region.1.1752458132155
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756414182706
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.2.1756928686508
+                      Visibility: VISIBLE
+                  TooltipTitleType: PRIMARY_VALUE
+                SelectedTooltipType: DETAILED
+                TooltipVisibility: VISIBLE
+              ValueLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: cost_difference_type
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756414182706
+                  CustomLabel: <<$CostType>> Cost Difference
+            ColumnHierarchies: []
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: "<visual-title>Total Cost Difference by Region - Service SKUs\
+                  \ Impacted by Price Change\_</visual-title>"
+              Visibility: VISIBLE
+            VisualId: 3479cb60-3929-4d30-8e60-218116cb8f7e
+        - BarChartVisual:
+            Actions: []
+            ChartConfiguration:
+              BarsArrangement: STACKED
+              CategoryAxis:
+                AxisLineVisibility: VISIBLE
+                ScrollbarOptions:
+                  Visibility: VISIBLE
+                  VisibleRange:
+                    PercentRange:
+                      From: 7.622641509433969
+                      To: 26.679245283018897
+                TickLabelOptions:
+                  LabelOptions:
+                    Visibility: VISIBLE
+              CategoryLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: account_name
+                      DataSetIdentifier: pricing_changes
+                    FieldId: e85d379d-5917-4140-8634-d2b53f2d5d5a.account_name.1.1757972637457
+                  CustomLabel: Account Name
+                SortIconVisibility: VISIBLE
+              DataLabels:
+                Overlap: DISABLE_OVERLAP
+                Visibility: HIDDEN
+              FieldWells:
+                BarChartAggregatedFieldWells:
+                  Category:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: account_name
+                        DataSetIdentifier: pricing_changes
+                      FieldId: e85d379d-5917-4140-8634-d2b53f2d5d5a.account_name.1.1757972637457
+                  Colors:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_product_name
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.2.1757972672300
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: cost_difference_type
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.2.1757972927061
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          CurrencyDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NegativeValueConfiguration:
+                              DisplayMode: POSITIVE
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            SeparatorConfiguration:
+                              DecimalSeparator: DOT
+                              ThousandsSeparator:
+                                Symbol: COMMA
+                                Visibility: VISIBLE
+                            Symbol: USD
+              Legend:
+                Title:
+                  CustomLabel: AWS Service
+                Visibility: VISIBLE
+                Width: 163px
+              Orientation: VERTICAL
+              SortConfiguration:
+                CategoryItemsLimit:
+                  OtherCategories: INCLUDE
+                CategorySort:
+                - FieldSort:
+                    Direction: ASC
+                    FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.2.1757972927061
+                ColorItemsLimit:
+                  OtherCategories: INCLUDE
+                ColorSort:
+                - FieldSort:
+                    Direction: DESC
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.2.1757972672300
+                SmallMultiplesLimitConfiguration:
+                  OtherCategories: INCLUDE
+              Tooltip:
+                FieldBasedTooltip:
+                  AggregationVisibility: HIDDEN
+                  TooltipFields:
+                  - FieldTooltipItem:
+                      FieldId: e85d379d-5917-4140-8634-d2b53f2d5d5a.account_name.1.1757972637457
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.2.1757972672300
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.2.1757972927061
+                      Visibility: VISIBLE
+                  TooltipTitleType: PRIMARY_VALUE
+                SelectedTooltipType: DETAILED
+                TooltipVisibility: VISIBLE
+              ValueAxis:
+                AxisOffset: 64px
+              ValueLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: cost_difference_type
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.2.1757972927061
+                  CustomLabel: <<$CostType>> Cost Difference
+                Visibility: VISIBLE
+            ColumnHierarchies: []
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: <visual-title>Total Cost Difference Impact by Account Name and
+                  Service</visual-title>
+              Visibility: VISIBLE
+            VisualId: bf9ce663-2ec4-4baa-b794-f863fb07c07a
+        - KPIVisual:
+            Actions: []
+            ChartConfiguration:
+              FieldWells:
+                TargetValues: []
+                TrendGroups:
+                - DateDimensionField:
+                    Column:
+                      ColumnName: bill_month
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1751404108738
+                    HierarchyId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1751404108738
+                Values:
+                - NumericalMeasureField:
+                    AggregationFunction:
+                      SimpleNumericalAggregation: SUM
+                    Column:
+                      ColumnName: cost_difference_type
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756412519001
+                    FormatConfiguration:
+                      FormatConfiguration:
+                        CurrencyDisplayFormatConfiguration:
+                          DecimalPlacesConfiguration:
+                            DecimalPlaces: 2
+                          NegativeValueConfiguration:
+                            DisplayMode: POSITIVE
+                          NullValueFormatConfiguration:
+                            NullString: 'null'
+                          SeparatorConfiguration:
+                            DecimalSeparator: DOT
+                            ThousandsSeparator:
+                              Symbol: COMMA
+                              Visibility: VISIBLE
+                          Symbol: USD
+              KPIOptions:
+                Comparison:
+                  ComparisonMethod: PERCENT_DIFFERENCE
+                PrimaryValueDisplayType: COMPARISON
+                ProgressBar:
+                  Visibility: HIDDEN
+                SecondaryValue:
+                  Visibility: HIDDEN
+                SecondaryValueFontConfiguration:
+                  FontSize:
+                    Relative: EXTRA_LARGE
+                Sparkline:
+                  Type: AREA
+                  Visibility: HIDDEN
+                VisualLayoutOptions:
+                  StandardLayout:
+                    Type: VERTICAL
+              SortConfiguration:
+                TrendGroupSort:
+                - FieldSort:
+                    Direction: DESC
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1751404108738
+            ColumnHierarchies:
+            - DateTimeHierarchy:
+                HierarchyId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1751404108738
+            ConditionalFormatting:
+              ConditionalFormattingOptions:
+              - ComparisonValue:
+                  TextColor:
+                    Solid:
+                      Color: '#2CAD00'
+                      Expression: SUM({cost_difference_type}) <= 0
+              - ComparisonValue:
+                  TextColor:
+                    Solid:
+                      Color: '#DE3B00'
+                      Expression: SUM({cost_difference_type}) > 0
+              - ComparisonValue:
+                  Icon:
+                    CustomCondition:
+                      Color: '#2CAD00'
+                      Expression: percentDifference(SUM({cost_difference_type}),[SUM({cost_difference_type})
+                        DESC],1,[]) > 0.0
+                      IconOptions:
+                        Icon: CARET_UP
+              - ComparisonValue:
+                  Icon:
+                    CustomCondition:
+                      Color: '#DE3B00'
+                      Expression: percentDifference(SUM({cost_difference_type}),[SUM({cost_difference_type})
+                        DESC],1,[]) < 0.0
+                      IconOptions:
+                        Icon: CARET_DOWN
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: <visual-title>Cost Difference Last month</visual-title>
+              Visibility: VISIBLE
+            VisualId: 1c666850-3e51-4b6e-9e98-082eec347075
+        - LineChartVisual:
+            Actions: []
+            ChartConfiguration:
+              DataLabels:
+                Overlap: DISABLE_OVERLAP
+                Visibility: VISIBLE
+              FieldWells:
+                LineChartAggregatedFieldWells:
+                  Category:
+                  - DateDimensionField:
+                      Column:
+                        ColumnName: bill_month
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.0.1750952743997
+                      FormatConfiguration:
+                        DateTimeFormat: MMM YYYY
+                        NullValueFormatConfiguration:
+                          NullString: 'null'
+                      HierarchyId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.0.1750952743997
+                  Colors: []
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: Post-Price Adjustment
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 9fa530d5-b149-4bdd-a44c-fdf2010f5fd5.2.1767893486670
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          CurrencyDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NegativeValueConfiguration:
+                              DisplayMode: POSITIVE
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            SeparatorConfiguration:
+                              DecimalSeparator: DOT
+                              ThousandsSeparator:
+                                Symbol: COMMA
+                                Visibility: VISIBLE
+                            Symbol: USD
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: Pre-Price Adjustment
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 1511aef8-0299-4fdd-a3c1-d0a678a1abe5.2.1767893499316
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          CurrencyDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NegativeValueConfiguration:
+                              DisplayMode: POSITIVE
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            SeparatorConfiguration:
+                              DecimalSeparator: DOT
+                              ThousandsSeparator:
+                                Symbol: COMMA
+                                Visibility: VISIBLE
+                            Symbol: USD
+              Legend:
+                Height: 73px
+                Position: BOTTOM
+                Title:
+                  Visibility: HIDDEN
+                Visibility: VISIBLE
+              SortConfiguration:
+                CategoryItemsLimitConfiguration:
+                  OtherCategories: INCLUDE
+                CategorySort:
+                - FieldSort:
+                    Direction: DESC
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.0.1750952743997
+                ColorItemsLimitConfiguration:
+                  OtherCategories: INCLUDE
+                SmallMultiplesLimitConfiguration:
+                  OtherCategories: INCLUDE
+              Tooltip:
+                FieldBasedTooltip:
+                  AggregationVisibility: HIDDEN
+                  TooltipFields:
+                  - FieldTooltipItem:
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.0.1750952743997
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 9fa530d5-b149-4bdd-a44c-fdf2010f5fd5.2.1767893486670
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 1511aef8-0299-4fdd-a3c1-d0a678a1abe5.2.1767893499316
+                      Visibility: VISIBLE
+                  TooltipTitleType: PRIMARY_VALUE
+                SelectedTooltipType: DETAILED
+                TooltipVisibility: VISIBLE
+              Type: LINE
+              XAxisDisplayOptions:
+                AxisLineVisibility: VISIBLE
+              XAxisLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: bill_month
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.0.1750952743997
+                  CustomLabel: Month
+            ColumnHierarchies:
+            - DateTimeHierarchy:
+                HierarchyId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.0.1750952743997
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: <visual-title>Total Cost per Month (pre- and post-price change)</visual-title>
+              Visibility: VISIBLE
+            VisualId: c488ca45-5ad1-48f5-a8a8-c46b62b18a12
+        - ComboChartVisual:
+            Actions: []
+            ChartConfiguration:
+              BarDataLabels:
+                Overlap: DISABLE_OVERLAP
+                Visibility: HIDDEN
+              BarsArrangement: STACKED
+              CategoryAxis:
+                AxisLineVisibility: VISIBLE
+                ScrollbarOptions:
+                  Visibility: VISIBLE
+                  VisibleRange:
+                    PercentRange:
+                      From: 64.19294990723562
+                      To: 100.0
+              CategoryLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: bill_month
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1750954096525
+                  CustomLabel: Month
+                SortIconVisibility: HIDDEN
+                Visibility: HIDDEN
+              FieldWells:
+                ComboChartAggregatedFieldWells:
+                  BarValues:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: cost_difference_type
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.3.1756412873993
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          CurrencyDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NegativeValueConfiguration:
+                              DisplayMode: POSITIVE
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            SeparatorConfiguration:
+                              DecimalSeparator: DOT
+                              ThousandsSeparator:
+                                Symbol: COMMA
+                                Visibility: VISIBLE
+                            Symbol: USD
+                  Category:
+                  - DateDimensionField:
+                      Column:
+                        ColumnName: bill_month
+                        DataSetIdentifier: pricing_changes
+                      DateGranularity: MONTH
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1750954096525
+                      FormatConfiguration:
+                        DateTimeFormat: MMM YYYY
+                        NullValueFormatConfiguration:
+                          NullString: 'null'
+                      HierarchyId: 0ef20152-4645-42a9-8c3e-8fb31a746beb
+                  Colors:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: account_name
+                        DataSetIdentifier: pricing_changes
+                      FieldId: e85d379d-5917-4140-8634-d2b53f2d5d5a.account_name.2.1750954129306
+                      HierarchyId: a7005454-4247-4fa1-8ba9-6b8fb2ed87d6
+                  LineValues:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: cost_difference_type
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.3.1756412883245
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          CurrencyDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NegativeValueConfiguration:
+                              DisplayMode: POSITIVE
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            SeparatorConfiguration:
+                              DecimalSeparator: DOT
+                              ThousandsSeparator:
+                                Symbol: COMMA
+                                Visibility: VISIBLE
+                            Symbol: USD
+              Legend:
+                Title:
+                  CustomLabel: Account Name
+                Width: 158px
+              LineDataLabels:
+                LabelColor: '#2CAD00'
+                Overlap: DISABLE_OVERLAP
+                Position: BOTTOM
+                Visibility: VISIBLE
+              PrimaryYAxisDisplayOptions:
+                AxisOffset: 62px
+                GridLineVisibility: VISIBLE
+                TickLabelOptions:
+                  LabelOptions:
+                    Visibility: VISIBLE
+              SingleAxisOptions:
+                YAxisOptions:
+                  YAxis: PRIMARY_Y_AXIS
+              SortConfiguration:
+                CategoryItemsLimit:
+                  OtherCategories: INCLUDE
+                CategorySort:
+                - FieldSort:
+                    Direction: ASC
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1750954096525
+                ColorItemsLimit:
+                  OtherCategories: INCLUDE
+                ColorSort:
+                - FieldSort:
+                    Direction: ASC
+                    FieldId: e85d379d-5917-4140-8634-d2b53f2d5d5a.account_name.2.1750954129306
+              Tooltip:
+                FieldBasedTooltip:
+                  AggregationVisibility: HIDDEN
+                  TooltipFields:
+                  - FieldTooltipItem:
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1750954096525
+                      TooltipTarget: BOTH
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.3.1756412883245
+                      TooltipTarget: BAR
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.3.1756412883245
+                      TooltipTarget: LINE
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: e85d379d-5917-4140-8634-d2b53f2d5d5a.account_name.2.1750954129306
+                      TooltipTarget: BAR
+                      Visibility: VISIBLE
+                  TooltipTitleType: PRIMARY_VALUE
+                SelectedTooltipType: DETAILED
+                TooltipVisibility: VISIBLE
+            ColumnHierarchies:
+            - ExplicitHierarchy:
+                Columns:
+                - ColumnName: payer_account_number
+                  DataSetIdentifier: pricing_changes
+                - ColumnName: account_name
+                  DataSetIdentifier: pricing_changes
+                DrillDownFilters: []
+                HierarchyId: a7005454-4247-4fa1-8ba9-6b8fb2ed87d6
+            - DateTimeHierarchy:
+                DrillDownFilters: []
+                HierarchyId: 0ef20152-4645-42a9-8c3e-8fb31a746beb
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: <visual-title>Monthly Cost Difference by Payer / Account Name  (Drill
+                  Down Available)</visual-title>
+              Visibility: VISIBLE
+            VisualId: 0642d583-ca3b-4131-9c60-cdf8aec6f655
+        - BarChartVisual:
+            Actions: []
+            ChartConfiguration:
+              BarsArrangement: STACKED
+              CategoryLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: payer_account_number
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.payer_account_number.1.1756928821200
+                  CustomLabel: Payer Account Number
+              DataLabels:
+                Overlap: DISABLE_OVERLAP
+                Visibility: HIDDEN
+              FieldWells:
+                BarChartAggregatedFieldWells:
+                  Category:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: payer_account_number
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.payer_account_number.1.1756928821200
+                  Colors:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_product_name
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.2.1756928930938
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: cost_difference_type
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756412765201
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          CurrencyDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NegativeValueConfiguration:
+                              DisplayMode: POSITIVE
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            SeparatorConfiguration:
+                              DecimalSeparator: DOT
+                              ThousandsSeparator:
+                                Symbol: COMMA
+                                Visibility: VISIBLE
+                            Symbol: USD
+              Legend:
+                Title:
+                  Visibility: VISIBLE
+                Visibility: VISIBLE
+                Width: 163px
+              Orientation: VERTICAL
+              SortConfiguration:
+                CategoryItemsLimit:
+                  OtherCategories: INCLUDE
+                CategorySort:
+                - FieldSort:
+                    Direction: DESC
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.payer_account_number.1.1756928821200
+                ColorItemsLimit:
+                  OtherCategories: INCLUDE
+                SmallMultiplesLimitConfiguration:
+                  OtherCategories: INCLUDE
+              Tooltip:
+                FieldBasedTooltip:
+                  AggregationVisibility: HIDDEN
+                  TooltipFields:
+                  - FieldTooltipItem:
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756412765201
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.payer_account_number.1.1756928821200
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.2.1756928930938
+                      Visibility: VISIBLE
+                  TooltipTitleType: PRIMARY_VALUE
+                SelectedTooltipType: DETAILED
+                TooltipVisibility: VISIBLE
+              ValueLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: cost_difference_type
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756412765201
+                  CustomLabel: <<$CostType>> Cost Difference
+            ColumnHierarchies: []
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: <visual-title>Total Cost Difference Impact by Payer Account</visual-title>
+              Visibility: VISIBLE
+            VisualId: c391e01e-5378-492a-b65d-9fabae8eb115
+        - BarChartVisual:
+            Actions: []
+            ChartConfiguration:
+              BarsArrangement: STACKED
+              CategoryLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: product_product_name
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.1.1751058992752
+                  CustomLabel: Service
+              DataLabels:
+                Overlap: DISABLE_OVERLAP
+                Visibility: HIDDEN
+              FieldWells:
+                BarChartAggregatedFieldWells:
+                  Category:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_product_name
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.1.1751058992752
+                  Colors: []
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: cost_difference_type
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756412804426
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          CurrencyDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NegativeValueConfiguration:
+                              DisplayMode: POSITIVE
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            SeparatorConfiguration:
+                              DecimalSeparator: DOT
+                              ThousandsSeparator:
+                                Symbol: COMMA
+                                Visibility: VISIBLE
+                            Symbol: USD
+              Legend:
+                Title:
+                  CustomLabel: AWS Service
+                Width: 160px
+              Orientation: VERTICAL
+              SortConfiguration:
+                CategoryItemsLimit:
+                  OtherCategories: INCLUDE
+                CategorySort:
+                - FieldSort:
+                    Direction: ASC
+                    FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756412804426
+                ColorItemsLimit:
+                  OtherCategories: INCLUDE
+                SmallMultiplesLimitConfiguration:
+                  OtherCategories: INCLUDE
+              Tooltip:
+                FieldBasedTooltip:
+                  AggregationVisibility: HIDDEN
+                  TooltipFields:
+                  - FieldTooltipItem:
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.1.1751058992752
+                      Visibility: VISIBLE
+                  - FieldTooltipItem:
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756412804426
+                      Visibility: VISIBLE
+                  TooltipTitleType: PRIMARY_VALUE
+                SelectedTooltipType: DETAILED
+                TooltipVisibility: VISIBLE
+              ValueLabelOptions:
+                AxisLabelOptions:
+                - ApplyTo:
+                    Column:
+                      ColumnName: cost_difference_type
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756412804426
+                  CustomLabel: <<$CostType>> Cost Difference
+            ColumnHierarchies: []
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: <visual-title>Total Cost Difference Impact by Service</visual-title>
+              Visibility: VISIBLE
+            VisualId: f146a26a-b3bc-4ba3-9f56-e4be67b36000
+        - KPIVisual:
+            Actions: []
+            ChartConfiguration:
+              FieldWells:
+                TargetValues: []
+                TrendGroups:
+                - DateDimensionField:
+                    Column:
+                      ColumnName: bill_month
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1751404108738
+                    HierarchyId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1751404108738
+                Values:
+                - NumericalMeasureField:
+                    AggregationFunction:
+                      SimpleNumericalAggregation: SUM
+                    Column:
+                      ColumnName: cost_difference_type
+                      DataSetIdentifier: pricing_changes
+                    FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.1.1756412437037
+                    FormatConfiguration:
+                      FormatConfiguration:
+                        CurrencyDisplayFormatConfiguration:
+                          DecimalPlacesConfiguration:
+                            DecimalPlaces: 2
+                          NegativeValueConfiguration:
+                            DisplayMode: POSITIVE
+                          NullValueFormatConfiguration:
+                            NullString: 'null'
+                          SeparatorConfiguration:
+                            DecimalSeparator: DOT
+                            ThousandsSeparator:
+                              Symbol: COMMA
+                              Visibility: VISIBLE
+                          Symbol: USD
+              KPIOptions:
+                Comparison:
+                  ComparisonMethod: PERCENT_DIFFERENCE
+                PrimaryValueDisplayType: COMPARISON
+                PrimaryValueFontConfiguration:
+                  FontColor: '#DFE3E4'
+                ProgressBar:
+                  Visibility: HIDDEN
+                SecondaryValue:
+                  Visibility: HIDDEN
+                SecondaryValueFontConfiguration:
+                  FontSize:
+                    Relative: EXTRA_LARGE
+                Sparkline:
+                  Type: AREA
+                  Visibility: HIDDEN
+                VisualLayoutOptions:
+                  StandardLayout:
+                    Type: VERTICAL
+              SortConfiguration:
+                TrendGroupSort:
+                - FieldSort:
+                    Direction: DESC
+                    FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1751404108738
+            ColumnHierarchies:
+            - DateTimeHierarchy:
+                HierarchyId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.1.1751404108738
+            ConditionalFormatting:
+              ConditionalFormattingOptions:
+              - ComparisonValue:
+                  TextColor:
+                    Solid:
+                      Color: '#2CAD00'
+                      Expression: SUM({cost_difference_type}) <= 0
+              - ComparisonValue:
+                  TextColor:
+                    Solid:
+                      Color: '#DE3B00'
+                      Expression: SUM({cost_difference_type}) > 0
+              - ComparisonValue:
+                  Icon:
+                    CustomCondition:
+                      Color: '#2CAD00'
+                      Expression: percentDifference(SUM({cost_difference_type}),[SUM({cost_difference_type})
+                        DESC],1,[]) > 0.0
+                      IconOptions:
+                        Icon: CARET_UP
+              - ComparisonValue:
+                  Icon:
+                    CustomCondition:
+                      Color: '#DE3B00'
+                      Expression: percentDifference(SUM({cost_difference_type}),[SUM({cost_difference_type})
+                        DESC],1,[]) < 0.0
+                      IconOptions:
+                        Icon: CARET_DOWN
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: <visual-title>Cost Difference 2 Months Ago</visual-title>
+              Visibility: VISIBLE
+            VisualId: 70624a38-e715-4dd7-b74c-31689bf9ae2a
+        - PivotTableVisual:
+            Actions:
+            - ActionOperations:
+              - FilterOperation:
+                  SelectedFieldsConfiguration:
+                    SelectedFieldOptions: ALL_FIELDS
+                  TargetVisualsConfiguration:
+                    SameSheetTargetVisualConfiguration:
+                      TargetVisualOptions: ALL_VISUALS
+              CustomActionId: 248ca57d-9539-4389-a420-6ad1848182c4
+              Name: SelectService
+              Status: ENABLED
+              Trigger: DATA_POINT_CLICK
+            ChartConfiguration:
+              FieldOptions:
+                DataPathOptions:
+                - DataPathList:
+                  - DataPathType:
+                      PivotTableDataPathType: HIERARCHY_ROWS_LAYOUT_COLUMN
+                  Width: 255px
+                SelectedFieldOptions:
+                - CustomLabel: Service
+                  FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.0.1751389362796
+                  Visibility: VISIBLE
+                - FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.2.1751389380396
+                  Visibility: VISIBLE
+                - FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.2.1756412389720
+                  Visibility: VISIBLE
+              FieldWells:
+                PivotTableAggregatedFieldWells:
+                  Columns:
+                  - DateDimensionField:
+                      Column:
+                        ColumnName: bill_month
+                        DataSetIdentifier: pricing_changes
+                      DateGranularity: MONTH
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.2.1751389380396
+                  Rows:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_product_name
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.0.1751389362796
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: cost_difference_type
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.2.1756412389720
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          CurrencyDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NegativeValueConfiguration:
+                              DisplayMode: POSITIVE
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            SeparatorConfiguration:
+                              DecimalSeparator: DOT
+                              ThousandsSeparator:
+                                Symbol: COMMA
+                                Visibility: VISIBLE
+                            Symbol: USD
+              SortConfiguration:
+                FieldSortOptions: []
+              TableOptions:
+                CellStyle:
+                  Height: 25
+                CollapsedRowDimensionsVisibility: HIDDEN
+                ColumnHeaderStyle: {}
+                ColumnNamesVisibility: HIDDEN
+                MetricPlacement: ROW
+                RowAlternateColorOptions:
+                  Status: ENABLED
+                  UsePrimaryBackgroundColor: ENABLED
+                RowFieldNamesStyle: {}
+                RowsLabelOptions:
+                  CustomLabel: Service
+                RowsLayout: HIERARCHY
+                SingleMetricVisibility: HIDDEN
+              TotalOptions:
+                ColumnTotalOptions:
+                  Placement: END
+                  TotalsVisibility: VISIBLE
+                RowSubtotalOptions:
+                  CustomLabel: <<$aws:subtotalDimension>> Subtotal
+                  MetricHeaderCellStyle: {}
+                  StyleTargets:
+                  - CellType: VALUE
+                  - CellType: TOTAL
+                  - CellType: METRIC_HEADER
+                  TotalCellStyle: {}
+                  TotalsVisibility: VISIBLE
+                  ValueCellStyle: {}
+                RowTotalOptions:
+                  Placement: END
+                  TotalsVisibility: VISIBLE
+            Subtitle:
+              FormatText:
+                RichText: <visual-subtitle>Selecting a Serivce, Month, or Cost Difference
+                  will filter all visuals on this sheet</visual-subtitle>
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: <visual-title>Summary of Cost Differences by Service and Month</visual-title>
+              Visibility: VISIBLE
+            VisualId: b493c218-f91c-45ae-ba28-ee5bad9e0294
+        - PivotTableVisual:
+            Actions: []
+            ChartConfiguration:
+              FieldOptions:
+                DataPathOptions:
+                - DataPathList:
+                  - FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.line_item_line_item_description.6.1752451342698
+                    FieldValue: line_item_line_item_description
+                  Width: 470px
+                - DataPathList:
+                  - FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.1.1752164217428
+                    FieldValue: product_product_name
+                  Width: 208px
+                - DataPathList:
+                  - FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.pricing_unit.3.1752164276709
+                    FieldValue: pricing_unit
+                  Width: 197px
+                - DataPathList:
+                  - FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_sku.0.1752164188565
+                    FieldValue: product_sku
+                  Width: 158px
+                - DataPathList:
+                  - FieldId: bcd8bf71-b674-4f20-901d-38f37bde7e0c.7.1756412936006
+                    FieldValue: line_item_rate_type
+                  Width: 127px
+                - DataPathList:
+                  - FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_region.7.1752458340205
+                    FieldValue: product_region
+                  Width: 93px
+                SelectedFieldOptions:
+                - CustomLabel: SKU
+                  FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_sku.0.1752164188565
+                  Visibility: VISIBLE
+                - CustomLabel: Service
+                  FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.1.1752164217428
+                  Visibility: VISIBLE
+                - CustomLabel: Pricing Unit
+                  FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.pricing_unit.3.1752164276709
+                  Visibility: VISIBLE
+                - CustomLabel: Description
+                  FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.line_item_line_item_description.6.1752451342698
+                  Visibility: VISIBLE
+                - CustomLabel: Rate
+                  FieldId: bcd8bf71-b674-4f20-901d-38f37bde7e0c.7.1756412936006
+                  Visibility: VISIBLE
+                - CustomLabel: Region
+                  FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_region.7.1752458340205
+                  Visibility: VISIBLE
+                - CustomLabel: Cost Difference
+                  FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.3.1752164261371
+                  Visibility: VISIBLE
+                - FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.7.1767893288597
+                  Visibility: VISIBLE
+              FieldWells:
+                PivotTableAggregatedFieldWells:
+                  Columns:
+                  - DateDimensionField:
+                      Column:
+                        ColumnName: bill_month
+                        DataSetIdentifier: pricing_changes
+                      DateGranularity: MONTH
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.3.1752164261371
+                  Rows:
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_sku
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_sku.0.1752164188565
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_product_name
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.1.1752164217428
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: pricing_unit
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.pricing_unit.3.1752164276709
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: line_item_line_item_description
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.line_item_line_item_description.6.1752451342698
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: line_item_rate_type
+                        DataSetIdentifier: pricing_changes
+                      FieldId: bcd8bf71-b674-4f20-901d-38f37bde7e0c.7.1756412936006
+                  - CategoricalDimensionField:
+                      Column:
+                        ColumnName: product_region
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_region.7.1752458340205
+                  Values:
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: cost_difference_type
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.7.1767893288597
+                      FormatConfiguration:
+                        FormatConfiguration:
+                          CurrencyDisplayFormatConfiguration:
+                            DecimalPlacesConfiguration:
+                              DecimalPlaces: 2
+                            NegativeValueConfiguration:
+                              DisplayMode: POSITIVE
+                            NullValueFormatConfiguration:
+                              NullString: 'null'
+                            SeparatorConfiguration:
+                              DecimalSeparator: DOT
+                              ThousandsSeparator:
+                                Symbol: COMMA
+                                Visibility: VISIBLE
+                            Symbol: USD
+              SortConfiguration:
+                FieldSortOptions: []
+              TableOptions:
+                CellStyle:
+                  Height: 25
+                  TextWrap: WRAP
+                CollapsedRowDimensionsVisibility: HIDDEN
+                ColumnHeaderStyle:
+                  TextWrap: NONE
+                ColumnNamesVisibility: HIDDEN
+                MetricPlacement: COLUMN
+                RowAlternateColorOptions:
+                  Status: ENABLED
+                  UsePrimaryBackgroundColor: ENABLED
+                RowFieldNamesStyle:
+                  TextWrap: NONE
+                RowsLayout: TABULAR
+                SingleMetricVisibility: HIDDEN
+                ToggleButtonsVisibility: HIDDEN
+              TotalOptions:
+                ColumnSubtotalOptions:
+                  TotalsVisibility: HIDDEN
+                ColumnTotalOptions:
+                  CustomLabel: Service Total
+                  Placement: END
+                  TotalsVisibility: VISIBLE
+                RowSubtotalOptions:
+                  CustomLabel: <<$aws:subtotalDimension>> Subtotal
+                  MetricHeaderCellStyle: {}
+                  StyleTargets:
+                  - CellType: VALUE
+                  - CellType: TOTAL
+                  - CellType: METRIC_HEADER
+                  TotalCellStyle: {}
+                  TotalsVisibility: HIDDEN
+                  ValueCellStyle: {}
+                RowTotalOptions:
+                  CustomLabel: Monthly Total
+                  Placement: AUTO
+                  TotalsVisibility: VISIBLE
+            Subtitle:
+              FormatText:
+                RichText: <visual-subtitle>Monthly Cost Difference shown per rate</visual-subtitle>
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: "<visual-title>\n  Product SKUs with rate changes (\n  <parameter>${CostType}</parameter>\n\
+                  \  \_Cost)\n</visual-title>"
+              Visibility: VISIBLE
+            VisualId: ccf2a886-3f34-456c-97fe-a0082a0eaddc
+      - ContentType: INTERACTIVE
+        FilterControls:
+        - CrossSheet:
+            FilterControlId: a7938758-6439-43ed-953b-70a3f54ff911
+            SourceFilterId: eb5881c0-a56e-4a63-9ce4-50b3a02fbcb0
+        - CrossSheet:
+            FilterControlId: c7de9c69-bbc3-4231-86b7-8410f4632834
+            SourceFilterId: 025b6786-5db9-40a4-894e-77b0aa4fa320
+        - CrossSheet:
+            FilterControlId: 89e8049c-4cf0-46d7-b4b0-35c23b6c8636
+            SourceFilterId: 9831821c-78e1-4d16-9452-a6a68e7818d6
+        - CrossSheet:
+            FilterControlId: a449c560-889c-4e71-b48f-e12057724b97
+            SourceFilterId: d8d51925-0519-4502-a1ce-d0a41a34831b
+        Layouts:
+        - Configuration:
+            GridLayout:
+              CanvasSizeOptions:
+                ScreenCanvasSizeOptions:
+                  OptimizedViewPortWidth: 1600px
+                  ResizeOption: FIXED
+              Elements:
+              - ColumnIndex: 0
+                ColumnSpan: 36
+                ElementId: 1966c233-f14e-4682-aa33-c0cae1222f3a
+                ElementType: VISUAL
+                RowIndex: 0
+                RowSpan: 12
+              - ColumnIndex: 0
+                ColumnSpan: 36
+                ElementId: 004ff6c5-50d5-4473-99e1-796bcf533172
+                ElementType: TEXT_BOX
+                RowIndex: 12
+                RowSpan: 8
+        Name: About
+        SheetId: b5d3ebb5-ec1a-4ca2-b35f-d0a587e6ccc2
+        TextBoxes:
+        - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"40px\"\
+            >\n      <a href=\"https://www.wellarchitectedlabs.com/cloud-intelligence-dashboards/\"\
+            \ target=\"_blank\">Pricing Change Analysis</a>\n    </inline>\n  </block>\n\
+            \  <br/>\n  <block align=\"center\">\n    <inline font-size=\"40px\">Version\
+            \ 1.0.1</inline>\n  </block>\n  <br/>\n  <br/>\n  <br/>\n  <br/>\n  <block align=\"\
+            right\">Built and maintained by: Jason Walp, Mohamed Sherif, Hicham Lahlali,\
+            \ Prem Chandran</block>\n  <br/>\n  <block align=\"right\">\n    Learn more\
+            \ about AWS Cloud Intelligence Dashboards (CID) on\n    <inline color=\"#61d1d6\"\
+            >\n      <a href=\"https://wellarchitectedlabs.com/cost/200_labs/200_cloud_intelligence/\"\
+            \ target=\"_blank\">\n        <u>AWS Well-Architected Labs</u>\n      </a>\n\
+            \    </inline>\n    \_and\n    <inline color=\"#61d1d6\">\n      <a href=\"\
+            https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\" target=\"_blank\"\
+            >\n        <u>CID YouTube Channel</u>\n      </a>\n    </inline>\n  </block>\n\
+            \  <br/>\n  <block align=\"right\">\n    If you wish to provide feedback please\
+            \ or report an error please email:\n    <inline color=\"#61d1d6\">\_</inline>\n\
+            \    <inline background-color=\"PrimaryBackground\" color=\"#61d1d6\">\n   \
+            \   <a href=\"mailto:cloud-intelligence-dashboards@amazon.com?subject=CUDOS%20Dashboard%20Feedback\"\
+            \ target=\"_blank\">cloud-intelligence-dashboards@amazon.com</a>\n    </inline>\n\
+            \  </block>\n  <br/>\n  <block align=\"right\">Powered by: Amazon QuickSight,\
+            \ Amazon Athena, Amazon S3</block>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n\
+            \  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n\
+            \  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n</text-box>"
+          SheetTextBoxId: 004ff6c5-50d5-4473-99e1-796bcf533172
+        Visuals:
+        - InsightVisual:
+            Actions: []
+            DataSetIdentifier: pricing_changes
+            InsightConfiguration:
+              Computations: []
+              CustomNarrative:
+                Narrative: "<narrative>\n  <inline font-size=\"22.4px\">Customers are responsible\
+                  \ for making their own independent assessment of\_this dashboard and its\
+                  \ content.\_This dashboard and its content: (a) is for informational purposes\
+                  \ only, (b) represents current AWS product offerings and practices, which\
+                  \ are subject to change without notice, and (c) does not create any commitments\
+                  \ or assurances from AWS and its affiliates, suppliers or licensors. AWS\_\
+                  content, products or services are provided \u201Cas is\u201D without warranties,\
+                  \ representations, or conditions of any kind, whether express or implied.\
+                  \ The responsibilities and liabilities of AWS to its customers are controlled\
+                  \ by AWS agreements, and this document is not part of, nor does it modify,\
+                  \ any agreement between AWS and its customers.</inline>\n</narrative>"
+            Subtitle:
+              Visibility: VISIBLE
+            Title:
+              FormatText:
+                RichText: |-
+                  <visual-title>
+                    <inline font-size="54.88px">Notices</inline>
+                  </visual-title>
+              Visibility: VISIBLE
+            VisualId: 1966c233-f14e-4682-aa33-c0cae1222f3a
+datasets:
+  pricing_changes:
+    data:
+      DataSetId: bfa0c9aa-60e7-4fdb-970c-87c4ba2e9d4d
+      Name: pricing_changes
+      PhysicalTableMap:
+        2e8a5480-2205-48f0-bbd7-5da573d1dd04:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: pricing_changes
+            InputColumns:
+            - Name: bill_month
+              Type: DATETIME
+            - Name: product_product_name
+              Type: STRING
+            - Name: payer_account_number
+              Type: STRING
+            - Name: linked_account_number
+              Type: STRING
+            - Name: product_region
+              Type: STRING
+            - Name: product_sku
+              Type: STRING
+            - Name: pricing_rate_code
+              Type: STRING
+            - Name: line_item_line_item_description
+              Type: STRING
+            - Name: pricing_unit
+              Type: STRING
+            - Name: line_item_unblended_rate
+              Type: STRING
+            - Name: usage_amount
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: current_unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: current_net_unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: usage_amount_excl_free_tier
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: net_unblended_rate
+              Type: STRING
+            - Name: previous_public_on_demand_rate
+              Type: STRING
+            - Name: previous_net_on_demand_rate
+              Type: STRING
+            - Name: previous_unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: previous_net_unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: aws_service_unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: aws_service_net_unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+        c6899647-9846-4860-be8b-a357a4483f38:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        1773deea-1e44-42d3-921b-679e0b856260:
+          Alias: Intermediate Table
+          DataTransforms:
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: cost_difference
+                ColumnId: 94ffe106-2168-40b0-9b9f-41c8c9724e99
+                Expression: '{current_unblended_cost}-{previous_unblended_cost}'
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: cost_difference_net
+                ColumnId: 5ea927ee-0056-48ca-b2e8-b556876215b0
+                Expression: '{current_net_unblended_cost}-{previous_net_unblended_cost}'
+          - TagColumnOperation:
+              ColumnName: product_region
+              Tags:
+              - ColumnGeographicRole: STATE
+          - ProjectOperation:
+              ProjectedColumns:
+              - bill_month
+              - product_product_name
+              - payer_account_number
+              - linked_account_number
+              - product_region
+              - product_sku
+              - pricing_rate_code
+              - line_item_line_item_description
+              - pricing_unit
+              - line_item_unblended_rate
+              - usage_amount
+              - current_unblended_cost
+              - current_net_unblended_cost
+              - usage_amount_excl_free_tier
+              - net_unblended_rate
+              - previous_public_on_demand_rate
+              - previous_net_on_demand_rate
+              - previous_unblended_cost
+              - previous_net_unblended_cost
+              - aws_service_unblended_cost
+              - aws_service_net_unblended_cost
+              - account_id
+              - account_name
+              - cost_difference
+              - cost_difference_net
+          Source:
+            JoinInstruction:
+              LeftOperand: 6593e2c5-c2d0-43d1-990a-2d514efde2e5
+              RightOperand: e85d379d-5917-4140-8634-d2b53f2d5d5a
+              Type: LEFT
+              OnClause: '{linked_account_number} = {account_id}'
+        6593e2c5-c2d0-43d1-990a-2d514efde2e5:
+          Alias: pricing_changes
+          Source:
+            PhysicalTableId: 2e8a5480-2205-48f0-bbd7-5da573d1dd04
+        e85d379d-5917-4140-8634-d2b53f2d5d5a:
+          Alias: account_map
+          Source:
+            PhysicalTableId: c6899647-9846-4860-be8b-a357a4483f38
+    dependsOn:
+      views:
+      - pricing_changes
+      - account_map
+    schedules:
+    - default
+crawlers: {}
+views:
+  pricing_changes:
+    dependsOn:
+      cur1:
+      - bill_payer_account_id
+      - bill_billing_period_start_date
+      - line_item_usage_account_id
+      - line_item_line_item_type
+      - line_item_usage_start_date
+      - line_item_usage_amount
+      - line_item_unblended_rate
+      - line_item_unblended_cost
+      - line_item_line_item_description
+      - line_item_net_unblended_cost
+      - product_product_name
+      - product_region
+      - product_sku
+      - pricing_public_on_demand_rate
+      - pricing_unit
+      - pricing_rate_code
+      - payer
+      - month
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".pricing_changes AS
+      WITH
+        count_sku_with_pricing_change AS (
+         SELECT
+           "product_product_name"
+         , "product_sku"
+         , count(DISTINCT pricing_public_on_demand_rate) "count_sku_pricing"
+         FROM
+           ${cur_table_name}
+         WHERE ((product_sku <> '') AND (NOT ("pricing_public_on_demand_rate" IN ('0.0000000000', ''))) AND (NOT ("line_item_unblended_rate" IN (''))) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '18' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)))
+         GROUP BY "product_product_name", "product_sku"
+      )
+      , cur_data AS (
+         SELECT
+           "bill_billing_period_start_date" "bill_month"
+         , "product_product_name"
+         , "bill_payer_account_id" "payer_account_number"
+         , "line_item_usage_account_id" "linked_account_number"
+         , "product_region"
+         , "product_sku"
+         , "pricing_rate_code"
+         , "line_item_line_item_description"
+         , "pricing_unit"
+         , "line_item_unblended_rate"
+         , SUM("line_item_usage_amount") "usage_amount"
+         , SUM("line_item_unblended_cost") "current_unblended_cost"
+         , SUM("line_item_net_unblended_cost") "current_net_unblended_cost"
+         , SUM((CASE WHEN ("line_item_unblended_cost" = 0) THEN 0 ELSE "line_item_usage_amount" END)) "usage_amount_excl_free_tier"
+         FROM
+           ${cur_table_name}
+         WHERE (("product_sku" IN (SELECT "product_sku"
+      FROM
+        "count_sku_with_pricing_change"
+      WHERE ("count_sku_pricing" > 1)
+      )) AND (NOT ("pricing_public_on_demand_rate" IN ('0.0000000000', ''))) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '18' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)))
+         GROUP BY 1, "product_product_name", 3, 4, "product_region", "product_sku", "pricing_rate_code", "line_item_line_item_description", "pricing_unit", "line_item_unblended_rate"
+      )
+      , sku_table AS (
+         SELECT
+           "bill_month"
+         , "pricing_rate_code"
+         , "line_item_unblended_rate"
+         , ROUND(("sum_net_unblended_cost" / "sum_usage"), CAST(LENGTH(trim(TRAILING '0' FROM TRY_CAST("line_item_unblended_rate" AS varchar))) AS integer)) "net_unblended_rate"
+         FROM
+           (
+            SELECT
+              "bill_month"
+            , "pricing_rate_code"
+            , "line_item_unblended_rate"
+            , SUM("current_net_unblended_cost") "sum_net_unblended_cost"
+            , SUM("usage_amount") "sum_usage"
+            FROM
+              "cur_data"
+            WHERE (("usage_amount" <> 0) AND ("current_unblended_cost" <> "current_net_unblended_cost"))
+            GROUP BY 1, 2, 3
+         )
+      )
+      , sku_pricing_comparison AS (
+         SELECT
+           "bill_month"
+         , "pricing_rate_code"
+         , "line_item_unblended_rate"
+         , "net_unblended_rate"
+         , LAG("line_item_unblended_rate", "public_pricing_row_change_number", "line_item_unblended_rate") OVER (PARTITION BY "pricing_rate_code" ORDER BY "bill_month" ASC, "public_pricing_row_change_number" ASC) "previous_public_on_demand_rate"
+         , LAG("net_unblended_rate", "public_pricing_row_change_number", "net_unblended_rate") OVER (PARTITION BY "pricing_rate_code" ORDER BY "bill_month" ASC, "public_pricing_row_change_number" ASC) "previous_net_on_demand_rate"
+         FROM
+           (
+            SELECT
+              "bill_month"
+            , "pricing_rate_code"
+            , "line_item_unblended_rate"
+            , CAST("net_unblended_rate" AS DECIMAL(38, 10)) "net_unblended_rate"
+            , row_number() OVER (PARTITION BY "pricing_rate_code", "line_item_unblended_rate" ORDER BY "bill_month" ASC) "public_pricing_row_change_number"
+            FROM
+              "sku_table"
+         )
+      )
+      SELECT
+        "cur_data".*
+      , CAST("sku_pricing_comparison"."net_unblended_rate" AS varchar) "net_unblended_rate"
+      , CAST("sku_pricing_comparison"."previous_public_on_demand_rate" AS varchar) "previous_public_on_demand_rate"
+      , CAST("sku_pricing_comparison"."previous_net_on_demand_rate" AS varchar) "previous_net_on_demand_rate"
+      , (CAST("sku_pricing_comparison"."previous_public_on_demand_rate" AS double) * CAST("usage_amount_excl_free_tier" AS double)) "previous_unblended_cost"
+      , (CAST("sku_pricing_comparison"."previous_net_on_demand_rate" AS double) * CAST("usage_amount_excl_free_tier" AS double)) "previous_net_unblended_cost"
+      , null "aws_service_unblended_cost"
+      , null "aws_service_net_unblended_cost"
+      FROM
+        ("cur_data"
+      LEFT JOIN "sku_pricing_comparison" ON (("cur_data"."bill_month" = "sku_pricing_comparison"."bill_month") AND ("cur_data"."pricing_rate_code" = "sku_pricing_comparison"."pricing_rate_code")))
+      WHERE ("current_unblended_cost" <> "current_net_unblended_cost")
+      UNION ALL SELECT
+        "bill_billing_period_start_date" "bill_month"
+      , "product_product_name"
+      , "bill_payer_account_id" "payer_account_number"
+      , "line_item_usage_account_id" "linked_account_number"
+      , null "product_region"
+      , null "product_sku"
+      , null "pricing_rate_code"
+      , null "line_item_line_item_description"
+      , null "pricing_unit"
+      , null "pricing_public_on_demand_rate"
+      , null "usage_amount"
+      , null "current_unblended_cost"
+      , null "current_net_unblended_cost"
+      , null "usage_amount_excl_free_tier"
+      , null "net_unblended_rate"
+      , null "previous_public_on_demand_rate"
+      , null "previous_net_on_demand_rate"
+      , null "previous_unblended_cost"
+      , null "previous_net_unblended_cost"
+      , SUM("line_item_unblended_cost") "aws_service_unblended_cost"
+      , SUM("line_item_net_unblended_cost") "aws_service_net_unblended_cost"
+      FROM
+        ${cur_table_name}
+      WHERE (("product_product_name" IN (SELECT "product_product_name"
+      FROM
+        "count_sku_with_pricing_change"
+      WHERE ("count_sku_pricing" > 1)
+      )) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '18' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+      ORDER BY "bill_month" ASC, "product_sku" ASC, "linked_account_number" ASC

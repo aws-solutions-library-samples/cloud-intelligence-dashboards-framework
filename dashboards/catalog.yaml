@@ -23,3 +23,4 @@ Resources:
   - Url: tao/tao.yaml
   - Url: media-services-insights/msih.yaml
   - Url: rls/rls.yaml
+  - Url: pca/pca.yaml
