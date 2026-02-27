@@ -8,6 +8,25 @@
     <lastBuildDate>Mon, 19 Jan 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Media Services Insights Hub v1.3.0</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-media-services-insights
+      </link>
+      <pubDate>>Mon, 2 Mar 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">e7b8f9c1-4a2d-4e9b-b5c6-f8d2e3a4b9c0</guid>
+      <description>Media Services Insights Hub v1.2.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>MediaLive:</strong>EML reservation revisions</li>
+    <li><strong>Other:</strong>UI enhncements</li>
+    <li><strong>Note:</strong>Requires --force --recursive for updating to incorporate dataset changes</li>
+  </ul>
+</div>
+    ]]></content:encoded>    
+    </item>
+    <item>
       <title>[Update] Media Services Insights Hub v1.2.0</title>
       <link>
         https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-media-services-insights
@@ -19,8 +38,7 @@
       <content:encoded><![CDATA[
 <div>
   <ul>
-    <li><strong>MediaLive:</strong>Hourly-based analysis for fine tuning reservations</li>
-    <li><strong>Other:</strong>UI enhncements</li>
+    <li><strong>MediaLive:</strong>EML reservation revisions</li>
     <li><strong>Note:</strong>Requires --force --recursive for updating to incorporate dataset changes</li>
   </ul>
 </div>
