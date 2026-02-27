@@ -1006,6 +1006,7 @@ views:
       LEFT JOIN eml_ri_utilization u ON ((i."reservation_arn" = u."reservation_arn") AND ((date_trunc('day', u."usage_start_time") >= date_trunc('day', i."reservation_start_time")) AND (date_trunc('day', u."usage_end_time") <= date_trunc('day', i."reservation_end_time")))))
   msih_view:
     dependsOn:
+      tags: json
       cur2:
       - bill_billing_entity
       - bill_billing_period_start_date
