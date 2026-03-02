@@ -1,6 +1,6 @@
 # What's new in the Media Services Insights Hub (MSIH)
 
-## Media Services Insights Hub - v1.3.0
+## Media Services Insights Hub - v2.0.0
 
 - EML reservation revisions
 - UI enhancements
