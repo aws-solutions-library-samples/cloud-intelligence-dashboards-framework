@@ -5000,13 +5000,13 @@ views:
           query: |
             SELECT DISTINCT concat('Tags[''',key,''']')
             FROM (
-                SELECT tags
+                SELECT key
                 FROM "focus_consolidation_view"
+                CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
                 WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
                 AND cardinality(tags) > 0
-                LIMIT 10000
-            ) t
-            CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
+                LIMIT 100000
+            )
           default: []
           description: "Enter Tags"
           global: True
@@ -5078,13 +5078,13 @@ views:
           query: |
             SELECT DISTINCT concat('Tags[''',key,''']')
             FROM (
-                SELECT tags
+                SELECT key
                 FROM "focus_consolidation_view"
+                CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
                 WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
                 AND cardinality(tags) > 0
-                LIMIT 10000
-            ) t
-            CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
+                LIMIT 100000
+            )
           default: []
           description: "Enter Tags"
           global: True
