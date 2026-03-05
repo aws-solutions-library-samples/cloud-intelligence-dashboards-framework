@@ -353,7 +353,11 @@ class FocusConsolidationView:
         sql = self.generate_view_sql(selected_tables)
         logger.debug(f'Generated SQL:\n{sql}')
 
-        if not self._confirm_view_update(sql, cid_print, get_parameter, get_yesno_parameter, unset_parameter, isatty):
+        confirm_result = self._confirm_view_update(sql, cid_print, get_parameter, get_yesno_parameter, unset_parameter, isatty)
+        if confirm_result is None:
+            # View is already up to date
+            return True
+        if not confirm_result:
             return False
 
         self.athena.execute_query(sql)
@@ -380,7 +384,7 @@ class FocusConsolidationView:
             # No diff — view is already up to date
             if not view_diff['diff']:
                 cid_print(f'No need to update {self.name}. Skipping.')
-                return False  # nothing to execute, but not an error
+                return None  # nothing to execute, view is up to date
 
             # Diff exists — show it and let user decide
             cid_print(f'<BOLD>Found a difference between existing view <YELLOW>{self.name}<END> <BOLD>and the one we want to deploy. <END>')
