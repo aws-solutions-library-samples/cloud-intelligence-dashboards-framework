@@ -4538,6 +4538,8 @@ datasets:
               Type: STRING
             - Name: billingaccountname
               Type: STRING
+            - Name: billingaccounttype
+              Type: STRING
             - Name: billingcurrency
               Type: STRING
             - Name: billingperiodstart
@@ -4552,21 +4554,35 @@ datasets:
               Type: STRING
             - Name: chargeperiodstart
               Type: DATETIME
+            - Name: capacityreservationid
+              Type: STRING
+            - Name: capacityreservationstatus
+              Type: STRING
             - Name: commitmentdiscountcategory
               Type: STRING
             - Name: commitmentdiscountid
               Type: STRING
             - Name: commitmentdiscountname
               Type: STRING
+            - Name: commitmentdiscountquantity
+              Type: DECIMAL
+              SubType: FLOAT
             - Name: commitmentdiscounttype
+              Type: STRING
+            - Name: commitmentdiscountunit
               Type: STRING
             - Name: commitmentdiscountstatus
               Type: STRING
             - Name: consumedunit
               Type: STRING
+            - Name: consumedquantity
+              Type: DECIMAL
+              SubType: FLOAT
             - Name: contractedunitprice
               Type: DECIMAL
               SubType: FLOAT
+            - Name: invoiceid
+              Type: STRING
             - Name: invoiceissuername
               Type: STRING
             - Name: listunitprice
@@ -4574,6 +4590,17 @@ datasets:
               SubType: FLOAT
             - Name: pricingcategory
               Type: STRING
+            - Name: pricingcurrency
+              Type: STRING
+            - Name: pricingcurrencycontractedunitprice
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: pricingcurrencyeffectivecost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: pricingcurrencylistunitprice
+              Type: DECIMAL
+              SubType: FLOAT
             - Name: pricingunit
               Type: STRING
             - Name: providername
@@ -4594,13 +4621,21 @@ datasets:
               Type: STRING
             - Name: servicename
               Type: STRING
+            - Name: servicesubcategory
+              Type: STRING
             - Name: skuid
               Type: STRING
+            - Name: skumeter
+              Type: STRING
             - Name: skupriceid
+              Type: STRING
+            - Name: skupricedetails_json
               Type: STRING
             - Name: subaccountid
               Type: STRING
             - Name: subaccountname
+              Type: STRING
+            - Name: subaccounttype
               Type: STRING
             - Name: tags
               Type: STRING
@@ -4618,9 +4653,6 @@ datasets:
             - Name: listcost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: consumedquantity
-              Type: DECIMAL
-              SubType: FLOAT
             - Name: pricingquantity
               Type: DECIMAL
               SubType: FLOAT
@@ -4633,6 +4665,7 @@ datasets:
               - availabilityzone
               - billingaccountid
               - billingaccountname
+              - billingaccounttype
               - billingcurrency
               - billingperiodstart
               - chargecategory
@@ -4640,16 +4673,26 @@ datasets:
               - chargedescription
               - chargefrequency
               - chargeperiodstart
+              - capacityreservationid
+              - capacityreservationstatus
               - commitmentdiscountcategory
               - commitmentdiscountid
               - commitmentdiscountname
+              - commitmentdiscountquantity
               - commitmentdiscounttype
+              - commitmentdiscountunit
               - commitmentdiscountstatus
               - consumedunit
+              - consumedquantity
               - contractedunitprice
+              - invoiceid
               - invoiceissuername
               - listunitprice
               - pricingcategory
+              - pricingcurrency
+              - pricingcurrencycontractedunitprice
+              - pricingcurrencyeffectivecost
+              - pricingcurrencylistunitprice
               - pricingunit
               - providername
               - publishername
@@ -4660,17 +4703,20 @@ datasets:
               - resourcetype
               - servicecategory
               - servicename
+              - servicesubcategory
               - skuid
+              - skumeter
               - skupriceid
+              - skupricedetails_json
               - subaccountid
               - subaccountname
+              - subaccounttype
               - tags
               - billing_period
               - billedcost
               - contractedcost
               - effectivecost
               - listcost
-              - consumedquantity
               - pricingquantity
           Source:
             PhysicalTableId: 0aacec67-d196-4af2-a2af-d20a8fb3d801
@@ -4698,6 +4744,8 @@ datasets:
               Type: STRING
             - Name: billingaccountname
               Type: STRING
+            - Name: billingaccounttype
+              Type: STRING
             - Name: billingcurrency
               Type: STRING
             - Name: billingperiodstart
@@ -4718,15 +4766,25 @@ datasets:
               Type: STRING
             - Name: commitmentdiscountname
               Type: STRING
+            - Name: commitmentdiscountquantity
+              Type: DECIMAL
+              SubType: FLOAT
             - Name: commitmentdiscounttype
+              Type: STRING
+            - Name: commitmentdiscountunit
               Type: STRING
             - Name: commitmentdiscountstatus
               Type: STRING
+            - Name: consumedquantity
+              Type: DECIMAL
+              SubType: FLOAT
             - Name: consumedunit
               Type: STRING
             - Name: contractedunitprice
               Type: DECIMAL
               SubType: FLOAT
+            - Name: invoiceid
+              Type: STRING
             - Name: invoiceissuername
               Type: STRING
             - Name: listunitprice
@@ -4734,6 +4792,17 @@ datasets:
               SubType: FLOAT
             - Name: pricingcategory
               Type: STRING
+            - Name: pricingcurrency
+              Type: STRING
+            - Name: pricingcurrencycontractedunitprice
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: pricingcurrencyeffectivecost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: pricingcurrencylistunitprice
+              Type: DECIMAL
+              SubType: FLOAT
             - Name: pricingunit
               Type: STRING
             - Name: providername
@@ -4748,13 +4817,21 @@ datasets:
               Type: STRING
             - Name: servicename
               Type: STRING
+            - Name: servicesubcategory
+              Type: STRING
             - Name: skuid
               Type: STRING
+            - Name: skumeter
+              Type: STRING
             - Name: skupriceid
+              Type: STRING
+            - Name: skupricedetails_json
               Type: STRING
             - Name: subaccountid
               Type: STRING
             - Name: subaccountname
+              Type: STRING
+            - Name: subaccounttype
               Type: STRING
             - Name: tags
               Type: STRING
@@ -4772,9 +4849,6 @@ datasets:
             - Name: listcost
               Type: DECIMAL
               SubType: FLOAT
-            - Name: consumedquantity
-              Type: DECIMAL
-              SubType: FLOAT
             - Name: pricingquantity
               Type: DECIMAL
               SubType: FLOAT
@@ -4787,6 +4861,7 @@ datasets:
               - availabilityzone
               - billingaccountid
               - billingaccountname
+              - billingaccounttype
               - billingcurrency
               - billingperiodstart
               - chargecategory
@@ -4797,13 +4872,21 @@ datasets:
               - commitmentdiscountcategory
               - commitmentdiscountid
               - commitmentdiscountname
+              - commitmentdiscountquantity
               - commitmentdiscounttype
+              - commitmentdiscountunit
               - commitmentdiscountstatus
+              - consumedquantity
               - consumedunit
               - contractedunitprice
+              - invoiceid
               - invoiceissuername
               - listunitprice
               - pricingcategory
+              - pricingcurrency
+              - pricingcurrencycontractedunitprice
+              - pricingcurrencyeffectivecost
+              - pricingcurrencylistunitprice
               - pricingunit
               - providername
               - publishername
@@ -4811,17 +4894,20 @@ datasets:
               - regionname
               - servicecategory
               - servicename
+              - servicesubcategory
               - skuid
+              - skumeter
               - skupriceid
+              - skupricedetails_json
               - subaccountid
               - subaccountname
+              - subaccounttype
               - tags
               - billing_period
               - billedcost
               - contractedcost
               - effectivecost
               - listcost
-              - consumedquantity
               - pricingquantity
           Source:
             PhysicalTableId: 61ada434-e3b0-4cdf-ae98-609f1951a8ff
@@ -4843,8 +4929,11 @@ views:
         availabilityzone
       , billingaccountid
       , billingaccountname
+      , billingaccounttype
       , billingcurrency
       , CAST(billingperiodstart AS Date) billingperiodstart
+      , capacityreservationid
+      , capacityreservationstatus
       , chargecategory
       , chargeclass
       , chargedescription
@@ -4864,8 +4953,10 @@ views:
       , commitmentdiscounttype
       , commitmentdiscountstatus
       , consumedunit
+      , invoiceid
       , invoiceissuername
       , pricingcategory
+      , pricingcurrency
       , pricingunit
       , providername
       , publishername
@@ -4876,37 +4967,46 @@ views:
       , resourcetype
       , servicecategory
       , servicename
+      , servicesubcategory
       , skuid
+      , skumeter
       , skupriceid
+      , CAST(CAST(skupricedetails AS JSON) AS VARCHAR) skupricedetails_json
       , subaccountid
       , subaccountname
+      , subaccounttype
       , ${resource_tags} tags_json
       , billing_period
+      , sum(commitmentdiscountquantity) commitmentdiscountquantity
+      , max(commitmentdiscountunit) commitmentdiscountunit
+      , sum(consumedquantity) consumedquantity
       , sum(contractedunitprice) contractedunitprice
       , sum(listunitprice) listunitprice
+      , sum(pricingcurrencycontractedunitprice) pricingcurrencycontractedunitprice
+      , sum(pricingcurrencylistunitprice) pricingcurrencylistunitprice
       , sum(billedcost) billedcost
       , sum(contractedcost) contractedcost
       , sum(effectivecost) effectivecost
       , sum(listcost) listcost
-      , sum(consumedquantity) consumedquantity
+      , sum(pricingcurrencyeffectivecost) pricingcurrencyeffectivecost
       , sum(pricingquantity) pricingquantity
       FROM
         focus_consolidation_view
       WHERE (((current_date - INTERVAL  '30' DAY) <= chargeperiodstart) AND (resourceid <> '') AND (CAST(concat(billing_period, '-01') AS date) >= "date_trunc"('month', (current_date - INTERVAL  '30' DAY))))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43
     parameters:
         resource_tags:
           type: tags_json
           query: |
             SELECT DISTINCT concat('Tags[''',key,''']')
             FROM (
-                SELECT tags
+                SELECT key
                 FROM "focus_consolidation_view"
+                CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
                 WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
                 AND cardinality(tags) > 0
-                LIMIT 10000
-            ) t
-            CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
+                LIMIT 100000
+            )
           default: []
           description: "Enter Tags"
           global: True
@@ -4920,6 +5020,7 @@ views:
         availabilityzone
       , billingaccountid
       , billingaccountname
+      , billingaccounttype
       , billingcurrency
       , CAST(billingperiodstart AS Date) billingperiodstart
       , chargecategory
@@ -4933,8 +5034,10 @@ views:
       , commitmentdiscounttype
       , commitmentdiscountstatus
       , consumedunit
+      , invoiceid
       , invoiceissuername
       , pricingcategory
+      , pricingcurrency
       , pricingunit
       , providername
       , publishername
@@ -4942,95 +5045,110 @@ views:
       , regionname
       , servicecategory
       , servicename
+      , servicesubcategory
       , skuid
+      , skumeter
       , skupriceid
+      , CAST(CAST(skupricedetails AS JSON) AS VARCHAR) skupricedetails_json
       , subaccountid
       , subaccountname
+      , subaccounttype
       , ${resource_tags} tags_json
       , billing_period
+      , sum(commitmentdiscountquantity) commitmentdiscountquantity
+      , max(commitmentdiscountunit) commitmentdiscountunit
+      , sum(consumedquantity) consumedquantity
       , sum(contractedunitprice) contractedunitprice
       , sum(listunitprice) listunitprice
+      , sum(pricingcurrencycontractedunitprice) pricingcurrencycontractedunitprice
+      , sum(pricingcurrencylistunitprice) pricingcurrencylistunitprice
       , sum(billedcost) billedcost
       , sum(contractedcost) contractedcost
       , sum(effectivecost) effectivecost
       , sum(listcost) listcost
-      , sum(consumedquantity) consumedquantity
+      , sum(pricingcurrencyeffectivecost) pricingcurrencyeffectivecost
       , sum(pricingquantity) pricingquantity
       FROM
         focus_consolidation_view
       WHERE (("billingperiodstart" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(billing_period, '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH)))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38
     parameters:
         resource_tags:
           type: tags_json
           query: |
             SELECT DISTINCT concat('Tags[''',key,''']')
             FROM (
-                SELECT tags
+                SELECT key
                 FROM "focus_consolidation_view"
+                CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
                 WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
                 AND cardinality(tags) > 0
-                LIMIT 10000
-            ) t
-            CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
+                LIMIT 100000
+            )
           default: []
           description: "Enter Tags"
           global: True
   focus_consolidation_view:
-    data: |-
-      CREATE VIEW focus_consolidation_view AS
-      SELECT
-        availabilityzone
-      , billedcost
-      , billingaccountid
-      , billingaccountname
-      , billingcurrency
-      , billingperiodend
-      , billingperiodstart
-      , chargecategory
-      , chargeclass
-      , chargedescription
-      , chargefrequency
-      , chargeperiodend
-      , chargeperiodstart
-      , commitmentdiscountcategory
-      , commitmentdiscountid
-      , commitmentdiscountname
-      , commitmentdiscounttype
-      , commitmentdiscountstatus
-      , consumedquantity
-      , consumedunit
-      , contractedcost
-      , contractedunitprice
-      , effectivecost
-      , invoiceissuername
-      , listcost
-      , listunitprice
-      , pricingcategory
-      , pricingquantity
-      , pricingunit
-      , providername
-      , publishername
-      , regionid
-      , regionname
-      , resourceid
-      , resourcename
-      , resourcetype
-      , servicecategory
-      , servicename
-      , skuid
-      , skupriceid
-      , subaccountid
-      , subaccountname
-      , tags
-      , billing_period
-      FROM
-        "${data_exports_database_name}"."focus"
-    parameters:
-        data_exports_database_name:
-          type: athena
-          query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'focus'
-          error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
-          default: cid_data_export
-          description: "Enter the name of the database"
-          global: True
+    type: dynamic_focus_consolidation
+    # FOCUS 1.2 target columns with their expected Athena types.
+    # This is the schema of the resulting focus_consolidation_view.
+    # To customize the view, add or remove columns here.
+    columns:
+      availabilityzone: string
+      billedcost: double
+      billingaccountid: string
+      billingaccountname: string
+      billingaccounttype: string
+      billingcurrency: string
+      billingperiodend: timestamp
+      billingperiodstart: timestamp
+      capacityreservationid: string
+      capacityreservationstatus: string
+      chargecategory: string
+      chargeclass: string
+      chargedescription: string
+      chargefrequency: string
+      chargeperiodend: timestamp
+      chargeperiodstart: timestamp
+      commitmentdiscountcategory: string
+      commitmentdiscountid: string
+      commitmentdiscountname: string
+      commitmentdiscountquantity: double
+      commitmentdiscounttype: string
+      commitmentdiscountunit: string
+      commitmentdiscountstatus: string
+      consumedquantity: double
+      consumedunit: string
+      contractedcost: double
+      contractedunitprice: double
+      effectivecost: double
+      invoiceid: string
+      invoiceissuername: string
+      listcost: double
+      listunitprice: double
+      pricingcategory: string
+      pricingcurrency: string
+      pricingcurrencycontractedunitprice: double
+      pricingcurrencyeffectivecost: double
+      pricingcurrencylistunitprice: double
+      pricingquantity: double
+      pricingunit: string
+      providername: string
+      publishername: string
+      regionid: string
+      regionname: string
+      resourceid: string
+      resourcename: string
+      resourcetype: string
+      servicecategory: string
+      servicename: string
+      servicesubcategory: string
+      skuid: string
+      skumeter: string
+      skupriceid: string
+      skupricedetails: map<string,string>
+      subaccountid: string
+      subaccountname: string
+      subaccounttype: string
+      tags: map<string,string>
+      billing_period: string
