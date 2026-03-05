@@ -1694,10 +1694,10 @@ class Cid():
             logger.debug('deleting rls')
             if "RowLevelPermissionDataSet" in compiled_dataset:
                 del compiled_dataset["RowLevelPermissionDataSet"]
-            if "RowLevelPermissionDataSet" in found_dataset:
-                del found_dataset["RowLevelPermissionDataSet"]
+            if isinstance(found_dataset, Dataset) and "RowLevelPermissionDataSet" in found_dataset.raw:
+                del found_dataset.raw["RowLevelPermissionDataSet"]
 
-        if rls_dataset_id or rls_dataset_status:
+        elif rls_dataset_id or rls_dataset_status:
             if not rls_dataset_id:
                 for ds in self.qs.list_data_sets():
                     print(ds)
