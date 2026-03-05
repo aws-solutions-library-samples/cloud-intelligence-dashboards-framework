@@ -8,6 +8,22 @@
     <lastBuildDate>Wed, 4 Mar 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Media Services Insights Hub v2.0.1</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-media-services-insights
+      </link>
+      <pubDate>>Fri, 6 Mar 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">e7b8f9c1-4a2d-4e9b-b5c6-f8d2e3a4b9c0</guid>
+      <description>Media Services Insights Hub v2.0.1</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>MediaLive:</strong>Fix EMT filtering issue</li>
+  </ul>
+</div>
+    ]]></content:encoded>    
+    </item>    <item>
       <title>[Update] TAO Dashboard v4.0.1</title>
       <link>
         https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-tao.md
