@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 DATASET_PROPERTIES = [
     'AwsAccountId', 'DataSetId', 'Name', 'PhysicalTableMap', 'LogicalTableMap', 'ImportMode', 'ColumnGroups',
     'RowLevelPermissionDataSet', 'RowLevelPermissionTagConfiguration', 'FieldFolders', 'ColumnLevelPermissionRules',
-    'DataSetUsageConfiguration', 'DatasetParameters', 'PerformanceConfiguration', 'UseAs'
+    'DataSetUsageConfiguration', 'DatasetParameters', 'PerformanceConfiguration', 'UseAs',
+    'DataPrepConfiguration', 'SemanticModelConfiguration',
 ]
 
 
@@ -84,6 +85,11 @@ class Dataset(CidQsResource):
         return sorted(list(set(schemas)))
 
     @staticmethod
+    def _is_new_experience(dataset):
+        '''Check if dataset uses the new data preparation experience'''
+        return bool(dataset.get('DataPrepConfiguration'))
+
+    @staticmethod
     def patch(dataset, custom_fields={}, athena=None):
         ''' patch dataset to add custom fields and all athena fields
         dataset: qs dataset definition
@@ -99,28 +105,43 @@ class Dataset(CidQsResource):
                 for col in metadata.get('Columns', [])
             ]
 
-        def _athena_to_qs_type(col, athena_type):
+        def _athena_to_qs_type(col, athena_type, col_id=None):
             '''map athena type to QS type
              The following data types are supported in SPICE: Date, Decimal-fixed, Decimal-float, Integer, and String.
             https://docs.aws.amazon.com/quicksight/latest/user/supported-data-types.html
             https://docs.aws.amazon.com/quicksight/latest/user/supported-data-types-and-values.html
             '''
-            if 'string'    in athena_type: return {'Name': col, 'Type': 'STRING'}
-            if 'varchar'   in athena_type: return {'Name': col, 'Type': 'STRING'}
-            if 'char'      in athena_type: return {'Name': col, 'Type': 'STRING'}
-            if 'timestamp' in athena_type: return {'Name': col, 'Type': 'DATETIME'}
-            if 'date'      in athena_type: return {'Name': col, 'Type': 'DATETIME'}
-            if 'time'      in athena_type: return {'Name': col, 'Type': 'DATETIME'}
-            if 'bigint'    in athena_type: return {'Name': col, 'Type': 'INTEGER'}
-            if 'int'       in athena_type: return {'Name': col, 'Type': 'INTEGER'}
-            if 'decimal'   in athena_type: return {'Name': col, 'Type': 'DECIMAL', 'SubType': 'FIXED'}
-            if 'double'    in athena_type: return {'Name': col, 'Type': 'DECIMAL', 'SubType': 'FIXED'}
-            if 'real'      in athena_type: return {'Name': col, 'Type': 'DECIMAL', 'SubType': 'FIXED'} #is it better fit for fixed vs float Decimals
-            if 'boolean'   in athena_type: return {'Name': col, 'Type': 'BOOLEAN'}
-            logger.info(f'Unknown Athena type {athena_type} for {col}. Will use STRING. This might affect dashboard.')
-            return {'Name': col, 'Type': 'STRING'}
+            result = None
+            if 'string'    in athena_type: result = {'Name': col, 'Type': 'STRING'}
+            elif 'varchar'   in athena_type: result = {'Name': col, 'Type': 'STRING'}
+            elif 'char'      in athena_type: result = {'Name': col, 'Type': 'STRING'}
+            elif 'timestamp' in athena_type: result = {'Name': col, 'Type': 'DATETIME'}
+            elif 'date'      in athena_type: result = {'Name': col, 'Type': 'DATETIME'}
+            elif 'time'      in athena_type: result = {'Name': col, 'Type': 'DATETIME'}
+            elif 'bigint'    in athena_type: result = {'Name': col, 'Type': 'INTEGER'}
+            elif 'int'       in athena_type: result = {'Name': col, 'Type': 'INTEGER'}
+            elif 'decimal'   in athena_type: result = {'Name': col, 'Type': 'DECIMAL', 'SubType': 'FIXED'}
+            elif 'double'    in athena_type: result = {'Name': col, 'Type': 'DECIMAL', 'SubType': 'FIXED'}
+            elif 'real'      in athena_type: result = {'Name': col, 'Type': 'DECIMAL', 'SubType': 'FIXED'}
+            elif 'boolean'   in athena_type: result = {'Name': col, 'Type': 'BOOLEAN'}
+            else:
+                logger.info(f'Unknown Athena type {athena_type} for {col}. Will use STRING. This might affect dashboard.')
+                result = {'Name': col, 'Type': 'STRING'}
+            if col_id:
+                result['Id'] = col_id
+            return result
 
         dataset = deepcopy(dataset)
+
+        if Dataset._is_new_experience(dataset):
+            return Dataset._patch_new_experience(dataset, custom_fields, athena, _get_athena_columns, _athena_to_qs_type)
+
+        # Legacy LogicalTableMap path
+        return Dataset._patch_legacy(dataset, custom_fields, athena, _get_athena_columns, _athena_to_qs_type)
+
+    @staticmethod
+    def _patch_legacy(dataset, custom_fields, athena, _get_athena_columns, _athena_to_qs_type):
+        '''Patch legacy dataset (LogicalTableMap-based)'''
 
         # Get root logical table (the one that is not joined to any other logical table)
         root_lt = None
@@ -220,12 +241,102 @@ class Dataset(CidQsResource):
         logger.trace(f'update_ = {update_}')
         return update_
 
+    @staticmethod
+    def _patch_new_experience(dataset, custom_fields, athena, _get_athena_columns, _athena_to_qs_type):
+        '''Patch new experience dataset (DataPrepConfiguration-based)'''
+
+        # Update each PhysicalTableMap with all columns from athena views
+        # For new experience, InputColumns need an Id field
+        for pt_id, pt in dataset['PhysicalTableMap'].items():
+            table_name = pt['RelationalTable']['Name']
+            database = pt['RelationalTable']['Schema']
+            columns = _get_athena_columns(table_name, database)
+            logger.trace(f'columns = {columns}')
+
+            dataset_columns = pt['RelationalTable']['InputColumns']
+            dataset_columns_names = [col['Name'].lower() for col in dataset_columns]
+            # Build a lookup of existing Id values by column name
+            existing_ids = {col['Name'].lower(): col.get('Id') for col in dataset_columns}
+
+            athena_columns = []
+            for name, athena_type in columns:
+                # Preserve existing Id if column already defined, otherwise generate one
+                col_id = existing_ids.get(name.lower()) or f'{table_name}-{name}'.replace('_', '-')
+                athena_columns.append(
+                    _athena_to_qs_type(name, athena_type.lower(), col_id=col_id)
+                )
+
+            athena_columns_names = [c['Name'].lower() for c in athena_columns]
+            dataset_columns_to_keep = [
+                col for col in dataset_columns
+                if col['Name'].lower() in athena_columns_names
+            ]
+            new_columns = [
+                col for col in athena_columns
+                if col['Name'].lower() not in dataset_columns_names
+            ]
+
+            logger.trace(f'dataset_columns_to_keep = {dataset_columns_to_keep}')
+            if new_columns:
+                logger.trace(f'new_columns (new exp) = {new_columns} from {pt_id}')
+            pt['RelationalTable']['InputColumns'] = dataset_columns_to_keep + new_columns
+
+        # Add custom fields as CreateColumnsStep entries in TransformStepMap
+        if custom_fields:
+            transform_step_map = dataset['DataPrepConfiguration'].get('TransformStepMap', {})
+            # Find the last step in the chain (the one referenced by DestinationTableMap)
+            dest_map = dataset['DataPrepConfiguration'].get('DestinationTableMap', {})
+            last_step_id = None
+            for dest in dest_map.values():
+                last_step_id = dest.get('Source', {}).get('TransformOperationId')
+                break
+
+            for col_name, expression in custom_fields.items():
+                step_id = f'calc-{col_name}'.replace('_', '-').replace(' ', '-').lower()
+                col_id = f'calc-col-{col_name}'.replace('_', '-').replace(' ', '-').lower()
+                # Check if this calculated field step already exists
+                existing_step = transform_step_map.get(step_id)
+                if existing_step and 'CreateColumnsStep' in existing_step:
+                    # Update the expression of the first calculated column
+                    existing_step['CreateColumnsStep']['Columns'][0]['Expression'] = expression
+                    logger.trace(f'Custom field {col_name} updated to {repr(expression)} (new exp)')
+                else:
+                    transform_step_map[step_id] = {
+                        'CreateColumnsStep': {
+                            'Alias': col_name,
+                            'Columns': [
+                                {
+                                    'ColumnId': col_id,
+                                    'ColumnName': col_name,
+                                    'Expression': expression,
+                                }
+                            ],
+                            'Source': {
+                                'TransformOperationId': last_step_id
+                            }
+                        }
+                    }
+                    # Update destination to point to this new step
+                    for dest in dest_map.values():
+                        dest['Source']['TransformOperationId'] = step_id
+                    last_step_id = step_id
+                    logger.trace(f'Custom field {col_name} added (new exp) with code {repr(expression)}')
+
+        # filter out all columns that cannot be used for dataset creation
+        update_ = {key: value for key, value in dataset.items() if key in DATASET_PROPERTIES}
+        logger.trace(f'update_ = {update_}')
+        return update_
+
 
     def to_diffable_structure(self):
         """ return diffable text """
         data = {}
         data['Name'] = self.raw.get('Name')
         data['Data'] = {}
+
+        if Dataset._is_new_experience(self.raw):
+            return self._to_diffable_new_experience(data)
+
         join_clauses = {}
         for key, ltm in self.raw['LogicalTableMap'].items():
             alias = ltm.get('Alias')
@@ -259,6 +370,42 @@ class Dataset(CidQsResource):
                 data['Data'][alias]['clause'] = join
         return (yaml.safe_dump(data))
 
+    def _to_diffable_new_experience(self, data):
+        """return diffable text for new experience datasets"""
+        data_prep = self.raw.get('DataPrepConfiguration', {})
+        source_table_map = data_prep.get('SourceTableMap', {})
+        transform_step_map = data_prep.get('TransformStepMap', {})
+
+        # Map source table IDs to physical table IDs
+        source_to_physical = {}
+        for src_id, src in source_table_map.items():
+            source_to_physical[src_id] = src.get('PhysicalTableId')
+
+        # Process ImportTableSteps to build table info
+        import_aliases = {}  # step_id -> alias
+        for step_id, step in transform_step_map.items():
+            if 'ImportTableStep' in step:
+                imp = step['ImportTableStep']
+                alias = imp.get('Alias', step_id)
+                import_aliases[step_id] = alias
+                src_id = imp.get('Source', {}).get('SourceTableId')
+                pt_id = source_to_physical.get(src_id)
+                if pt_id:
+                    phy = self.raw['PhysicalTableMap'].get(pt_id, {})
+                    if 'RelationalTable' in phy:
+                        rel = phy['RelationalTable']
+                        name = alias + '(' + '/'.join([rel.get('Catalog', 'AwsDataCatalog'), rel.get('Schema', ''), rel.get('Name', '')]) + ')'
+                        data['Data'][name] = {
+                            'columns': sorted([col['Type'] + ' ' + col['Name'] for col in rel.get('InputColumns', [])])
+                        }
+
+        # Note: join clauses are intentionally not attached here.
+        # Legacy to_diffable_structure also does not display them (the key lookup
+        # uses exact match against alias while data keys include the catalog path),
+        # so omitting them keeps cross-experience diffs clean.
+
+        return yaml.safe_dump(data)
+
     @staticmethod
     def datasets_are_identical(dataset1, dataset2):
         ''' Compare 2 datasets and returns True if no difference found
@@ -270,9 +417,13 @@ class Dataset(CidQsResource):
             return identical
         dataset1 = dataset1 if isinstance(dataset1, Dataset) else Dataset(dataset1)
         dataset2 = dataset2 if isinstance(dataset2, Dataset) else Dataset(dataset2)
+        is_new_exp = Dataset._is_new_experience(dataset1.raw) or Dataset._is_new_experience(dataset2.raw)
         identical = True
         for key in DATASET_PROPERTIES:
             if key in ['AwsAccountId', 'DataSetId']:
+                continue
+            # Skip LogicalTableMap comparison for new experience datasets
+            if is_new_exp and key == 'LogicalTableMap':
                 continue
             if dataset1.raw.get(key) != dataset2.raw.get(key):
                 logger.trace(f'not identical {key} {dataset1.raw.get(key)} != {dataset2.raw.get(key)}')
@@ -294,4 +445,7 @@ class Dataset(CidQsResource):
         for key in DATASET_PROPERTIES:
             if dataset1.raw.get(key) or dataset2.raw.get(key):
                 result[key] = dataset1.raw.get(key) or dataset2.raw.get(key)
+        # New experience datasets cannot have LogicalTableMap alongside DataPrepConfiguration
+        if result.get('DataPrepConfiguration') and result.get('LogicalTableMap'):
+            del result['LogicalTableMap']
         return result

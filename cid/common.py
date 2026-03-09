@@ -1775,7 +1775,13 @@ class Cid():
 
             if update_dataset and not identical:
                 merged_dataset = Dataset.merge_datasets(compiled_dataset, found_dataset)
-                self.qs.update_dataset(merged_dataset)
+                # Cannot update a legacy dataset to new experience in-place — must delete and recreate
+                if Dataset._is_new_experience(compiled_dataset) and not Dataset._is_new_experience(found_dataset.raw):
+                    logger.info(f'Dataset {found_dataset.name} is legacy but template uses new experience. Recreating.')
+                    self.qs.delete_dataset(found_dataset.id)
+                    self.qs.create_dataset(merged_dataset)
+                else:
+                    self.qs.update_dataset(merged_dataset)
                 if compiled_dataset.get("ImportMode") == "SPICE":
                     dataset_id = compiled_dataset.get('DataSetId')
                     schedules_definitions = []
