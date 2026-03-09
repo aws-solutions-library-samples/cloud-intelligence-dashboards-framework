@@ -664,9 +664,6 @@ CalculatedFields:
     'OnDemand'
     )
   Name: purchase_option
-- DataSetIdentifier: hourly_view
-  Expression: '{c08f9029-26ae-4a4c-91bc-ffad52dc67e3.usage_date}'
-  Name: usage_date
 - DataSetIdentifier: resource_view
   Expression: round((sum({usage_quantity}))/{Hours Count},0)
   Name: AZ/Node Count
@@ -782,7 +779,7 @@ CalculatedFields:
             contains(toLower({usage_type}), 'memory') AND contains(toLower({usage_type}), 'short-term-memory'), 'Agent Core Short-Term Memory',
             contains(toLower({usage_type}), 'memory') AND contains(toLower({usage_type}), 'long-term-memory-storage'), 'Agent Core Long-Term Memory Storage',
             contains(toLower({usage_type}), 'memory') AND contains(toLower({usage_type}), 'long-term-memory-retrieval'), 'Agent Core Long-Term Memory Retrieval',
-            {product_code} = 'AmazonBedrockAgentCore' AND service = 'AWSDataTransfer', 'Agent Core Data Transfer',
+            {product_code} = 'AmazonBedrockAgentCore' AND service_name = 'AWSDataTransfer', 'Agent Core Data Transfer',
             {UsageType Short}
         ),
         NULL
@@ -792,7 +789,7 @@ CalculatedFields:
   Expression: |-
     ifelse(
         {charge_type} = 'Tax', '8 Tax',
-        contains(service, 'Support'), '7 Support', // FIXME
+        contains(service_name, 'Support'), '7 Support', // FIXME
         in({charge_type}, [
             'Usage'
         ]), ifelse( {billing_entity} = 'AWS Marketplace',
@@ -1031,18 +1028,18 @@ CalculatedFields:
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-        locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.operation},'StandardStorage')>0, Cost,
+        locate({operation},'StandardStorage')>0, Cost,
         0
     )
   Name: DDB Storage Cost
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-        locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},"WriteCapacityUnit-Hrs")>0,Cost,
-        locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},"ReadCapacityUnit-Hrs")>0,Cost,
-        locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},"ReadRequestUnits")>0,Cost,
-        locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},"WriteRequestUnits")>0,Cost,
-        locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},"ReplWriteCapacityUnit-Hrs")>0,Cost,
+        locate({usage_type},"WriteCapacityUnit-Hrs")>0,Cost,
+        locate({usage_type},"ReadCapacityUnit-Hrs")>0,Cost,
+        locate({usage_type},"ReadRequestUnits")>0,Cost,
+        locate({usage_type},"WriteRequestUnits")>0,Cost,
+        locate({usage_type},"ReplWriteCapacityUnit-Hrs")>0,Cost,
         0
     )
   Name: DDB Throughput Cost
@@ -1253,10 +1250,10 @@ CalculatedFields:
     )
   Name: EBS Volume Size
 - DataSetIdentifier: resource_view
-  Expression: split({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},':',2)
+  Expression: split({usage_type},':',2)
   Name: EC2 Usage Family
 - DataSetIdentifier: resource_view
-  Expression: split(split({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},':',2),'.',1)
+  Expression: split(split({usage_type},':',2),'.',1)
   Name: EC2 Usage Family Family
 - DataSetIdentifier: resource_view
   Expression: split(split({usage_type},':',2),'.',1)
@@ -1341,7 +1338,7 @@ CalculatedFields:
   Expression: floor(sum({Elasticity Usage Quantity}))
   Name: Elasticity Usage Quantity Rounded
 - DataSetIdentifier: resource_view
-  Expression: concat({linked_account_id}, ':', {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.region},
+  Expression: concat({linked_account_id}, ':', {region},
     ':', split(split({resource_id},':',6),'/',2))
   Name: Fargate Cluster
 - DataSetIdentifier: resource_view
@@ -1361,7 +1358,7 @@ CalculatedFields:
     )
   Name: Glue UsageType Group
 - DataSetIdentifier: resource_view
-  Expression: distinct_count({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date})*24
+  Expression: distinct_count({usage_date})*24
   Name: Hours Count
 - DataSetIdentifier: resource_view
   Expression: dateDiff({Min Usage Date},{Max Usage Date},'HH')
@@ -1378,7 +1375,7 @@ CalculatedFields:
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-    {pricing_unit} = 'Requests' and {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.operation} = 'CompleteMultipartUpload', {usage_quantity},
+    {pricing_unit} = 'Requests' and {operation} = 'CompleteMultipartUpload', {usage_quantity},
     0
     )
   Name: MPU Complete
@@ -1388,7 +1385,7 @@ CalculatedFields:
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-    {pricing_unit} = 'Requests' and {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.operation} = 'InitiateMultipartUpload', {usage_quantity},
+    {pricing_unit} = 'Requests' and {operation} = 'InitiateMultipartUpload', {usage_quantity},
     0
     )
   Name: MPU Start
@@ -1539,9 +1536,9 @@ CalculatedFields:
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-    locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},'SpotUsage') > 0,0,
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.charge_type} = 'SavingsPlanCoveredUsage',0,
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.charge_type} = 'DiscountedUsage',0,
+    locate({usage_type},'SpotUsage') > 0,0,
+    {charge_type} = 'SavingsPlanCoveredUsage',0,
+    {charge_type} = 'DiscountedUsage',0,
     {unblended_cost}
     )
   Name: OnDemand
@@ -1841,8 +1838,8 @@ CalculatedFields:
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-        {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_code} = 'AmazonCloudFront', 'Amazon CloudFront',
-        {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_code} = 'AmazonEC2', 'Amazon Elastic Compute Cloud',
+        {product_code} = 'AmazonCloudFront', 'Amazon CloudFront',
+        {product_code} = 'AmazonEC2', 'Amazon Elastic Compute Cloud',
         {product_name} = 'Amazon Elasticsearch Service', 'Amazon OpenSearch Service',
         {product_name} = 'Amazon OpenSearch Service', 'Amazon OpenSearch Service',
         isNull({product_name}) OR {product_name} = '', {Product Code Pretty},
@@ -1974,11 +1971,11 @@ CalculatedFields:
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-        {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_code} = "AmazonRDS", {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.instance_type_family},
-        {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_code} = "AmazonDocDB", {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.instance_type_family},
-        {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_code} = "AmazonRedshift", {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.instance_type},
-        {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_code} = "AmazonElastiCache", {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.instance_type},
-        {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_code} = "AmazonES", {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.instance_type},
+        {product_code} = "AmazonRDS", {instance_type_family},
+        {product_code} = "AmazonDocDB", {instance_type_family},
+        {product_code} = "AmazonRedshift", {instance_type},
+        {product_code} = "AmazonElastiCache", {instance_type},
+        {product_code} = "AmazonES", {instance_type},
         "Other"
     )
   Name: Running type/family
@@ -2151,7 +2148,7 @@ CalculatedFields:
         contains({usage_type},'MLflow'),'SageMaker with MLflow',
         contains({usage_type},'VolumeUsage'),'Storage Volume',
         contains({usage_type},'StorageIOUsage'),'Storage I/O',
-        service = 'AWSDataTransfer', 'Data Transfer',
+        service_name = 'AWSDataTransfer', 'Data Transfer',
         'Other'
     )
   Name: SageMaker Usage Type Group
@@ -2430,7 +2427,7 @@ CalculatedFields:
   Expression: split({resource_id}, '/', 2)
   Name: Snapshot ID
 - DataSetIdentifier: resource_view
-  Expression: ifelse(locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},'SpotUsage')
+  Expression: ifelse(locate({usage_type},'SpotUsage')
     > 0,{unblended_cost},0)
   Name: Spot
 - DataSetIdentifier: resource_view
@@ -2452,7 +2449,7 @@ CalculatedFields:
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-     locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},'UnusedBox') > 0, 0, {usage_quantity}
+     locate({usage_type},'UnusedBox') > 0, 0, {usage_quantity}
     )
   Name: Total On-Demand Capacity Reservation Usage
 - DataSetIdentifier: resource_view
@@ -2492,7 +2489,7 @@ CalculatedFields:
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-     locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},'UnusedBox') > 0, {usage_quantity},0
+     locate({usage_type},'UnusedBox') > 0, {usage_quantity},0
     )
   Name: Unused On-Demand Capacity Reservation Hours
 - DataSetIdentifier: resource_view
@@ -2775,7 +2772,7 @@ CalculatedFields:
   Expression: sumOver(sum({usage_quantity}),[{resource_id},{pricing_unit}])
   Name: Workspace Total Resource Usage Per Pricing Unit
 - DataSetIdentifier: resource_view
-  Expression: ifelse(locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type},'AutoStop',1)<>0,'AutoStop','AlwaysOn')
+  Expression: ifelse(locate({usage_type},'AutoStop',1)<>0,'AutoStop','AlwaysOn')
   Name: Workspaces Running Mode
 - DataSetIdentifier: resource_view
   Expression: |-
@@ -2788,59 +2785,32 @@ CalculatedFields:
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.charge_type} = 'SavingsPlanCoveredUsage', {savings_plan_effective_cost},
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.charge_type} = 'DiscountedUsage', {reservation_effective_cost},
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.charge_type} = 'Usage', {unblended_cost},
+    {charge_type} = 'SavingsPlanCoveredUsage', {savings_plan_effective_cost},
+    {charge_type} = 'DiscountedUsage', {reservation_effective_cost},
+    {charge_type} = 'Usage', {unblended_cost},
     0
     )
   Name: amortized cost
 - DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.billing_entity}'
-  Name: billing_entity
-- DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.charge_type} = 'DiscountedUsage' or
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.charge_type} = 'SavingsPlanCoveredUsage' or
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.charge_type} = 'Usage', 'Running_Usage',
+    {charge_type} = 'DiscountedUsage' or
+    {charge_type} = 'SavingsPlanCoveredUsage' or
+    {charge_type} = 'Usage', 'Running_Usage',
     'non_usage'
     )
   Name: charge_category
 - DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.charge_type}'
-  Name: charge_type
-- DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-        extract('MM',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date})=4 OR extract('MM',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date})=6 OR extract('MM',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date})=9 OR extract('MM',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date})=11, 30,
-        extract('MM',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date})=2 AND mod(extract('YYYY',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date}),4)=0 AND mod(extract('YYYY',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date}),400)=0, 29,
-        extract('MM',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date})=2 AND mod(extract('YYYY',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date}),4)=0 AND mod(extract('YYYY',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date}),100)=0, 28,
-        extract('MM',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date})=2 AND mod(extract('YYYY',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date}),4)=0, 29,
-        extract('MM',{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date})=2, 28,
+        extract('MM',{usage_date})=4 OR extract('MM',{usage_date})=6 OR extract('MM',{usage_date})=9 OR extract('MM',{usage_date})=11, 30,
+        extract('MM',{usage_date})=2 AND mod(extract('YYYY',{usage_date}),4)=0 AND mod(extract('YYYY',{usage_date}),400)=0, 29,
+        extract('MM',{usage_date})=2 AND mod(extract('YYYY',{usage_date}),4)=0 AND mod(extract('YYYY',{usage_date}),100)=0, 28,
+        extract('MM',{usage_date})=2 AND mod(extract('YYYY',{usage_date}),4)=0, 29,
+        extract('MM',{usage_date})=2, 28,
         31
     )
   Name: daysinmonth
-- DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.instance_type}'
-  Name: instance_type
-- DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.instance_type_family}'
-  Name: instance_type_family
-- DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.legal_entity}'
-  Name: legal_entity
-- DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.operation}'
-  Name: operation
-- DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_code}'
-  Name: product_code
-- DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_family}'
-  Name: product_family
-- DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_name}'
-  Name: product_name
 - DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
@@ -2851,22 +2821,13 @@ CalculatedFields:
     )
   Name: purchase_option
 - DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.region}'
-  Name: region
-- DataSetIdentifier: resource_view
   Expression: |-
     ifelse(
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.billing_entity} = 'AWS Marketplace' and locate({c3a83f91-b920-419d-a4fa-d5f023bd1aa6.charge_type}, 'Discount') = 0, {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_name},
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.service} = "", {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.product_code},
-    {c3a83f91-b920-419d-a4fa-d5f023bd1aa6.service}
+    {billing_entity} = 'AWS Marketplace' and locate({charge_type}, 'Discount') = 0, {product_name},
+    {service} = "", {product_code},
+    {service}
     )
-  Name: service
-- DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date}'
-  Name: usage_date
-- DataSetIdentifier: resource_view
-  Expression: '{c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type}'
-  Name: usage_type
+  Name: service_name
 - DataSetIdentifier: summary_view
   Expression: percentOfTotal(sum({usage_quantity}), [toString({billing_period})])
   Name: '% Coverage'
@@ -29364,7 +29325,7 @@ FilterGroups:
   Filters:
   - CategoryFilter:
       Column:
-        ColumnName: service
+        ColumnName: service_name
         DataSetIdentifier: resource_view
       Configuration:
         CustomFilterConfiguration:
@@ -29519,7 +29480,7 @@ FilterGroups:
   Filters:
   - CategoryFilter:
       Column:
-        ColumnName: service
+        ColumnName: service_name
         DataSetIdentifier: resource_view
       Configuration:
         CustomFilterConfiguration:
@@ -29769,7 +29730,7 @@ FilterGroups:
   Filters:
   - CategoryFilter:
       Column:
-        ColumnName: service
+        ColumnName: service_name
         DataSetIdentifier: resource_view
       Configuration:
         CustomFilterConfiguration:
@@ -29977,7 +29938,7 @@ FilterGroups:
   Filters:
   - CategoryFilter:
       Column:
-        ColumnName: service
+        ColumnName: service_name
         DataSetIdentifier: resource_view
       Configuration:
         CustomFilterConfiguration:
@@ -30162,7 +30123,7 @@ FilterGroups:
   Filters:
   - CategoryFilter:
       Column:
-        ColumnName: service
+        ColumnName: service_name
         DataSetIdentifier: resource_view
       Configuration:
         FilterListConfiguration:
@@ -79805,7 +79766,7 @@ Sheets:
                 FieldId: 53c3bd3b-9647-4f9d-8fcd-2489cbb949d6.2.1748737425437
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: service
+                  ColumnName: service_name
                   DataSetIdentifier: resource_view
                 FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.service.5.1748737443149
             - CategoricalDimensionField:
