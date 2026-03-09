@@ -368,6 +368,17 @@ class Dataset(CidQsResource):
         for alias, join in join_clauses.items():
             if isinstance(data['Data'].get(alias), dict) :
                 data['Data'][alias]['clause'] = join
+
+        # Collect calculated fields from CreateColumnOperation in DataTransforms
+        calculated_fields = []
+        for key, ltm in self.raw['LogicalTableMap'].items():
+            for transform in ltm.get('DataTransforms', []):
+                if 'CreateColumnsOperation' in transform:
+                    for col in transform['CreateColumnsOperation'].get('Columns', []):
+                        calculated_fields.append(col.get('ColumnName', ''))
+        if calculated_fields:
+            data['CalculatedFields'] = sorted(calculated_fields)
+
         return (yaml.safe_dump(data))
 
     def _to_diffable_new_experience(self, data):
@@ -403,6 +414,15 @@ class Dataset(CidQsResource):
         # Legacy to_diffable_structure also does not display them (the key lookup
         # uses exact match against alias while data keys include the catalog path),
         # so omitting them keeps cross-experience diffs clean.
+
+        # Collect calculated fields from CreateColumnsStep entries
+        calculated_fields = []
+        for step_id, step in transform_step_map.items():
+            if 'CreateColumnsStep' in step:
+                for col in step['CreateColumnsStep'].get('Columns', []):
+                    calculated_fields.append(col.get('ColumnName', step_id))
+        if calculated_fields:
+            data['CalculatedFields'] = sorted(calculated_fields)
 
         return yaml.safe_dump(data)
 
