@@ -80,13 +80,17 @@ def main(ctx, **kwargs):
 
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
+@click.option('--simple', help='use simple account mapping (legacy mode)', is_flag=True, default=False)
 @cid_command
 def map(ctx, **kwargs):
     """Create account mapping
 
     \b
     Command options:
-     --config-file TEXT                    Path to configuration file (default: config.json)
+     --database TEXT                       Athena database name (auto-discovered if not provided)
+     --table TEXT                          Athena table name (auto-discovered if not provided)
+     --view-name TEXT                      Output view name (default: account_map)
+     --simple                              Use simple account mapping (legacy mode for backwards compatibility)
     """
     ctx.obj.map(**kwargs)
 
@@ -94,11 +98,12 @@ def map(ctx, **kwargs):
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
 @cid_command
 def map_config(ctx, **kwargs):
-    """Configure account mapper interactively
+    """View and manage account mapper configuration
 
     \b
     Command options:
-     --config-file TEXT                    Path to configuration file (default: config.json)
+     --database TEXT                       Athena database name (auto-discovered if not provided)
+     --view-name TEXT                      View name to check configuration for (default: account_map)
     """
     ctx.obj.map_config(**kwargs)
 
