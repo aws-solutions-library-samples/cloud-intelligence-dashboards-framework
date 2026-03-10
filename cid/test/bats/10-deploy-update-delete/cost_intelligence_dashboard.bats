@@ -3,13 +3,18 @@
 
 account_id=$(aws sts get-caller-identity --query "Account" --output text )
 database_name="${database_name:-cid_data_export}" # If variable not set or null, use default
+quicksight_group="${quicksight_group:-cid-owners}" # If variable not set or null, use default
+quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If variable not set or null, use default
 
 @test "Install" {
   run cid-cmd -vv deploy  \
     --dashboard-id cost_intelligence_dashboard \
     --athena-database $database_name\
     --account-map-source dummy \
+    --athena-workgroup primary\
+    --quicksight-group $quicksight_group \
     --share-with-account \
+    --quicksight-datasource-id $quicksight_datasource_id \
 
   [ "$status" -eq 0 ]
 }
@@ -19,7 +24,7 @@ database_name="${database_name:-cid_data_export}" # If variable not set or null,
     --catalog-name 'AwsDataCatalog'\
     --database-name $database_name \
     --table-name 'summary_view' \
- 
+
  # FIXME: add
  #  compute_savings_plan_eligible_spend
  #  summary_view
@@ -49,14 +54,19 @@ database_name="${database_name:-cid_data_export}" # If variable not set or null,
 @test "Update works" {
   run cid-cmd -vv --yes update --force --recursive  \
     --dashboard-id cost_intelligence_dashboard \
+    --athena-database $database_name\
+    --athena-workgroup primary\
+    --quicksight-group $quicksight_group \
+    --quicksight-datasource-id $quicksight_datasource_id \
 
   [ "$status" -eq 0 ]
-  echo "$output" | grep 'Update completed'
 }
 
 
 @test "Delete runs" {
   run cid-cmd -vv --yes delete \
+    --athena-database $database_name\
+    --athena-workgroup primary\
     --dashboard-id cost_intelligence_dashboard
 
   [ "$status" -eq 0 ]

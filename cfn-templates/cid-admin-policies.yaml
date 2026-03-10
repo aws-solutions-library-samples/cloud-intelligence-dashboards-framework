@@ -407,6 +407,13 @@ Resources:
           - !Sub arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/cid_data_export
           - !Sub arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/cid_data_export/*
 
+        - Sid: QuickSightGroup
+          Action:
+          - quicksight:DescribeGroup
+          - quicksight:ListGroups
+          Effect: Allow
+          Resource: '*'
+
         - Sid: QuickSightDashboard
           Action:
           - quicksight:CreateDashboard
