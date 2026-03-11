@@ -9,7 +9,7 @@ dashboards:
     dashboardId: media-services-insights
     category: Advanced
     theme: MIDNIGHT
-    version: v2.0.0
+    version: v2.0.1
     file: ./msih-definition.yaml
     nonTaxonomyDatasets:
     - msih_reservation_optimize
@@ -137,11 +137,7 @@ datasets:
               NewColumnName: payer_account_name
           Source:
             PhysicalTableId: b8ca8419-aec2-4fdc-b918-d863093c891b
-        8438dbc2-2e63-4ad7-913c-dd214a9e762c:
-          Alias: msih_reservation_optimize
-          Source:
-            PhysicalTableId: ed097151-78f5-469f-9fca-e38e55537089
-        aa57a40f-fa83-49b5-8b31-9d7be66f6982:
+        71fa1445-e8ce-4cff-97a2-717fd730671a:
           Alias: Intermediate Table
           DataTransforms:
           - CreateColumnsOperation:
@@ -198,6 +194,10 @@ datasets:
               RightOperand: 589e2a57-674f-4c95-aace-ae21d42ae30a
               Type: LEFT
               OnClause: '{payer_account_id} = {account_id}'
+        8438dbc2-2e63-4ad7-913c-dd214a9e762c:
+          Alias: msih_reservation_optimize
+          Source:
+            PhysicalTableId: ed097151-78f5-469f-9fca-e38e55537089
     dependsOn:
       views:
       - account_map
