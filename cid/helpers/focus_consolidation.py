@@ -313,7 +313,7 @@ class FocusConsolidationView:
         Returns:
             bool: True if view was created/updated, False if no tables found.
         """
-        from cid.utils import get_parameter, get_yesno_parameter, unset_parameter, cid_print, isatty
+        from cid.utils import get_parameter, get_yesno_parameter, unset_parameter, set_parameters, cid_print, isatty
 
         tables = self.discover_focus_tables()
         if not tables:
@@ -326,7 +326,7 @@ class FocusConsolidationView:
         # all discovered tables. The focus-tables parameter can be set explicitly
         # (via CLI or CFN Dashboard properties) to override. Accepts both
         # "database"."table" and database.table formats.
-        table_labels = [f'"{t["database"]}"."{t["table_name"]}"' for t in tables]
+        table_labels = [f'{t["database"]}.{t["table_name"]}' for t in tables]
         selected_labels = get_parameter(
             param_name='focus-tables',
             message='Select FOCUS tables to include in the consolidation view',
@@ -347,7 +347,8 @@ class FocusConsolidationView:
             logger.warning('No FOCUS tables matched the selection. Cannot create focus_consolidation_view.')
             return False
 
-        matched_labels = [f'"{t["database"]}"."{t["table_name"]}"' for t in selected_tables]
+        matched_labels = [f'{t["database"]}.{t["table_name"]}' for t in selected_tables]
+        set_parameters({'focus-tables': matched_labels})
         logger.info(f'Creating focus_consolidation_view from: {", ".join(matched_labels)}')
 
         sql = self.generate_view_sql(selected_tables)

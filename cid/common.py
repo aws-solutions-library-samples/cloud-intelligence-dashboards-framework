@@ -405,8 +405,8 @@ class Cid():
                     choices=self.cur.tag_and_cost_category_fields + ["'none'"],
                 )
             elif isinstance(value, dict) and value.get('type') == 'tags_json': # a json
-                if get_parameters().get(prefix + key): # priority to user input
-                    params[key] = get_parameters().get(prefix + key)
+                if get_parameters().get((prefix + key).replace('_', '-')): # priority to user input
+                    params[key] = get_parameters().get((prefix + key).replace('_', '-'))
                     if isinstance(params[key], str):
                         params[key] = params[key].split(',')
                 elif not utils.isatty():
@@ -1957,7 +1957,7 @@ class Cid():
                     tag_name = 'tag_' + tag_name
             return re.sub(r'\W', '_', tag_name)
 
-        resource_tags = get_parameters().get(param_name, None)
+        resource_tags = get_parameters().get(param_name, None) or get_parameters().get(param_name.replace('_', '-'), None)
         tags_and_names = {_tag_to_name(tag):tag  for tag in sorted(options)}
         logger.info(f'tags_and_names = {tags_and_names}')
         logger.info(f'resource_tags = {resource_tags}')

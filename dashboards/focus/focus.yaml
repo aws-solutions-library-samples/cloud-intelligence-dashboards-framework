@@ -8,6 +8,39 @@ dashboards:
     dashboardId: focus-dashboard
     category: Additional
     theme: MIDNIGHT
+    nonTaxonomyColumns:
+    - availabilityzone
+    - billingaccountid
+    - billingaccountname
+    - billingaccounttype
+    - billingcurrency
+    - billing_period
+    - chargecategory
+    - chargeclass
+    - chargedescription
+    - chargefrequency
+    - commitmentdiscountcategory
+    - commitmentdiscountid
+    - commitmentdiscountname
+    - commitmentdiscounttype
+    - commitmentdiscountunit
+    - commitmentdiscountstatus
+    - consumedunit
+    - invoiceid
+    - invoiceissuername
+    - providername
+    - publishername
+    - regionid
+    - servicename
+    - servicesubcategory
+    - skuid
+    - skumeter
+    - skupriceid
+    - skupricedetails_json
+    - subaccountid
+    - subaccountname
+    - subaccounttype
+    - tags_json
     data: |-
       AnalysisDefaults:
         DefaultNewSheetConfiguration:
