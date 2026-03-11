@@ -1,0 +1,4951 @@
+AnalysisDefaults:
+  DefaultNewSheetConfiguration:
+    InteractiveLayoutConfiguration:
+      Grid:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+    SheetContentType: INTERACTIVE
+CalculatedFields:
+- DataSetIdentifier: focus_resource_view
+  Expression: concat(billingaccountname,':',billingaccountid)
+  Name: Billing Account
+- DataSetIdentifier: focus_resource_view
+  Expression: |-
+    ifelse(
+    ${Cost} = 'Billed Cost', billedcost,
+    ${Cost} = 'Contracted Cost', contractedcost,
+    ${Cost} = 'Effective Cost', effectivecost,
+    ${Cost} = 'List Cost', listcost,
+    effectivecost
+    )
+  Name: Cost
+- DataSetIdentifier: focus_resource_view
+  Expression: |-
+    ifelse(
+    ${MomGroupBy1} = 'Provider', providername,
+    ${MomGroupBy1} = 'Billing Account', {Billing Account},
+    ${MomGroupBy1} = 'Sub Account', {Sub Account},
+    ${MomGroupBy1} = 'Charge Category', chargecategory,
+    ${MomGroupBy1} = 'Service Category', servicecategory,
+    ${MomGroupBy1} = 'Service Name', servicename,
+    // Add ${MomGroupBy1}
+    null
+    )
+  Name: MoM Group By One
+- DataSetIdentifier: focus_resource_view
+  Expression: |-
+    ifelse(
+    ${MomGroupByTwo} = 'Provider', providername,
+    ${MomGroupByTwo} = 'Billing Account', {Billing Account},
+    ${MomGroupByTwo} = 'Sub Account', {Sub Account},
+    ${MomGroupByTwo} = 'Charge Category', chargecategory,
+    ${MomGroupByTwo} = 'Service Category', servicecategory,
+    ${MomGroupByTwo} = 'Service Name', servicename,
+    // Add ${MomGroupByTwo}
+    null
+    )
+  Name: MoM Group By Two
+- DataSetIdentifier: focus_resource_view
+  Expression: concat(subaccountname,':', subaccountid)
+  Name: Sub Account
+- DataSetIdentifier: focus_summary_view
+  Expression: |-
+    ifelse(
+    chargecategory = 'Adjustment', effectivecost,
+    0
+    )
+  Name: Adjustments
+- DataSetIdentifier: focus_summary_view
+  Expression: concat(billingaccountname,':', billingaccountid)
+  Name: Billing Account
+- DataSetIdentifier: focus_summary_view
+  Expression: |-
+    ifelse(
+    ${Cost} = 'Billed Cost', billedcost,
+    ${Cost} = 'Contracted Cost', contractedcost,
+    ${Cost} = 'Effective Cost', effectivecost,
+    ${Cost} = 'List Cost', listcost,
+    effectivecost
+    )
+  Name: Cost
+- DataSetIdentifier: focus_summary_view
+  Expression: abs(Cost)
+  Name: Cost Absolute
+- DataSetIdentifier: focus_summary_view
+  Expression: |-
+    ifelse(
+    chargecategory = 'Credit',
+    effectivecost,
+    0
+    )
+  Name: Credits
+- DataSetIdentifier: focus_summary_view
+  Expression: effectivecost
+  Name: Effective Cost
+- DataSetIdentifier: focus_summary_view
+  Expression: 1 - sum(effectivecost)/sum({List Cost amortized})
+  Name: Effective Discount Rate
+- DataSetIdentifier: focus_summary_view
+  Expression: |-
+    ifelse(
+    in(chargecategory,  ['Usage','Tax']),
+    listcost,
+    0
+    )
+  Name: List Cost amortized
+- DataSetIdentifier: focus_summary_view
+  Expression: difference(sum(effectivecost),[billingperiodstart ASC],-1,[{MoM Group
+    By One}])
+  Name: MoM $ Group By One
+- DataSetIdentifier: focus_summary_view
+  Expression: difference(sum(effectivecost),[billingperiodstart ASC],-1,[{MoM Group
+    By Two}])
+  Name: MoM $ Group By Two
+- DataSetIdentifier: focus_summary_view
+  Expression: percentDifference(sum(effectivecost),[billingperiodstart ASC],-1,[{MoM
+    Group By One}])
+  Name: MoM % Group By One
+- DataSetIdentifier: focus_summary_view
+  Expression: percentDifference(sum(effectivecost),[billingperiodstart ASC],-1,[{MoM
+    Group By Two}])
+  Name: MoM % Group By Two
+- DataSetIdentifier: focus_summary_view
+  Expression: |-
+    ifelse(
+    ${MomGroupBy1} = 'Provider', providername,
+    ${MomGroupBy1} = 'Billing Account', {Billing Account},
+    ${MomGroupBy1} = 'Sub Account', {Sub Account},
+    ${MomGroupBy1} = 'Charge Category', chargecategory,
+    ${MomGroupBy1} = 'Service Category', servicecategory,
+    ${MomGroupBy1} = 'Service Name', servicename,
+    // Add ${MomGroupBy1}
+    null
+    )
+  Name: MoM Group By One
+- DataSetIdentifier: focus_summary_view
+  Expression: |-
+    ifelse(
+    ${MomGroupByTwo} = 'Provider', providername,
+    ${MomGroupByTwo} = 'Billing Account', {Billing Account},
+    ${MomGroupByTwo} = 'Sub Account', {Sub Account},
+    ${MomGroupByTwo} = 'Charge Category', chargecategory,
+    ${MomGroupByTwo} = 'Service Category', servicecategory,
+    ${MomGroupByTwo} = 'Service Name', servicename,
+    // Add ${MomGroupByTwo}
+    null
+    )
+  Name: MoM Group By Two
+- DataSetIdentifier: focus_summary_view
+  Expression: concat(subaccountname,':',subaccountid)
+  Name: Sub Account
+- DataSetIdentifier: focus_summary_view
+  Expression: |-
+    ifelse(
+    ${summaryGroupByOne} = 'Provider', providername,
+    ${summaryGroupByOne} = 'Charge Category', chargecategory,
+    ${summaryGroupByOne} = 'Billing Account', {Billing Account},
+    ${summaryGroupByOne} = 'Sub Account', {Sub Account},
+    ${summaryGroupByOne} = 'Service Category', servicecategory,
+    ${summaryGroupByOne} = 'Invoice', invoiceid,
+    ${summaryGroupByOne} = 'Service', servicename,
+    // Add ${summaryGroupByOne}
+    providername
+    )
+  Name: Summary Group By One
+- DataSetIdentifier: focus_summary_view
+  Expression: |-
+    ifelse(
+    ${summaryGroupByTwo} = 'Provider', providername,
+    ${summaryGroupByTwo} = 'Charge Category', chargecategory,
+    ${summaryGroupByTwo} = 'Billing Account', {Billing Account},
+    ${summaryGroupByTwo} = 'Sub Account', {Sub Account},
+    ${summaryGroupByTwo} = 'Service Category', servicecategory,
+    ${summaryGroupByTwo} = 'Invoice', invoiceid,
+    ${summaryGroupByTwo} = 'Service', servicename,
+    // Add ${summaryGroupByTwo}
+    servicename
+    )
+  Name: Summary Group By Two
+- DataSetIdentifier: focus_summary_view
+  Expression: |-
+    ifelse(
+    chargecategory = 'Purchase', 0,
+    effectivecost - listcost
+    )
+  Name: Total Discounts
+- DataSetIdentifier: focus_summary_view
+  Expression: abs({Total Discounts})
+  Name: Total Discounts Absolute
+ColumnConfigurations:
+- Column:
+    ColumnName: Cost
+    DataSetIdentifier: focus_resource_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+- Column:
+    ColumnName: consumedquantity
+    DataSetIdentifier: focus_resource_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+- Column:
+    ColumnName: effectivecost
+    DataSetIdentifier: focus_resource_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+- Column:
+    ColumnName: Cost
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+- Column:
+    ColumnName: Cost Absolute
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+- Column:
+    ColumnName: Effective Discount Rate
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        PercentageDisplayFormatConfiguration:
+          NegativeValueConfiguration:
+            DisplayMode: NEGATIVE
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+          Suffix: '%'
+- Column:
+    ColumnName: List Cost amortized
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          NegativeValueConfiguration:
+            DisplayMode: NEGATIVE
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+- Column:
+    ColumnName: MoM % Group By One
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        PercentageDisplayFormatConfiguration:
+          NegativeValueConfiguration:
+            DisplayMode: NEGATIVE
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+          Suffix: '%'
+- Column:
+    ColumnName: MoM % Group By Two
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        PercentageDisplayFormatConfiguration:
+          NegativeValueConfiguration:
+            DisplayMode: NEGATIVE
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+          Suffix: '%'
+- Column:
+    ColumnName: Summary Group By One
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    StringFormatConfiguration:
+      NullValueFormatConfiguration:
+        NullString: 'null'
+- Column:
+    ColumnName: Total Discounts
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+- Column:
+    ColumnName: Total Discounts Absolute
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+- Column:
+    ColumnName: billedcost
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 2
+          NegativeValueConfiguration:
+            DisplayMode: NEGATIVE
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+- Column:
+    ColumnName: contractedcost
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 2
+          NegativeValueConfiguration:
+            DisplayMode: NEGATIVE
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+- Column:
+    ColumnName: effectivecost
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 2
+          NegativeValueConfiguration:
+            DisplayMode: NEGATIVE
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+- Column:
+    ColumnName: listcost
+    DataSetIdentifier: focus_summary_view
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 2
+          NegativeValueConfiguration:
+            DisplayMode: NEGATIVE
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+DataSetIdentifierDeclarations:
+- DataSetArn: arn:aws:quicksight:::dataset/4879c257-b359-4a5e-a959-d7762da430ff
+  Identifier: focus_resource_view
+- DataSetArn: arn:aws:quicksight:::dataset/0b4c0cab-545f-447d-b10c-8a7993a858e1
+  Identifier: focus_summary_view
+FilterGroups:
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 74449d94-3420-4667-a301-3c5156b16605
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: fe7be817-fa82-4f97-9d5e-e3ff8dd98a72
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - e0f0cce1-baf5-484f-9c0a-51fe3dcbdd5d
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 7cb60254-ab73-4352-acad-7373605213ea
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: billingperiodstart
+        DataSetIdentifier: focus_summary_view
+      ExcludePeriodConfiguration:
+        Amount: 3
+        Granularity: MONTH
+        Status: ENABLED
+      FilterId: e3afde76-02e4-4ba5-ae6a-d9b766e4320e
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 4
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - e0f0cce1-baf5-484f-9c0a-51fe3dcbdd5d
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 4117f433-b778-4bd8-9d92-4ff86d774b94
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: ef32b9fe-4b1e-446f-9a8b-6f4eaf9bc118
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - ae8d4130-65ba-4daf-9c44-71552ef4265d
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 91c6ebbe-18c5-4bba-8dfb-9bd75328315c
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: billingperiodstart
+        DataSetIdentifier: focus_summary_view
+      ExcludePeriodConfiguration:
+        Amount: 2
+        Granularity: MONTH
+        Status: ENABLED
+      FilterId: 7f690ea9-0146-4dd6-9443-fd35623c77e0
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 3
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - ae8d4130-65ba-4daf-9c44-71552ef4265d
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 7fbfb95b-41f9-46a2-81ae-809aec82c770
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: c1c056e7-8324-437e-a77c-08962fe24028
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - abb281fc-2cbd-43d4-be0c-f03cd66929a6
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: ea7f27ea-4460-4f69-9c81-500277658cf7
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: billingperiodstart
+        DataSetIdentifier: focus_summary_view
+      ExcludePeriodConfiguration:
+        Amount: 2
+        Granularity: MONTH
+        Status: DISABLED
+      FilterId: 37f573b5-584c-4c61-920f-ef7c31635a8d
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: PREVIOUS
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - d7b687ae-52fc-4978-8c9c-80c0c4bbf345
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 5832e57a-8317-43e7-9df7-0094c87a10ad
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: e26500ff-a36d-49fc-8c72-bb96fd8bf766
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - d7b687ae-52fc-4978-8c9c-80c0c4bbf345
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: a3993377-0893-433e-947f-48158625e55a
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 61163f4d-5e35-438c-ae32-c7b9ffd49467
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - 1df9ff17-848d-4cea-b50f-e7b2f51de0f7
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 4d6406c8-9858-414b-9aae-679377d8699f
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: b8292620-0ae5-4b30-9ca8-b80fa49e0c43
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - ed4d178c-cfed-4482-be33-d1a7012b4a05
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 2000cb5a-171d-41c7-82fc-07e1b6cc187e
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: b4e0b897-604a-48fb-a56d-6dfabb82b0fa
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - 1c02a69d-4f07-4144-a6fa-51c3b6eb9294
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: e8936e41-9b66-4a8e-8b46-fbd792898f59
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: chargeperiodstart
+        DataSetIdentifier: focus_summary_view
+      FilterId: 23878760-fe45-4d05-aa55-0f97632820a9
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 30
+      TimeGranularity: YEAR
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - 1c02a69d-4f07-4144-a6fa-51c3b6eb9294
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 95035b13-5003-486e-bf17-28e7c5106a50
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: c18c794c-e86c-4cf2-8a38-a96a8f957300
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - 8fcaef47-e54f-40ba-8a3d-e8063f966d85
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 11c1c4c1-78f9-4ca1-a189-afd152c2c282
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 2eb67c82-8451-49ae-8092-ae7d2346a9ff
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - 3df9148a-7c12-4cff-91b1-72d725ad1fa5
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: 37306cec-43c8-4fe0-84e0-015201cca9df
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: chargecategory
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      DefaultFilterControlConfiguration:
+        ControlOptions:
+          DefaultDropdownOptions:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            Type: MULTI_SELECT
+        Title: Charge Category
+      FilterId: 911db2f5-2a32-4cfc-8560-8ad59ca41f4a
+  ScopeConfiguration:
+    AllSheets: {}
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: cbd5219a-0284-4761-a7fd-789931c30104
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: billingperiodstart
+        DataSetIdentifier: focus_summary_view
+      ExcludePeriodConfiguration:
+        Amount: 1
+        Granularity: MONTH
+        Status: ENABLED
+      FilterId: 44cec552-cfd1-4bf8-9d83-340bb55fbf79
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 6
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - f09fffe7-539f-4016-9c57-505894bf32af
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 709cb020-e02a-4e6b-ae01-21c558dd3d8d
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: billingperiodstart
+        DataSetIdentifier: focus_summary_view
+      ExcludePeriodConfiguration:
+        Amount: 2
+        Granularity: MONTH
+        Status: DISABLED
+      FilterId: 038363f9-f01e-469c-9472-d337f0a8a482
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: PREVIOUS
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - ed4d178c-cfed-4482-be33-d1a7012b4a05
+        - 1df9ff17-848d-4cea-b50f-e7b2f51de0f7
+        - 3df9148a-7c12-4cff-91b1-72d725ad1fa5
+        - 1c02a69d-4f07-4144-a6fa-51c3b6eb9294
+        - c18aac8d-9cee-43ca-a645-94e4e78b8ba2
+        - 305b2ca2-904a-4c48-b230-ba807dd5de91
+        - b9e0e26e-c30d-482a-8e04-63efbf3e877b
+        - b04b73b1-452d-48bb-a91f-e92c80e52e2d
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 7fa52251-b5a3-458b-9b69-d540e6b6432e
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: ac4f7540-dbec-4220-8323-64c497b9492a
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - c18aac8d-9cee-43ca-a645-94e4e78b8ba2
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 04f9b7cf-fd83-4178-93c3-7464d7d503bb
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 23aa0873-6620-49fa-8fde-594363153758
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - 305b2ca2-904a-4c48-b230-ba807dd5de91
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 46c869d6-b18a-422d-963c-d07c14359376
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: billingperiodstart
+        DataSetIdentifier: focus_summary_view
+      ExcludePeriodConfiguration:
+        Amount: 1
+        Granularity: MONTH
+        Status: ENABLED
+      FilterId: 4b6738f8-f203-445e-b055-475d89160206
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 6
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - c47a44d9-1fcd-486f-8fa0-1244ed18f228
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 26981e7b-25d3-49ba-8956-d95b93c800e2
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: billingperiodstart
+        DataSetIdentifier: focus_summary_view
+      ExcludePeriodConfiguration:
+        Amount: 1
+        Granularity: MONTH
+        Status: ENABLED
+      FilterId: 734deb03-48f6-489f-89a6-57bf34bfc2bf
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 6
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - 8eb5a4cc-d2cc-43e4-8e15-ac49b1f4be46
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: a341a510-42d8-43f8-84a8-5322c35645df
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: chargeperiodstart
+        DataSetIdentifier: focus_resource_view
+      ExcludePeriodConfiguration:
+        Amount: 1
+        Granularity: DAY
+        Status: ENABLED
+      FilterId: 6d76264d-21d3-41f9-90c5-27d5a5a6c802
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 30
+      TimeGranularity: DAY
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - ce77ad3e-f798-488a-b065-8f74d6eff50a
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 712605fc-0008-4c86-81c4-cfd952eac6c5
+  Filters:
+  - TopBottomFilter:
+      AggregationSortConfigurations:
+      - AggregationFunction:
+          NumericalAggregationFunction:
+            SimpleNumericalAggregation: SUM
+        Column:
+          ColumnName: Cost
+          DataSetIdentifier: focus_resource_view
+        SortDirection: DESC
+      Column:
+        ColumnName: resourceid
+        DataSetIdentifier: focus_resource_view
+      FilterId: 8e7fc9ea-1ae1-474c-a8d9-4ea8fe5fe76c
+      Limit: 15
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - ce77ad3e-f798-488a-b065-8f74d6eff50a
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: a69db1be-4e55-4d18-9f66-c00c0af428e5
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: resourceid
+        DataSetIdentifier: focus_resource_view
+      Configuration:
+        CustomFilterConfiguration:
+          CategoryValue: ''
+          MatchOperator: DOES_NOT_EQUAL
+          NullOption: ALL_VALUES
+      FilterId: b45b3da9-0f6f-4259-b8cb-ec3442f7d411
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - ce77ad3e-f798-488a-b065-8f74d6eff50a
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: ada342f9-1d7f-4bb6-96c0-9f507f09f5a1
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: chargeperiodstart
+        DataSetIdentifier: focus_resource_view
+      ExcludePeriodConfiguration:
+        Amount: 1
+        Granularity: DAY
+        Status: ENABLED
+      FilterId: bd6fa0a3-d957-4d2d-8b46-1bdf62dfc764
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 30
+      TimeGranularity: DAY
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - fa1696b6-c455-48a2-9bd2-bf9da82044fe
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 04c5a853-56ca-4f4a-8555-12576fd1d45d
+  Filters:
+  - TopBottomFilter:
+      AggregationSortConfigurations:
+      - AggregationFunction:
+          NumericalAggregationFunction:
+            SimpleNumericalAggregation: SUM
+        Column:
+          ColumnName: Cost
+          DataSetIdentifier: focus_resource_view
+        SortDirection: DESC
+      Column:
+        ColumnName: resourceid
+        DataSetIdentifier: focus_resource_view
+      FilterId: aef9bd7e-367c-4366-8cc1-af5bd38873e0
+      Limit: 15
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - fa1696b6-c455-48a2-9bd2-bf9da82044fe
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 72453bf9-a33f-4690-a040-dc9307590d87
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: resourceid
+        DataSetIdentifier: focus_resource_view
+      Configuration:
+        CustomFilterConfiguration:
+          CategoryValue: ''
+          MatchOperator: DOES_NOT_EQUAL
+          NullOption: ALL_VALUES
+      FilterId: 62d8e189-d38f-4a47-a1db-607a34968a56
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - fa1696b6-c455-48a2-9bd2-bf9da82044fe
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: ba9bc548-90e1-450e-a3ff-eb5b699c100a
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 49930c12-2951-4c18-a2b5-71b52adcb0fe
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - b9e0e26e-c30d-482a-8e04-63efbf3e877b
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: bff52c62-f539-4889-81d9-88aa7fe8f3b8
+  Filters:
+  - TopBottomFilter:
+      AggregationSortConfigurations:
+      - AggregationFunction:
+          NumericalAggregationFunction:
+            SimpleNumericalAggregation: SUM
+        Column:
+          ColumnName: effectivecost
+          DataSetIdentifier: focus_summary_view
+        SortDirection: DESC
+      Column:
+        ColumnName: servicename
+        DataSetIdentifier: focus_summary_view
+      FilterId: 95e5814b-8ec3-490c-bfcf-1c11e7a4058e
+      Limit: 10
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - 8e55764c-7936-46dc-bc36-d96d944d2a4e
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: cd71e356-fff9-496f-b56b-a7d11ba06684
+  Filters:
+  - TopBottomFilter:
+      AggregationSortConfigurations:
+      - AggregationFunction:
+          NumericalAggregationFunction:
+            SimpleNumericalAggregation: SUM
+        Column:
+          ColumnName: effectivecost
+          DataSetIdentifier: focus_summary_view
+        SortDirection: DESC
+      Column:
+        ColumnName: Sub Account
+        DataSetIdentifier: focus_summary_view
+      FilterId: 9fd432b7-b732-4801-a67d-d5ad068715d0
+      Limit: 10
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - 8c3ad906-2c22-4dbb-9773-555b49298cd5
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 46b7540c-b4a5-4b05-8522-b9fe11180274
+  Filters:
+  - TopBottomFilter:
+      AggregationSortConfigurations:
+      - AggregationFunction:
+          NumericalAggregationFunction:
+            SimpleNumericalAggregation: SUM
+        Column:
+          ColumnName: effectivecost
+          DataSetIdentifier: focus_summary_view
+        SortDirection: DESC
+      Column:
+        ColumnName: Billing Account
+        DataSetIdentifier: focus_summary_view
+      FilterId: a2b2a182-6480-4ff3-999f-c3aca2d55f7e
+      Limit: 10
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+        VisualIds:
+        - 630e2c0f-36de-45f1-85db-9a80ad2c7f49
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: e6664bc4-9e23-4899-a428-c31bc032e306
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: Billing Account
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      DefaultFilterControlConfiguration:
+        ControlOptions:
+          DefaultDropdownOptions:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            Type: MULTI_SELECT
+        Title: Billing Account
+      FilterId: 4239dfdb-d9ec-4084-9b23-31f12a9bfe9a
+  ScopeConfiguration:
+    AllSheets: {}
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: f5e045f8-f158-48b2-9a54-48ecaa46afcb
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: Sub Account
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      DefaultFilterControlConfiguration:
+        ControlOptions:
+          DefaultDropdownOptions:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            Type: MULTI_SELECT
+        Title: Sub Account
+      FilterId: 2b7e6abe-62ca-4c5f-9155-20e62cf16b42
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+      - Scope: ALL_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: 3f0405b3-da12-43b9-ac97-cbcff39e5e36
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: publishername
+        DataSetIdentifier: focus_resource_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      DefaultFilterControlConfiguration:
+        ControlOptions:
+          DefaultDropdownOptions:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            Type: MULTI_SELECT
+        Title: Publisher
+      FilterId: 65e16b91-8e22-4b63-9892-af29ff4cbe41
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+      - Scope: ALL_VISUALS
+        SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+      - Scope: ALL_VISUALS
+        SheetId: d07bd362-bd02-41e8-8c76-4a71cf4984e0
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: 3178b205-403d-408c-8761-a008125047d2
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: providername
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      DefaultFilterControlConfiguration:
+        ControlOptions:
+          DefaultDropdownOptions:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            Type: MULTI_SELECT
+        Title: Provider
+      FilterId: 79313680-59d7-4ae7-9d47-9712507e3b4d
+  ScopeConfiguration:
+    AllSheets: {}
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: dc5a2649-09de-4da9-a974-3cec1d40e35f
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: chargecategory
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - Adjustment
+          - Credit
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+      FilterId: 5d7b9936-5513-4ffa-8ccf-d2ba60011fc6
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - ef7d9b9e-235c-45fe-9a97-74f0ec92c13b
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 1d2e9d7d-69a1-402b-a6e2-10d50ee9aa31
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: aeef6e41-faea-42d8-9af2-0a711732c576
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - b04b73b1-452d-48bb-a91f-e92c80e52e2d
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 472ac19d-8ef1-45fd-8258-478fd3bb11af
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 1573ddaa-f004-4eb6-9fc4-b037bdf7873f
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - 45e52612-c351-4dfa-858b-ae882dca2bbf
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 0b02173b-68c6-4b3e-8add-49767918f1d2
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: chargeperiodstart
+        DataSetIdentifier: focus_summary_view
+      FilterId: e4c92553-694b-4a42-9495-24beec8ef04e
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 3
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - 45e52612-c351-4dfa-858b-ae882dca2bbf
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 712dcf21-664c-40b5-8a3e-ac7d2976b56a
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: chargecategory
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - Purchase
+          - Usage
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+      FilterId: 451d6d97-c4b6-4562-8660-73cf25ceaa1e
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - 45e52612-c351-4dfa-858b-ae882dca2bbf
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: b746ded9-c6e5-4a70-996c-2d8f3e271e64
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 5ece46ef-9d5f-4f74-a5e7-c31108f7370b
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - f519b531-2e2e-4f49-8b09-4f3367ee4ce5
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 42913ff1-4356-4c0f-8384-12b3616e750e
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: billingperiodstart
+        DataSetIdentifier: focus_summary_view
+      FilterId: 5ac16ed5-5771-4df2-93e0-2308be7c7cb1
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: PREVIOUS
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - f519b531-2e2e-4f49-8b09-4f3367ee4ce5
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 379f3561-90e7-4319-9cc7-62b765b0f013
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: d1e5f7c9-3ada-48f6-bfb0-168fcab02fe2
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - 73f3a329-3f1f-48e4-a82d-769478ab4434
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: e8debffe-844a-4908-8b42-07e05213c118
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: billingcurrency
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        CustomFilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 7730d0fe-69a1-4ab9-a546-9e92a0f958b6
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - a6aa0190-c428-4ef6-ae31-bb732cb7457f
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 450acca6-87f4-4072-bfc3-da10c2c1647e
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: chargeperiodstart
+        DataSetIdentifier: focus_summary_view
+      FilterId: 2b44c79d-b154-4475-8aa3-6ed612030222
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 3
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - a6aa0190-c428-4ef6-ae31-bb732cb7457f
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 849e9236-ad2f-452c-8cb4-136986528028
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: chargecategory
+        DataSetIdentifier: focus_summary_view
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - Purchase
+          - Usage
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+      FilterId: 7e0f83a1-64e0-408c-a5a9-39ea07f360e9
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+        VisualIds:
+        - a6aa0190-c428-4ef6-ae31-bb732cb7457f
+  Status: ENABLED
+Options:
+  WeekStart: SUNDAY
+ParameterDeclarations:
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - USD
+    Name: Currency
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Service
+    Name: summaryGroupByOne
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Effective Cost
+    Name: Cost
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Service Category
+    Name: MomGroupBy1
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Sub Account
+    Name: MomGroupByTwo
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Provider
+    Name: summaryGroupByTwo
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+Sheets:
+- ContentType: INTERACTIVE
+  FilterControls:
+  - CrossSheet:
+      FilterControlId: 5c83c397-73b3-4b2d-959a-39db9ff601ea
+      SourceFilterId: 911db2f5-2a32-4cfc-8560-8ad59ca41f4a
+  - CrossSheet:
+      FilterControlId: 8a28df43-ba8b-4e14-91a9-4e53456547ed
+      SourceFilterId: 4239dfdb-d9ec-4084-9b23-31f12a9bfe9a
+  - CrossSheet:
+      FilterControlId: 94e02051-c5ef-4982-ab5b-564cd5123431
+      SourceFilterId: 2b7e6abe-62ca-4c5f-9155-20e62cf16b42
+  - CrossSheet:
+      FilterControlId: 4eb788e8-3cd1-42ff-a277-c2a7d98613a5
+      SourceFilterId: 65e16b91-8e22-4b63-9892-af29ff4cbe41
+  - CrossSheet:
+      FilterControlId: 21ea2dab-22ac-4558-970b-dfe03d118362
+      SourceFilterId: 79313680-59d7-4ae7-9d47-9712507e3b4d
+  - RelativeDateTime:
+      DisplayOptions:
+        DateTimeFormat: YYYY/MM/DD HH:mm:ss
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 51c5d8fb-c481-4241-88a9-b2963bdb4750
+      SourceFilterId: 038363f9-f01e-469c-9472-d337f0a8a482
+      Title: Billing Period
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: c30afc45-5b46-411c-a97a-48e97dde3d86
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 3
+        - ColumnIndex: 0
+          ColumnSpan: 7
+          ElementId: e0f0cce1-baf5-484f-9c0a-51fe3dcbdd5d
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 4
+        - ColumnIndex: 7
+          ColumnSpan: 7
+          ElementId: ae8d4130-65ba-4daf-9c44-71552ef4265d
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 4
+        - ColumnIndex: 14
+          ColumnSpan: 7
+          ElementId: d7b687ae-52fc-4978-8c9c-80c0c4bbf345
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 4
+        - ColumnIndex: 21
+          ColumnSpan: 15
+          ElementId: 1c02a69d-4f07-4144-a6fa-51c3b6eb9294
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 7
+        - ColumnIndex: 0
+          ColumnSpan: 7
+          ElementId: 1df9ff17-848d-4cea-b50f-e7b2f51de0f7
+          ElementType: VISUAL
+          RowIndex: 7
+          RowSpan: 3
+        - ColumnIndex: 7
+          ColumnSpan: 7
+          ElementId: ed4d178c-cfed-4482-be33-d1a7012b4a05
+          ElementType: VISUAL
+          RowIndex: 7
+          RowSpan: 3
+        - ColumnIndex: 14
+          ColumnSpan: 7
+          ElementId: 3df9148a-7c12-4cff-91b1-72d725ad1fa5
+          ElementType: VISUAL
+          RowIndex: 7
+          RowSpan: 3
+        - ColumnIndex: 0
+          ColumnSpan: 4
+          ElementId: e03d1b5b-aef1-457c-b53f-3b7f76df1899
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 10
+          RowSpan: 12
+        - ColumnIndex: 4
+          ColumnSpan: 14
+          ElementId: 8fcaef47-e54f-40ba-8a3d-e8063f966d85
+          ElementType: VISUAL
+          RowIndex: 10
+          RowSpan: 12
+        - ColumnIndex: 18
+          ColumnSpan: 14
+          ElementId: abb281fc-2cbd-43d4-be0c-f03cd66929a6
+          ElementType: VISUAL
+          RowIndex: 10
+          RowSpan: 12
+        - ColumnIndex: 32
+          ColumnSpan: 4
+          ElementId: 4474d3be-4d30-4ecb-b35f-b42b81e501c9
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 10
+          RowSpan: 12
+        - ColumnIndex: 4
+          ColumnSpan: 28
+          ElementId: 73f3a329-3f1f-48e4-a82d-769478ab4434
+          ElementType: VISUAL
+          RowIndex: 22
+          RowSpan: 13
+          SelectedBorderStyle:
+            Visibility: VISIBLE
+        - ColumnIndex: 0
+          ColumnSpan: 18
+          ElementId: a6aa0190-c428-4ef6-ae31-bb732cb7457f
+          ElementType: VISUAL
+          RowIndex: 35
+          RowSpan: 11
+        - ColumnIndex: 18
+          ColumnSpan: 18
+          ElementId: 45e52612-c351-4dfa-858b-ae882dca2bbf
+          ElementType: VISUAL
+          RowIndex: 35
+          RowSpan: 11
+        - ColumnIndex: 0
+          ColumnSpan: 15
+          ElementId: c18aac8d-9cee-43ca-a645-94e4e78b8ba2
+          ElementType: VISUAL
+          RowIndex: 46
+          RowSpan: 10
+        - ColumnIndex: 15
+          ColumnSpan: 21
+          ElementId: 305b2ca2-904a-4c48-b230-ba807dd5de91
+          ElementType: VISUAL
+          RowIndex: 46
+          RowSpan: 10
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: e6c97ab1-cb88-42cf-bb02-905450e123a8
+          ElementType: TEXT_BOX
+          RowIndex: 56
+          RowSpan: 2
+        - ColumnIndex: 0
+          ColumnSpan: 7
+          ElementId: 51c5d8fb-c481-4241-88a9-b2963bdb4750
+          ElementType: FILTER_CONTROL
+          RowIndex: 58
+          RowSpan: 4
+        - ColumnIndex: 7
+          ColumnSpan: 11
+          ElementId: b9e0e26e-c30d-482a-8e04-63efbf3e877b
+          ElementType: VISUAL
+          RowIndex: 58
+          RowSpan: 4
+        - ColumnIndex: 18
+          ColumnSpan: 18
+          ElementId: f519b531-2e2e-4f49-8b09-4f3367ee4ce5
+          ElementType: VISUAL
+          RowIndex: 58
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 18
+          ElementId: b04b73b1-452d-48bb-a91f-e92c80e52e2d
+          ElementType: VISUAL
+          RowIndex: 62
+          RowSpan: 11
+        - ColumnIndex: 18
+          ColumnSpan: 18
+          ElementId: ef7d9b9e-235c-45fe-9a97-74f0ec92c13b
+          ElementType: VISUAL
+          RowIndex: 62
+          RowSpan: 11
+  Name: Billing Summary
+  ParameterControls:
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 4474d3be-4d30-4ecb-b35f-b42b81e501c9
+      SelectableValues:
+        Values:
+        - Billing Account
+        - Charge Category
+        - Invoice
+        - Provider
+        - Service
+        - Service Category
+        - Sub Account
+      SourceParameterName: summaryGroupByOne
+      Title: Group By
+      Type: SINGLE_SELECT
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 0e924eae-a86e-4882-9b28-21ab501efba3
+      SelectableValues:
+        Values:
+        - Billed Cost
+        - Contracted Cost
+        - Effective Cost
+        - List Cost
+      SourceParameterName: Cost
+      Title: Cost
+      Type: SINGLE_SELECT
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: e03d1b5b-aef1-457c-b53f-3b7f76df1899
+      SelectableValues:
+        Values:
+        - Billing Account
+        - Charge Category
+        - Invoice
+        - Provider
+        - Service
+        - Service Category
+        - Sub Account
+      SourceParameterName: summaryGroupByTwo
+      Title: Group By
+      Type: SINGLE_SELECT
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 2
+          ElementId: 21ea2dab-22ac-4558-970b-dfe03d118362
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 2
+          ColumnSpan: 2
+          ElementId: 8a28df43-ba8b-4e14-91a9-4e53456547ed
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 4
+          ColumnSpan: 2
+          ElementId: 94e02051-c5ef-4982-ab5b-564cd5123431
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 6
+          ColumnSpan: 2
+          ElementId: 4eb788e8-3cd1-42ff-a277-c2a7d98613a5
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 8
+          ColumnSpan: 3
+          ElementId: 5c83c397-73b3-4b2d-959a-39db9ff601ea
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 0
+          ColumnSpan: 3
+          ElementId: 0e924eae-a86e-4882-9b28-21ab501efba3
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 1
+          RowSpan: 1
+  SheetId: b729f41b-811e-4850-878a-5af8aaaabcdb
+  TextBoxes:
+  - Content: "<text-box>\n  <inline font-size=\"36px\">FOCUS Dashboard</inline>\n\
+      \  <br/>\n  <inline color=\"#b3b3b3\" font-size=\"16px\">An interactive and\
+      \ customizable dashboard from the\_</inline>\n  <inline color=\"#61d1d6\" font-size=\"\
+      16px\">\n    <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/\"\
+      \ target=\"_blank\">Cloud Intelligence Dashboards Framework</a>\n  </inline>\n\
+      \  <inline color=\"#b3b3b3\" font-size=\"16px\">\_to visualize your multicloud\
+      \ cost and usage data based on\_</inline>\n  <inline color=\"#61d1d6\" font-size=\"\
+      16px\">\n    <a href=\"https://focus.finops.org/\" target=\"_blank\">FOCUS specification</a>\n\
+      \  </inline>\n  .\n</text-box>"
+    SheetTextBoxId: c30afc45-5b46-411c-a97a-48e97dde3d86
+  - Content: |-
+      <text-box>
+        <inline font-size="32px">Discounts, Credits and Adjustments</inline>
+      </text-box>
+    SheetTextBoxId: e6c97ab1-cb88-42cf-bb02-905450e123a8
+  Visuals:
+  - ComboChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration: {}
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 92695bd3-921d-462b-bae7-9105c89f3b2a
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarDataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: HIDDEN
+        BarsArrangement: STACKED
+        CategoryAxis:
+          AxisLineVisibility: VISIBLE
+          ScrollbarOptions:
+            Visibility: VISIBLE
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: chargeperiodstart
+                DataSetIdentifier: focus_summary_view
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+            CustomLabel: Charge Period
+          SortIconVisibility: HIDDEN
+          Visibility: VISIBLE
+        FieldWells:
+          ComboChartAggregatedFieldWells:
+            BarValues:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412448575
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: chargeperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: DAY
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+                HierarchyId: e19a9368-a711-400f-82de-8d7aa0bbb732
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Summary Group By Two
+                  DataSetIdentifier: focus_summary_view
+                FieldId: b9d1a23f-c545-485a-aa61-8035423ef570.3.1773249526172
+            LineValues:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412501992
+        Legend:
+          Height: 40px
+          Position: BOTTOM
+          Title:
+            Visibility: HIDDEN
+        LineDataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        PrimaryYAxisLabelOptions:
+          Visibility: HIDDEN
+        SingleAxisOptions:
+          YAxisOptions:
+            YAxis: PRIMARY_Y_AXIS
+        SortConfiguration:
+          CategoryItemsLimit:
+            ItemsLimit: 500
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+          ColorItemsLimit:
+            ItemsLimit: 10
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412501992
+                TooltipTarget: BAR
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412501992
+                TooltipTarget: LINE
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+                TooltipTarget: BOTH
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: b9d1a23f-c545-485a-aa61-8035423ef570.3.1773249526172
+                TooltipTarget: BAR
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: e19a9368-a711-400f-82de-8d7aa0bbb732
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Excluding Credits, Adjustments and Tax</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Daily\_</inline>\n\
+            \  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n \
+            \ </inline>\n  <inline font-size=\"20px\">\_per\_</inline>\n  <inline\
+            \ font-size=\"20px\">\n    <parameter>${summaryGroupByTwo}</parameter>\n\
+            \  </inline>\n  <inline font-size=\"20px\">\_in\_</inline>\n  <inline\
+            \ font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n  </inline>\n\
+            </visual-title>"
+        Visibility: VISIBLE
+      VisualId: a6aa0190-c428-4ef6-ae31-bb732cb7457f
+  - PivotTableVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - b9d1a23f-c545-485a-aa61-8035423ef570.3.1773248710131
+              - f7414977-5c37-4ad8-899f-411779ae3926.4.1773248839943
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: d2184772-abed-4420-b8d2-511717b37195
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        FieldOptions:
+          DataPathOptions:
+          - DataPathList:
+            - FieldId: f7414977-5c37-4ad8-899f-411779ae3926.4.1773248839943
+              FieldValue: Summary Group By One
+            Width: 217px
+          - DataPathList:
+            - FieldId: b9d1a23f-c545-485a-aa61-8035423ef570.3.1773248710131
+              FieldValue: Summary Group By Two
+            Width: 172px
+          SelectedFieldOptions:
+          - CustomLabel: <<$summaryGroupByTwo>>
+            FieldId: b9d1a23f-c545-485a-aa61-8035423ef570.3.1773248710131
+            Visibility: VISIBLE
+          - CustomLabel: <<$summaryGroupByOne>>
+            FieldId: f7414977-5c37-4ad8-899f-411779ae3926.4.1773248839943
+            Visibility: VISIBLE
+          - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+            Visibility: VISIBLE
+          - FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718411990965
+            Visibility: VISIBLE
+        FieldWells:
+          PivotTableAggregatedFieldWells:
+            Columns:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+            Rows:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Summary Group By Two
+                  DataSetIdentifier: focus_summary_view
+                FieldId: b9d1a23f-c545-485a-aa61-8035423ef570.3.1773248710131
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Summary Group By One
+                  DataSetIdentifier: focus_summary_view
+                FieldId: f7414977-5c37-4ad8-899f-411779ae3926.4.1773248839943
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718411990965
+        SortConfiguration:
+          FieldSortOptions:
+          - FieldId: b9d1a23f-c545-485a-aa61-8035423ef570.3.1773248710131
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718411990965
+          - FieldId: f7414977-5c37-4ad8-899f-411779ae3926.4.1773248839943
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718411990965
+          - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+        TableOptions:
+          CellStyle: {}
+          CollapsedRowDimensionsVisibility: VISIBLE
+          ColumnHeaderStyle:
+            BackgroundColor: '#0A87AF'
+          ColumnNamesVisibility: HIDDEN
+          MetricPlacement: COLUMN
+          RowAlternateColorOptions:
+            Status: ENABLED
+            UsePrimaryBackgroundColor: ENABLED
+          RowFieldNamesStyle:
+            BackgroundColor: '#0A87AF'
+          RowHeaderStyle:
+            HorizontalTextAlignment: AUTO
+          RowsLayout: TABULAR
+          SingleMetricVisibility: HIDDEN
+        TotalOptions:
+          RowSubtotalOptions:
+            CustomLabel: <<$aws:subtotalDimension>> Subtotal
+            MetricHeaderCellStyle: {}
+            StyleTargets:
+            - CellType: VALUE
+            - CellType: TOTAL
+            - CellType: METRIC_HEADER
+            TotalCellStyle: {}
+            TotalsVisibility: HIDDEN
+            ValueCellStyle: {}
+          RowTotalOptions:
+            TotalsVisibility: VISIBLE
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n\
+            \  </inline>\n  <inline color=\"Accent\" font-size=\"20px\">\_per\_</inline>\n\
+            \  <inline color=\"Accent\" font-size=\"20px\">\n    <parameter>${summaryGroupByTwo}</parameter>\n\
+            \  </inline>\n  <inline color=\"Accent\" font-size=\"20px\">\_and\_</inline>\n\
+            \  <inline color=\"Accent\" font-size=\"20px\">\n    <parameter>${summaryGroupByOne}</parameter>\n\
+            \  </inline>\n  <inline color=\"Accent\" font-size=\"20px\">\_in\_</inline>\n\
+            \  <inline color=\"Accent\" font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 73f3a329-3f1f-48e4-a82d-769478ab4434
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: SUM
+              Column:
+                ColumnName: Total Discounts Absolute
+                DataSetIdentifier: focus_summary_view
+              FieldId: 89ac4176-f514-4f0c-8c28-2363a4cdbff5.0.1718867524094
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Previous months</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Total Discounts,\
+            \ Adjustments and Credits in\_</inline>\n  <inline font-size=\"20px\"\
+            >\n    <parameter>${Currency}</parameter>\n  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: f519b531-2e2e-4f49-8b09-4f3367ee4ce5
+  - ComboChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - f74d2050-e4a1-4acf-840d-18c9ab756141.3.1717809368279
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 55af48e1-caf5-4533-96de-03d1df9705cf
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarDataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: HIDDEN
+        BarsArrangement: STACKED
+        CategoryAxis:
+          AxisLineVisibility: VISIBLE
+          ScrollbarOptions:
+            Visibility: VISIBLE
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: chargeperiodstart
+                DataSetIdentifier: focus_summary_view
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+            CustomLabel: Charge Period
+          SortIconVisibility: HIDDEN
+          Visibility: VISIBLE
+        FieldWells:
+          ComboChartAggregatedFieldWells:
+            BarValues:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412448575
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: chargeperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: DAY
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+                HierarchyId: 8cd084d4-edd0-4b61-a3ee-210aa5f6ec55
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Summary Group By One
+                  DataSetIdentifier: focus_summary_view
+                FieldId: f74d2050-e4a1-4acf-840d-18c9ab756141.3.1717809368279
+            LineValues:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412501992
+        Legend:
+          Height: 30px
+          Position: BOTTOM
+          Title:
+            Visibility: HIDDEN
+        LineDataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        PrimaryYAxisLabelOptions:
+          Visibility: HIDDEN
+        SingleAxisOptions:
+          YAxisOptions:
+            YAxis: PRIMARY_Y_AXIS
+        SortConfiguration:
+          CategoryItemsLimit:
+            ItemsLimit: 500
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+          ColorItemsLimit:
+            ItemsLimit: 10
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: f74d2050-e4a1-4acf-840d-18c9ab756141.3.1717809368279
+                TooltipTarget: BAR
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412501992
+                TooltipTarget: BAR
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412501992
+                TooltipTarget: LINE
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargeperiodstart.3.1718832307233
+                TooltipTarget: BOTH
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 8cd084d4-edd0-4b61-a3ee-210aa5f6ec55
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Excluding Credits, Adjustments and Tax</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Daily\_</inline>\n\
+            \  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n \
+            \ </inline>\n  <inline font-size=\"20px\">\_per\_</inline>\n  <inline\
+            \ font-size=\"20px\">\n    <parameter>${summaryGroupByOne}</parameter>\n\
+            \  </inline>\n  <inline font-size=\"20px\">\_in\_</inline>\n  <inline\
+            \ font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n  </inline>\n\
+            </visual-title>"
+        Visibility: VISIBLE
+      VisualId: 45e52612-c351-4dfa-858b-ae882dca2bbf
+  - WaterfallVisual:
+      Actions: []
+      ChartConfiguration:
+        CategoryAxisLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: VISIBLE
+        DataLabels:
+          LabelFontConfiguration:
+            FontSize:
+              Relative: LARGE
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          WaterfallChartAggregatedFieldWells:
+            Breakdowns: []
+            Categories: []
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: List Cost amortized
+                  DataSetIdentifier: focus_summary_view
+                FieldId: a71bbdf1-edcb-4266-aa2c-401ceab591a3.1.1717977181795
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Total Discounts
+                  DataSetIdentifier: focus_summary_view
+                FieldId: d613a5aa-663e-48bf-8ec4-c3cc1f18d15a.3.1718828548438
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Adjustments
+                  DataSetIdentifier: focus_summary_view
+                FieldId: ab32b9e1-691b-4a2f-98b1-51b88dda2305.3.1718404789829
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Credits
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 8737eb6e-cbad-4aa6-892d-caf2299966be.4.1718404795994
+        Legend:
+          Position: BOTTOM
+          Title:
+            Visibility: HIDDEN
+          Visibility: HIDDEN
+        PrimaryYAxisLabelOptions:
+          Visibility: HIDDEN
+        SortConfiguration:
+          BreakdownItemsLimit:
+            OtherCategories: INCLUDE
+        WaterfallChartOptions:
+          TotalBarLabel: Effective Cost
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>For selcted billing period above</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Total Discounts,\
+            \ Credits and Adjustmets in\_</inline>\n  <inline font-size=\"20px\">\n\
+            \    <parameter>${Currency}</parameter>\n  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: b04b73b1-452d-48bb-a91f-e92c80e52e2d
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              Column:
+                ColumnName: Effective Discount Rate
+                DataSetIdentifier: focus_summary_view
+              FieldId: 3d9b7e08-3f11-45ea-be00-bf4de6bff990.1.1718360842536
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>For selected Billing Period</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\"/>\n  <inline font-size=\"\
+            20px\">Effective Discount Rate in\_</inline>\n  <inline font-size=\"20px\"\
+            >\n    <parameter>${Currency}</parameter>\n  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: b9e0e26e-c30d-482a-8e04-63efbf3e877b
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 0fadc3f0-759a-4f83-bf09-29a0d543865d.2.1718617718388
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 0173d6fe-e2b0-44a2-814d-fd609330d64f
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        CategoryAxis:
+          ScrollbarOptions:
+            VisibleRange:
+              PercentRange:
+                From: 0.0
+                To: 100.0
+        CategoryLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: VISIBLE
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Sub Account
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 0fadc3f0-759a-4f83-bf09-29a0d543865d.2.1718617718388
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: servicecategory
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1718949055814
+                HierarchyId: 9babe6ce-f434-40ce-8982-5ff606cb4352
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.2.1717976179971
+        Legend:
+          Position: BOTTOM
+          Title:
+            Visibility: HIDDEN
+        Orientation: HORIZONTAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.2.1717976179971
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.2.1717976179971
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 0fadc3f0-759a-4f83-bf09-29a0d543865d.2.1718617718388
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1718949055814
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueLabelOptions:
+          Visibility: HIDDEN
+      ColumnHierarchies:
+      - ExplicitHierarchy:
+          Columns:
+          - ColumnName: servicecategory
+            DataSetIdentifier: focus_summary_view
+          - ColumnName: servicename
+            DataSetIdentifier: focus_summary_view
+          DrillDownFilters: []
+          HierarchyId: 9babe6ce-f434-40ce-8982-5ff606cb4352
+      Subtitle:
+        FormatText:
+          RichText: "<visual-subtitle>\n  Previous month.\n  <inline font-size=\"\
+            13px\">Use drill down\u2193to Service Name</inline>\n</visual-subtitle>"
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n\
+            \  </inline>\n  <inline color=\"#ffffff\" font-size=\"20px\">\_per Sub\
+            \ Account Name in\_</inline>\n  <inline font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 305b2ca2-904a-4c48-b230-ba807dd5de91
+  - SankeyDiagramVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.1.1717976155612
+              - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1717976160344
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 661d6c47-7b19-4deb-92c5-7c6b57918d39
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          SankeyDiagramAggregatedFieldWells:
+            Destination:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: servicecategory
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1717976160344
+            Source:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: providername
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.1.1717976155612
+            Weight:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.2.1717976179971
+        SortConfiguration:
+          WeightSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.2.1717976179971
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Previous month</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Service Category\_\
+            </inline>\n  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n\
+            \  </inline>\n  <inline font-size=\"20px\">\_\_per Provider\_in\_</inline>\n\
+            \  <inline font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: c18aac8d-9cee-43ca-a645-94e4e78b8ba2
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups:
+          - DateDimensionField:
+              Column:
+                ColumnName: billingperiodstart
+                DataSetIdentifier: focus_summary_view
+              DateGranularity: DAY
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+              HierarchyId: 4673b8bc-8966-41f6-b35e-ffab5a63697b
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: providername
+                DataSetIdentifier: focus_summary_view
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.1.1717807026286
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontSize:
+              Relative: LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration:
+          TrendGroupSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 4673b8bc-8966-41f6-b35e-ffab5a63697b
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#2CAD00'
+                Expression: percentDifference(DISTINCT_COUNT({providername}),[DISTINCT_COUNT({providername})
+                  DESC],1,[]) > 0.0
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#DE3B00'
+                Expression: percentDifference(DISTINCT_COUNT({providername}),[DISTINCT_COUNT({providername})
+                  DESC],1,[]) < 0.0
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#2CAD00'
+                Expression: percentDifference(DISTINCT_COUNT({providername}),[DISTINCT_COUNT({providername})
+                  DESC],1,[]) > 0.0
+                IconOptions:
+                  Icon: CARET_UP
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#DE3B00'
+                Expression: percentDifference(DISTINCT_COUNT({providername}),[DISTINCT_COUNT({providername})
+                  DESC],1,[]) < 0.0
+                IconOptions:
+                  Icon: CARET_DOWN
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Previous month</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline color="#ffffff" font-size="20px">Total Providers</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 3df9148a-7c12-4cff-91b1-72d725ad1fa5
+  - ComboChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - b9d1a23f-c545-485a-aa61-8035423ef570.3.1773248710131
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 00bb5534-2d8b-4462-b1e4-7d1173421107
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarDataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        BarsArrangement: STACKED
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: billingperiodstart
+                DataSetIdentifier: focus_summary_view
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+            CustomLabel: Billing Period
+          SortIconVisibility: HIDDEN
+          Visibility: VISIBLE
+        FieldWells:
+          ComboChartAggregatedFieldWells:
+            BarValues:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718411990965
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                HierarchyId: 7ad63ca9-78af-4193-8df5-b18b5800e08c
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Summary Group By Two
+                  DataSetIdentifier: focus_summary_view
+                FieldId: b9d1a23f-c545-485a-aa61-8035423ef570.3.1773248710131
+            LineValues:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 6e107a65-4136-40a7-b3e7-ce4035a00678.3.1718832730792
+        Legend:
+          Height: 101px
+          Position: BOTTOM
+          Title:
+            Visibility: HIDDEN
+        LineDataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        PrimaryYAxisLabelOptions:
+          Visibility: HIDDEN
+        SecondaryYAxisDisplayOptions:
+          AxisLineVisibility: VISIBLE
+        SingleAxisOptions:
+          YAxisOptions:
+            YAxis: PRIMARY_Y_AXIS
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                TooltipTarget: BOTH
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 6e107a65-4136-40a7-b3e7-ce4035a00678.3.1718832730792
+                TooltipTarget: BAR
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 6e107a65-4136-40a7-b3e7-ce4035a00678.3.1718832730792
+                TooltipTarget: LINE
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: b9d1a23f-c545-485a-aa61-8035423ef570.3.1773248710131
+                TooltipTarget: BAR
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 7ad63ca9-78af-4193-8df5-b18b5800e08c
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n\
+            \  </inline>\n  <inline color=\"#ffffff\" font-size=\"20px\">\_per Service\
+            \ in\_</inline>\n  <inline color=\"#ffffff\" font-size=\"20px\">\n   \
+            \ <parameter>${Currency}</parameter>\n  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 8fcaef47-e54f-40ba-8a3d-e8063f966d85
+  - WordCloudVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedColumns:
+              - ColumnName: regionname
+                DataSetIdentifier: focus_summary_view
+              - ColumnName: regionname
+                DataSetIdentifier: focus_summary_view
+              - ColumnName: regionname
+                DataSetIdentifier: focus_summary_view
+              - ColumnName: regionname
+                DataSetIdentifier: focus_summary_view
+              - ColumnName: providername
+                DataSetIdentifier: focus_summary_view
+              SelectedFields:
+              - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.regionname.1.1717804447612
+              - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.regionname.1.1717804447612
+              - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.regionname.1.1717804447612
+              - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.regionname.1.1717804447612
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: a171e354-468e-41e2-8549-15361b32461f
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        CategoryLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: VISIBLE
+        FieldWells:
+          WordCloudAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: regionname
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.regionname.1.1717804447612
+                HierarchyId: f3f3de2c-6bdd-444e-803c-cd8df7ed41d8
+            Size:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.1.1717813221446
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+        WordCloudOptions:
+          CloudLayout: FLUID
+          MaximumStringLength: 40
+          WordCasing: EXISTING_CASE
+          WordOrientation: HORIZONTAL
+          WordPadding: MEDIUM
+          WordScaling: EMPHASIZE
+      ColumnHierarchies:
+      - ExplicitHierarchy:
+          Columns:
+          - ColumnName: regionname
+            DataSetIdentifier: focus_summary_view
+          - ColumnName: providername
+            DataSetIdentifier: focus_summary_view
+          DrillDownFilters: []
+          HierarchyId: f3f3de2c-6bdd-444e-803c-cd8df7ed41d8
+      Subtitle:
+        FormatText:
+          RichText: "<visual-subtitle>\n  Previous month.\n  <inline font-size=\"\
+            13px\">Use drill down\u2193Provider</inline>\n</visual-subtitle>"
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Most popular Region\
+            \ by\_</inline>\n  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 1c02a69d-4f07-4144-a6fa-51c3b6eb9294
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups:
+          - DateDimensionField:
+              Column:
+                ColumnName: billingperiodstart
+                DataSetIdentifier: focus_summary_view
+              DateGranularity: DAY
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+              HierarchyId: 42c00000-e150-484e-9a09-c36d9e1a2f84
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: servicename
+                DataSetIdentifier: focus_summary_view
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.1.1717803674623
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontSize:
+              Relative: LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration:
+          TrendGroupSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 42c00000-e150-484e-9a09-c36d9e1a2f84
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#2CAD00'
+                Expression: percentDifference(DISTINCT_COUNT({servicename}),[DISTINCT_COUNT({servicename})
+                  DESC],1,[]) > 0.0
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#DE3B00'
+                Expression: percentDifference(DISTINCT_COUNT({servicename}),[DISTINCT_COUNT({servicename})
+                  DESC],1,[]) < 0.0
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#2CAD00'
+                Expression: percentDifference(DISTINCT_COUNT({servicename}),[DISTINCT_COUNT({servicename})
+                  DESC],1,[]) > 0.0
+                IconOptions:
+                  Icon: CARET_UP
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#DE3B00'
+                Expression: percentDifference(DISTINCT_COUNT({servicename}),[DISTINCT_COUNT({servicename})
+                  DESC],1,[]) < 0.0
+                IconOptions:
+                  Icon: CARET_DOWN
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Previous month</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline color="#ffffff" font-size="20px">Total Services</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: ed4d178c-cfed-4482-be33-d1a7012b4a05
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups:
+          - DateDimensionField:
+              Column:
+                ColumnName: billingperiodstart
+                DataSetIdentifier: focus_summary_view
+              DateGranularity: MONTH
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+              HierarchyId: 27c79d85-079a-444d-98d4-cea57155a9b5
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: subaccountid
+                DataSetIdentifier: focus_summary_view
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.subaccountid.1.1717803290501
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontSize:
+              Relative: LARGE
+          ProgressBar:
+            Visibility: HIDDEN
+          SecondaryValue:
+            Visibility: HIDDEN
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: HIDDEN
+          TrendArrows:
+            Visibility: HIDDEN
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration:
+          TrendGroupSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 27c79d85-079a-444d-98d4-cea57155a9b5
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#2CAD00'
+                Expression: percentDifference(DISTINCT_COUNT({subaccountid}),[DISTINCT_COUNT({subaccountid})
+                  DESC],1,[]) > 0.0
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#DE3B00'
+                Expression: percentDifference(DISTINCT_COUNT({subaccountid}),[DISTINCT_COUNT({subaccountid})
+                  DESC],1,[]) < 0.0
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#2CAD00'
+                Expression: percentDifference(DISTINCT_COUNT({subaccountid}),[DISTINCT_COUNT({subaccountid})
+                  DESC],1,[]) > 0.0
+                IconOptions:
+                  Icon: CARET_UP
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#DE3B00'
+                Expression: percentDifference(DISTINCT_COUNT({subaccountid}),[DISTINCT_COUNT({subaccountid})
+                  DESC],1,[]) < 0.0
+                IconOptions:
+                  Icon: CARET_DOWN
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Previous month</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline color="#ffffff" font-size="20px">Total Accounts</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 1df9ff17-848d-4cea-b50f-e7b2f51de0f7
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups:
+          - DateDimensionField:
+              Column:
+                ColumnName: billingperiodstart
+                DataSetIdentifier: focus_summary_view
+              DateGranularity: MONTH
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+              HierarchyId: 82cbbbe1-a5e7-4a13-977b-e61d803a774d
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: SUM
+              Column:
+                ColumnName: Cost
+                DataSetIdentifier: focus_summary_view
+              FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.1.1717813211040
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontSize:
+              Relative: LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration:
+          TrendGroupSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 82cbbbe1-a5e7-4a13-977b-e61d803a774d
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#2CAD00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  > 0.0
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#DE3B00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  < 0.0
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#2CAD00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  > 0.0
+                IconOptions:
+                  Icon: CARET_UP
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#DE3B00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  < 0.0
+                IconOptions:
+                  Icon: CARET_DOWN
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Previous month</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n\
+            \  </inline>\n  <inline color=\"#ffffff\" font-size=\"20px\">\_in\_</inline>\n\
+            \  <inline font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: d7b687ae-52fc-4978-8c9c-80c0c4bbf345
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups:
+          - DateDimensionField:
+              Column:
+                ColumnName: billingperiodstart
+                DataSetIdentifier: focus_summary_view
+              DateGranularity: MONTH
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+              HierarchyId: 3344340c-7bc6-49b1-8598-05ee1ab30f9f
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: SUM
+              Column:
+                ColumnName: Cost
+                DataSetIdentifier: focus_summary_view
+              FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.1.1717813206875
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontSize:
+              Relative: LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration:
+          TrendGroupSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 3344340c-7bc6-49b1-8598-05ee1ab30f9f
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#2CAD00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  > 0.0
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#DE3B00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  < 0.0
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#2CAD00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  > 0.0
+                IconOptions:
+                  Icon: CARET_UP
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#DE3B00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  < 0.0
+                IconOptions:
+                  Icon: CARET_DOWN
+      Subtitle:
+        FormatText:
+          RichText: |-
+            <visual-subtitle>
+              <inline font-size="13px">2 Month Ago</inline>
+            </visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">\_</inline>\n  <inline\
+            \ font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n  </inline>\n\
+            \  <inline font-size=\"20px\">\_in\_</inline>\n  <inline font-size=\"\
+            20px\">\n    <parameter>${Currency}</parameter>\n  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: ae8d4130-65ba-4daf-9c44-71552ef4265d
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups:
+          - DateDimensionField:
+              Column:
+                ColumnName: billingperiodstart
+                DataSetIdentifier: focus_summary_view
+              DateGranularity: MONTH
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+              HierarchyId: 623df27d-6f69-4d6f-99ec-3426aba60ed0
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: SUM
+              Column:
+                ColumnName: Cost
+                DataSetIdentifier: focus_summary_view
+              FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.1.1717813145855
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontSize:
+              Relative: LARGE
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration:
+          TrendGroupSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 623df27d-6f69-4d6f-99ec-3426aba60ed0
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#2CAD00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  > 0.0
+        - ComparisonValue:
+            TextColor:
+              Solid:
+                Color: '#DE3B00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  < 0.0
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#2CAD00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  > 0.0
+                IconOptions:
+                  Icon: CARET_UP
+        - ComparisonValue:
+            Icon:
+              CustomCondition:
+                Color: '#DE3B00'
+                Expression: percentDifference(SUM({Cost}),[SUM({Cost}) DESC],1,[])
+                  < 0.0
+                IconOptions:
+                  Icon: CARET_DOWN
+      Subtitle:
+        FormatText:
+          RichText: |-
+            <visual-subtitle>
+              <inline font-size="13px">3 Month Ago</inline>
+            </visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n\
+            \  </inline>\n  <inline color=\"#ffffff\" font-size=\"20px\">\_in\_</inline>\n\
+            \  <inline font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: e0f0cce1-baf5-484f-9c0a-51fe3dcbdd5d
+  - ComboChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - f74d2050-e4a1-4acf-840d-18c9ab756141.3.1717809368279
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 72c31380-c30d-4744-900f-7bd062b6f288
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarDataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        BarsArrangement: STACKED
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: billingperiodstart
+                DataSetIdentifier: focus_summary_view
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+            CustomLabel: Billing Period
+          SortIconVisibility: HIDDEN
+          Visibility: VISIBLE
+        FieldWells:
+          ComboChartAggregatedFieldWells:
+            BarValues:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412448575
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                HierarchyId: a9264831-4a1b-4b7a-a242-073fe8e40f41
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Summary Group By One
+                  DataSetIdentifier: focus_summary_view
+                FieldId: f74d2050-e4a1-4acf-840d-18c9ab756141.3.1717809368279
+            LineValues:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412501992
+        Legend:
+          Height: 86px
+          Position: BOTTOM
+          Title:
+            Visibility: HIDDEN
+        LineDataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        PrimaryYAxisLabelOptions:
+          Visibility: HIDDEN
+        SingleAxisOptions:
+          YAxisOptions:
+            YAxis: PRIMARY_Y_AXIS
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1717800713725
+                TooltipTarget: BOTH
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: f74d2050-e4a1-4acf-840d-18c9ab756141.3.1717809368279
+                TooltipTarget: BAR
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412501992
+                TooltipTarget: BAR
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: ada2ab01-fdb1-4963-8bb5-e7d5796e4d26.3.1718412501992
+                TooltipTarget: LINE
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: a9264831-4a1b-4b7a-a242-073fe8e40f41
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n\
+            \  </inline>\n  <inline color=\"#ffffff\" font-size=\"20px\">\_per\_</inline>\n\
+            \  <inline font-size=\"20px\">\n    <parameter>${summaryGroupByOne}</parameter>\n\
+            \  </inline>\n  <inline font-size=\"20px\">\_in\_</inline>\n  <inline\
+            \ font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n  </inline>\n\
+            </visual-title>"
+        Visibility: VISIBLE
+      VisualId: abb281fc-2cbd-43d4-be0c-f03cd66929a6
+  - ComboChartVisual:
+      Actions: []
+      ChartConfiguration:
+        BarDataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        BarsArrangement: STACKED
+        CategoryLabelOptions:
+          Visibility: VISIBLE
+        FieldWells:
+          ComboChartAggregatedFieldWells:
+            BarValues:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost Absolute
+                  DataSetIdentifier: focus_summary_view
+                FieldId: dafb06b4-3d8f-4ab7-a86c-835dfa2c8270.1.1718628976516
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1718628967568
+                HierarchyId: ecc093e4-ed2d-43bf-9e16-1c9e4ba37f7f
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: chargecategory
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargecategory.3.1718629001537
+                HierarchyId: 9761f71f-1ff0-4b90-991c-f7adbde9c721
+            LineValues: []
+        LineDataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        SingleAxisOptions:
+          YAxisOptions:
+            YAxis: PRIMARY_Y_AXIS
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1718628967568
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.0.1718628967568
+                TooltipTarget: BOTH
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: dafb06b4-3d8f-4ab7-a86c-835dfa2c8270.1.1718628976516
+                TooltipTarget: BAR
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.chargecategory.3.1718629001537
+                TooltipTarget: BAR
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - ExplicitHierarchy:
+          Columns:
+          - ColumnName: chargecategory
+            DataSetIdentifier: focus_summary_view
+          - ColumnName: chargedescription
+            DataSetIdentifier: focus_summary_view
+          DrillDownFilters: []
+          HierarchyId: 9761f71f-1ff0-4b90-991c-f7adbde9c721
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: ecc093e4-ed2d-43bf-9e16-1c9e4ba37f7f
+      Subtitle:
+        FormatText:
+          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">Use drill down\u2193\
+            to Charge Description</inline>\n</visual-subtitle>"
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Credits and Adjustmets\
+            \ in\_</inline>\n  <inline font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: ef7d9b9e-235c-45fe-9a97-74f0ec92c13b
+- ContentType: INTERACTIVE
+  FilterControls:
+  - CrossSheet:
+      FilterControlId: 3948ed80-d0d2-4be2-9b65-b5be4c2fcc92
+      SourceFilterId: 911db2f5-2a32-4cfc-8560-8ad59ca41f4a
+  - CrossSheet:
+      FilterControlId: aab0e3df-88df-4e37-a8fb-1314c4fda76b
+      SourceFilterId: 4239dfdb-d9ec-4084-9b23-31f12a9bfe9a
+  - CrossSheet:
+      FilterControlId: 40353e2f-5f4e-4b84-8dda-889d5b7e5148
+      SourceFilterId: 2b7e6abe-62ca-4c5f-9155-20e62cf16b42
+  - CrossSheet:
+      FilterControlId: c14050f4-92ab-4917-a897-736a32d6c15c
+      SourceFilterId: 65e16b91-8e22-4b63-9892-af29ff4cbe41
+  - CrossSheet:
+      FilterControlId: dfab5374-bebd-4273-bdb5-56cc12a8eb61
+      SourceFilterId: 79313680-59d7-4ae7-9d47-9712507e3b4d
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: aef69c31-ca3c-4de1-89a3-2c0d54dd3655
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 11
+          ElementId: e998a49e-879a-4a0e-8f3d-20f4cf64a84c
+          ElementType: VISUAL
+          RowIndex: 4
+          RowSpan: 11
+        - ColumnIndex: 11
+          ColumnSpan: 12
+          ElementId: 630e2c0f-36de-45f1-85db-9a80ad2c7f49
+          ElementType: VISUAL
+          RowIndex: 4
+          RowSpan: 11
+        - ColumnIndex: 23
+          ColumnSpan: 13
+          ElementId: 8c3ad906-2c22-4dbb-9773-555b49298cd5
+          ElementType: VISUAL
+          RowIndex: 4
+          RowSpan: 11
+        - ColumnIndex: 0
+          ColumnSpan: 18
+          ElementId: 8eb5a4cc-d2cc-43e4-8e15-ac49b1f4be46
+          ElementType: VISUAL
+          RowIndex: 15
+          RowSpan: 11
+        - ColumnIndex: 18
+          ColumnSpan: 18
+          ElementId: 8e55764c-7936-46dc-bc36-d96d944d2a4e
+          ElementType: VISUAL
+          RowIndex: 15
+          RowSpan: 11
+        - ColumnIndex: 0
+          ColumnSpan: 5
+          ElementId: 300145f4-1d8a-4f17-98f8-7971d68d2ca4
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 26
+          RowSpan: 10
+        - ColumnIndex: 5
+          ColumnSpan: 28
+          ElementId: f09fffe7-539f-4016-9c57-505894bf32af
+          ElementType: VISUAL
+          RowIndex: 26
+          RowSpan: 10
+        - ColumnIndex: 0
+          ColumnSpan: 5
+          ElementId: ef7b9bd4-95ef-45a2-a1f2-6b046a631720
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 36
+          RowSpan: 10
+        - ColumnIndex: 5
+          ColumnSpan: 28
+          ElementId: c47a44d9-1fcd-486f-8fa0-1244ed18f228
+          ElementType: VISUAL
+          RowIndex: 36
+          RowSpan: 10
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 12042841-d682-446d-92f4-31e0308e5f79
+          ElementType: TEXT_BOX
+          RowIndex: 46
+          RowSpan: 2
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: ce77ad3e-f798-488a-b065-8f74d6eff50a
+          ElementType: VISUAL
+          RowIndex: 48
+          RowSpan: 12
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: fa1696b6-c455-48a2-9bd2-bf9da82044fe
+          ElementType: VISUAL
+          RowIndex: 60
+          RowSpan: 12
+  Name: MoM Trends
+  ParameterControls:
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 300145f4-1d8a-4f17-98f8-7971d68d2ca4
+      SelectableValues:
+        Values:
+        - Billing Account
+        - Charge Category
+        - Provider
+        - Service Category
+        - Service Name
+        - Sub Account
+      SourceParameterName: MomGroupBy1
+      Title: Group By
+      Type: SINGLE_SELECT
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: ef7b9bd4-95ef-45a2-a1f2-6b046a631720
+      SelectableValues:
+        Values:
+        - Billing Account
+        - Charge Category
+        - Provider
+        - Service Category
+        - Service Name
+        - Sub Account
+      SourceParameterName: MomGroupByTwo
+      Title: Group By
+      Type: SINGLE_SELECT
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 2
+          ElementId: dfab5374-bebd-4273-bdb5-56cc12a8eb61
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 2
+          ColumnSpan: 2
+          ElementId: aab0e3df-88df-4e37-a8fb-1314c4fda76b
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 4
+          ColumnSpan: 2
+          ElementId: 40353e2f-5f4e-4b84-8dda-889d5b7e5148
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 6
+          ColumnSpan: 2
+          ElementId: c14050f4-92ab-4917-a897-736a32d6c15c
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 8
+          ColumnSpan: 3
+          ElementId: 3948ed80-d0d2-4be2-9b65-b5be4c2fcc92
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+  SheetId: 5df6e2a8-5758-4889-89e5-7bdf135ca482
+  TextBoxes:
+  - Content: |-
+      <text-box>
+        <inline font-size="36px">Resource-level Trends</inline>
+      </text-box>
+    SheetTextBoxId: 12042841-d682-446d-92f4-31e0308e5f79
+  - Content: |-
+      <text-box>
+        <inline font-size="40px">Month over Month Trends</inline>
+        <br/>
+        <inline font-size="24px">Insight:</inline>
+        <br/>
+        <ul>
+          <li>
+            <inline font-size="19.2px">Click on any value on any visual to filter rest of the visual based on selection and see resource level details</inline>
+          </li>
+        </ul>
+      </text-box>
+    SheetTextBoxId: aef69c31-ca3c-4de1-89a3-2c0d54dd3655
+  Visuals:
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 785dddf0-4c5d-4b89-815e-6f309317d2e7.2.1718613928582
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 5b10e0b2-2662-4821-9dff-1a6040677833
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: CLUSTERED
+        CategoryAxis:
+          ScrollbarOptions:
+            Visibility: HIDDEN
+        CategoryLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Billing Account
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 785dddf0-4c5d-4b89-815e-6f309317d2e7.2.1718613928582
+            Colors:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                HierarchyId: dd295426-4718-4f79-ac6d-86d2d7cdf202
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: effectivecost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+        Legend:
+          Position: BOTTOM
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 785dddf0-4c5d-4b89-815e-6f309317d2e7.2.1718613928582
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 65px
+        ValueLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: dd295426-4718-4f79-ac6d-86d2d7cdf202
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Top 10</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Effective Cost by\
+            \ Billing Account in\_</inline>\n  <inline font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 630e2c0f-36de-45f1-85db-9a80ad2c7f49
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 0fadc3f0-759a-4f83-bf09-29a0d543865d.3.1718613761885
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 632e1e3d-2841-4205-bab0-f0042eca3e2e
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: CLUSTERED
+        CategoryAxis:
+          ScrollbarOptions:
+            Visibility: HIDDEN
+        CategoryLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Sub Account
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 0fadc3f0-759a-4f83-bf09-29a0d543865d.3.1718613761885
+            Colors:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                HierarchyId: 691960b6-8acc-4750-856d-b2cd7465dcb9
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: effectivecost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+        Legend:
+          Position: BOTTOM
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 0fadc3f0-759a-4f83-bf09-29a0d543865d.3.1718613761885
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 691960b6-8acc-4750-856d-b2cd7465dcb9
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Top 10</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Effective Cost by\
+            \ Sub Account in\_</inline>\n  <inline font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 8c3ad906-2c22-4dbb-9773-555b49298cd5
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.3.1718613625682
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 1bd849db-7022-458d-b782-9044928a50d6
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: CLUSTERED
+        CategoryAxis:
+          ScrollbarOptions:
+            Visibility: HIDDEN
+        CategoryLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: servicename
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.3.1718613625682
+            Colors:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                HierarchyId: 468d64e4-d587-4c2a-8608-100554bb9743
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: effectivecost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+        Legend:
+          Position: BOTTOM
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicename.3.1718613625682
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 65px
+        ValueLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 468d64e4-d587-4c2a-8608-100554bb9743
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Top 10</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Effective Cost by\
+            \ Service Name in\_</inline>\n  <inline font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 8e55764c-7936-46dc-bc36-d96d944d2a4e
+  - PivotTableVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 5993e9ad-2205-4e81-abb8-c9ef7dbaf19c
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        FieldOptions:
+          DataPathOptions:
+          - DataPathList:
+            - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+              FieldValue: resourceid
+            Width: 433px
+          - DataPathList:
+            - FieldId: aea64b5f-f84b-4a36-89e5-15be6a358267.8.1718612887022
+              FieldValue: Sub Account
+            Width: 195px
+          - DataPathList:
+            - FieldId: 287a33e3-8277-46c9-b15b-31242a253e5d.8.1718612851838
+              FieldValue: Billing Account
+            Width: 161px
+          - DataPathList:
+            - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicename.6.1718005993776
+              FieldValue: servicename
+            Width: 154px
+          - DataPathList:
+            - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedquantity.7.1718006008283
+              FieldValue: consumedquantity
+            Width: 127px
+          - DataPathList:
+            - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.skumeter.9.1773249872113
+              FieldValue: skumeter
+            Width: 124px
+          - DataPathList:
+            - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedunit.8.1718006014514
+              FieldValue: consumedunit
+            Width: 122px
+          - DataPathList:
+            - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicecategory.5.1718005992676
+              FieldValue: servicecategory
+            Width: 108px
+          - DataPathList:
+            - FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.providername.4.1718005987248
+              FieldValue: providername
+            Width: 102px
+          SelectedFieldOptions:
+          - CustomLabel: RersourceId
+            FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+            Visibility: VISIBLE
+          - CustomLabel: Provider
+            FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.providername.4.1718005987248
+            Visibility: VISIBLE
+          - FieldId: 287a33e3-8277-46c9-b15b-31242a253e5d.8.1718612851838
+            Visibility: VISIBLE
+          - FieldId: aea64b5f-f84b-4a36-89e5-15be6a358267.8.1718612887022
+            Visibility: VISIBLE
+          - CustomLabel: Service Category
+            FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicecategory.5.1718005992676
+            Visibility: VISIBLE
+          - CustomLabel: Service Name
+            FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicename.6.1718005993776
+            Visibility: VISIBLE
+          - CustomLabel: Consumed Units
+            FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedunit.8.1718006014514
+            Visibility: VISIBLE
+          - CustomLabel: SKU Meter
+            FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.skumeter.9.1773249872113
+            Visibility: VISIBLE
+          - CustomLabel: Effetive Cost, <<$Currency>>
+            FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.effectivecost.8.1718612742423
+            Visibility: VISIBLE
+          - CustomLabel: Consumed Quantity
+            FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedquantity.7.1718006008283
+            Visibility: VISIBLE
+        FieldWells:
+          PivotTableAggregatedFieldWells:
+            Columns: []
+            Rows:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resourceid
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: providername
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.providername.4.1718005987248
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Billing Account
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 287a33e3-8277-46c9-b15b-31242a253e5d.8.1718612851838
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Sub Account
+                  DataSetIdentifier: focus_resource_view
+                FieldId: aea64b5f-f84b-4a36-89e5-15be6a358267.8.1718612887022
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: servicecategory
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicecategory.5.1718005992676
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: servicename
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.servicename.6.1718005993776
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: consumedunit
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedunit.8.1718006014514
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: skumeter
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.skumeter.9.1773249872113
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: effectivecost
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.effectivecost.8.1718612742423
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: consumedquantity
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.consumedquantity.7.1718006008283
+        SortConfiguration:
+          FieldSortOptions: []
+        TableOptions:
+          CellStyle:
+            TextWrap: WRAP
+            VerticalTextAlignment: BOTTOM
+          ColumnHeaderStyle:
+            BackgroundColor: '#0A87AF'
+            Height: 49
+            HorizontalTextAlignment: AUTO
+            VerticalTextAlignment: BOTTOM
+          RowAlternateColorOptions:
+            Status: DISABLED
+            UsePrimaryBackgroundColor: ENABLED
+          RowFieldNamesStyle:
+            BackgroundColor: '#0A87AF'
+            Height: 49
+            HorizontalTextAlignment: AUTO
+            VerticalTextAlignment: BOTTOM
+          RowHeaderStyle:
+            HorizontalTextAlignment: AUTO
+            VerticalTextAlignment: AUTO
+          RowsLayout: TABULAR
+        TotalOptions:
+          RowSubtotalOptions:
+            CustomLabel: <<$aws:subtotalDimension>> Subtotal
+            MetricHeaderCellStyle: {}
+            StyleTargets:
+            - CellType: VALUE
+            - CellType: TOTAL
+            - CellType: METRIC_HEADER
+            TotalCellStyle: {}
+            TotalsVisibility: HIDDEN
+            ValueCellStyle: {}
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="20px">Detailed Resource View</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: fa1696b6-c455-48a2-9bd2-bf9da82044fe
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.2.1717980676200
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: eee266be-40c9-4028-b931-55df4b881c34
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: CLUSTERED
+        CategoryAxis:
+          ScrollbarOptions:
+            Visibility: HIDDEN
+        CategoryLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: providername
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.2.1717980676200
+            Colors:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                HierarchyId: 4b10aa50-99ed-4ba6-8451-8967f3659506
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: effectivecost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+        Legend:
+          Height: 35px
+          Position: BOTTOM
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.providername.2.1717980676200
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612594063
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 65px
+        ValueLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 4b10aa50-99ed-4ba6-8451-8967f3659506
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Effective Cost by\
+            \ Provider in\_</inline>\n  <inline font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: e998a49e-879a-4a0e-8f3d-20f4cf64a84c
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1717980799361
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: ebd930cb-604e-4033-a535-f69419848e89
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: CLUSTERED
+        CategoryAxis:
+          AxisLineVisibility: VISIBLE
+          ScrollbarOptions:
+            Visibility: HIDDEN
+          TickLabelOptions:
+            LabelOptions:
+              FontConfiguration:
+                FontSize:
+                  Relative: LARGE
+              Visibility: VISIBLE
+        CategoryLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: servicecategory
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1717980799361
+            Colors:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                HierarchyId: 105df98b-0b31-4b01-8e8b-8ccc1e7b603d
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: effectivecost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612413773
+        Legend:
+          Position: BOTTOM
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612413773
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.servicecategory.2.1717980799361
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.effectivecost.2.1718612413773
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 73px
+        ValueLabelOptions:
+          SortIconVisibility: HIDDEN
+          Visibility: HIDDEN
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 105df98b-0b31-4b01-8e8b-8ccc1e7b603d
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Effective Cost by\
+            \ Service Category in\_</inline>\n  <inline font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 8eb5a4cc-d2cc-43e4-8e15-ac49b1f4be46
+  - PivotTableVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 0c16393f-2045-4576-a619-958620547ffe.4.1717980398769
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 9c6f710a-3ef3-4e32-8b2d-d370f9fd036c
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        FieldOptions:
+          DataPathOptions:
+          - DataPathList:
+            - FieldId: 0c16393f-2045-4576-a619-958620547ffe.4.1717980398769
+              FieldValue: MoM Group By Two
+            Width: 253px
+          - DataPathList:
+            - DataPathType: {}
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+              FieldValue: '2024-05-01 00:00:00.000'
+            - FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
+              FieldValue: Cost
+            Width: 128px
+          SelectedFieldOptions:
+          - CustomLabel: Group By
+            FieldId: 0c16393f-2045-4576-a619-958620547ffe.4.1717980398769
+            Visibility: VISIBLE
+          - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+            Visibility: VISIBLE
+          - CustomLabel: MoM %
+            FieldId: 5cbb4814-4f5c-40ac-aa35-38b4f87bcad3.4.1717980387458
+            Visibility: VISIBLE
+          - CustomLabel: MoM $
+            FieldId: 9681b2b7-487d-42e0-9e4b-fe870e1c4f57.4.1717980390536
+            Visibility: VISIBLE
+          - CustomLabel: "<<$Cost>> in\_ <<$Currency>>"
+            FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
+            Visibility: VISIBLE
+        FieldWells:
+          PivotTableAggregatedFieldWells:
+            Columns:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+            Rows:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: MoM Group By Two
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 0c16393f-2045-4576-a619-958620547ffe.4.1717980398769
+            Values:
+            - NumericalMeasureField:
+                Column:
+                  ColumnName: MoM % Group By Two
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 5cbb4814-4f5c-40ac-aa35-38b4f87bcad3.4.1717980387458
+            - NumericalMeasureField:
+                Column:
+                  ColumnName: MoM $ Group By Two
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 9681b2b7-487d-42e0-9e4b-fe870e1c4f57.4.1717980390536
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
+        SortConfiguration:
+          FieldSortOptions:
+          - FieldId: 0c16393f-2045-4576-a619-958620547ffe.4.1717980398769
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
+          - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+        TableOptions:
+          CellStyle:
+            Height: 25
+          CollapsedRowDimensionsVisibility: HIDDEN
+          ColumnHeaderStyle:
+            BackgroundColor: '#0A87AF'
+            Height: 29
+          ColumnNamesVisibility: HIDDEN
+          RowAlternateColorOptions:
+            Status: DISABLED
+            UsePrimaryBackgroundColor: ENABLED
+          RowFieldNamesStyle:
+            BackgroundColor: '#0A87AF'
+            Height: 29
+          RowsLayout: TABULAR
+          SingleMetricVisibility: HIDDEN
+        TotalOptions:
+          ColumnTotalOptions:
+            Placement: END
+          RowSubtotalOptions:
+            CustomLabel: <<$aws:subtotalDimension>> Subtotal
+            MetricHeaderCellStyle: {}
+            StyleTargets:
+            - CellType: VALUE
+            - CellType: TOTAL
+            - CellType: METRIC_HEADER
+            TotalCellStyle: {}
+            TotalsVisibility: HIDDEN
+            ValueCellStyle: {}
+          RowTotalOptions:
+            Placement: AUTO
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - Cell:
+            FieldId: 5cbb4814-4f5c-40ac-aa35-38b4f87bcad3.4.1717980387458
+            Scopes:
+            - Role: FIELD
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  Color: '#2CAD00'
+                  Expression: '{MoM % Group By Two} < 0'
+                  IconOptions:
+                    Icon: ARROW_DOWN
+        - Cell:
+            FieldId: 5cbb4814-4f5c-40ac-aa35-38b4f87bcad3.4.1717980387458
+            Scopes:
+            - Role: FIELD
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  Color: '#F6AA54'
+                  Expression: ({MoM % Group By Two} >= 0) AND ({MoM % Group By Two}
+                    <= 0)
+                  IconOptions:
+                    Icon: MINUS
+        - Cell:
+            FieldId: 5cbb4814-4f5c-40ac-aa35-38b4f87bcad3.4.1717980387458
+            Scopes:
+            - Role: FIELD
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  Color: '#DE3B00'
+                  Expression: '{MoM % Group By Two} > 0'
+                  IconOptions:
+                    Icon: ARROW_UP
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Effective Cost by\_\
+            </inline>\n  <inline font-size=\"20px\">\n    <parameter>${MomGroupByTwo}</parameter>\n\
+            \  </inline>\n  <inline font-size=\"20px\">\_in\_</inline>\n  <inline\
+            \ font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n  </inline>\n\
+            </visual-title>"
+        Visibility: VISIBLE
+      VisualId: c47a44d9-1fcd-486f-8fa0-1244ed18f228
+  - PivotTableVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - e1bd28fa-1009-4e09-8ab4-6337bd32b92f.3.1717979519343
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: d51765f5-9616-4bad-8c58-dc9ada2be314
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        FieldOptions:
+          DataPathOptions:
+          - DataPathList:
+            - FieldId: e1bd28fa-1009-4e09-8ab4-6337bd32b92f.3.1717979519343
+              FieldValue: MoM Group By One
+            Width: 254px
+          - DataPathList:
+            - DataPathType: {}
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+              FieldValue: '2024-05-01 00:00:00.000'
+            - FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
+              FieldValue: Cost
+            Width: 107px
+          - DataPathList:
+            - DataPathType: {}
+              FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+              FieldValue: '2024-04-01 00:00:00.000'
+            - FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
+              FieldValue: Cost
+            Width: 105px
+          SelectedFieldOptions:
+          - CustomLabel: Group By
+            FieldId: e1bd28fa-1009-4e09-8ab4-6337bd32b92f.3.1717979519343
+            Visibility: VISIBLE
+          - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+            Visibility: VISIBLE
+          - CustomLabel: MoM %
+            FieldId: 6e1e14d6-12c4-4974-ba22-70c8a8a0dbd4.3.1717896772787
+            Visibility: VISIBLE
+          - CustomLabel: "MoM\_ <<$Currency>>"
+            FieldId: 3ba94434-e9f1-4e91-83e2-57fec27ba8f1.4.1717979726384
+            Visibility: VISIBLE
+          - CustomLabel: <<$Cost>>
+            FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
+            Visibility: VISIBLE
+        FieldWells:
+          PivotTableAggregatedFieldWells:
+            Columns:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billingperiodstart
+                  DataSetIdentifier: focus_summary_view
+                DateGranularity: MONTH
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+            Rows:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: MoM Group By One
+                  DataSetIdentifier: focus_summary_view
+                FieldId: e1bd28fa-1009-4e09-8ab4-6337bd32b92f.3.1717979519343
+            Values:
+            - NumericalMeasureField:
+                Column:
+                  ColumnName: MoM % Group By One
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 6e1e14d6-12c4-4974-ba22-70c8a8a0dbd4.3.1717896772787
+                FormatConfiguration:
+                  FormatConfiguration:
+                    PercentageDisplayFormatConfiguration:
+                      NegativeValueConfiguration:
+                        DisplayMode: NEGATIVE
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      SeparatorConfiguration:
+                        DecimalSeparator: DOT
+                        ThousandsSeparator:
+                          Symbol: COMMA
+                          Visibility: VISIBLE
+                      Suffix: '%'
+            - NumericalMeasureField:
+                Column:
+                  ColumnName: MoM $ Group By One
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 3ba94434-e9f1-4e91-83e2-57fec27ba8f1.4.1717979726384
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: focus_summary_view
+                FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
+        SortConfiguration:
+          FieldSortOptions:
+          - FieldId: e1bd28fa-1009-4e09-8ab4-6337bd32b92f.3.1717979519343
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: 250c82b8-6d64-46a4-bffd-2d4452889bd2.4.1717896779799
+          - FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: 9b0ed71e-9072-4dc4-92ed-47cf617e5206.billingperiodstart.5.1717896811137
+        TableOptions:
+          CellStyle:
+            Height: 25
+          CollapsedRowDimensionsVisibility: HIDDEN
+          ColumnHeaderStyle:
+            BackgroundColor: '#0A87AF'
+            Height: 29
+          ColumnNamesVisibility: HIDDEN
+          RowAlternateColorOptions:
+            Status: DISABLED
+            UsePrimaryBackgroundColor: ENABLED
+          RowFieldNamesStyle:
+            BackgroundColor: '#0A87AF'
+            Height: 29
+          RowsLayout: TABULAR
+          SingleMetricVisibility: HIDDEN
+        TotalOptions:
+          ColumnTotalOptions:
+            Placement: END
+          RowSubtotalOptions:
+            CustomLabel: <<$aws:subtotalDimension>> Subtotal
+            MetricHeaderCellStyle: {}
+            StyleTargets:
+            - CellType: VALUE
+            - CellType: TOTAL
+            - CellType: METRIC_HEADER
+            TotalCellStyle: {}
+            TotalsVisibility: HIDDEN
+            ValueCellStyle: {}
+          RowTotalOptions:
+            Placement: AUTO
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - Cell:
+            FieldId: 6e1e14d6-12c4-4974-ba22-70c8a8a0dbd4.3.1717896772787
+            Scopes:
+            - Role: FIELD
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  Color: '#DE3B00'
+                  Expression: '{MoM % Group By One} > 0'
+                  IconOptions:
+                    Icon: ARROW_UP
+        - Cell:
+            FieldId: 6e1e14d6-12c4-4974-ba22-70c8a8a0dbd4.3.1717896772787
+            Scopes:
+            - Role: FIELD
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  Color: '#F6AA54'
+                  Expression: ({MoM % Group By One} >= 0) AND ({MoM % Group By One}
+                    <= "TOP_25_PERCENT")
+                  IconOptions:
+                    Icon: ARROW_RIGHT
+        - Cell:
+            FieldId: 6e1e14d6-12c4-4974-ba22-70c8a8a0dbd4.3.1717896772787
+            Scopes:
+            - Role: FIELD
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  Color: '#2CAD00'
+                  Expression: '{MoM % Group By One} < 0'
+                  IconOptions:
+                    Icon: ARROW_DOWN
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Effective Cost by\_\
+            </inline>\n  <inline font-size=\"20px\">\n    <parameter>${MomGroupBy1}</parameter>\n\
+            \  </inline>\n  <inline font-size=\"20px\">\_in\_</inline>\n  <inline\
+            \ font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n  </inline>\n\
+            </visual-title>"
+        Visibility: VISIBLE
+      VisualId: f09fffe7-539f-4016-9c57-505894bf32af
+  - LineChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 3d6ea048-3d93-4155-88ca-1c368265b995
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: HIDDEN
+        DefaultSeriesSettings:
+          AxisBinding: PRIMARY_YAXIS
+          LineStyleSettings:
+            LineInterpolation: SMOOTH
+        FieldWells:
+          LineChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: chargeperiodstart
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.chargeperiodstart.1.1718005587763
+                HierarchyId: f31e8113-4534-465b-beae-8a10f8521592
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: resourceid
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: effectivecost
+                  DataSetIdentifier: focus_resource_view
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.effectivecost.2.1718612728926
+        Legend:
+          Width: 239px
+        SortConfiguration:
+          CategoryItemsLimitConfiguration:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.chargeperiodstart.1.1718005587763
+          ColorItemsLimitConfiguration:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.chargeperiodstart.1.1718005587763
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.resourceid.2.1718005800151
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 8852150b-d200-4b78-bf01-5a906bcdfcf6.effectivecost.2.1718612728926
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        Type: LINE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: f31e8113-4534-465b-beae-8a10f8521592
+      Subtitle:
+        Visibility: HIDDEN
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"20px\">Effective Cost\_\
+            per Top 15 Resource in\_</inline>\n  <inline font-size=\"20px\">\n   \
+            \ <parameter>${Currency}</parameter>\n  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: ce77ad3e-f798-488a-b065-8f74d6eff50a
+- ContentType: INTERACTIVE
+  FilterControls:
+  - CrossSheet:
+      FilterControlId: bc4063aa-ba61-42fd-bd29-6e9d4125aa31
+      SourceFilterId: 911db2f5-2a32-4cfc-8560-8ad59ca41f4a
+  - CrossSheet:
+      FilterControlId: 4a9e225e-ca68-40ef-ab69-696649b3cef3
+      SourceFilterId: 4239dfdb-d9ec-4084-9b23-31f12a9bfe9a
+  - CrossSheet:
+      FilterControlId: 8c0a243a-42d6-46f4-9ee3-698434dc6476
+      SourceFilterId: 65e16b91-8e22-4b63-9892-af29ff4cbe41
+  - CrossSheet:
+      FilterControlId: d83bd85f-b6ea-42cf-a526-c508870eb6a8
+      SourceFilterId: 79313680-59d7-4ae7-9d47-9712507e3b4d
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 33
+          ElementId: d1aa905c-abc4-4c09-9a95-c321b38338dc
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 7
+        - ColumnIndex: 0
+          ColumnSpan: 33
+          ElementId: 9f4029ec-0a3f-42e7-bc98-b33136e8d86a
+          ElementType: TEXT_BOX
+          RowIndex: 7
+          RowSpan: 11
+  Name: About
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnSpan: 2
+          ElementId: 4a9e225e-ca68-40ef-ab69-696649b3cef3
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 8c0a243a-42d6-46f4-9ee3-698434dc6476
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: d83bd85f-b6ea-42cf-a526-c508870eb6a8
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+  SheetId: d07bd362-bd02-41e8-8c76-4a71cf4984e0
+  TextBoxes:
+  - Content: "<text-box>\n  <inline font-size=\"54.88px\">Notices</inline>\n  <br/>\n\
+      \  <br/>\n  <inline font-size=\"22.4px\">Customers are responsible for making\
+      \ their own independent assessment of\_this dashboard and its content.\_This\
+      \ dashboard and its content: (a) is for informational purposes only, (b) represents\
+      \ current AWS product offerings and practices, which are subject to change without\
+      \ notice, and (c) does not create any commitments or assurances from AWS and\
+      \ its affiliates, suppliers or licensors. AWS\_content, products or services\
+      \ are provided \u201Cas is\u201D without warranties, representations, or conditions\
+      \ of any kind, whether express or implied. The responsibilities and liabilities\
+      \ of AWS to its customers are controlled by AWS agreements, and this document\
+      \ is not part of, nor does it modify, any agreement between AWS and its customers.</inline>\n\
+      </text-box>"
+    SheetTextBoxId: d1aa905c-abc4-4c09-9a95-c321b38338dc
+  - Content: "<text-box>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"\
+      center\">\n    <inline font-size=\"40px\">\n      <b>FOCUS Dashboard</b>\n \
+      \   </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n    <inline\
+      \ font-size=\"40px\">\n      <b>v1.2.0</b>\n    </inline>\n  </block>\n  <br/>\n\
+      \  <block align=\"center\">\n    <inline font-size=\"40px\">\n      <b>FinOps\
+      \ Cost and Usage Specification Dashboard</b>\n    </inline>\n  </block>\n  <br/>\n\
+      \  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n\
+      \  <block align=\"right\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"right\">Built by: Yuriy\
+      \ Prykhodko, Iakov Gan, Zach Erdman</block>\n  <br/>\n  <block align=\"right\"\
+      >\n    Learn more\n    <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/\"\
+      \ target=\"_blank\">\_</a>\n    about AWS Cloud Intelligence Dashboards (CID)\
+      \ in\n    <inline color=\"#61d1d6\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html\"\
+      \ target=\"_blank\">\n        <u>AWS Solutions Library</u>\n      </a>\n   \
+      \ </inline>\n    \_and\n    <inline color=\"#61d1d6\">\n      <a href=\"https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\"\
+      \ target=\"_blank\">\n        <u>YouTube Channel</u>\n      </a>\n    </inline>\n\
+      \  </block>\n  <br/>\n  <block align=\"right\">\n    If you wish to provide\
+      \ feedback please or report an error please email:\n    <inline color=\"#61d1d6\"\
+      >\n      <a href=\"mailto:cloud-intelligence-dashboards@amazon.com\" target=\"\
+      _blank\">cloud-intelligence-dashboards@amazon.com</a>\n    </inline>\n  </block>\n\
+      \  <br/>\n  <block align=\"right\"/>\n</text-box>"
+    SheetTextBoxId: 9f4029ec-0a3f-42e7-bc98-b33136e8d86a
+  Visuals: []
