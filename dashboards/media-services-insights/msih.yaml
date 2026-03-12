@@ -17,7 +17,7 @@ dashboards:
 datasets:
   msih_reservation_optimize:
     data:
-      DataSetId: 353c4e2d-6526-45fa-a7b6-21f72060f385
+      DataSetId: media-services-insights-res-optimize
       Name: msih_reservation_optimize
       PhysicalTableMap:
         b8ca8419-aec2-4fdc-b918-d863093c891b:
