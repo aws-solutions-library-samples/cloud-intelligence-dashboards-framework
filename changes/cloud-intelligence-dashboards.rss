@@ -25,23 +25,6 @@
     ]]></content:encoded>    
     </item>
     <item>
-      <title>[Update] CUDOS Dashboard v5.7.2</title>
-      <link>
-        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---572
-      </link>
-      <pubDate>Tue, 10 Mar 2026 12:00:00 GMT</pubDate>
-      <category><![CDATA[Dashboard Update]]></category>
-      <guid isPermaLink="false">d2e3f4a5-b6c7-8d9e-f0a1-b2c3d4e5f6a7</guid>
-      <description>CUDOS Dashboard v5.7.2</description>
-      <content:encoded><![CDATA[
-<div>
-  <ul>
-    <li><strong>General:</strong> Removed redundant passthrough calculated fields for visuals based on resource_view and hourly_view datasets to use respective dataset columns directly</li>
-  </ul>
-</div>
-    ]]></content:encoded>    
-    </item>
-    <item>
       <title>[Update] Media Services Insights Hub v2.1.0</title>
       <link>
         https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-media-services-insights
