@@ -2135,7 +2135,7 @@ Sheets:
   - Slider:
       DisplayOptions:
         InfoIconLabelOptions:
-          InfoIconText: 'Hide sll recommendations less then:'
+          InfoIconText: 'Hide all recommendations per resource less then:'
           Visibility: VISIBLE
         TitleOptions:
           FontConfiguration:
@@ -2147,7 +2147,7 @@ Sheets:
       ParameterControlId: 7ff78aa1-6064-4f2c-be77-7dc986181032
       SourceParameterName: SavingsThreshold
       StepSize: 100.0
-      Title: Monthly Savings Threshold
+      Title: Monthly Savings Threshold (per resource)
   - TextField:
       DisplayOptions:
         InfoIconLabelOptions:
