@@ -2,6 +2,10 @@
 
 # CUDOS v5
 
+# CUDOS - 5.7.2
+
+* **General**: Removed redundant passthrough calculated fields for visuals based on resource_view and hourly_view datasets to use respective dataset columns directly
+
 # CUDOS - 5.7.1
 
 * **Executive: Trends**: Fix Week Number calculation to handle partial week at the end and beginning of the year
