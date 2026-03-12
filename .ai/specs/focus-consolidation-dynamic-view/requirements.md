@@ -78,6 +78,24 @@ This creates maintenance burden for customers who need to manually update the vi
 6.4. Special column handling (like `billing_period`) is well-documented
 6.5. Python code reads columns from YAML config (required parameter, no fallback)
 
+### 7. As a customer using AWS Data Exports
+**I want** `cid_data_export` to be recognized as a default Athena database
+**So that** I get a sensible default suggestion when deploying the FOCUS dashboard
+
+**Acceptance Criteria:**
+7.1. Athena database selection priority: `cid_cur` → `cid_data_export` → `customer_cur_data`
+7.2. If `cid_data_export` exists in the account, it is suggested as the default when `cid_cur` is not present
+
+### 8. As a customer with multiple FOCUS views sharing tag parameters
+**I want** the tag SQL expression to be computed once and reused across views
+**So that** I don't get prompted twice and the correct SQL is used in all views
+
+**Acceptance Criteria:**
+8.1. The rendered `tags_json` SQL expression is cached on the `Cid` instance after first resolution
+8.2. Subsequent views with the same `tags_json` parameter reuse the cached SQL without re-querying Athena
+8.3. Cache works regardless of whether the parameter is `global: True` or not
+8.4. Cache key includes the parameter prefix to avoid collisions
+
 ## Technical Requirements
 
 ### FOCUS Schema Versions
@@ -154,6 +172,19 @@ The tag discovery query in downstream views (`focus_resource_view`, `focus_summa
 - LIMIT raised from 10,000 to 100,000 to cover large datasets
 - Original query applied LIMIT to raw rows before UNNEST, causing non-deterministic results
 
+### `tags_json` Parameter Caching Fix
+The `tags_json` parameter type (used by `focus_resource_view` and `focus_summary_view`) requires a caching mechanism:
+- `get_parameters()` returns a fresh dict copy each time, so the rendered SQL expression from `generic_tags_json()` is lost between view resolutions
+- The global params dict only retains the raw tag name list (set by `get_parameter`), not the final SQL expression
+- Without caching, the second view (e.g. `focus_summary_view`) finds the raw list in global params and substitutes `['tag_name1', 'tag_name2']` directly into SQL instead of the `json_format(CAST(MAP_FROM_ENTRIES(...)))` expression
+- Fix: cache the rendered SQL on the `Cid` instance using `setattr`/`getattr` with key `_tags_json_sql_{prefix}{key}`
+- Cache key includes prefix so global and non-global parameters don't collide
+
+### Athena Database Default: `cid_data_export`
+The Athena database selection priority is updated to recognize `cid_data_export` (the newer AWS Data Exports naming convention):
+- Priority: `cid_cur` → `cid_data_export` → hardcoded class default (`customer_cur_data`)
+- This ensures customers using the newer Data Exports service get a sensible default suggestion
+
 ## Dependencies
 - Existing `athena.find_tables_with_columns()` method
 - Existing `athena.list_databases()` method
@@ -161,7 +192,16 @@ The tag discovery query in downstream views (`focus_resource_view`, `focus_summa
 - Existing `athena.wait_for_view()` method
 - Existing view update logic in `common.py`
 - `cid.utils.get_parameter`, `get_yesno_parameter`, `unset_parameter`, `cid_print`, `isatty`
+- `Cid.generic_tags_json()` for tag SQL expression generation
 - FOCUS specification documentation
+
+## Files Modified
+- `cid/helpers/focus_consolidation.py` — new module: dynamic view generator
+- `cid/common.py` — integration hook for `dynamic_focus_consolidation` type + `tags_json` caching
+- `cid/helpers/athena.py` — `cid_data_export` database default
+- `dashboards/focus/focus.yaml` — `focus_consolidation_view` type + columns, downstream view updates
+- `changes/CHANGELOG-focus.md` — v1.2.0 changelog
+- `changes/cloud-intelligence-dashboards.rss` — v1.2.0 RSS entry
 
 ## Out of Scope
 - Validation of FOCUS data quality
@@ -176,6 +216,8 @@ The tag discovery query in downstream views (`focus_resource_view`, `focus_summa
 - Multi-cloud customers see consolidated data from all providers
 - Zero manual intervention required for adding new FOCUS tables
 - Tag discovery returns consistent results across runs
+- `tags_json` parameter is resolved once and reused correctly across `focus_resource_view` and `focus_summary_view`
+- Customers using AWS Data Exports get `cid_data_export` suggested as default database
 
 ## References
 - FOCUS specification: https://focus.finops.org/
