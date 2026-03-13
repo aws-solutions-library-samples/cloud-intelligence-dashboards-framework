@@ -2771,9 +2771,11 @@ Sheets:
       Title:
         FormatText:
           RichText: "<visual-title>\n  <inline font-size=\"20px\">\n    <parameter>${Cost}</parameter>\n\
-            \  </inline>\n  <inline color=\"#ffffff\" font-size=\"20px\">\_per Service\
-            \ in\_</inline>\n  <inline color=\"#ffffff\" font-size=\"20px\">\n   \
-            \ <parameter>${Currency}</parameter>\n  </inline>\n</visual-title>"
+            \  </inline>\n  <inline color=\"Accent\" font-size=\"20px\">\_per\_</inline>\n\
+            \  <inline color=\"Accent\" font-size=\"20px\">\n    <parameter>${summaryGroupByTwo}</parameter>\n\
+            \  </inline>\n  <inline color=\"Accent\" font-size=\"20px\">\_in\_</inline>\n\
+            \  <inline color=\"Accent\" font-size=\"20px\">\n    <parameter>${Currency}</parameter>\n\
+            \  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 8fcaef47-e54f-40ba-8a3d-e8063f966d85
   - WordCloudVisual:
