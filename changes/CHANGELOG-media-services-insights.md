@@ -1,5 +1,9 @@
 # What's new in the Media Services Insights Hub (MSIH)
 
+## Media Services Insights Hub - v2.1.0
+
+- Added new EMT data transfer visuals
+
 ## Media Services Insights Hub - v2.0.1
 
 - Fix EMT filtering issue

@@ -895,7 +895,7 @@ ColumnConfigurations:
 DataSetIdentifierDeclarations:
 - DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-reservations
   Identifier: msih_reservations
-- DataSetArn: arn:aws:quicksight:::dataset/353c4e2d-6526-45fa-a7b6-21f72060f385
+- DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-res-optimize
   Identifier: msih_reservation_optimize
 - DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-main
   Identifier: msih_view
@@ -6263,6 +6263,136 @@ FilterGroups:
         SheetId: 0ba69fb0-5cb4-4713-b06e-68970e4d927a
         VisualIds:
         - 3e55a695-9a82-4492-97b4-465858a4edb3
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: eaafff61-bb80-4c4b-b31a-884e0723917c
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: charge_type
+        DataSetIdentifier: msih_view
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - PrivateRateDiscount
+          - EdpDiscount
+          MatchOperator: DOES_NOT_CONTAIN
+          NullOption: NON_NULLS_ONLY
+      FilterId: 81b38377-c76b-4c34-bb8d-a0cd8f0b2394
+  ScopeConfiguration:
+    AllSheets: {}
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: c4375449-fcff-4b36-a9ab-2f5cb6075d13
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: product_family
+        DataSetIdentifier: msih_view
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - Data Transfer
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+      FilterId: 6509eff3-3500-4cb8-ba4e-2112232748e4
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b39a7a68-54a9-404e-a0a8-0197520ae42d
+        VisualIds:
+        - dce3ee68-66ac-4678-a202-470dc74a45b9
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: a130182a-8274-49ab-9fab-cd5ba90a6656
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: usage_date
+        DataSetIdentifier: msih_view
+      FilterId: 2c4c1594-0ddc-4eda-827b-13886fa8a610
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 30
+      TimeGranularity: DAY
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b39a7a68-54a9-404e-a0a8-0197520ae42d
+        VisualIds:
+        - dce3ee68-66ac-4678-a202-470dc74a45b9
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 861afb3f-8775-4c9c-b669-dae9f4bc81b5
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: product_family
+        DataSetIdentifier: msih_view
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - Data Transfer
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+      FilterId: 89ab7ab1-b075-4484-898b-4fea06a4f869
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b39a7a68-54a9-404e-a0a8-0197520ae42d
+        VisualIds:
+        - 97ef47d8-f1b3-4dcc-834e-554df61111d9
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 7050b194-7e39-457d-9f12-e01ce96cf0af
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: usage_date
+        DataSetIdentifier: msih_view
+      FilterId: 6d208a2a-0b1d-4b2f-a56e-71d6225e84d8
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: LAST
+      RelativeDateValue: 30
+      TimeGranularity: DAY
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b39a7a68-54a9-404e-a0a8-0197520ae42d
+        VisualIds:
+        - 97ef47d8-f1b3-4dcc-834e-554df61111d9
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: a4802f5e-f2f9-497b-abe0-e67ca153ca3b
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: product_family
+        DataSetIdentifier: msih_view
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - Data Transfer
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+      FilterId: d3a8abc8-f3dd-4fb3-abc7-b2651b76da4e
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: b39a7a68-54a9-404e-a0a8-0197520ae42d
+        VisualIds:
+        - 43d21113-645f-4464-93b7-07cc21426505
   Status: ENABLED
 Options: {}
 ParameterDeclarations:
@@ -14302,6 +14432,25 @@ Sheets:
       SourceParameterName: CostModel
       Title: Cost Model
       Type: SINGLE_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: aeba5a88-ed82-4ff9-8054-0e241e90384c
+      SelectableValues:
+        Values:
+        - 'No'
+        - 'Yes'
+      SourceParameterName: IncludePricingAdjustments
+      Title: Include Pricing Adjustments
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         InfoIconLabelOptions:
@@ -14363,6 +14512,10 @@ Sheets:
           ElementId: 835b6c7d-765d-4189-be4c-d334a735dcc5
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: aeba5a88-ed82-4ff9-8054-0e241e90384c
+          ElementType: PARAMETER_CONTROL
           RowSpan: 1
   SheetId: 5e89c560-231d-4cb4-9f14-b700e0f1f061
   TextBoxes:
@@ -17029,6 +17182,23 @@ Sheets:
       SourceParameterName: CostModel
       Title: Cost Model
       Type: SINGLE_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 3a2cd7f0-316f-40b9-8591-23323cba86b4
+      SelectableValues:
+        Values:
+        - 'No'
+        - 'Yes'
+      SourceParameterName: IncludePricingAdjustments
+      Title: Include Pricing Adjustments
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         TitleOptions:
@@ -17088,6 +17258,10 @@ Sheets:
           ElementId: 6398ebc2-acf5-41c3-92f0-7d98011dd3e4
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 3a2cd7f0-316f-40b9-8591-23323cba86b4
+          ElementType: PARAMETER_CONTROL
           RowSpan: 1
   SheetId: c6a5a412-51db-47f6-bf6f-ef99f809571e
   TextBoxes:
@@ -19807,6 +19981,23 @@ Sheets:
       SourceParameterName: CostModel
       Title: Cost Model
       Type: SINGLE_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 727a4edc-bd5f-4eb6-87b1-5a70773f12b5
+      SelectableValues:
+        Values:
+        - 'No'
+        - 'Yes'
+      SourceParameterName: IncludePricingAdjustments
+      Title: Include Pricing Adjustments
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         TitleOptions:
@@ -19866,6 +20057,10 @@ Sheets:
           ElementId: c56c367e-887c-4ad4-ab2e-f83cfe8f834c
           ElementType: PARAMETER_CONTROL
           RowIndex: 1
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 727a4edc-bd5f-4eb6-87b1-5a70773f12b5
+          ElementType: PARAMETER_CONTROL
           RowSpan: 1
   SheetId: dfa09e95-605b-41cc-8a7d-a55153c9d0dc
   TextBoxes:
@@ -24975,21 +25170,45 @@ Sheets:
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: c3cd6f62-f128-4357-a261-e26b408e237d
+          ElementId: ce16d7dd-42ed-4956-bae2-8abea354c467
           ElementType: TEXT_BOX
           RowIndex: 48
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 43d21113-645f-4464-93b7-07cc21426505
+          ElementType: VISUAL
+          RowIndex: 52
+          RowSpan: 10
+        - ColumnIndex: 0
+          ColumnSpan: 18
+          ElementId: dce3ee68-66ac-4678-a202-470dc74a45b9
+          ElementType: VISUAL
+          RowIndex: 62
+          RowSpan: 15
+        - ColumnIndex: 18
+          ColumnSpan: 18
+          ElementId: 97ef47d8-f1b3-4dcc-834e-554df61111d9
+          ElementType: VISUAL
+          RowIndex: 62
+          RowSpan: 15
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: c3cd6f62-f128-4357-a261-e26b408e237d
+          ElementType: TEXT_BOX
+          RowIndex: 77
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 701605d0-a604-4496-8d37-46e5e918d925
           ElementType: VISUAL
-          RowIndex: 51
+          RowIndex: 80
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: b06a97b5-703a-47ba-aa0f-e6923a2f52e7
           ElementType: VISUAL
-          RowIndex: 61
+          RowIndex: 90
           RowSpan: 10
   Name: MediaTailor
   ParameterControls:
@@ -25102,6 +25321,23 @@ Sheets:
       SourceParameterName: CostModel
       Title: Cost Model
       Type: SINGLE_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 13f1d0db-8373-4252-b115-4df07173d10c
+      SelectableValues:
+        Values:
+        - 'No'
+        - 'Yes'
+      SourceParameterName: IncludePricingAdjustments
+      Title: Include Pricing Adjustments
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         TitleOptions:
@@ -25161,6 +25397,10 @@ Sheets:
           ElementId: 6ca975ac-4a94-426e-bb53-126b91475175
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 13f1d0db-8373-4252-b115-4df07173d10c
+          ElementType: PARAMETER_CONTROL
           RowSpan: 1
   SheetId: b39a7a68-54a9-404e-a0a8-0197520ae42d
   TextBoxes:
@@ -25248,7 +25488,337 @@ Sheets:
       \ video-on-demand (VOD) and live content and is either Basic or Standard tiers.</i>\n\
       \      </inline>\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 5ce46166-f191-4436-ac32-7498ff680a20
+  - Content: "<text-box>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      36px\"/>\n  <inline color=\"#fec48c\" font-size=\"36px\">D</inline>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"30px\">ATA</inline>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"36px\">\_T</inline>\n  <inline color=\"#fec48c\" font-size=\"\
+      30px\">RANSFER</inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n \
+      \     <inline color=\"#efefe9\" font-size=\"16px\">\n        <i>Includes the\
+      \ following data transfer types: outbound through CloudFront, outbound to the\
+      \ Internet, and between AWS regions</i>\n      </inline>\n    </li>\n  </ul>\n\
+      </text-box>"
+    SheetTextBoxId: ce16d7dd-42ed-4956-bae2-8abea354c467
   Visuals:
+  - PivotTableVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - fba80c0d-5335-473a-bccf-bea91b9913be.billing_period.3.1755232821795
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisuals:
+                - d2716858-aa8c-4e36-bab9-d8abd157f969
+                - 1325be4d-7f32-4e71-9ab0-07b3f7b06df6
+        CustomActionId: b346311a-aafa-4037-9c55-d5f166b0e21b
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        FieldOptions:
+          DataPathOptions:
+          - DataPathList:
+            - FieldId: 99fc9147-8f65-4331-b626-c56a83f23e15.2.1753921351359
+              FieldValue: Data Transfer Destination Type
+            Width: 300px
+          - DataPathList:
+            - FieldId: 500ea224-c00d-48a0-a75d-a355d39e2e54.5.1755232840142
+              FieldValue: Linked Account
+            Width: 228px
+          - DataPathList:
+            - FieldId: 3e3119bc-141f-4eaa-8ca6-7dffef6be292.6.1755232880247
+              FieldValue: Usage Category
+            Width: 227px
+          - DataPathList:
+            - FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.product_from_location.1.1753921343791
+              FieldValue: location_source
+            Width: 212px
+          - DataPathList:
+            - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.4.1755232834142
+              FieldValue: Payer Account
+            Width: 196px
+          - DataPathList:
+            - FieldId: ba996001-a63d-4b29-8391-4908eba56f82.2.1753921365767
+              FieldValue: Usage Quantity
+            Width: 131px
+          SelectedFieldOptions:
+          - CustomLabel: Billing Period
+            FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.billing_period.3.1755232821795
+            Visibility: VISIBLE
+          - FieldId: c01482f3-3e86-4114-962a-121a16172e0b.4.1755232834142
+            Visibility: VISIBLE
+          - FieldId: 500ea224-c00d-48a0-a75d-a355d39e2e54.5.1755232840142
+            Visibility: VISIBLE
+          - FieldId: 3e3119bc-141f-4eaa-8ca6-7dffef6be292.6.1755232880247
+            Visibility: VISIBLE
+          - CustomLabel: Source
+            FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.product_from_location.1.1753921343791
+            Visibility: VISIBLE
+          - CustomLabel: Destination
+            FieldId: 99fc9147-8f65-4331-b626-c56a83f23e15.2.1753921351359
+            Visibility: VISIBLE
+          - FieldId: ba996001-a63d-4b29-8391-4908eba56f82.2.1753921365767
+            Visibility: VISIBLE
+          - FieldId: 06eb7464-928f-41de-ab10-5217fba90195.7.1755233172039
+            Visibility: VISIBLE
+        FieldWells:
+          PivotTableAggregatedFieldWells:
+            Columns: []
+            Rows:
+            - DateDimensionField:
+                Column:
+                  ColumnName: billing_period
+                  DataSetIdentifier: msih_view
+                DateGranularity: MONTH
+                FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.billing_period.3.1755232821795
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Payer Account
+                  DataSetIdentifier: msih_view
+                FieldId: c01482f3-3e86-4114-962a-121a16172e0b.4.1755232834142
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Linked Account
+                  DataSetIdentifier: msih_view
+                FieldId: 500ea224-c00d-48a0-a75d-a355d39e2e54.5.1755232840142
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Usage Category
+                  DataSetIdentifier: msih_view
+                FieldId: 3e3119bc-141f-4eaa-8ca6-7dffef6be292.6.1755232880247
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: location_source
+                  DataSetIdentifier: msih_view
+                FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.product_from_location.1.1753921343791
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Data Transfer Destination Type
+                  DataSetIdentifier: msih_view
+                FieldId: 99fc9147-8f65-4331-b626-c56a83f23e15.2.1753921351359
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Usage Quantity
+                  DataSetIdentifier: msih_view
+                FieldId: ba996001-a63d-4b29-8391-4908eba56f82.2.1753921365767
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 2
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      NumberScale: AUTO
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: msih_view
+                FieldId: 06eb7464-928f-41de-ab10-5217fba90195.7.1755233172039
+                FormatConfiguration:
+                  FormatConfiguration:
+                    CurrencyDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 2
+                      NegativeValueConfiguration:
+                        DisplayMode: POSITIVE
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      SeparatorConfiguration:
+                        DecimalSeparator: DOT
+                        ThousandsSeparator:
+                          Symbol: COMMA
+                          Visibility: VISIBLE
+                      Symbol: USD
+        SortConfiguration:
+          FieldSortOptions:
+          - FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.billing_period.3.1755232821795
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: fba80c0d-5335-473a-bccf-bea91b9913be.billing_period.3.1755232821795
+        TableOptions:
+          CellStyle: {}
+          ColumnHeaderStyle:
+            Height: 25
+            TextWrap: WRAP
+          RowAlternateColorOptions:
+            Status: DISABLED
+            UsePrimaryBackgroundColor: ENABLED
+          RowFieldNamesStyle:
+            Height: 25
+            TextWrap: WRAP
+          RowsLayout: TABULAR
+        TotalOptions:
+          RowSubtotalOptions:
+            CustomLabel: <<$aws:subtotalDimension>> Subtotal
+            MetricHeaderCellStyle: {}
+            StyleTargets:
+            - CellType: VALUE
+            - CellType: TOTAL
+            - CellType: METRIC_HEADER
+            TotalCellStyle: {}
+            TotalsVisibility: HIDDEN
+            ValueCellStyle: {}
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="16px">
+                <b>Data transfer detail</b>
+              </inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 43d21113-645f-4464-93b7-07cc21426505
+  - SankeyDiagramVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisuals:
+                - 7b9488ad-911f-4451-8af5-2491359f3d5f
+                - c18bea35-4bae-443e-b58d-0673d75e40ef
+        CustomActionId: a1bd161f-0ba8-4676-9b44-fbcfcca22c70
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          SankeyDiagramAggregatedFieldWells:
+            Destination:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Data Transfer Destination Type
+                  DataSetIdentifier: msih_view
+                FieldId: 99fc9147-8f65-4331-b626-c56a83f23e15.2.1753921351359
+            Source:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: location_source
+                  DataSetIdentifier: msih_view
+                FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.product_from_location.1.1753921343791
+            Weight:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Cost
+                  DataSetIdentifier: msih_view
+                FieldId: 97b68403-6842-4385-84ac-b2f0724d6a60.2.1753921487504
+                FormatConfiguration:
+                  FormatConfiguration:
+                    CurrencyDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 2
+                      NegativeValueConfiguration:
+                        DisplayMode: POSITIVE
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      NumberScale: AUTO
+                      SeparatorConfiguration:
+                        DecimalSeparator: DOT
+                        ThousandsSeparator:
+                          Symbol: COMMA
+                          Visibility: VISIBLE
+                      Symbol: USD
+        SortConfiguration:
+          WeightSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 97b68403-6842-4385-84ac-b2f0724d6a60.2.1753921487504
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="16px">
+                <b>Data transfer cost by source, destination and category (last 30 days)</b>
+              </inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 97ef47d8-f1b3-4dcc-834e-554df61111d9
+  - SankeyDiagramVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 716b8ec0-ae95-4168-88b1-83e0ff6ad473.product_from_location.1.1753921343791
+              - 99fc9147-8f65-4331-b626-c56a83f23e15.2.1753921351359
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisuals:
+                - 412a8b2d-4943-4df9-8e0f-585408e64f36
+                - d2716858-aa8c-4e36-bab9-d8abd157f969
+        CustomActionId: 6c05d36c-a85a-49f5-bce3-fb6ebc69e316
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          SankeyDiagramAggregatedFieldWells:
+            Destination:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: Data Transfer Destination Type
+                  DataSetIdentifier: msih_view
+                FieldId: 99fc9147-8f65-4331-b626-c56a83f23e15.2.1753921351359
+            Source:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: location_source
+                  DataSetIdentifier: msih_view
+                FieldId: 716b8ec0-ae95-4168-88b1-83e0ff6ad473.product_from_location.1.1753921343791
+            Weight:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: Usage Quantity
+                  DataSetIdentifier: msih_view
+                FieldId: ba996001-a63d-4b29-8391-4908eba56f82.2.1753921365767
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 2
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      NumberScale: AUTO
+        SortConfiguration:
+          WeightSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: ba996001-a63d-4b29-8391-4908eba56f82.2.1753921365767
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="16px">
+                <b>Data transfer GBs by source, destination and category (last 30 days)</b>
+              </inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: dce3ee68-66ac-4678-a202-470dc74a45b9
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -27278,6 +27848,23 @@ Sheets:
       SourceParameterName: CostModel
       Title: Cost Model
       Type: SINGLE_SELECT
+  - Dropdown:
+      DisplayOptions:
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: a2722c81-4e50-4e5e-80ab-af5a8b22b38f
+      SelectableValues:
+        Values:
+        - 'No'
+        - 'Yes'
+      SourceParameterName: IncludePricingAdjustments
+      Title: Include Pricing Adjustments
+      Type: SINGLE_SELECT
   - Slider:
       DisplayOptions:
         TitleOptions:
@@ -27337,6 +27924,10 @@ Sheets:
           ElementId: 668916d7-f0a9-413a-8b9d-00ce33c7e412
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: a2722c81-4e50-4e5e-80ab-af5a8b22b38f
+          ElementType: PARAMETER_CONTROL
           RowSpan: 1
   SheetId: c178ec4d-5329-4ec9-8817-24c22949ebd2
   TextBoxes:
@@ -29941,7 +30532,7 @@ Sheets:
     SheetTextBoxId: 8738ed95-db68-48f4-9115-f7a8dcb618cf
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"64px\"\
       >\n      <b>Media Services Insights Hub</b>\n    </inline>\n  </block>\n  <br/>\n\
-      \  <block align=\"center\">\n    <inline font-size=\"64px\">v2.0.1</inline>\n\
+      \  <block align=\"center\">\n    <inline font-size=\"64px\">v2.1.0</inline>\n\
       \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"24px\"\
       >\_</inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block\
       \ align=\"center\">\n    <inline color=\"#09add4\" font-size=\"24px\">\n   \
