@@ -1,5 +1,11 @@
 # What's new in FOCUS Dashboard
 
+## FOCUS Dashboard v1.2.0
+* General: Updated schema definitions to support FOCUS 1.2 specification
+* General: Created dynamic focus_consolidation_view generation
+* Billing Summary: Added new visuals and Group By controls to be able to visualize multiple dimensions including new FOCUS columns such as Invoice
+* MoM Trends: In Detailed Resource View visual added skumeter column
+
 ## FOCUS Dashboard v1.0.1
 * Reverted to low case names to avoid issue when Amazon QuickSight does not process CamelCase field names on edit of DataSets.
 Recommended update via `cid-cmd update --force --recursive`
