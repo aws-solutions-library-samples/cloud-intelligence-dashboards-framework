@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import urllib
 import logging
 import functools
@@ -1782,7 +1783,23 @@ class Cid():
 
             if update_dataset and not identical:
                 merged_dataset = Dataset.merge_datasets(compiled_dataset, found_dataset)
-                self.qs.update_dataset(merged_dataset)
+                # Cannot update a legacy dataset to new experience in-place — must delete and recreate
+                if Dataset._is_new_experience(compiled_dataset) and not Dataset._is_new_experience(found_dataset.raw):
+                    cid_print(f'<BOLD><YELLOW>Important!<END> <BOLD>Dataset <YELLOW>{found_dataset.name}<END> <BOLD>will be updated to new QuickSight Data Preparation Experience as a part of this update.<END>')
+                    logger.info(f'Dataset {found_dataset.name} is legacy but template uses new experience. Recreating.')
+                    self.qs.delete_dataset(found_dataset.id)
+                    # Wait for deletion to complete before creating — API is async
+                    for attempt in range(30):
+                        try:
+                            self.qs.create_dataset(merged_dataset)
+                            break
+                        except self.qs.client.exceptions.ConflictException:
+                            logger.debug(f'Dataset deletion still in progress, waiting... (attempt {attempt + 1}/30)')
+                            time.sleep(2)
+                    else:
+                        raise CidError(f'Timed out waiting for dataset {found_dataset.id} deletion to complete.')
+                else:
+                    self.qs.update_dataset(merged_dataset)
                 if compiled_dataset.get("ImportMode") == "SPICE":
                     dataset_id = compiled_dataset.get('DataSetId')
                     schedules_definitions = []
