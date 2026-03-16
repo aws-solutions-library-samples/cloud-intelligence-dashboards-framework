@@ -406,8 +406,12 @@ class Cid():
                     choices=self.cur.tag_and_cost_category_fields + ["'none'"],
                 )
             elif isinstance(value, dict) and value.get('type') == 'tags_json': # a json
-                if get_parameters().get(prefix + key): # priority to user input
-                    params[key] = get_parameters().get(prefix + key)
+                # Reuse already rendered SQL from a previous resolution
+                cache_key = f'_tags_json_sql_{prefix}{key}'
+                if hasattr(self, cache_key):
+                    params[key] = getattr(self, cache_key)
+                elif get_parameters().get((prefix + key).replace('_', '-')): # priority to user input
+                    params[key] = get_parameters().get((prefix + key).replace('_', '-'))
                     if isinstance(params[key], str):
                         params[key] = params[key].split(',')
                 elif not utils.isatty():
@@ -425,6 +429,9 @@ class Cid():
                         param_name=key,
                         options=options,
                     )
+                # Cache rendered SQL for reuse by subsequent views
+                if isinstance(params.get(key), str):
+                    setattr(self, cache_key, params[key])
             elif isinstance(value, dict) and value.get('type') == 'athena':
                 if get_parameters().get(prefix + key): # priority to user input
                     params[key] = get_parameters().get(prefix + key)
@@ -1839,6 +1846,19 @@ class Cid():
             logger.info(f"Definition is unavailable {view_name}")
             return
         logger.debug(f'View definition: {view_definition}')
+
+        # Dynamic FOCUS consolidation view: discover tables and generate SQL dynamically
+        if view_definition.get('type') == 'dynamic_focus_consolidation':
+            from cid.helpers.focus_consolidation import FocusConsolidationView
+            columns = view_definition.get('columns')
+            focus_view = FocusConsolidationView(athena=self.athena, columns=columns)
+            if focus_view.create_or_update_view():
+                assert self.athena.wait_for_view(view_name), f"Failed to create/update {view_name}"
+                logger.info(f'Dynamic view "{view_name}" created/updated')
+            else:
+                logger.warning(f'Dynamic view "{view_name}" was not created (no FOCUS tables found)')
+            return
+
         dependencies = view_definition.get('dependsOn', {})
 
         # Process CUR columns
@@ -1961,7 +1981,7 @@ class Cid():
                     tag_name = 'tag_' + tag_name
             return re.sub(r'\W', '_', tag_name)
 
-        resource_tags = get_parameters().get(param_name, None)
+        resource_tags = get_parameters().get(param_name, None) or get_parameters().get(param_name.replace('_', '-'), None)
         tags_and_names = {_tag_to_name(tag):tag  for tag in sorted(options)}
         logger.info(f'tags_and_names = {tags_and_names}')
         logger.info(f'resource_tags = {resource_tags}')

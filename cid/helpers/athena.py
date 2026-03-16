@@ -85,6 +85,8 @@ class Athena(CidBase):
         default_database = None
         if 'cid_cur' in athena_databases:
             default_database = 'cid_cur'
+        elif 'cid_data_export' in athena_databases:
+            default_database = 'cid_data_export'
         elif self.defaults.get('DatabaseName') in athena_databases:
             default_database = self.defaults.get('DatabaseName')
 

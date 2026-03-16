@@ -5,8 +5,28 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Tue, 10 Mar 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 12 Mar 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] FOCUS Dashboard v1.2.0</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-focus.md
+      </link>
+      <pubDate>Thu, 12 Mar 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">f1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c</guid>
+      <description>FOCUS Dashboard v1.2.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>General:</strong> Updated schema definitions to support FOCUS 1.2 specification</li>
+    <li><strong>General:</strong> Created dynamic focus_consolidation_view generation</li>
+    <li><strong>Billing Summary:</strong> Added new visuals and Group By controls to be able to visualize multiple dimensions including new FOCUS columns such as Invoice</li>
+    <li><strong>MoM Trends:</strong> In Detailed Resource View visual added skumeter column</li>
+  </ul>
+</div>
+    ]]></content:encoded>    
+    </item>
     <item>
       <title>[Update] CUDOS Dashboard v5.7.2</title>
       <link>
@@ -25,6 +45,22 @@
     ]]></content:encoded>    
     </item>
     <item>
+      <title>[Update] Media Services Insights Hub v2.1.0</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-media-services-insights
+      </link>
+      <pubDate>>Mon, 9 Mar 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">a3f7c8d2-6b1e-4f5a-9d8c-e2b4a7f1c6d3</guid>
+      <description>Media Services Insights Hub v2.0.1</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>MediaLive:</strong>Fix EMT filtering issue</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>    <item>
       <title>[Update] Media Services Insights Hub v2.0.1</title>
       <link>
         https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-media-services-insights
