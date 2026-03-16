@@ -9,7 +9,7 @@ dashboards:
     dashboardId: media-services-insights
     category: Advanced
     theme: MIDNIGHT
-    version: v2.0.1
+    version: v2.1.0
     file: ./msih-definition.yaml
     nonTaxonomyDatasets:
     - msih_reservation_optimize
