@@ -17,9 +17,10 @@ dashboards:
     - opensearch_extended_support_view
     - elasticache_extended_support_view
     nonTaxonomyColumns:
+    - line_item_product_code
     - tags_json
     file: ./extended-support-cost-projection-definition.yaml
-    version: v4.0.5
+    version: v5.0.0
 datasets:
   elasticache_extended_support_view:
     data:
