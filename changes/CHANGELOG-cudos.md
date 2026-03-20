@@ -2,6 +2,15 @@
 
 # CUDOS v5
 
+# CUDOS - 5.7.3
+
+* **General**: Added new services to Product Code calculated field and Service Category calculated field
+* **Executive: Billing Summary**: Improved Billing Summary Group By calculated field to prioritize Discounts before Support in charge type ordering
+* **Databases**: Added Charge Type Group filter control across multiple sheets for more granular filtering
+* **Compute**: Removed duplicating charge_type filter on some visuals 
+* **Compute**: Fix for 'EKS Extended Support Cost' calculated field condition from `Cost > 0` to `Cost <> 0` to include discounts
+* **Databases**: Fix for 'ElastiCache Redis Migration to Valkey' achieved savings calculation formula
+
 # CUDOS - 5.7.2
 
 * **General**: Removed redundant passthrough calculated fields for visuals based on resource_view and hourly_view datasets to use respective dataset columns directly
