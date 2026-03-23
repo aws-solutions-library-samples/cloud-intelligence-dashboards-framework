@@ -24,7 +24,7 @@ provider "aws" {
 
 # Configure one or more source (payer) accounts
 module "cur_source" {
-  source = "github.com/aws-samples/aws-cudos-framework-deployment//terraform-modules/cur-setup-source"
+  source = "github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cur-setup-source"
 
   destination_bucket_arn = "UPDATEME"
 

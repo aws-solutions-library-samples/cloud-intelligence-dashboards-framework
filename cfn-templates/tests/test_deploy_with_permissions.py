@@ -268,6 +268,7 @@ def create_cid_as_finops(update):
             {"ParameterKey": 'DestinationAccountId', "ParameterValue": account_id},
             {"ParameterKey": 'ResourcePrefix', "ParameterValue": 'cid'},
             {"ParameterKey": 'ManageCUR2', "ParameterValue": 'yes'},
+            {"ParameterKey": 'ManageFOCUS', "ParameterValue": 'yes'},
             {"ParameterKey": 'SourceAccountIds', "ParameterValue": account_id},
         ],
         Capabilities=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],

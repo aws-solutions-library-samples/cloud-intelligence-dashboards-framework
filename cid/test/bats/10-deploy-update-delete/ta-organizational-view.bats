@@ -1,12 +1,17 @@
 #!/bin/bats
 
 account_id=$(aws sts get-caller-identity --query "Account" --output text )
+quicksight_group="${quicksight_group:-cid-owners}" # If variable not set or null, use default
+quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If variable not set or null, use default
 
 @test "Install" {
   run cid-cmd -vv deploy  \
     --dashboard-id ta-organizational-view \
     --athena-database 'optimization_data' \
+    --athena-workgroup primary\
+    --quicksight-group $quicksight_group \
     --share-with-account \
+    --quicksight-datasource-id $quicksight_datasource_id \
 
     --view-ta-organizational-view-reports-s3FolderPath "s3://cid-data-$account_id/optics-data-collector/ta-data'"
 
@@ -41,6 +46,9 @@ account_id=$(aws sts get-caller-identity --query "Account" --output text )
 @test "Update works" {
   run cid-cmd -vv --yes update --force --recursive  \
     --dashboard-id ta-organizational-view \
+    --athena-workgroup primary\
+    --quicksight-group $quicksight_group \
+    --quicksight-datasource-id $quicksight_datasource_id \
     --view-ta-organizational-view-reports-s3FolderPath "s3://cid-data-$account_id)/optics-data-collector/ta-data"
 
   [ "$status" -eq 0 ]

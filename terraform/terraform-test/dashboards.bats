@@ -21,12 +21,27 @@ setup_file() {
     echo "Enabled dashboard: deploy_cudos_v5 -> cudos-v5" | tee -a "$log_file"
   fi
   
-  # Check for other dashboards with underscores
+  # Check for other foundational dashboards with underscores
   for dashboard in cost_intelligence_dashboard kpi_dashboard; do
     var_name="deploy_${dashboard}"
     if [ "${!var_name:-no}" = "yes" ]; then
       echo "$dashboard" >> "$tmp_dir/dashboard_ids"
       echo "Enabled dashboard: $var_name -> $dashboard" | tee -a "$log_file"
+    fi
+  done
+  
+  # Check for additional dashboards
+  for var_name in trends datatransfer marketplace connect containers; do
+    case $var_name in
+      trends) dashboard_id="trends-dashboard" ;;
+      datatransfer) dashboard_id="datatransfer-cost-analysis-dashboard" ;;
+      marketplace) dashboard_id="aws-marketplace" ;;
+      connect) dashboard_id="amazon-connect-cost-insight-dashboard" ;;
+      containers) dashboard_id="scad-containers-cost-allocation" ;;
+    esac
+    if [ "${!var_name:-no}" = "yes" ]; then
+      echo "$dashboard_id" >> "$tmp_dir/dashboard_ids"
+      echo "Enabled additional dashboard: $var_name -> $dashboard_id" | tee -a "$log_file"
     fi
   done
   
@@ -243,6 +258,28 @@ teardown_file() {
       fi
     done
   fi
+  
+  # Test additional dashboard views
+  for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-marketplace amazon-connect-cost-insight-dashboard scad-containers-cost-allocation; do
+    if grep -q "$dashboard_id" "$tmp_dir/dashboard_ids"; then
+      case $dashboard_id in
+        trends-dashboard) view_name="daily_anomaly_detection" ;;
+        datatransfer-cost-analysis-dashboard) view_name="data_transfer_view" ;;
+        aws-marketplace) view_name="marketplace_view" ;;
+        amazon-connect-cost-insight-dashboard) view_name="resource_connect_view" ;;
+        scad-containers-cost-allocation) view_name="scad_cca_summary_view" ;;
+      esac
+      echo "Testing $dashboard_id view: $view_name" | tee -a "$log_file"
+      run aws athena get-table-metadata \
+        --catalog-name 'AwsDataCatalog' \
+        --database-name $database_name \
+        --table-name "$view_name"
+      if [ "$status" -eq 0 ]; then
+        echo "$view_name exists" | tee -a "$log_file"
+        success_count=$((success_count + 1))
+      fi
+    fi
+  done
   
   echo "=== View testing complete ===" | tee -a "$log_file"
   

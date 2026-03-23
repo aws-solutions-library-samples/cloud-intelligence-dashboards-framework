@@ -1,6 +1,9 @@
 # What's new in the KPI Dashboard
 
 ## KPI - 2.1.0
+* Fix for Billing Period and Account Name controls
+
+## KPI - 2.1.0
 * Removed link to deprecated feedback form
 
 ## KPI - 2.0.0

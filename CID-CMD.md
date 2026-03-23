@@ -2,7 +2,7 @@
 
 Cloud Intelligence Dashboards provides a python tool for installation and upgrade of Dashboards. This tool can also export dashboards to deployable artifacts including QuickSight Dashboards, Athena Views, Glue Tables etc.
 
-CID is also provided in a form of CloudFormation templates. See detailed instructions in the [Well Architected Workshop](https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi/deploy) site.
+CID is also provided in a form of CloudFormation templates. See detailed instructions in the [AWS Documentation](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html) site.
 
 
 ## Before you start
@@ -49,6 +49,15 @@ Show dashboards status
 cid-cmd status
 ```
 [<img width="558" alt="status" src="https://github.com/aws-samples/aws-cudos-framework-deployment/assets/82834333/cae2015f-0f81-4593-80b3-c67ec1200fcd">](https://www.youtube.com/watch?v=ivr1MoGaApM)
+
+#### Refresh Dashboard Datasets
+Refresh datasets for a specific dashboard to pull the latest data from Athena into QuickSight SPICE
+
+```bash
+cid-cmd refresh --dashboard-id <dashboard-id>
+```
+
+If no dashboard ID is provided, you will be prompted to select from available dashboards.
 
 
 ####  Share QuickSight resources

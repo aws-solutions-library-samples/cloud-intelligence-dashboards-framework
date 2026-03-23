@@ -2,10 +2,11 @@
 
 
 account_id=$(aws sts get-caller-identity --query "Account" --output text )
-database_name="${database_name:-athenacurcfn_cur1}" # If variable not set or null, use default
-quicksight_user="${quicksight_user:-cicd-staging}" # If variable not set or null, use default
+database_name="${database_name:-default}" # If variable not set or null, use default
+cur_database_name="${cur_database_name:-default}" # If variable not set or null, use default
+quicksight_group="${quicksight_group:-cid-owners}" # If variable not set or null, use default
 quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If variable not set or null, use default
-cur_table="${cur_table:-cur1}" # If variable not set or null, use default. FIXME can be autodetected!
+cur_table="${cur_table:-cur2}" # If variable not set or null, use default. FIXME can be autodetected!
 
 
 @test "Install" {
@@ -13,9 +14,10 @@ cur_table="${cur_table:-cur1}" # If variable not set or null, use default. FIXME
     --dashboard-id cudos-v5 \
     --athena-database $database_name\
     --account-map-source dummy \
+    --cur-database $cur_database_name \
     --cur-table-name $cur_table \
     --athena-workgroup primary\
-    --quicksight-user $quicksight_user \
+    --quicksight-group $quicksight_group \
     --share-with-account \
     --timezone 'Europe/Paris' \
     --quicksight-datasource-id $quicksight_datasource_id \
@@ -60,11 +62,12 @@ cur_table="${cur_table:-cur1}" # If variable not set or null, use default. FIXME
 @test "Update works" {
   run cid-cmd -vv --yes update --force --recursive  \
     --dashboard-id cudos-v5 \
+    --cur-database $cur_database_name \
     --cur-table-name $cur_table \
     --athena-database $database_name\
     --athena-workgroup primary\
     --timezone 'Europe/Paris' \
-    --quicksight-user $quicksight_user   \
+    --quicksight-group $quicksight_group   \
     --quicksight-datasource-id $quicksight_datasource_id \
     --resource-tags '' \
     --taxonomy 'payer_account_id,account_id,account_name' \

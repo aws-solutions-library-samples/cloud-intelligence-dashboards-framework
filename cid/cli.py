@@ -94,7 +94,6 @@ def map(ctx, **kwargs):
     """
     ctx.obj.map(**kwargs)
 
-
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
 @cid_command
@@ -141,6 +140,8 @@ def deploy(ctx, **kwargs):
      --catalog TEXT                        Comma separated list of catalog files or urls (ex: foundational,advanced )
      --theme TEXT                          A QuickSight Theme (CLASSIC|MIDNIGHT|SEASIDE|RAINIER)
      --currency TEXT                       A currency symbol instead of default USD (USD|GBP|EUR|JPY|KRW|DKK|TWD|INR)
+     --rls TEXT                            Desired RLS status (CLEAR|ENABLED|DISABLED) Clear = No RLS configuration.
+     --rls-dataset-id TEXT                 ID of RLS Dataset that will be used
      --share-with-account  (yes|no)        Make dashboard visible to other users in the same account by default.
      """
     ctx.obj.deploy(**kwargs)
@@ -166,6 +167,7 @@ def export(ctx, **kwargs):
                (definition|template) A method (definition=pull json definition of Analysis OR template=create QuickSight Template)
         --export-known-datasets
             (no|yes)                 If 'yes' the export will include DataSets that are already in resources file. Default = no
+        --export-tables (no|yes).    If 'yes' the export will include Tables. Default: no = only Views
         --category TEXT              The dashboards category. Default = Custom
         --output                     A filename (.yaml) If provided an existing file it will be analyzed for default values and overridden 
     """
@@ -210,6 +212,8 @@ def update(ctx, dashboard_id, force, recursive, **kwargs):
      --on-drift (show|override)            Action if a drift of view and dataset is discovered. 'override' = override drift(will destroy customization) or 'show' (default) = show a diff. In Unattended mode (without terminal on-drift will have allways override behaviour)
      --theme TEXT                          A QuickSight Theme (CLASSIC|MIDNIGHT|SEASIDE|RAINIER)
      --currency TEXT                       A currency symbol instead of default USD (USD|GBP|EUR|JPY|KRW|DKK|TWD|INR)
+     --rls TEXT                            Desired RLS status (CLEAR|ENABLED|DISABLED) Clear = No RLS configuration.
+     --rls-dataset-id TEXT                 ID of RLS Dataset that will be used
 
     """
     ctx.obj.update(dashboard_id, force=force, recursive=recursive, **kwargs)
@@ -222,6 +226,15 @@ def update(ctx, dashboard_id, force, recursive, **kwargs):
 def open(ctx, dashboard_id, **kwargs):
     """Open Dashboard in browser"""
     ctx.obj.open(dashboard_id, **kwargs)
+
+
+@click.option('-v', '--verbose', count=True)
+@click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
+@click.option('--dashboard-id', help='QuickSight dashboard id', default=None)
+@cid_command
+def refresh(ctx, dashboard_id, **kwargs):
+    """Refresh datasets for a dashboard"""
+    ctx.obj.refresh_datasets(dashboard_id, **kwargs)
 
 
 @click.option('-v', '--verbose', count=True)

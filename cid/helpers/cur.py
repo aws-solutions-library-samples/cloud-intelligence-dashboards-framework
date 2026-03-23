@@ -104,7 +104,7 @@ class AbstractCUR(CidBase):
 
     def get_type_of_column(self, column: str, version=None):
         """ Return an Athena type of a given non existent CUR column """
-        if column.startswith('cost_category_') or column.startswith('resource_tags_'):
+        if column.startswith('cost_category_') or column.startswith('resource_tags_') or column.startswith('tags_'):
             return 'STRING'
         for ending in ['_cost', '_factor', '_quantity', '_fee', '_amount', '_discount', '_usage', '_usage_ratio']:
             if column.endswith(ending):
@@ -118,6 +118,7 @@ class AbstractCUR(CidBase):
             "discount": "MAP",
             "product": "MAP",
             "resource_tags": "MAP",
+            "tags": "MAP",
             "reservation_amortized_upfront_fee_for_billing_period": "DOUBLE",
             "reservation_unused_amortized_upfront_fee_for_billing_period": "DOUBLE",
             "reservation_upfront_value": "DOUBLE",
@@ -185,40 +186,78 @@ class AbstractCUR(CidBase):
 
             self._tag_and_cost_category = []
             number_of_rows_scanned = 500000 # empiric value
-            for tag_type in ['resource_tags', 'cost_category']:
+            for tag_type in ['resource_tags', 'cost_category', 'tags']:
                 if tag_type not in self.fields:
                     logging.debug(f'skipping {tag_type} scan')
-                cid_print(f'Scanning {tag_type} in {self.table_name}.')
+
+                display_name = "Account Tags (tags column)" if tag_type == "tags" else tag_type
+                cid_print(f'Scanning {display_name} in {self.table_name}.')
                 try:
-                    res = self.athena.query(
-                        sql=f'''
-                            SELECT
-                                key,
-                                COUNT(DISTINCT value) as unique_values
-                            FROM (
-                                SELECT {tag_type}
-                                FROM "{self.database}"."{self.table_name}"
-                                WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
-                                AND line_item_usage_start_date > DATE_ADD('day', -60, CURRENT_DATE)
-                                AND cardinality({tag_type}) > 0
-                                LIMIT {number_of_rows_scanned}
-                            ) t
-                            CROSS JOIN UNNEST({tag_type}) AS t(key, value)
-                            GROUP BY key
-                            ORDER BY unique_values DESC;
-                        ''',
-                        database=self.database,
-                    )
-                    max_width = max(len(str(line[0])) for line in res)
-                    cid_print(f' <BOLD>{tag_type:<{max_width}} | Distinct Values <END> ')
-                    for line in res:
-                        if int(line[1]) > 10:
-                            name = line[0]
-                            name = name.replace('user_', '')
-                            cid_print(f' <BOLD>{name:<{max_width}}<END> | {line[1]} ')
+                    if tag_type == 'tags':
+                        # For comprehensive tags column, filter only account tags
+                        res = self.athena.query(
+                            sql=f'''
+                                SELECT
+                                    key,
+                                    COUNT(DISTINCT value) as unique_values
+                                FROM (
+                                    SELECT {tag_type}
+                                    FROM "{self.database}"."{self.table_name}"
+                                    WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
+                                    AND line_item_usage_start_date > DATE_ADD('day', -60, CURRENT_DATE)
+                                    AND cardinality({tag_type}) > 0
+                                    LIMIT {number_of_rows_scanned}
+                                ) t
+                                CROSS JOIN UNNEST({tag_type}) AS t(key, value)
+                                WHERE key LIKE 'accountTag/%'
+                                GROUP BY key
+                                ORDER BY unique_values DESC;
+                            ''',
+                            database=self.database,
+                        )
+                    else:
+                        res = self.athena.query(
+                            sql=f'''
+                                SELECT
+                                    key,
+                                    COUNT(DISTINCT value) as unique_values
+                                FROM (
+                                    SELECT {tag_type}
+                                    FROM "{self.database}"."{self.table_name}"
+                                    WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
+                                    AND line_item_usage_start_date > DATE_ADD('day', -60, CURRENT_DATE)
+                                    AND cardinality({tag_type}) > 0
+                                    LIMIT {number_of_rows_scanned}
+                                ) t
+                                CROSS JOIN UNNEST({tag_type}) AS t(key, value)
+                                GROUP BY key
+                                ORDER BY unique_values DESC;
+                            ''',
+                            database=self.database,
+                        )
+                    max_width = max(len(str(line[0])) for line in res) if res else 0
+                    cid_print(f' <BOLD>{display_name:<{max_width}} | Distinct Values (Top 20) <END> ')
+
+                    # Show top 20 tags by cardinality, regardless of count
+                    for line in res[:20]:
+                        name = line[0]
+                        name = name.replace('user_', '').replace('accountTag/', '')
+                        cid_print(f' <BOLD>{name:<{max_width}}<END> | {line[1]} ')
+
                     self._tag_and_cost_category += sorted([f"{tag_type}['{line[0]}']" for line in res])
                 except (self.athena.client.exceptions.ClientError, CidCritical, ValueError) as exc:
-                    logger.error(f'Failed to read {tag_type} from {self.table_name}: "{exc}". Will continue without.')
+                    if 'COLUMN_NOT_FOUND' in str(exc):
+                        if tag_type == 'tags':
+                            cid_print(f'Column "{tag_type}" not found in {self.table_name}. Tags column, which contains Account level Tags, is only available in CUR2. To access Account Tags in CID, update the CID stack at payer account(s) to include "Tag" column in the CUR2 data export. Skipping account tags discovery.')
+                        elif tag_type == 'cost_category':
+                            cid_print(f'Column "{tag_type}" not found in {self.table_name}. Cost Categories are not available in this CUR table. Skipping cost categories discovery.')
+                        else:
+                            cid_print(f'Column "{tag_type}" not found in {self.table_name}. Skipping {tag_type} discovery.')
+                    else:
+                        cid_print(f'Failed to read {tag_type} from {self.table_name}: "{exc}". Will continue without.')
+
+                # Add empty line between sections
+                cid_print('')
             return self._tag_and_cost_category
         else:
             raise NotImplemented('cur version not known')
@@ -249,18 +288,23 @@ class CUR(AbstractCUR):
         """Choose CUR"""
         metadata = None
         cur_database = database or get_parameters().get('cur-database')
-        if table or get_parameters().get('cur-table-name'):
-            table_name = table or get_parameters().get('cur-table-name')
+        if not table and get_parameters().get('cur-table-name') and ',' not in str(get_parameters().get('cur-table-name')):
+            table = get_parameters().get('cur-table-name')
+        if table: # Table specified explicitly, so no need to scan. Just need to make sure the table exists
             try:
-                metadata = self.athena.get_table_metadata(table_name, cur_database)
+                metadata = self.athena.get_table_metadata(table, cur_database or self.athena.DatabaseName)
             except self.athena.client.exceptions.MetadataException as exc:
-                raise CidCritical(f'Provided cur-table-name "{table_name}" in database "{cur_database or self.athena.DatabaseName}" is not found. Please make sure the table exists. This could also indicate a LakeFormation permission issue, see our FAQ for help.') from exc
+                logger.debug(f'Provided cur-table-name "{table}" in database "{cur_database or self.athena.DatabaseName}" is not found. ({exc})')
+                raise CidCritical(f'Provided cur-table-name "{table}" in database "{cur_database or self.athena.DatabaseName}" is not found. Please make sure the table exists. This could also indicate a LakeFormation permission issue, see our FAQ for help.')
             res, message = self.table_is_cur(table=metadata, return_reason=True)
             if not res:
-                raise CidCritical(f'Table {table_name} does not look like CUR. {message}')
-            return cur_database or self.athena.DatabaseName, metadata
+                raise CidCritical(f'Provided cur-table-name "{table}" in database "{cur_database or self.athena.DatabaseName}" is not cur. {message}')
+            return (cur_database or self.athena.DatabaseName), metadata
 
         all_cur_tables = []
+        filter_names = None
+        if ',' in str(get_parameters().get('cur-table-name')):
+            filter_names = get_parameters().get('cur-table-name').split(',')
         if cur_database:
             cur_databases = [cur_database]
         else:
@@ -271,7 +315,12 @@ class CUR(AbstractCUR):
                     columns=self.cur_minimal_required_columns,
                     database_name=database,
                 )
-                all_cur_tables += [(database, table['Name']) for table in tables]
+                all_cur_tables += [
+                    (database, table['Name'])
+                    for table in tables
+                    if (not filter_names or table['Name'] in filter_names)
+                    and table['Name'] not in ('cur2_proxy', 'cur2_view')
+                ]
             except self.athena.client.exceptions.ClientError as exc:
                 if 'AccessDenied' in str(exc):
                     logger.info(f'Cannot read from athena database {database}')
@@ -279,10 +328,10 @@ class CUR(AbstractCUR):
                     raise
 
         if not all_cur_tables:
-            # FIXME : distinguish a case where we have NONE tables in any database. This might be because
+            # FIXME : distinguish a case where we have NONE tables in any database. This might be because lake formation
             raise CidCritical(
-                f'CUR table not found in {self.athena.region}. We need a least one table with these columns: {self.cur_minimal_required_columns}.'
-                 ' Please make sure you created cur and created Athena table, preferably with CID Cloud Formation stack.'
+                f'CUR table not found in {self.athena.region}. We need a least one Glue table with these columns: {self.cur_minimal_required_columns}.'
+                 ' Please make sure you have CUR, preferably with CID CloudFormation stack.'
                  ' Also if you have AWS Lake Formation, the user running the tool might need additional permissions'
             )
         databases = set([database for database, _ in all_cur_tables])
@@ -290,7 +339,7 @@ class CUR(AbstractCUR):
             choices = dict(sorted([(f'{database}.{tab}', (database, tab)) for database, tab in all_cur_tables], reverse=True))
         else:
             choices = dict(sorted([(f'{tab}', (database, tab)) for database, tab in all_cur_tables], reverse=True))
-        if not choices:
+        if not choices and not get_parameters().get('no-cur-creation'):
             choices['<CREATE CUR TABLE AND CRAWLER>'] = '<CREATE CUR TABLE AND CRAWLER>'
         answer =  get_parameter(
             param_name='cur-table-name-and-db',
@@ -299,8 +348,11 @@ class CUR(AbstractCUR):
         )
         if answer == '<CREATE CUR TABLE AND CRAWLER>':
             raise CidCritical('CUR creation was requested') # to be captured in common.py
-        database, table = answer
-        set_parameters({'cur-table-name': table,'cur-database': database, })
+        if isinstance(answer, str) and '.' in answer and len(answer.split('.')) == 2:
+            database, table = answer.split('.')
+        else:
+            database, table = answer
+        set_parameters({'cur-table-name': table,'cur-database': database})
         return database, self.athena.get_table_metadata(table, database_name=database)
 
     def ensure_column(self, column: str, column_type: str=None):

@@ -31,8 +31,16 @@ def format_field_name(field_name: str, ignore_prefix: bool=False) -> str:
         assert format_field_name('a_c_r_o_n_y_m') == 'ACRONYM'
         assert format_field_name('tag_a_c_r_o_n_y_m') == 'Tag ACRONYM'
         assert format_field_name('tag_service') == 'Tag Service'
+        assert format_field_name('ServiceCode') == 'Service Code'
     """
-    parts = field_name.split('_')
+    # Handle lowercase strings without underscores by inserting spaces at word boundaries (mainly for focus)
+    if field_name.islower() and '_' not in field_name:
+        field_name = re.sub( r'(zone|id|name|type|category|unit|price|cost|quantity|start|status|class|description|frequency|currency|period)$', r'_\1', field_name)
+        field_name = re.sub(r'^(availability|billing|charge|commitment|consumed|contracted|effective|invoice|list|pricing|provider|publisher|region|resource|service|sku|sub|tags)', r'\1_', field_name)
+    # First, handle camelCase by inserting underscores before uppercase letters
+    field_name = re.sub(r'([a-z])([A-Z])', r'\1_\2', field_name) # This converts "ServiceCode" to "Service_Code"
+    field_name = field_name.lower()
+    parts = [part for part in field_name.split('_') if part]
     result = []
     i = 0
     while i < len(parts):
@@ -49,10 +57,13 @@ def format_field_name(field_name: str, ignore_prefix: bool=False) -> str:
             i += 1
     title = ' '.join(result)
     title = title.replace('Aws ', 'AWS ')
+    # replace prefixes to make filter titles shorter on the dashboards. We don't do the same replacement for group by patching to avoid name overlap there 
     if ignore_prefix:
         new_title = title
         if title.startswith('Cost Category '):
             new_title = title.replace('Cost Category ', '')
+        elif title.startswith('Account Tag '):
+            new_title = title.replace('Account Tag ', '')
         elif title.startswith('Tag '):
             new_title = title.replace('Tag ', '')
         if title.lower() not in ('service', 'region', 'account'): # leave prefix for special terms
@@ -127,7 +138,7 @@ def delete_parameter_control(dashboard_definition: Dict[str, Any], parameter_nam
 
     return dashboard_definition
 
-def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], field_names: List[str]) -> Dict[str, Any]:
+def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], field_names: List[str], taxonomy_dataset: str=None ) -> Dict[str, Any]:
     """ Add a filter on the specified fields to all datasets in a QuickSight definition
 
     param dashboard_definition (dict): The QuickSight definition JSON
@@ -146,7 +157,8 @@ def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], fie
         for alternative in mapping.get(field_name.lower(), []):
             dashboard_definition = delete_parameter_control(dashboard_definition, alternative)
 
-    dataset_identifier = get_most_used_dataset(dashboard_definition)
+    dataset_identifier = taxonomy_dataset or get_most_used_dataset(dashboard_definition)
+    logger.debug(f'leading dataset = {taxonomy_dataset}')
     filter_ids = []
     # FIXME: try to do linked filter controls
     for field_name in reversed(field_names):
@@ -428,6 +440,24 @@ def detect_global_filter_fields(dashboard_definition):
             break
         cols.append(col_name)
 
+
+def patch_spaces(definition):
+    ''' put spaces in places
+    '''
+    def _patch(data):
+        """Recursively set spaces in text fields"""
+        SPACE = '\u00A0' # special space: non-breaking space
+        if isinstance(data, dict):
+            return {k: _patch(v) if k not in ['Expression'] else v for k, v in data.items()} # skip patching code
+        elif isinstance(data, list):
+            return [_patch(item) for item in data]
+        elif isinstance(data, str):
+            text = re.sub(r'([^>\s])(\s*)(\s)(<[^/])', rf'\1{SPACE}\2\3\4', data, re.MULTILINE|re.DOTALL)
+            if text != data:
+                logger.trace(f'patch_spaces: {repr(text)} {repr(data)}')
+            return text
+        return data
+    return _patch(definition)
 
 def patch_currency(definition, currency_symbol):
     ''' patch dashboard by adding currency symbol where the currency is configured already.

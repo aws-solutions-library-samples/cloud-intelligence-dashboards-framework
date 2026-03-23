@@ -23,39 +23,82 @@ if [ ! -d "$TEMP_DIR" ]; then
   exit 1
 fi
 
-# Extract dashboard variables directly from variables.tf file
+# Extract dashboard variables from terraform.tfvars
 cd "$TEMP_DIR"
 echo "Extracting dashboard settings from Terraform configuration..."
 
-# Extract values using grep and sed - improved patterns to better match the structure
-deploy_cudos_v5=$(grep -A30 'cudos_dashboard' variables.tf | grep 'deploy_cudos_v5' | grep -o '"yes"' | tr -d '"' || echo "no")
-deploy_cost_intelligence_dashboard=$(grep -A30 'cudos_dashboard' variables.tf | grep 'deploy_cost_intelligence_dashboard' | grep -o '"yes"' | tr -d '"' || echo "no")
-deploy_kpi_dashboard=$(grep -A30 'cudos_dashboard' variables.tf | grep 'deploy_kpi_dashboard' | grep -o '"yes"' | tr -d '"' || echo "no")
+# Initialize defaults
+deploy_cudos_v5="no"
+deploy_cost_intelligence_dashboard="no"
+deploy_kpi_dashboard="no"
+trends="no"
+datatransfer="no"
+marketplace="no"
+connect="no"
+containers="no"
 
-# Check if there's a terraform.tfvars file that might override the defaults
-if [ -f "terraform.tfvars" ]; then
-  echo "Found terraform.tfvars, checking for overrides..."
-  if grep -q "deploy_cudos_v5" terraform.tfvars; then
-    deploy_cudos_v5=$(grep "deploy_cudos_v5" terraform.tfvars | cut -d'=' -f2 | tr -d ' "' || echo "$deploy_cudos_v5")
+# Check user-config.tf first, then fall back to terraform.tfvars
+CONFIG_FILE=""
+if [ -f "user-config.tf" ]; then
+  CONFIG_FILE="user-config.tf"
+  echo "Found user-config.tf, extracting dashboard settings..."
+elif [ -f "terraform.tfvars" ]; then
+  CONFIG_FILE="terraform.tfvars"
+  echo "Found terraform.tfvars, extracting dashboard settings..."
+fi
+
+if [ -n "$CONFIG_FILE" ]; then
+  # Extract foundational dashboards
+  if grep -q "cudos_v5" "$CONFIG_FILE"; then
+    deploy_cudos_v5=$(grep "cudos_v5" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
-  if grep -q "deploy_cost_intelligence_dashboard" terraform.tfvars; then
-    deploy_cost_intelligence_dashboard=$(grep "deploy_cost_intelligence_dashboard" terraform.tfvars | cut -d'=' -f2 | tr -d ' "' || echo "$deploy_cost_intelligence_dashboard")
+  if grep -q "cost_intelligence" "$CONFIG_FILE"; then
+    deploy_cost_intelligence_dashboard=$(grep "cost_intelligence" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
-  if grep -q "deploy_kpi_dashboard" terraform.tfvars; then
-    deploy_kpi_dashboard=$(grep "deploy_kpi_dashboard" terraform.tfvars | cut -d'=' -f2 | tr -d ' "' || echo "$deploy_kpi_dashboard")
+  if grep -q "kpi" "$CONFIG_FILE"; then
+    deploy_kpi_dashboard=$(grep "kpi" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  
+  # Extract additional dashboards
+  if grep -q "trends" "$CONFIG_FILE"; then
+    trends=$(grep "trends" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  if grep -q "datatransfer" "$CONFIG_FILE"; then
+    datatransfer=$(grep "datatransfer" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  if grep -q "marketplace" "$CONFIG_FILE"; then
+    marketplace=$(grep "marketplace" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  if grep -q "connect" "$CONFIG_FILE"; then
+    connect=$(grep "connect" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  if grep -q "containers" "$CONFIG_FILE"; then
+    containers=$(grep "containers" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
 fi
 
-# Export the variables
+# Export all variables
 export deploy_cudos_v5
 export deploy_cost_intelligence_dashboard
 export deploy_kpi_dashboard
+export trends
+export datatransfer
+export marketplace
+export connect
+export containers
 
 # Echo the dashboard settings
 echo "Dashboard settings from Terraform configuration:"
-echo "- cudos-v5: $deploy_cudos_v5"
-echo "- cost_intelligence_dashboard: $deploy_cost_intelligence_dashboard"
-echo "- kpi_dashboard: $deploy_kpi_dashboard"
+echo "Foundational:"
+echo "- cudos_v5: $deploy_cudos_v5"
+echo "- cost_intelligence: $deploy_cost_intelligence_dashboard"
+echo "- kpi: $deploy_kpi_dashboard"
+echo "Additional:"
+echo "- trends: $trends"
+echo "- datatransfer: $datatransfer"
+echo "- marketplace: $marketplace"
+echo "- connect: $connect"
+echo "- containers: $containers"
 
 cd "$PROJECT_ROOT"
 

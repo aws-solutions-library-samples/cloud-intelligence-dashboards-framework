@@ -12212,13 +12212,13 @@ Sheets:
             \ Intelligence Dashboard</b>\n    </inline>\n  </block>\n  <br/>\n  <block\
             \ align=\"center\">\n    <inline font-size=\"54.88px\">v3.6.0</inline>\n\
             \  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"\
-            center\">\n    <inline font-size=\"24px\">\n      <a href=\"https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi#cost-intelligence-dashboard-(cid)\"\
+            center\">\n    <inline font-size=\"24px\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/cudos-cid-kpi.html#cost-intelligence-dashboard-cid\"\
             \ target=\"_blank\">Documentation</a>\n    </inline>\n    <inline font-size=\"\
             24px\">\_|\_</inline>\n    <inline font-size=\"24px\">\n      <a href=\"\
             https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cid.md\"\
             \ target=\"_blank\">Changelog</a>\n    </inline>\n    <inline font-size=\"\
             24px\">\_|\_</inline>\n    <inline font-size=\"24px\">\n      <a href=\"\
-            https://catalog.workshops.aws/awscid/en-US/dashboards/foundational/cudos-cid-kpi/deploy\"\
+            https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html\"\
             \ target=\"_blank\">Deployment</a>\n    </inline>\n    <inline font-size=\"\
             24px\">\_|\_</inline>\n    <inline font-size=\"24px\">\n      <a href=\"\
             https://catalog.workshops.aws/awscid/en-US/feedback-support\" target=\"\

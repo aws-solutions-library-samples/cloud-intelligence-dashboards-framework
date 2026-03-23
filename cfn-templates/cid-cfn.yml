@@ -1,6 +1,6 @@
 # https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/cfn-templates/cid-cfn.yml
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deployment of Cloud Intelligence Dashboards v4.2.7 - AWS Solution SO9011
+Description: Deployment of Cloud Intelligence Dashboards v4.4.10 - AWS Solution SO9011
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -19,7 +19,7 @@ Metadata:
           - DeployCostIntelligenceDashboard
           - DeployKPIDashboard
       - Label:
-          default: Trusted Advisor and Compute Optimizer Dashboards. To deploy these two dashboard, you must first deploy the Optimization Data Collection Lab (https://catalog.workshops.aws/awscid/en-US/data-collection/)
+          default: Trusted Advisor and Compute Optimizer Dashboards. To deploy these two dashboard, you must first deploy the Optimization Data Collection Lab (https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html)
         Parameters:
           - OptimizationDataCollectionBucketPath
           - DeployTAODashboard
@@ -139,7 +139,7 @@ Parameters:
   QuickSightDataSourceRoleName:
     Type: String
     Default: 'CidQuickSightDataSourceRole'
-    Description: "IAM Role Name to be used on QuickSight Datasource Creation. If empty - then the Default QuickSight Role will be used; if provided other existing role, will use that Role; if name equal to 'CidQuickSightDataSourceRole', then a role will be created by this CloudFromation)."
+    Description: "IAM Role Name to be used on QuickSight Datasource Creation. If empty - then the Default QuickSight Role will be used; if provided other existing role, will use that Role; if name equal to 'CidQuickSightDataSourceRole', then a role will be created by this CloudFormation)."
   ShareDashboard:
     Type: String
     Default: 'yes'
@@ -198,12 +198,12 @@ Parameters:
     AllowedValues: ["yes", "no"]
   DeployTAODashboard:
     Type: String
-    Description: Deploy Trusted Advisor Organizational Dashboard (TAO) - WARNING! Before deploying this dashboard, you need Optimization Data Collection Lab to be installed first https://catalog.workshops.aws/awscid/en-US/data-collection/
+    Description: Deploy Trusted Advisor Organizational Dashboard (TAO) - WARNING! Before deploying this dashboard, you need Optimization Data Collection Lab to be installed first https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html
     Default: "no"
     AllowedValues: ["yes", "no"]
   DeployComputeOptimizerDashboard:
     Type: String
-    Description: Deploy Compute Optimizer Dashboard (COD) - WARNING! Before deploying this dashboard, you need Optimization Data Collection Lab to be installed first https://catalog.workshops.aws/awscid/en-US/data-collection/
+    Description: Deploy Compute Optimizer Dashboard (COD) - WARNING! Before deploying this dashboard, you need Optimization Data Collection Lab to be installed first https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html
     Default: "no"
     AllowedValues: ["yes", "no"]
   OptimizationDataCollectionBucketPath:
@@ -367,6 +367,8 @@ Conditions:
         - !Equals [!Ref "AWS::Region", "eu-central-2"]
         - !Equals [!Ref "AWS::Region", "eu-south-1"]
         - !Equals [!Ref "AWS::Region", "eu-south-2"]
+        - !Equals [!Ref "AWS::Region", "il-central-1"]
+        - !Equals [!Ref "AWS::Region", "me-central-1"]
         - !Equals [!Ref "AWS::Region", "cn-north-1"]
         - !Equals [!Ref "AWS::Region", "us-gov-east-1"]
         - !Equals [!Ref "AWS::Region", "us-gov-west-1"]
@@ -397,6 +399,8 @@ Mappings:
     eu-central-2:   {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
     eu-south-1:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
     eu-south-2:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
+    il-central-1:   {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
+    me-central-1:   {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1}
 
     # specific regions
     cn-north-1:     {BucketName: aws-managed-cost-intelligence-dashboards-us-east-1} # China
@@ -460,7 +464,7 @@ Resources:
       FunctionName:  !Sub 'CidSpiceRefreshLambda${Suffix}'
       Role: !GetAtt SpiceRefreshExecutionRole.Arn
       Description: 'Refresh QuickSight DataSets for CID'
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 128
       Timeout: 60
@@ -594,8 +598,25 @@ Resources:
         rules_to_suppress:
           - id: 'W35'
             reason: "Data buckets would generate too much logs"
-          - id: 'W51'
-            reason: "No policy needed"
+
+  MyAthenaQueryResultsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: NeedAthenaQueryResultsBucket
+    Properties:
+      Bucket: !Ref MyAthenaQueryResultsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt MyAthenaQueryResultsBucket.Arn
+              - !Sub '${MyAthenaQueryResultsBucket.Arn}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
 
   MyAthenaWorkGroup:
     Type: AWS::Athena::WorkGroup
@@ -620,7 +641,7 @@ Resources:
       FunctionName: !Sub CidInitialSetup-DoNotRun${Suffix}
       Role: !GetAtt 'InitLambdaExecutionRole.Arn'
       Description: "CID legacy setup"
-      Runtime: python3.11
+      Runtime: python3.13
       Handler: 'index.lambda_handler'
       Code:
         ZipFile: |
@@ -643,7 +664,7 @@ Resources:
       FunctionName: !Sub "CidCustomResourceFunctionInit-DoNotRun${Suffix}"
       Role: !GetAtt 'InitLambdaExecutionRole.Arn'
       Description: "Do what CFN cannot: start crawler and delete bucket with objects"
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 128
       Timeout: 600
@@ -917,7 +938,7 @@ Resources:
       Role: !GetAtt 'ProcessPathLambdaExecutionRole.Arn'
       FunctionName: !Sub "CidCustomResourceProcessPath-DoNotRun${Suffix}"
       Description: "Do what CFN cannot: process string of path"
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 128
       Timeout: 60
@@ -1331,6 +1352,7 @@ Resources:
                   - athena:GetQueryResultsStream
                   - athena:ListTableMetadata
                   - athena:GetTableMetadata
+                  - athena:GetWorkGroup
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:athena:${AWS::Region}:${AWS::AccountId}:datacatalog/${GlueDataCatalog}'
                   - Fn::If:
@@ -1773,7 +1795,7 @@ Resources:
       FunctionName: !Sub 'CidCustomResourceDashboard${Suffix}'
       Description: 'A lambda that manage create delete update of Athena views, QuickSight Datasets and dashboards using CID-CMD tool'
       Role: !GetAtt CidExecRole.Arn
-      Runtime: python3.11
+      Runtime: python3.13
       Architectures: [ x86_64 ] #Compatible with arm64 but it is not supported in all regions
       MemorySize: 2688
       Timeout: 300 # Time of discovery depend on number of dashboards
@@ -1922,8 +1944,26 @@ Resources:
         rules_to_suppress:
           - id: 'W35'
             reason: "Data buckets would generate too much logs"
-          - id: 'W51'
-            reason: "No policy needed"
+
+  LocalAssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: NeedLocalAssets
+    Properties:
+      Bucket: !Ref LocalAssetsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt LocalAssetsBucket.Arn
+              - !Sub '${LocalAssetsBucket.Arn}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
+
   PullAssetsLambdaRole:
     Type: AWS::IAM::Role
     Condition: NeedLocalAssets
@@ -1969,7 +2009,7 @@ Resources:
       FunctionName:  !Sub 'CidPullAssets${Suffix}'
       Handler: index.handler
       Role: !GetAtt PullAssetsLambdaRole.Arn
-      Runtime: python3.12
+      Runtime: python3.13
       Timeout: 300
       MemorySize: 256
       Code:
@@ -2075,7 +2115,7 @@ Resources:
       SourceBucket: !Ref ReferenceAssetsBucket
       DestinationBucket: !Ref LocalAssetsBucket
       Keys:
-        - 'cid-resource-lambda-layer/cid-4.2.7.zip' #replace version here if needed
+        - 'cid-resource-lambda-layer/cid-4.4.10.zip' #replace version here if needed
 
   CidResourceLambdaLayer:
     Type: AWS::Lambda::LayerVersion
@@ -2090,12 +2130,12 @@ Resources:
             - LambdaLayerBucketPrefixIsManaged
             - !FindInMap [RegionMap, !Ref 'AWS::Region', BucketName]
             - !Sub '${LambdaLayerBucketPrefix}-${AWS::Region}' # Region added for backward compatibility
-        S3Key: 'cid-resource-lambda-layer/cid-4.2.7.zip' #replace version here if needed
+        S3Key: 'cid-resource-lambda-layer/cid-4.4.10.zip' #replace version here if needed
       CompatibleRuntimes:
         - python3.10
         - python3.11
         - python3.12
-
+        - python3.13
 
   CostIntelligenceDashboard:
     Type: Custom::CidDashboard

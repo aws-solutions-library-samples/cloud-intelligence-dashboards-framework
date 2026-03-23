@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 
@@ -34,7 +35,24 @@ class AthenaStore():
     def _to_sql_str(self, val):
         if val is None:
             return "''"
-        return "'" + str(val).replace("'", "''") + "'"
+
+        # If it's already a JSON string, don't re-encode
+        if isinstance(val, str):
+            try:
+                json.loads(val)
+                # It's already JSON, just escape for SQL
+                return "'" + val.replace("'", "''") + "'"
+            except json.JSONDecodeError:
+                pass
+        return "'" + json.dumps(val).replace("'", "''") + "'"
+
+    def _from_sql_str(self, string):
+        if string.endswith(']') and string.startswith('[') and string.count("'") >= 2:
+            string = string.replace("'", '"')
+        try:
+            return json.loads(string)
+        except json.JSONDecodeError:
+            return string
 
     def _generate_view_query(self, data, name):
         all_keys = {key for dictionary in data for key in dictionary.keys()}
@@ -56,13 +74,19 @@ class ParametersController(AthenaStore):
         any_parameters = {}
         # get any context and then override with specific context
         for line in sorted(data, key=lambda x: x.get('date', '')): # latest should override
-            any_parameters[line.get('parameter')] = line.get('value')
+            val = self._from_sql_str(line.get('value'))
+            key = self._from_sql_str(line.get('parameter'))
+            any_parameters[key] = val
             if line.get('context') == str(context):
-                context_parameters[line.get('parameter')] = line.get('value')
+                context_parameters[key] = val
         return any_parameters | context_parameters
 
     def dump_parameters(self, params, context=None):
         data = self.load()
+        data = [ line # avoid buggy records
+            for line in data
+            if '\\' not in str(line)
+        ]
         logger.trace(f'loaded parameters {data}')
         params = dict(params)
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -86,3 +110,9 @@ class ParametersController(AthenaStore):
 
         logger.trace(f'dumping parameters {data}')
         self.dump(data)
+
+if __name__ == '__main__':
+    from cid.helpers import Athena
+    import boto3
+    pc = ParametersController(Athena(boto3.session.Session()))
+    pc.load_parameters('aaa')

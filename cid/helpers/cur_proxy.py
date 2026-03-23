@@ -400,8 +400,8 @@ class ProxyView():
                 MAP(ARRAY['key1', 'key2'], ARRAY[value1, value2])
             '''
             arrays = re.findall(r'ARRAY\[(.*?)\]', mapping_string) # Extract arrays from the string
-            keys = arrays[0].strip('\'').split(',') # Split arrays into elements
-            values = arrays[1].strip('\'').split(',')
+            keys = arrays[0].replace("'", '').split(',') # Split arrays into elements
+            values = arrays[1].split(',') # FIXME: the values can be more complex then just columns and ma potentially include comma in some rare cases.
             return {key.strip(): value.strip() for key, value in zip(keys, values)}
 
         _current_sql = '\n'.join([line[0] for line in self.athena.query(f'SHOW CREATE VIEW {self.name}')])
@@ -417,9 +417,9 @@ class ProxyView():
                     logger.warning(f'Cannot find map {field} definition in the view {self.name}. It must be defined as MAP.')
                     continue
                 current_map = _parse_mapping_string(maps[0])
-                logger.debug(f'current definition of {field} of {current_map}')
-                self.exposed_maps[field].update([key[0] for key in current_map])
-        logger.debug(f'{self.exposed_maps}')
+                logger.debug(f'current definition of {field} = {current_map}')
+                self.exposed_maps[field].update([key for key in current_map])
+        logger.debug(f'exposed_maps = {self.exposed_maps}')
 
     def source_column_equivalents(self, field):
         """ Given a field of cur return an equivalent field in the target cur system. This one does not care if field actually exists
@@ -505,7 +505,7 @@ class ProxyView():
             if field_type.lower().startswith('map'):
                 map_field = field.split('[')[0]
                 map_mapping = {}
-                keys_set = set(self.exposed_maps.get(field, set()))
+                keys_set = set(self.exposed_maps.get(map_field, set()))
                 keys_set.update(self.fields_to_expose_in_maps.get(map_field, set()))
                 for key in keys_set:
                     map_field_key = f'{map_field}_{key}'
@@ -514,7 +514,7 @@ class ProxyView():
                             map_field_key = f'"{map_field_key}"'
                         map_mapping[key] = map_field_key
                     else:
-                        map_mapping[key] = empty['string'] # all known maps have string vaules for now
+                        map_mapping[key] = empty['string'] # all known maps have string values for now
                 if not map_mapping:
                     return 'cast(NULL AS MAP<VARCHAR, VARCHAR>)'
                 map_mapping = dict(sorted(map_mapping.items())) # ordered dict
@@ -566,8 +566,6 @@ class ProxyView():
         lines = {}
         for field in all_target_fields:
             target_field = self.get_fields_from_sql(field)[0]
-            if target_field not in self.exposed_fields:
-                something_changed = True
             target_field_type = self.cur.get_type_of_column(target_field, self.target_cur_version)
             logger.trace(f'get_sql_expression {field} {target_field_type}')
             mapped_expression = self.get_sql_expression(field, target_field_type) #

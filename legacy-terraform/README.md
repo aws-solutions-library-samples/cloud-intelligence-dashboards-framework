@@ -51,7 +51,7 @@ the GitHub / git source as below.
 
 ```hcl
 module "example" {
-  source = "github.com/aws-samples/aws-cudos-framework-deployment//terraform-modules/<module name>"
+  source = "github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/<module name>"
   ...
 }
 ```
@@ -122,7 +122,7 @@ provider "aws" {
 
 # Configure exactly one destination account
 module "cur_data_collection_account" {
-  source = "github.com/aws-samples/aws-cudos-framework-deployment//terraform-modules/cur-setup-destination"
+  source = "github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cur-setup-destination"
 
   source_account_ids = ["1234567890"]
   create_cur         = false # Set to true to create an additional CUR in the aggregation account
@@ -137,7 +137,7 @@ module "cur_data_collection_account" {
 
 # Configure one or more source (payer) accounts
 module "cur_payer" {
-  source = "github.com/aws-samples/aws-cudos-framework-deployment//terraform-modules/cur-setup-source"
+  source = "github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cur-setup-source"
 
   destination_bucket_arn = module.cur_data_collection_account.cur_bucket_arn
 
@@ -172,7 +172,7 @@ used `stack_parameters`.
 # dashboard_deployment.tf
 
 module "cid_dashboards" {
-    source = "github.com/aws-samples/aws-cudos-framework-deployment//terraform-modules/cid-dashboards"
+    source = "github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cid-dashboards"
 
     stack_name      = "Cloud-Intelligence-Dashboards"
     template_bucket = "UPDATEME" # Update with S3 bucket name

@@ -60,6 +60,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
   rule {
     id     = "Object&Version Expiration"
     status = "Enabled"
+    filter {}
     noncurrent_version_expiration {
       noncurrent_days = 32
     }
@@ -221,7 +222,7 @@ resource "aws_cur_report_definition" "this" {
   compression                = "Parquet"
   additional_schema_elements = var.enable_split_cost_allocation_data ? ["RESOURCES", "SPLIT_COST_ALLOCATION_DATA"] : ["RESOURCES"]
   s3_bucket                  = aws_s3_bucket.this.bucket
-  s3_region                  = data.aws_region.this.name
+  s3_region                  = data.aws_region.this.id
   s3_prefix                  = "cur/${data.aws_caller_identity.this.account_id}"
   additional_artifacts       = ["ATHENA"]
   report_versioning          = "OVERWRITE_REPORT"

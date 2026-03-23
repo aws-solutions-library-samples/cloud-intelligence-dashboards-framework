@@ -38,7 +38,7 @@ from functools import lru_cache
 
 from string import Template
 from boto3.session import Session
-from pkg_resources import resource_string
+from importlib import resources
 
 from cid.base import CidBase
 from cid.helpers import Athena, CUR
@@ -119,10 +119,7 @@ class AccountMap(CidBase):
         if view_definition.get('File'):
             view_file = view_definition.get('File')
             template = Template(
-                resource_string(
-                    view_definition.get('providedBy'),
-                    f'data/{view_file}'
-                ).decode('utf-8')
+                (resources.files(view_definition.get('providedBy')) / f'data/{view_file}').read_text()
             )
         elif view_definition.get('data'):
             template = Template(str(view_definition.get('data')))
@@ -156,10 +153,9 @@ class AccountMap(CidBase):
             sql_file = 'data/queries/shared/account_map_cur2.sql'
         else:
             sql_file = 'data/queries/shared/account_map_dummy.sql'
-        template = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name=sql_file,
-        ).decode('utf-8'))
+        template = Template(
+            (resources.files('cid.builtin.core') / sql_file).read_text()
+        )
         columns_tpl = {
             'athena_view_name': name,
             'cur_table_name': cur.table_name,

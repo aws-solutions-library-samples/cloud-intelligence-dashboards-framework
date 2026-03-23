@@ -8,7 +8,7 @@ dashboards:
       - summary_view
     name: Cost Intelligence
     dashboardId: cost_intelligence_dashboard
-    category: Custom
+    category: Foundational
     theme: MIDNIGHT
     version: v3.6.0
     file: ./cost-intelligence-definition.yaml

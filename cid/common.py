@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import urllib
 import logging
@@ -6,7 +7,7 @@ import functools
 import webbrowser
 from string import Template
 from typing import Dict
-from pkg_resources import resource_string
+from importlib import resources
 from importlib.metadata import entry_points
 from functools import cached_property
 
@@ -56,8 +57,8 @@ class Cid():
             'profile_name': None,
             'region_name': None,
             'aws_access_key_id': None,
-            'aws_secret_access_key': None,
-            'aws_session_token': None
+            'aws_secret_access_key': None,  #nosec B105
+            'aws_session_token': None  #nosec B105
         }
         for key in params.keys():
             value = get_parameters().get(key.replace('_', '-'), '<NO VALUE>')
@@ -391,6 +392,7 @@ class Cid():
     def get_template_parameters(self, parameters: dict, param_prefix: str='', others: dict=None):
         """ Get template parameters. """
         params = get_parameters()
+        others = others or {}
         for key, value in parameters.items():
             logger.debug(f'reading template parameter: {key} / {value}')
             prefix = '' if value.get('global') else param_prefix
@@ -403,14 +405,20 @@ class Cid():
                     choices=self.cur.tag_and_cost_category_fields + ["'none'"],
                 )
             elif isinstance(value, dict) and value.get('type') == 'tags_json': # a json
-                if get_parameters().get(prefix + key): # priority to user input
-                    params[key] = get_parameters().get(prefix + key)
+                # Reuse already rendered SQL from a previous resolution
+                cache_key = f'_tags_json_sql_{prefix}{key}'
+                if hasattr(self, cache_key):
+                    params[key] = getattr(self, cache_key)
+                elif get_parameters().get((prefix + key).replace('_', '-')): # priority to user input
+                    params[key] = get_parameters().get((prefix + key).replace('_', '-'))
                     if isinstance(params[key], str):
                         params[key] = params[key].split(',')
+                elif not utils.isatty():
+                    params[key] = "'{}'"
                 else:
                     if 'query' not in value:
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: parameter with type Athena must have query value.')
-                    query = Template(value['query']).safe_substitute(others)
+                    query = Template(value['query']).safe_substitute(params|others)
                     try:
                         res_list = self.athena.query(query)
                     except (self.athena.client.exceptions.ClientError, CidError, CidCritical) as exc:
@@ -420,6 +428,9 @@ class Cid():
                         param_name=key,
                         options=options,
                     )
+                # Cache rendered SQL for reuse by subsequent views
+                if isinstance(params.get(key), str):
+                    setattr(self, cache_key, params[key])
             elif isinstance(value, dict) and value.get('type') == 'athena':
                 if get_parameters().get(prefix + key): # priority to user input
                     params[key] = get_parameters().get(prefix + key)
@@ -432,12 +443,21 @@ class Cid():
                     except (self.athena.client.exceptions.ClientError, CidError, CidCritical) as exc:
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: {exc}.') from exc
                     if not res_list:
-                        raise CidCritical(f'Failed fetching parameter {prefix}{key}, {value}. Athena returns empty results. {value.get("error")}')
-                    elif len(res_list) == 1:
-                        params[key] = '-'.join(res_list[0])
+                        raise CidCritical(f'Failed fetching parameter {prefix}{key}, {value}. Athena returns empty results. {value.get("error", "")}')
+                    options = ['-'.join(res) for res in res_list]
+                    default = value.get('default', '{default not provided}')
+                    if len(options) == 1:
+                        # silently taking the 1st available option
+                        params[key] = options[0]
+                    elif not utils.isatty():
+                        if default in options:
+                            # silently taking the default option if we cannot ask user
+                            params[key] = default
+                        else:
+                            # silently taking the first option
+                            params[key] = sorted(options)[0]
                     else:
-                        options = ['-'.join(res) for res in res_list]
-                        default = value.get('default')
+                        # asking user
                         params[key] = get_parameter(
                             param_name=prefix + key,
                             message=f"Required parameter: {key} ({value.get('description')})",
@@ -623,7 +643,16 @@ class Cid():
                 dataset = self.qs.describe_dataset(id=dashboard_datasets.get(dataset_name), no_cache=True)
 
             if not isinstance(dataset, Dataset):
-                # Second chance:  try to find the dataset with the id that is the name
+                # Second chance:  try to find the dataset with the id from resources
+                try:
+                    _ds_id = self.resources['datasets'].get(dataset_name, {}).get('data', {}).get('DataSetId')
+                    if _ds_id:
+                        dataset = self.qs.describe_dataset(id=_ds_id, no_cache=True)
+                except Exception as exc:
+                    logger.debug(f'Failed to describe_dataset {dataset_name} {exc}')
+
+            if not isinstance(dataset, Dataset):
+                # Third chance:  try to find the dataset with the id that is the name
                 try:
                     dataset = self.qs.describe_dataset(id=dataset_name, no_cache=True)
                 except Exception as exc:
@@ -661,14 +690,18 @@ class Cid():
 
                 if not matching_datasets:
                     reco = ''
-                    logger.warning(f'Dataset {dataset_name} is not found.')
-                    if utils.exec_env()['shell'] == 'lambda':
-                        # We are in lambda
-                        reco = 'You can try deleting existing dataset and re-run.'
-                    else:
-                        # We are in command line mode
-                        reco = 'Please retry with --update "yes" --force --recursive flags.'
-                    raise CidCritical(f'Failed to find a Dataset "{dataset_name}" with required fields. ' + reco)
+                    new_datasets = self.create_datasets([dataset_name], known_datasets=dashboard_datasets, recursive=recursive, update=update)
+                    if not new_datasets:
+                        logger.warning(f'Dataset {dataset_name} is not found.')
+                        if utils.exec_env()['shell'] == 'lambda':
+                            # We are in lambda
+                            reco = 'You can try deleting existing dataset and re-run.'
+                        else:
+                            # We are in command line mode
+                            reco = 'Please retry with --update "yes" --force --recursive flags.'
+                        raise CidCritical(f'Failed to find a Dataset "{dataset_name}" with required fields. ' + reco)
+                    _ds_id = self.resources['datasets'].get(dataset_name, {}).get('data', {}).get('DataSetId')
+                    dashboard_definition['datasets'][dataset_name] = f'arn:{self.base.partition}:quicksight:{self.base.region}:{self.base.account_id}:dataset/{_ds_id}'
                 elif len(matching_datasets) >= 1:
                     if len(matching_datasets) > 1:
                         # FIXME: propose a choice?
@@ -744,6 +777,27 @@ class Cid():
         logger.info('healthy, opening...')
         webbrowser.open(self.qs_url.format(dashboard_id=dashboard_id, **self.qs_url_params))
 
+        return dashboard_id
+
+    @command
+    def refresh_datasets(self, dashboard_id, **kwargs):
+        """Refresh datasets for a dashboard"""
+        
+        if not dashboard_id:
+            dashboard_id = self.qs.select_dashboard(force=True)
+            if not dashboard_id:
+                print('No dashboard selected')
+                return None
+
+        dashboard = self.qs.discover_dashboard(dashboard_id)
+        
+        if not dashboard:
+            logger.error(f'Dashboard {dashboard_id} is not deployed.')
+            return None
+            
+        logger.info(f'Refreshing datasets for dashboard: {dashboard_id}')
+        dashboard.refresh_datasets()
+        
         return dashboard_id
 
     @command
@@ -1017,10 +1071,9 @@ class Cid():
                             param_name='folder-name',
                             message='Please enter the folder name to create'
                         )
-                        folder_permissions_tpl = Template(resource_string(
-                            package_or_requirement='cid.builtin.core',
-                            resource_name=f'data/permissions/folder_permissions.json',
-                        ).decode('utf-8'))
+                        folder_permissions_tpl = Template(
+                            (resources.files('cid.builtin.core') / 'data/permissions/folder_permissions.json').read_text()
+                        )
                         columns_tpl = {
                             'PrincipalArn': self.qs.get_principal_arn()
                         }
@@ -1056,10 +1109,9 @@ class Cid():
             columns_tpl = {
                 'PrincipalArn': principal_arn
             }
-            dashboard_permissions_tpl = Template(resource_string(
-                package_or_requirement='cid.builtin.core',
-                resource_name=template_filename,
-            ).decode('utf-8'))
+            dashboard_permissions_tpl = Template(
+                (resources.files('cid.builtin.core') / template_filename).read_text()
+            )
             dashboard_permissions = json.loads(dashboard_permissions_tpl.safe_substitute(columns_tpl))
             dashboard_params = {
                 "GrantPermissions": [
@@ -1084,10 +1136,9 @@ class Cid():
             if share_method == 'account':
                 logger.info(f'Sharing datasets/datasources with an account is not supported, skipping')
             else:
-                data_set_permissions_tpl = Template(resource_string(
-                    package_or_requirement='cid.builtin.core',
-                    resource_name=f'data/permissions/data_set_permissions.json',
-                ).decode('utf-8'))
+                data_set_permissions_tpl = Template(
+                    (resources.files('cid.builtin.core') / 'data/permissions/data_set_permissions.json').read_text()
+                )
                 data_set_permissions = json.loads(data_set_permissions_tpl.safe_substitute(columns_tpl))
 
                 _datasources: Dict[str, Datasource] = {}
@@ -1102,10 +1153,9 @@ class Cid():
                         if not _datasources.get(_datasource.id):
                             _datasources.update({_datasource.id: _datasource})
 
-                data_source_permissions_tpl = Template(resource_string(
-                    package_or_requirement='cid.builtin.core',
-                    resource_name=f'data/permissions/data_source_permissions.json',
-                ).decode('utf-8'))
+                data_source_permissions_tpl = Template(
+                    (resources.files('cid.builtin.core') / f'data/permissions/data_source_permissions.json').read_text()
+                )
                 data_source_permissions = json.loads(data_source_permissions_tpl.safe_substitute(columns_tpl))
                 for k, v in _datasources.items():
                     logger.info(f'Sharing data source "{v.name}" ({k})')
@@ -1291,7 +1341,18 @@ class Cid():
         # If there still datasets missing try automatic creation
         if missing_datasets:
             missing_str = ', '.join(missing_datasets)
-            print(f'\nThere are still {len(missing_datasets)} datasets missing: {missing_str}')
+            cid_print(f'\nThere are still {len(missing_datasets)} datasets missing: {missing_str}')
+
+            # get rls status of existing datasets
+            found_dataset_objects = [self.qs.describe_dataset(ds_id) for ds_id in found_datasets]
+            rls_dataset_arns = [ds.rls_arn for ds in found_dataset_objects if ds and ds.rls_arn]
+            if rls_dataset_arns:
+                rls_dataset_arn = max(set(rls_dataset_arns), key=rls_dataset_arns.count) #get the most frequent
+                if not get_parameters().get('rls-dataset-id') and not get_parameters().get('rls'):
+                    rls_dataset_id = rls_dataset_arn.split('/')[-1]
+                    cid_print('Existing datasets are linked to RLS {rls_dataset_id}. We will reuse it for {missing_str} datasets.')
+                    set_parameters({'rls-dataset-id': rls_dataset_id})
+
             for dataset_name in missing_datasets[:]:
                 dataset_id = known_datasets.get(dataset_name)
                 print(f'Creating dataset: {dataset_name}')
@@ -1613,7 +1674,7 @@ class Cid():
             except (KeyError, TypeError, AttributeError):
                 tags_type = None
             try:
-                param_res_tag =  self.resources['views'][dep_view_name]['parameters']['resource-tags']
+                param_res_tag =  self.resources['views'][dep_view_name]['parameters']['resource_tags']
             except (KeyError, TypeError, AttributeError):
                 param_res_tag = None
             if tags_type == 'json' or param_res_tag:
@@ -1626,13 +1687,57 @@ class Cid():
         logger.debug(f'dataset {compiled_dataset.get("Name")} resource_tags = {resource_tags}')
         if cur_tags_json_required and resource_tags:
             custom_fields = {
-                name: f"parseJson(tags_json, '$.{name}')" # This syntax does not work:  $[\"{name}\"]
+                name: f"parseJson(tags_json, '$.{name.strip()}')" # This syntax does not work:  $[\"{name}\"]
                 for name in resource_tags
             }
         logger.debug(f'custom_fields = {custom_fields}')
         compiled_dataset = Dataset.patch(dataset=compiled_dataset, custom_fields=custom_fields, athena=self.athena)
         logger.trace(f"compiled_dataset = {json.dumps(compiled_dataset)}")
         found_dataset = self.qs.describe_dataset(compiled_dataset.get('DataSetId'), timeout=0)
+
+        rls_dataset_id = get_parameters().get('rls-dataset-id')
+        rls_dataset_status = get_parameters().get('rls')
+        if rls_dataset_status == 'CLEAR':
+            logger.debug('deleting rls')
+            if "RowLevelPermissionDataSet" in compiled_dataset:
+                del compiled_dataset["RowLevelPermissionDataSet"]
+            if isinstance(found_dataset, Dataset) and "RowLevelPermissionDataSet" in found_dataset.raw:
+                del found_dataset.raw["RowLevelPermissionDataSet"]
+
+        elif rls_dataset_id or rls_dataset_status:
+            if not rls_dataset_id:
+                for ds in self.qs.list_data_sets():
+                    print(ds)
+                choices = {
+                    f"{ds.get('Name')}({ds.get('DataSetId')})":ds.get('DataSetId')
+                    for ds in self.qs.list_data_sets()
+                    if ds.get('UseAs') == 'RLS_RULES'
+                }
+                if not choices:
+                    raise CidCritical(f"Cannot find RLS DataSets")
+                rls_dataset_id = get_parameter('rls-dataset-id', message='Select RLS dataset', choices=choices)
+            rls_dataset = self.qs.describe_dataset(id=rls_dataset_id)
+            if not rls_dataset:
+                raise CidCritical(f"RLS DataSet {rls_dataset_id} not found")
+            if not rls_dataset.is_rls:
+                raise CidCritical(f"DataSet {rls_dataset_id} is not RLS")
+            rls_permissions = {
+                "Arn": rls_dataset.arn,
+                "Status": (rls_dataset_status
+                    or (found_dataset and found_dataset.rls_status)
+                    or "ENABLED"
+                ),
+                "PermissionPolicy": "GRANT_ACCESS",
+            }
+            cols = [c['Name'] for c in rls_dataset.columns]
+            if 'UserName' in cols or 'GroupName' in cols:
+                rls_permissions['FormatVersion'] = "VERSION_1"
+            elif 'UserARN' in cols or 'GroupARN' in cols:
+                rls_permissions['FormatVersion'] = "VERSION_2"
+            else:
+                raise CidCritical(f"DataSet {rls_dataset_id} must have 'UserName'/'GroupName' or 'UserARN'/'GroupARN' columns.")
+            compiled_dataset["RowLevelPermissionDataSet"] = rls_permissions
+
         if isinstance(found_dataset, Dataset):
             update_dataset = False
             if update:
@@ -1724,6 +1829,19 @@ class Cid():
             logger.info(f"Definition is unavailable {view_name}")
             return
         logger.debug(f'View definition: {view_definition}')
+
+        # Dynamic FOCUS consolidation view: discover tables and generate SQL dynamically
+        if view_definition.get('type') == 'dynamic_focus_consolidation':
+            from cid.helpers.focus_consolidation import FocusConsolidationView
+            columns = view_definition.get('columns')
+            focus_view = FocusConsolidationView(athena=self.athena, columns=columns)
+            if focus_view.create_or_update_view():
+                assert self.athena.wait_for_view(view_name), f"Failed to create/update {view_name}"
+                logger.info(f'Dynamic view "{view_name}" created/updated')
+            else:
+                logger.warning(f'Dynamic view "{view_name}" was not created (no FOCUS tables found)')
+            return
+
         dependencies = view_definition.get('dependsOn', {})
 
         # Process CUR columns
@@ -1833,17 +1951,20 @@ class Cid():
                 .replace('resource_tags_', '')
                 .replace('cost_category_', '')
                 .replace("'user_","'tag_")
+                .replace('accountTag/', '')
                 .replace("'aws_","'tag_aws_")
                 .split("['")[-1].split("']")[0]
             )
             if not tag_name.startswith('tag_'):
                 if tag.startswith('cost_category'):
                     tag_name = 'cost_category_' + tag_name
+                elif tag.startswith('tags'):
+                    tag_name = 'account_tag_' + tag_name
                 else:
                     tag_name = 'tag_' + tag_name
-            return tag_name.replace(':', '_')
+            return re.sub(r'\W', '_', tag_name)
 
-        resource_tags = get_parameters().get(param_name, None)
+        resource_tags = get_parameters().get(param_name, None) or get_parameters().get(param_name.replace('_', '-'), None)
         tags_and_names = {_tag_to_name(tag):tag  for tag in sorted(options)}
         logger.info(f'tags_and_names = {tags_and_names}')
         logger.info(f'resource_tags = {resource_tags}')
@@ -1852,7 +1973,7 @@ class Cid():
         if resource_tags is None:
             resource_tags = get_parameter(
                 param_name,
-                message='Enter Cost Allocation Tags to be added to datasets(WARNING: this can affect performance. Choose only the strict minimum)',
+                message='Select Cost Allocation Tags to be added to datasets(WARNING: this can affect performance. Choose only the strict minimum)',
                 multi=True,
                 choices=sorted(list(set(tags_and_names.keys()))),
                 default=resource_tags or [],
@@ -1861,7 +1982,12 @@ class Cid():
         if not resource_tags:
             return "'{}'"
         logger.debug(f'selected_tag_names = {resource_tags}')
-        array = ',\n                        '.join([f"('{name}', {tags_and_names[name]})" for name in resource_tags])
+        pattern = r"\W"
+        array = ',\n                        '.join(
+            # replace all special characters with _ to allow QS read from this json (QS parseJson does not like special characters)
+            [f"""('{re.sub(pattern, "_", name)}', {tags_and_names[name]})"""
+            for name in resource_tags]
+        )
         res = f'''
             json_format(
                 CAST (
@@ -1955,6 +2081,17 @@ class Cid():
     @command
     def teardown(self, **kwargs):
         """remove all assets created by cid"""
+        dashboards = list(self.qs.dashboards.values())
+        cid_print('Following dashboards and datasets will be <RED><BOLD>deleted<END><END>:')
+        for dashboard in dashboards:
+            cid_print(f' <RED><BOLD>{dashboard.id}<END><END> <RED>{dashboard.name} <END>')
+
+        if not get_yesno_parameter(param_name='confirm',
+            message='You selected Teardown command. It will destroy ALL dashboards, datasets and datasources created by CID. Are you sure?',
+            default='no'):
+            cid_print('Good')
+            return
+
         for dashboard in list(self.qs.dashboards.values()):
             self.delete(dashboard.id)
         self.iam.ensure_role_does_not_exist('CidCmdQuickSightDataSourceRole')

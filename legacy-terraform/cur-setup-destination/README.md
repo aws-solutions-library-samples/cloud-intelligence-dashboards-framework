@@ -23,7 +23,7 @@ provider "aws" {
 }
 
 module "cur_destination" {
-  source = "github.com/aws-samples/aws-cudos-framework-deployment//terraform-modules/cur-setup-destination"
+  source = "github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cur-setup-destination"
 
   source_account_ids = ["1234567890"]
   create_cur         = false # Set to true to create an additional CUR in the aggregation account

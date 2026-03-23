@@ -6,7 +6,7 @@ import logging
 from uuid import uuid4
 from string import Template
 from typing import Dict, List, Union
-from pkg_resources import resource_string
+from importlib import resources
 
 from tqdm import tqdm
 
@@ -14,7 +14,7 @@ from cid.base import CidBase
 from cid.helpers import diff, timezone, randtime
 from cid.helpers.quicksight.dashboard import Dashboard
 from cid.helpers.quicksight.dataset import Dataset
-from cid.helpers.quicksight.dashboard_patching import add_filter_to_dashboard_definition, patch_currency, patch_group_by
+from cid.helpers.quicksight.dashboard_patching import add_filter_to_dashboard_definition, patch_currency, patch_group_by, patch_spaces
 from cid.helpers.quicksight.datasource import Datasource
 from cid.helpers.quicksight.template import Template as CidQsTemplate
 from cid.helpers.quicksight.definition import Definition as CidQsDefinition
@@ -341,7 +341,7 @@ class QuickSight(CidBase):
             self._principal_arn = group.get('Arn')
 
         if not self._principal_arn:
-            raise CidCritical('Cannot find principal_arn. Please provide --quicksight-username or --quicksight-groupname')
+            raise CidCritical('Cannot find principal_arn. Please provide --quicksight-user or --quicksight-group')
         return self._principal_arn
 
 
@@ -352,10 +352,9 @@ class QuickSight(CidBase):
         columns_tpl = {
             'PrincipalArn': self.get_principal_arn()
         }
-        data_source_permissions_tpl = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name='data/permissions/data_source_permissions.json',
-        ).decode('utf-8'))
+        data_source_permissions_tpl = Template(
+            (resources.files('cid.builtin.core') / 'data/permissions/data_source_permissions.json').read_text()
+        )
         data_source_permissions = json.loads(data_source_permissions_tpl.safe_substitute(columns_tpl))
         datasource_name = datasource_id or "CID Athena"
         datasource_id = datasource_id or str(uuid4())
@@ -1050,10 +1049,9 @@ class QuickSight(CidBase):
         columns_tpl = {
             'PrincipalArn': self.get_principal_arn()
         }
-        data_set_permissions_tpl = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name='data/permissions/data_set_permissions.json',
-        ).decode('utf-8'))
+        data_set_permissions_tpl = Template(
+            (resources.files('cid.builtin.core') / 'data/permissions/data_set_permissions.json').read_text()
+        )
         data_set_permissions = json.loads(data_set_permissions_tpl.safe_substitute(columns_tpl))
         definition.update({
             'AwsAccountId': self.account_id,
@@ -1265,10 +1263,9 @@ class QuickSight(CidBase):
 
         create_parameters = self._build_params_for_create_update_dash(definition)
 
-        dashboard_permissions_tpl = Template(resource_string(
-            package_or_requirement='cid.builtin.core',
-            resource_name='data/permissions/dashboard_permissions.json',
-        ).decode('utf-8'))
+        dashboard_permissions_tpl = Template(
+            (resources.files('cid.builtin.core') / 'data/permissions/dashboard_permissions.json').read_text()
+        )
         columns_tpl = {
             'PrincipalArn': self.get_principal_arn()
         }
@@ -1340,6 +1337,7 @@ class QuickSight(CidBase):
                 create_parameters['Definition'],
                 currency_symbol=get_parameters().get('currency-symbol', 'USD')
             )
+            create_parameters['Definition'] = patch_spaces(create_parameters['Definition'])
             dataset_references = []
             for identifier, arn in definition.get('datasets', {}).items():
                 # Fetch dataset by name (preferably) OR by id
@@ -1365,6 +1363,9 @@ class QuickSight(CidBase):
             for dataset_reference in dataset_references:
                 dataset = self.describe_dataset(dataset_reference['DataSetArn'].split('/')[-1])
                 all_columns = dataset.raw['OutputColumns']
+                if dataset.name in definition.get('nonTaxonomyDatasets', []):
+                    logger.critical(f'Skipping {dataset.name}')
+                    continue
                 logger.debug(f'{dataset_references}: {all_columns}')
                 if common_columns is None:
                     common_columns = all_columns
@@ -1382,7 +1383,7 @@ class QuickSight(CidBase):
                     order=True,
                 )
                 if taxonomy:
-                    create_parameters['Definition'] = add_filter_to_dashboard_definition(create_parameters['Definition'], taxonomy)
+                    create_parameters['Definition'] = add_filter_to_dashboard_definition(create_parameters['Definition'], taxonomy, taxonomy_dataset=definition.get('taxonomyDataset'))
                     create_parameters['Definition'] = patch_group_by(create_parameters['Definition'], taxonomy)
         else:
             logger.debug(f'Definition = {definition}')

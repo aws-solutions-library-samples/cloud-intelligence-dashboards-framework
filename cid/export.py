@@ -144,18 +144,20 @@ def export_analysis(qs, athena, glue):
 
         cid_print(f'    Found DataSet <BOLD>{dataset_name}<END>.')
         if dataset_name in athena._resources.get('datasets'):
-            resources_datasets.append(dataset_name)
-            if not get_parameters().get('export-known-datasets'):
+            resources_datasets.append(dataset_name) # used later in dependencies
+            if not get_parameters().get('export-known-datasets') == 'yes':
                 cid_print(f'    DataSet <BOLD>{dataset_name}<END> is in resources. Skipping.')
-                continue
+                continue # prevent export dataset
 
         dataset_data = {
             "DataSetId": dataset.raw['DataSetId'],
             "Name": dataset.raw['Name'],
             "PhysicalTableMap": dataset.raw['PhysicalTableMap'],
-            "LogicalTableMap": dataset.raw['LogicalTableMap'],
             "ImportMode": dataset.raw['ImportMode'],
         }
+
+        if dataset.raw.get('LogicalTableMap'):
+            dataset_data["LogicalTableMap"] = dataset.raw['LogicalTableMap']
 
         for key, value in dataset_data['PhysicalTableMap'].items(): # iterate all sub tables
             if 'RelationalTable' in value \
@@ -216,7 +218,7 @@ def export_analysis(qs, athena, glue):
 
     all_views =     [view_and_database[0] for view_and_database in all_views_and_databases]
     all_databases = [view_and_database[1] for view_and_database in all_views_and_databases]
-    if len(all_databases) > 1:
+    if len(set(all_databases)) > 1:
         logger.warning(f'CID only supports one database. Multiple used: {all_databases}')
 
     if all_databases:
@@ -263,13 +265,22 @@ def export_analysis(qs, athena, glue):
                 fields = []
                 for field in cur_helper.fields:
                     if field in view_data['data']:
+                        if field == 'data':
+                            # 'data' is a partition of cur2 and a frequent word, so skip it to avoid false positives
+                            continue
                         fields.append(field)
                 view_data['dependsOn'][f'cur{cur_helper.version}'] = fields or True
                 cur_tables.append(dep_view_name)
             else:
+                dep_view_data = all_views_data.get(dep_view_name, {}).get('data', '')
+                if 'CREATE EXTERNAL TABLE' in dep_view_data and not get_parameters().get('export-tables') == 'yes':
+                    cid_print(f'{key} is a Glue table. Skipping. To export table definitions use `--export-tables yes`. Please manage this dependency by adding parameter')
+                    # TODO: add parameter with schema query
+                    continue
                 logger.debug(f'{dep_view_name} is not cur')
                 if dep_view_name not in all_views_data:
                     logger.debug(f'{dep_view_name} skipping as not in the views list')
+                    continue
                 non_cur_dep_views.append(dep_view_name)
         if deps.get('views'):
             deps['views'] = non_cur_dep_views
@@ -282,7 +293,13 @@ def export_analysis(qs, athena, glue):
         if key in cur_tables or cur_helper.table_is_cur(name=key):
             logger.debug(f'Skipping {key} views - it is a CUR')
             continue
+        if key in ['account_map']:
+            cid_print(f'{key} is a special data. Processed separately. Skipping.')
+            continue
         if isinstance(view_data.get('data'), str):
+            if 'CREATE EXTERNAL TABLE' in view_data.get('data') and not get_parameters().get('export-tables') == 'yes':
+                cid_print(f'{key} is a Glue table. Skipping. To export table definitions use `--export-tables yes`')
+                continue
             #check if there is dependency on crawler
             crawler_names = re.findall(r"UPDATED_BY_CRAWLER\W+?'(.+?)''", view_data.get('data'))
             if crawler_names:
@@ -362,7 +379,7 @@ def export_analysis(qs, athena, glue):
         # We can potentially reconsider this and use IDs at some point
         'datasets': sorted(list(set(list(datasets.keys()) + resources_datasets)))
     }
-    dashboard_resource['name'] = dashboard_resource.get('name')
+    dashboard_resource['name'] = dashboard_resource.get('name') or analysis['Name']
     dashboard_resource['dashboardId'] = dashboard_id
     dashboard_resource['category'] = get_parameters().get('category', dashboard_resource.get('category', 'Custom'))
 
@@ -464,7 +481,7 @@ def export_analysis(qs, athena, glue):
 
         taxonomy_fields = detect_global_filter_fields(definition)
         taxonomy_fields = get_parameter('taxonomy',
-            message='leave only taxonomy filed you want to keep in export',
+            message='Enter the fields that you want removed from the taxonomy before export',
             choices=taxonomy_fields,
             default=[],
             multi=True
