@@ -593,12 +593,12 @@ datasets:
               Columns:
               - ColumnName: tag_cost_center
                 ColumnId: 1971599a-c062-5962-8087-aa1e44db949c
-                Expression: parseJson(tags_json, '$.tag_cost_center')
+                Expression: ifelse(isNull({tags_json}) OR {tags_json} = '{}', NULL, parseJson({tags_json}, '$.tag_cost_center'))
           - CreateColumnsOperation:
               Columns:
               - ColumnName: tag_business_unit
                 ColumnId: c9a78250-5c66-57f0-ac6f-5c9ac7344b8d
-                Expression: parseJson(tags_json, '$.tag_business_unit')
+                Expression: ifelse(isNull({tags_json}) OR {tags_json} = '{}', NULL, parseJson({tags_json}, '$.tag_business_unit'))
           - CreateColumnsOperation:
               Columns:
               - ColumnName: linked_account_formatted
@@ -1146,6 +1146,7 @@ views:
       , "pricing_unit" "pricing_unit"
       , "line_item_resource_id" "resource_id"
       , "reservation_id"
+      , CAST(COALESCE(CAST(MAP_FILTER(resource_tags, (k, v) -> v IS NOT NULL AND v <> '') AS JSON), JSON '{}') AS VARCHAR) "tags_json"
       , "reservation_count"
       , "reservation_start_date" "reservation_start_time"
       , "reservation_end_date" "reservation_end_time"
@@ -1169,4 +1170,4 @@ views:
          WHERE ("line_item_usage_start_date" <= (date_trunc('day', current_timestamp) - INTERVAL  '0' DAY))
          GROUP BY 1
       )  ts ON ("bill_payer_account_id" = "payer_account_id"))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40
