@@ -1787,6 +1787,7 @@ class Cid():
                 if Dataset._is_new_experience(compiled_dataset) and not Dataset._is_new_experience(found_dataset.raw):
                     cid_print(f'<BOLD><YELLOW>Important!<END> <BOLD>Dataset <YELLOW>{found_dataset.name}<END> <BOLD>will be updated to new QuickSight Data Preparation Experience as a part of this update.<END>')
                     logger.info(f'Dataset {found_dataset.name} is legacy but template uses new experience. Recreating.')
+                    existing_permissions = self.qs.describe_data_set_permissions(found_dataset.id)
                     self.qs.delete_dataset(found_dataset.id)
                     # Wait for deletion to complete before creating — API is async
                     for attempt in range(30):
@@ -1798,6 +1799,18 @@ class Cid():
                             time.sleep(2)
                     else:
                         raise CidError(f'Timed out waiting for dataset {found_dataset.id} deletion to complete.')
+
+                    if existing_permissions:
+                        cid_print(f'Reapplying {len(existing_permissions)} permission entries to dataset {found_dataset.name}')
+                        try:
+                            self.qs.update_data_set_permissions(
+                                DataSetId=found_dataset.id,
+                                GrantPermissions=existing_permissions
+                            )
+                        except Exception as e:
+                            logger.warning(f'Failed to reapply permissions for dataset {found_dataset.name} ({found_dataset.id}): {e}')
+                            cid_print(f'<BOLD><RED>Warning:<END> Failed to reapply permissions for dataset <BOLD>{found_dataset.name}<END> ({found_dataset.id}).')
+                            cid_print(f'Previous permissions were:\n{json.dumps(existing_permissions, indent=2)}')
                 else:
                     self.qs.update_dataset(merged_dataset)
                 if compiled_dataset.get("ImportMode") == "SPICE":

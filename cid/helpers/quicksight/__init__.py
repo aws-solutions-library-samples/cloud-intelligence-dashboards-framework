@@ -1436,6 +1436,22 @@ class QuickSight(CidBase):
         logger.debug(update_status)
         return update_status
 
+    def describe_data_set_permissions(self, dataset_id: str) -> list:
+        """ Describes permissions for an Amazon QuickSight dataset """
+        logger.debug(f"Describing DataSet permissions for: {dataset_id}")
+        try:
+            response = self.client.describe_data_set_permissions(
+                AwsAccountId=self.account_id,
+                DataSetId=dataset_id
+            )
+            permissions = response.get('Permissions', [])
+            logger.debug(f"Dataset permissions: {permissions}")
+            return permissions
+        except Exception as e:
+            logger.warning(f"Failed to describe dataset permissions for {dataset_id}: {e}")
+            return []
+
+
 
     def update_data_source_permissions(self, **update_parameters):
         """ Updates an Amazon QuickSight data source permissions """
