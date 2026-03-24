@@ -712,6 +712,7 @@ views:
             , ROW ('postgres15', CAST('2028-03-01' AS timestamp), CAST('2030-03-01' AS timestamp), CAST('2031-02-28' AS timestamp))
             , ROW ('postgres16', CAST('2029-03-01' AS timestamp), CAST('2031-03-01' AS timestamp), CAST('2032-02-29' AS timestamp))
             , ROW ('postgres17', CAST('2030-03-01' AS timestamp), CAST('2032-03-01' AS timestamp), CAST('2033-02-28' AS timestamp))
+            , ROW ('postgres18', CAST('2032-03-01' AS timestamp), CAST('2033-03-01' AS timestamp), CAST('2034-02-28' AS timestamp))
             , ROW ('aurora-mysql2.11', CAST('2024-12-01' AS timestamp), null, CAST('2027-02-28' AS timestamp))
             , ROW ('aurora-mysql2.12', CAST('2024-12-01' AS timestamp), null, CAST('2027-02-28' AS timestamp))
             , ROW ('aurora-mysql3', CAST('2028-05-01' AS timestamp), null, CAST('2029-07-31' AS timestamp))
@@ -722,6 +723,7 @@ views:
             , ROW ('aurora-postgresql14', CAST('2027-03-01' AS timestamp), CAST('2029-03-01' AS timestamp), CAST('2030-02-28' AS timestamp))
             , ROW ('aurora-postgresql15', CAST('2028-03-01' AS timestamp), CAST('2030-03-01' AS timestamp), CAST('2031-02-28' AS timestamp))
             , ROW ('aurora-postgresql16', CAST('2029-03-01' AS timestamp), CAST('2031-03-01' AS timestamp), CAST('2032-02-28' AS timestamp))
+            , ROW ('aurora-postgresql17', CAST('2030-03-01' AS timestamp), CAST('2032-03-01' AS timestamp), CAST('2033-02-28' AS timestamp))
          )
       )
       , regions_pricing (rds_type, region_code, year_1_2_pricing, year_3_pricing) AS (
