@@ -1370,7 +1370,8 @@ class QuickSight(CidBase):
                 if common_columns is None:
                     common_columns = all_columns
                 else:
-                    common_columns = [c for c in all_columns if c in common_columns]
+                    common_names = {c['Name'] for c in common_columns}
+                    common_columns = [c for c in all_columns if c['Name'] in common_names]
             logger.debug(f'all_datasets: {all_columns}')
             non_taxonomy_cols = definition.get('nonTaxonomyColumns', [])
             logger.debug(f'non_taxonomy_cols: {non_taxonomy_cols}')
