@@ -1,5 +1,15 @@
 # What's new in Extended Support Cost Projection
 
+## Extended Support Cost Projection - v5.0.0
+
+**Important:** This is a major version upgrade. The `cid-cmd` tool will ask to confirm a recursive update. Please make sure to confirm the recursive update by answering **yes** to continue the update process and have the new tagging dataset and Athena view deployed for the dashboard.
+
+If you have modified the Extended Support Cost Projection dashboard visuals, these changes will be overridden when the dashboard is updated. Consider backing-up the existing dashboard by creating an analysis from it if you want to keep a reference to customised visuals so you can re-apply them after the update takes place.
+
+- Added taxonomy (tagging) support, enabling tag-based cost analysis and filtering across all Extended Support sheets.
+- New tagging view and dataset for tag aggregation by service dimensions.
+- Existing RDS, EKS, OpenSearch and ElastiCache views now include tag data for use with taxonomy controls.
+
 ## Extended Support Cost Projection - v4.0.5
 
 - OpenSearch and ElastiCache payer filters aligned with RDS and EKS filters by using "equals" comparison with "Payer" parameter.
