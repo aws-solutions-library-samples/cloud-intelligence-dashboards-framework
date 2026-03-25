@@ -454,7 +454,7 @@ class Athena(CidBase):
         try:
             existing_sql = self.query(f'SHOW CREATE VIEW {name}', include_header=True)
             existing_sql = '\n'.join([line[0] for line in existing_sql][1:])
-        except Exception as exc:
+        except (Exception, CidCritical) as exc:
             print(exc)
             return None
         try:
@@ -466,7 +466,7 @@ class Athena(CidBase):
             self.query(tmp_sql)
             tmp_sql = self.query(f'SHOW CREATE VIEW {tmp_name}', include_header=True)
             tmp_sql = '\n'.join([line[0] for line in tmp_sql][1:])
-        except Exception as exc:
+        except (Exception, CidCritical) as exc:
             print(exc)
             return None
         finally:
