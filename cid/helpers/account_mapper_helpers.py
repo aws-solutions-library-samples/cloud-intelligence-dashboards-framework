@@ -1,5 +1,9 @@
 import json
 import logging
+import sys
+import threading
+import time
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional, Tuple, List, Dict, Any
 import pandas as pd
@@ -13,6 +17,31 @@ from cid.helpers import Athena
 from cid.exceptions import CidCritical
 
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def spinner(message: str = "Processing..."):
+    """Context manager that shows a spinning indicator while work is in progress."""
+    stop_event = threading.Event()
+    frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+
+    def _spin():
+        i = 0
+        while not stop_event.is_set():
+            sys.stdout.write(f"\r{frames[i % len(frames)]} {message}")
+            sys.stdout.flush()
+            i += 1
+            time.sleep(0.1)
+        sys.stdout.write(f"\r✅ {message} done\n")
+        sys.stdout.flush()
+
+    t = threading.Thread(target=_spin, daemon=True)
+    t.start()
+    try:
+        yield
+    finally:
+        stop_event.set()
+        t.join()
 
 
 def parse_athena_tags(tags_string: str) -> List[Dict[str, str]]:
@@ -977,7 +1006,7 @@ class ConfigManager:
             
             return config
             
-        except Exception as e:
+        except BaseException as e:
             logger.error("Failed to load configuration from view: %s", str(e), exc_info=True)
             return None
     
@@ -1019,7 +1048,7 @@ class ConfigManager:
             
             # Check if we need to split the view
             if sql_size > 262144:  # Athena's max SQL size
-                logger.warning("Config view SQL exceeds size limit, splitting into parts")
+                logger.info("Config view SQL exceeds Athena size limit, creating separate views due to size limits")
                 return self._create_split_config_view(rows, database)
             else:
                 # Create single config view
@@ -1054,14 +1083,13 @@ class ConfigManager:
             logger.info("Config view %s.%s exists", database, self.config_view_name)
             return True
             
-        except Exception as e:
-            # If query fails, view doesn't exist
+        except BaseException as e:
+            # CidCritical extends BaseException, so we must catch BaseException
             error_msg = str(e).lower()
-            if 'does not exist' in error_msg or 'not found' in error_msg or 'table not found' in error_msg:
+            if 'does not exist' in error_msg or 'not found' in error_msg or 'table_not_found' in error_msg:
                 logger.info("Config view %s.%s does not exist", database, self.config_view_name)
                 return False
             else:
-                # Some other error - log it but assume view doesn't exist
                 logger.warning("Could not check if config view exists: %s", str(e))
                 return False
     
@@ -1479,6 +1507,113 @@ class AutoDiscovery:
         """
         self.athena = athena
     
+    def discover_source(self) -> Tuple[str, str]:
+        """
+        Scan all Athena databases for an 'organization_data' table.
+
+        If exactly one database contains the table, auto-selects it.
+        If multiple databases contain it, prompts the user to choose.
+        If none found, falls back to manual database + table selection.
+
+        Returns:
+            Tuple of (database, table)
+        """
+        from InquirerPy import inquirer as inq
+
+        logger.info("Scanning all databases for 'organization_data' table...")
+        databases = self.athena.list_databases()
+
+        if not databases:
+            raise CidCritical("No databases found in Athena")
+
+        # Scan each database for organization_data
+        matches = []
+        for db in databases:
+            try:
+                metadata = self.athena.get_table_metadata('organization_data', db)
+                if metadata:
+                    matches.append(db)
+            except Exception:
+                continue
+
+        if len(matches) == 1:
+            logger.info(f"Found 'organization_data' in database '{matches[0]}' — auto-selected")
+            return matches[0], 'organization_data'
+        elif len(matches) > 1:
+            logger.info(f"Found 'organization_data' in {len(matches)} databases: {matches}")
+            db = inq.select(
+                message="Multiple databases contain 'organization_data'. Select source database:",
+                choices=matches
+            ).execute()
+            return db, 'organization_data'
+        else:
+            # Not found anywhere — fall back to manual selection
+            logger.warning("'organization_data' table not found in any database")
+            db = self.discover_databases()
+            table = self.discover_tables(db)
+            return db, table
+
+    def discover_target_database(self, databases: Optional[List[str]] = None,
+                                  source_database: Optional[str] = None) -> str:
+        """
+        Discover and confirm the target database for storing views.
+
+        Suggests a database with 'cur' in the name if one exists.
+        Otherwise suggests the source database. Lets the user confirm or pick another.
+
+        Args:
+            databases: Optional pre-fetched list of databases
+            source_database: The source database (used as fallback suggestion)
+
+        Returns:
+            Selected target database name
+        """
+        from InquirerPy import inquirer as inq
+
+        if databases is None:
+            databases = self.athena.list_databases()
+
+        if not databases:
+            raise CidCritical("No databases found in Athena")
+
+        # Find a database with 'cur' in the name
+        cur_dbs = [db for db in databases if 'cur' in db.lower()]
+
+        # Priority 1: find a database that already has an account_map view
+        account_map_db = None
+        for db in databases:
+            try:
+                metadata = self.athena.get_table_metadata('account_map', db)
+                if metadata:
+                    account_map_db = db
+                    break
+            except Exception:
+                continue
+
+        if account_map_db:
+            suggested = account_map_db
+        elif cur_dbs:
+            suggested = cur_dbs[0]
+        elif source_database and source_database in databases:
+            suggested = source_database
+        else:
+            suggested = databases[0]
+
+        print(f"\n📦 Suggested target database for views: {suggested}")
+        confirm = inq.confirm(
+            message=f"Use '{suggested}' as target database?",
+            default=True
+        ).execute()
+
+        if confirm:
+            return suggested
+
+        return inq.select(
+            message="Select target database for views:",
+            choices=databases,
+            default=suggested
+        ).execute()
+
     def discover_databases(self, preferred: Optional[str] = None) -> str:
         """
         Discover and select database with auto-selection logic.
@@ -1802,13 +1937,38 @@ class UnifiedWorkflow:
             if not retry:
                 return result
 
-    def execute(self, database: Optional[str] = None,
-                table: Optional[str] = None) -> dict:
+    def _resolve_dimension_name(self, name: str, config: dict) -> str:
+        """
+        Check if a dimension name already exists and prompt for a new name if so.
+
+        Args:
+            name: Proposed dimension name
+            config: Current configuration dict with taxonomy_dimensions
+
+        Returns:
+            Unique dimension name (original or user-provided replacement)
+        """
+        from InquirerPy import inquirer as inq
+
+        existing_names = {d['name'] for d in config.get('taxonomy_dimensions', [])}
+
+        while name in existing_names:
+            print(f"\n⚠️  Dimension name '{name}' already exists.")
+            name = inq.text(
+                message=f"Enter a different name for this dimension:",
+                default=f"{name}_2",
+                validate=lambda x: (len(x.strip()) > 0) or "Name cannot be empty"
+            ).execute()
+            name = self.config_mgr._sanitize_dimension_name(name)
+
+        return name
+
+    def execute(self, source_file: str = None) -> dict:
         """
         Execute the complete workflow with auto-discovery.
 
         This method orchestrates the entire account mapping process:
-        1. Discover database and table
+        1. Discover source (organization_data table) and target database
         2. Check for existing configuration
         3. Prompt for configuration reuse or create new configuration
         4. Load data from Athena and optionally from file
@@ -1817,20 +1977,24 @@ class UnifiedWorkflow:
         7. Write views to Athena
 
         Args:
-            database: Optional database name (will auto-discover if not provided)
-            table: Optional table name (will auto-discover if not provided)
+            source_file: Optional path to file for file-based taxonomy dimensions
 
         Returns:
             dict: Results containing created view names and status
         """
-        # Phase 1: Discovery
-        database = self._discover_database(database)
-        table = self._discover_table(database, table)
+        # Phase 1: Discovery — find source (organization_data) and target database
+        source_database, table = self.discovery.discover_source()
+        target_database = self.discovery.discover_target_database(
+            source_database=source_database
+        )
+
+        logger.info(f"Source: {source_database}.{table}")
+        logger.info(f"Target database for views: {target_database}")
 
         # Pre-set Athena parameters BEFORE any queries to avoid prompts
         from cid.utils import set_parameters, get_parameters
         params = get_parameters()
-        params['athena-database'] = database
+        params['athena-database'] = target_database
         
         # Auto-select workgroup if only one real workgroup exists (excluding "create new" options)
         workgroups = [wg['Name'] for wg in self.athena.list_work_groups()]
@@ -1847,28 +2011,29 @@ class UnifiedWorkflow:
         
         set_parameters(params)
 
-        # Phase 2: Configuration
-        existing_config = self._check_existing_config(database)
+        # Phase 2: Configuration — load/save config from target database
+        existing_config = self._check_existing_config(target_database)
 
         if existing_config:
             if self._prompt_config_reuse(existing_config):
                 config = existing_config
                 # If config has file source, ask if user wants to update it
                 if config.get('file_source'):
-                    config = self._handle_existing_file_source(config, database, table)
+                    config = self._handle_existing_file_source(config, target_database, table, source_file=source_file)
             else:
-                config = self._interactive_configuration(database, table)
+                config = self._interactive_configuration(source_database, table, source_file=source_file)
         else:
-            config = self._interactive_configuration(database, table)
+            config = self._interactive_configuration(source_database, table, source_file=source_file)
 
-        # Store database and table in config for later use
-        config['metadata']['source_database'] = database
+        # Store source and target in config for later use
+        config['metadata']['source_database'] = source_database
         config['metadata']['source_table'] = table
+        config['metadata']['target_database'] = target_database
         
         # Also store in athena section for DataLoader compatibility
         if 'athena' not in config:
             config['athena'] = {}
-        config['athena']['database'] = database
+        config['athena']['database'] = source_database
         config['athena']['table'] = table
 
         # Initialize data loader and writer with config
@@ -1919,15 +2084,16 @@ class UnifiedWorkflow:
         transformed_data = transformed_data[prefix + rest]
 
         # Phase 5: Preview and Confirmation
-        sql = self.writer._generate_account_map_transformation_sql(config, self.view_name, database)
-        sample = transformed_data.head(10)
+        with spinner("Generating preview"):
+            sql = self.writer._generate_account_map_transformation_sql(config, self.view_name, target_database)
+            sample = transformed_data.head(10)
 
         if not self._preview_and_confirm(sql, sample):
             return {"status": "cancelled", "message": "User cancelled operation"}
 
         # Phase 6: Write Views
         logger.info("Writing views to Athena...")
-        results = self.writer.write_complete_mapping(config, transformed_data, database)
+        results = self.writer.write_complete_mapping(config, transformed_data, target_database)
         results['status'] = 'success'
 
         return results
@@ -1984,41 +2150,55 @@ class UnifiedWorkflow:
         print("\n" + "="*60)
         print("📋 Existing Configuration Found")
         print("="*60)
-        print(f"\nSource: {config['metadata'].get('source_database')}.{config['metadata'].get('source_table')}")
+
+        source_db = config['metadata'].get('source_database')
+        source_tbl = config['metadata'].get('source_table')
+        target_db = config['metadata'].get('target_database')
+
+        print(f"\n  Source table : {source_db}.{source_tbl}")
+        if target_db:
+            print(f"  Target database : {target_db}")
 
         if config.get('file_source'):
-            print(f"File source: {config['metadata'].get('file_source_view')}")
+            print(f"  File source view: {config['metadata'].get('file_source_view')}")
 
-        print("\nTaxonomy Dimensions:")
-        for dim in config.get('taxonomy_dimensions', []):
-            source_type = dim['source_type']
-            source_value = dim['source_value']
-            
-            # Format display based on source type
-            if source_type == 'name_split' and isinstance(source_value, dict):
-                display = f"{source_type} (separator='{source_value.get('separator')}', index={source_value.get('index')})"
-            elif source_type == 'file':
-                display = f"file (column: {source_value})"
-            else:
-                display = f"{source_type} ({source_value})"
-            
-            print(f"  - {dim['name']}: {display}")
-        
-        # Show payer names if configured
+        dims = config.get('taxonomy_dimensions', [])
+        if dims:
+            print(f"\n  Taxonomy Dimensions ({len(dims)}):")
+            print("  " + "-"*56)
+            for i, dim in enumerate(dims, 1):
+                source_type = dim['source_type']
+                source_value = dim['source_value']
+
+                if source_type == 'name_split' and isinstance(source_value, dict):
+                    created_from = f"Account name split by \"{source_value.get('separator')}\" at index {source_value.get('index')}"
+                elif source_type == 'file':
+                    created_from = f"File column \"{source_value}\""
+                elif source_type == 'tag':
+                    created_from = f"Tag with key \"{source_value}\""
+                else:
+                    created_from = f"{source_type}: {source_value}"
+
+                print(f"    Dimension {i}:")
+                print(f"      Column name  : {dim['name']}")
+                print(f"      Created from : {created_from}")
+
         payer_names = config.get('payer_names', {})
         if payer_names:
-            print("\nPayer Names:")
+            print(f"\n  Payer Account Names ({len(payer_names)}):")
+            print("  " + "-"*56)
             for pid, pname in payer_names.items():
-                print(f"  - {pid}: {pname}")
-        
-        print("="*60 + "\n")
+                print(f"    {pid} → {pname}")
+
+        print("\n" + "="*60 + "\n")
 
         return inquirer.confirm(
             message="Use existing configuration?",
             default=True
         ).execute()
 
-    def _handle_existing_file_source(self, config: dict, database: str, table: str) -> dict:
+    def _handle_existing_file_source(self, config: dict, database: str, table: str,
+                                     source_file: str = None) -> dict:
         """
         Handle existing file source configuration - ask if user wants to update it.
 
@@ -2026,6 +2206,7 @@ class UnifiedWorkflow:
             config: Existing configuration with file source
             database: Database name
             table: Table name
+            source_file: Optional path to file provided via --file parameter
 
         Returns:
             dict: Updated configuration
@@ -2059,8 +2240,12 @@ class UnifiedWorkflow:
             # Run file selection workflow
             logger.info("Updating file source...")
             
-            # Prompt for file selection
-            file_path = self.discovery.prompt_file_selection()
+            # Use --file parameter if provided, otherwise prompt
+            if source_file:
+                file_path = source_file
+                print(f"Using file: {source_file}")
+            else:
+                file_path = self.discovery.prompt_file_selection()
 
             # Load file to get columns
             temp_loader = DataLoader(self.athena, config)
@@ -2115,6 +2300,7 @@ class UnifiedWorkflow:
 
                     # Add new file dimensions to config
                     for col, name in dimension_names.items():
+                        name = self._resolve_dimension_name(name, config)
                         config['taxonomy_dimensions'].append({
                             'name': name,
                             'source_type': 'file',
@@ -2138,13 +2324,15 @@ class UnifiedWorkflow:
 
         return config
 
-    def _interactive_configuration(self, database: str, table: str) -> dict:
+    def _interactive_configuration(self, database: str, table: str,
+                                    source_file: str = None) -> dict:
         """
         Run interactive configuration workflow.
 
         Args:
             database: Database name
             table: Table name
+            source_file: Optional path to file for file-based dimensions
 
         Returns:
             dict: New configuration
@@ -2163,19 +2351,21 @@ class UnifiedWorkflow:
             'taxonomy_dimensions': []
         }
 
+        # Build data source choices — only include file option if --file was provided
+        data_source_choices = ["Tags from source table"]
+        if source_file:
+            data_source_choices.append("Additional file")
+        data_source_choices.append("Split account name column")
+
         # Single multi-select for all data source options
         data_sources = self._checkbox_with_retry(
             message="Select data sources for taxonomy dimensions (space to select, Enter to confirm):",
-            choices=[
-                "Tags from source table",
-                "Additional file",
-                "Split account name column"
-            ],
+            choices=data_source_choices,
             default=["Tags from source table"]
         )
 
         use_tags = "Tags from source table" in data_sources
-        use_file = "Additional file" in data_sources
+        use_file = "Additional file" in data_sources and source_file
         use_name_split = "Split account name column" in data_sources
 
         # Configure file source if selected
@@ -2183,11 +2373,10 @@ class UnifiedWorkflow:
             print("\n" + "="*70)
             print("📁 FILE SOURCE CONFIGURATION")
             print("="*70)
-            print("Add additional columns from a file (Excel, CSV) to enrich account data.")
-            print("Each selected column will become a taxonomy dimension in the output.\n")
+            print(f"Using file: {source_file}\n")
             
-            # Prompt for file selection
-            file_path = self.discovery.prompt_file_selection()
+            # Use the provided file path directly
+            file_path = source_file
 
             # Load file to get columns
             temp_loader = DataLoader(self.athena, config)
@@ -2241,6 +2430,7 @@ class UnifiedWorkflow:
 
                     # Add file dimensions to config
                     for col, name in dimension_names.items():
+                        name = self._resolve_dimension_name(name, config)
                         config['taxonomy_dimensions'].append({
                             'name': name,
                             'source_type': 'file',
@@ -2280,6 +2470,7 @@ class UnifiedWorkflow:
                 
                 # Sanitize the dimension name (replace spaces with underscores)
                 dim_name = self.config_mgr._sanitize_dimension_name(dim_name)
+                dim_name = self._resolve_dimension_name(dim_name, config)
 
                 config['taxonomy_dimensions'].append({
                     'name': dim_name,
@@ -2340,6 +2531,7 @@ class UnifiedWorkflow:
                         else:
                             dim_name = tag
 
+                        dim_name = self._resolve_dimension_name(dim_name, config)
                         config['taxonomy_dimensions'].append({
                             'name': dim_name,
                             'source_type': 'tag',
@@ -2530,7 +2722,7 @@ class AthenaWriter:
             return [view_name]
         else:
             # Need to split into multiple views
-            logger.warning("SQL size (%d bytes) exceeds limit (%d bytes). Splitting into multiple parts.", sql_size, self.MAX_SQL_SIZE)
+            logger.info("SQL size (%d bytes) exceeds limit (%d bytes), creating separate views due to size limits", sql_size, self.MAX_SQL_SIZE)
             logger.info("Splitting DataFrame into multiple views")
 
             return self._create_split_views(df, view_name, database, columns)
@@ -2851,14 +3043,15 @@ SELECT * FROM (
             ).execute()
 
             if confirm:
-                for view_info in old_views:
-                    view_name_to_delete = view_info['name']
-                    try:
-                        self._safe_drop_view_or_table(view_name_to_delete, database)
-                        results['deleted_views'].append(view_name_to_delete)
-                        logger.info(f"Deleted view: {view_name_to_delete}")
-                    except Exception as e:
-                        logger.warning(f"Failed to delete view {view_name_to_delete}: {e}")
+                with spinner("Dropping existing views"):
+                    for view_info in old_views:
+                        view_name_to_delete = view_info['name']
+                        try:
+                            self._safe_drop_view_or_table(view_name_to_delete, database)
+                            results['deleted_views'].append(view_name_to_delete)
+                            logger.info(f"Deleted view: {view_name_to_delete}")
+                        except Exception as e:
+                            logger.warning(f"Failed to delete view {view_name_to_delete}: {e}")
             else:
                 logger.info("Skipping view cleanup")
 
@@ -2879,7 +3072,8 @@ SELECT * FROM (
                     file_df = file_df.rename(columns={account_col: 'account_id'})
                     logger.info(f"Renamed column '{account_col}' to 'account_id' for file source view")
                 
-                success = self.create_file_source_view(file_df, file_view_name, database)
+                with spinner("Creating file source view"):
+                    success = self.create_file_source_view(file_df, file_view_name, database)
                 results['file_source_view'] = file_view_name if success else None
             except Exception as e:
                 logger.error(f"Failed to create file source view: {e}")
@@ -2910,12 +3104,14 @@ SELECT * FROM (
         # Step 3: Create config view
         logger.info(f"Creating config view: {view_name}_config")
         config_mgr = ConfigManager(self.athena_helper, view_name)
-        success = config_mgr.save_to_view(config, database)
+        with spinner("Creating configuration view"):
+            success = config_mgr.save_to_view(config, database)
         results['config_view'] = f"{view_name}_config" if success else None
 
         # Step 4: Create account map view
         logger.info(f"Creating account map view: {view_name}")
-        success = self.create_account_map_view(config, df, view_name, database)
+        with spinner("Creating account map view"):
+            success = self.create_account_map_view(config, df, view_name, database)
         results['account_map_view'] = view_name if success else None
 
         return results
@@ -3043,7 +3239,7 @@ SELECT * FROM (
             
             # Check size and split if needed
             if len(sql.encode('utf-8')) > self.MAX_SQL_SIZE:
-                logger.warning("Account map SQL exceeds size limit, falling back to VALUES approach")
+                logger.info("Account map SQL exceeds Athena size limit, creating separate views due to size limits")
                 view_names = self.create_view_from_values(df, view_name, database)
                 if len(view_names) > 1:
                     return self.create_union_view(view_names, view_name, database)

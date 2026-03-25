@@ -24,13 +24,12 @@ class AccountMapper:
         self.athena = athena
         self.view_name = view_name
 
-    def create_mapping(self, database: str = None, table: str = None) -> dict:
+    def create_mapping(self, source_file: str = None) -> dict:
         """
         Execute the complete account mapping workflow.
 
         Args:
-            database: Optional database name (will auto-discover if not provided)
-            table: Optional table name (will auto-discover if not provided)
+            source_file: Optional path to CSV/Excel/JSON file for file-based dimensions
 
         Returns:
             dict: Results containing created view names and status
@@ -38,7 +37,7 @@ class AccountMapper:
         from cid.helpers.account_mapper_helpers import UnifiedWorkflow
 
         workflow = UnifiedWorkflow(athena=self.athena, view_name=self.view_name)
-        results = workflow.execute(database=database, table=table)
+        results = workflow.execute(source_file=source_file)
 
         # Display results summary
         if results.get('status') == 'success':
@@ -135,12 +134,8 @@ class AccountMapper:
 
                 if confirm:
                     workflow = UnifiedWorkflow(self.athena, self.view_name)
-                    # Execute with existing config by passing database and table
-                    # The workflow will find the existing config and offer to reuse it
-                    results = workflow.execute(
-                        database=config['metadata'].get('source_database'),
-                        table=config['metadata'].get('source_table')
-                    )
+                    # Execute — workflow will find existing config and offer to reuse it
+                    results = workflow.execute()
 
                     if results.get('status') == 'success':
                         print("\n✅ Account map regenerated successfully\n")

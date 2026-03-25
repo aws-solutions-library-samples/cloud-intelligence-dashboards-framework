@@ -2043,10 +2043,7 @@ class Cid():
         mapper = AccountMapper(athena=self.athena, view_name=view_name)
         
         try:
-            mapper.create_mapping(
-                database=kwargs.get('database'),
-                table=kwargs.get('table')
-            )
+            mapper.create_mapping(source_file=kwargs.get('source_file'))
         except Exception as e:
             logger.error(f"Account mapping failed: {e}", exc_info=True)
             print(f"\n❌ Error: {e}\n")
