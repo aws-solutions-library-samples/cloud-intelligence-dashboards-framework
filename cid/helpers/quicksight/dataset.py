@@ -468,4 +468,21 @@ class Dataset(CidQsResource):
         # New experience datasets cannot have LogicalTableMap alongside DataPrepConfiguration
         if result.get('DataPrepConfiguration') and result.get('LogicalTableMap'):
             del result['LogicalTableMap']
+        # New experience datasets require RLS inside SemanticModelConfiguration, not at top level
+        if result.get('DataPrepConfiguration'):
+            rls_dataset = result.pop('RowLevelPermissionDataSet', None)
+            rls_tag_config = result.pop('RowLevelPermissionTagConfiguration', None)
+            if rls_dataset or rls_tag_config:
+                table_map = result.get('SemanticModelConfiguration', {}).get('TableMap', {})
+                if table_map:
+                    first_table = next(iter(table_map.values()))
+                    rls_configuration = {}
+                    if rls_dataset:
+                        rls_configuration['RowLevelPermissionDataSet'] = rls_dataset
+                    if rls_tag_config:
+                        rls_configuration['TagConfiguration'] = rls_tag_config
+                    first_table['RowLevelPermissionConfiguration'] = rls_configuration
+                    logger.info(f'Migrated RLS configuration into SemanticModelConfiguration')
+                else:
+                    logger.warning('Cannot migrate RLS: SemanticModelConfiguration.TableMap is empty')
         return result
