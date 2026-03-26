@@ -41,6 +41,7 @@ jobs:
           # GHSA-pq67-6m6q-mj2v  urllib3 <1.7 is a dep of boto3 need to wait till it updates to urllib3 2.5.0
           # GHSA-2xpw-w6gg-jr37 GHSA-gm62-xv2j-4w53 - urllib3
           # GHSA-38jv-5279-wg99 - urllib3 is a dep of boto3, conflicts with boto3 requirement
+          # CVE-2026-4539 - pygments is a transitive dependency, not cid-cmd
           pip-audit --ignore-vuln GHSA-wfm5-v35h-vwf4 \
                     --ignore-vuln GHSA-cwvm-v4w8-q58c \
                     --ignore-vuln GHSA-pq67-6m6q-mj2v \
@@ -48,6 +49,7 @@ jobs:
                     --ignore-vuln GHSA-gm62-xv2j-4w53 \
                     --ignore-vuln GHSA-2xpw-w6gg-jr37 \
                     --ignore-vuln GHSA-38jv-5279-wg99 \
+                    --ignore-vuln CVE-2026-4539 \
 
   python-pylint-cid:
     runs-on: ubuntu-latest
