@@ -1599,9 +1599,9 @@ class AutoDiscovery:
         else:
             suggested = databases[0]
 
-        print(f"\n📦 Suggested target database for views: {suggested}")
+        print(f"\n📦 Choose target database for account_map, suggesting {suggested}")
         confirm = inq.confirm(
-            message=f"Use '{suggested}' as target database?",
+            message=f"Use the suggested database '{suggested}' to write account_map to?",
             default=True
         ).execute()
 
@@ -1609,7 +1609,7 @@ class AutoDiscovery:
             return suggested
 
         return inq.select(
-            message="Select target database for views:",
+            message="Select target database for account_map deployment:",
             choices=databases,
             default=suggested
         ).execute()
