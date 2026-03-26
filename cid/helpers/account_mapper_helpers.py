@@ -103,16 +103,6 @@ def parse_athena_tags(tags_string: str) -> List[Dict[str, str]]:
         return []
 
 
-# Session-level cache for Athena data
-_athena_data_cache: Dict[str, Any] = {
-    'data': None,  # Cached DataFrame (full data for tag extraction)
-    'preview_data': None,  # Cached preview data (list of dicts, LIMIT 10)
-    'columns': None,  # Cached column list
-    'tag_keys': {},  # Cached tag keys by column name
-    'config_hash': None  # Hash of config to detect changes
-}
-
-
 class Account:
     """
     Represents an AWS account with metadata and business taxonomy information.
@@ -146,7 +136,6 @@ class Account:
             TypeError: If account_id contains non-numeric characters
         """
         self._account_name = ""
-        self._account_tags = {}
         self._business_unit = {}
         self._payer_account_id = ""
         
@@ -241,40 +230,6 @@ class Account:
         """
         return self._payer_account_id
     
-    
-    
-    def add_tag(self, tag_name: str, tag_value: str) -> None:
-        """
-        Add a tag to the account.
-        
-        Args:
-            tag_name: Tag key
-            tag_value: Tag value
-        """
-        self._account_tags[tag_name] = tag_value
-        Account._all_accounts[self._account_id]["tags"] = self._account_tags
-    
-    def get_tags(self) -> Dict[str, str]:
-        """
-        Get all tags for this account.
-        
-        Returns:
-            Dictionary of tag key-value pairs
-        """
-        return self._account_tags
-    
-    def get_tag(self, tag_name: str) -> Optional[str]:
-        """
-        Get a specific tag value.
-        
-        Args:
-            tag_name: Tag key to retrieve
-            
-        Returns:
-            Tag value or None if not found
-        """
-        return self._account_tags.get(tag_name)
-    
     def set_business_unit(self, bu_name: str, bu_value: str) -> None:
         """
         Set a business unit taxonomy dimension for this account.
@@ -285,15 +240,6 @@ class Account:
         """
         self._business_unit[bu_name] = bu_value
         Account._all_accounts[self._account_id][bu_name] = bu_value
-    
-    def get_business_unit(self) -> Dict[str, str]:
-        """
-        Get all business unit information for this account.
-        
-        Returns:
-            Dictionary of business unit dimensions and values
-        """
-        return self._business_unit
     
     @classmethod
     def get_all_accounts(cls) -> Dict[str, Dict]:
@@ -660,16 +606,12 @@ class DataLoader:
             logger.error("Failed to load data from Athena: %s", str(e), exc_info=True)
             raise RuntimeError(f"Athena query failed: {e}") from e
     
-    def load_from_file(self, file_path: Optional[str] = None, account_id_column: Optional[str] = None, 
-                       validate_ids: bool = False) -> pd.DataFrame:
+    def load_from_file(self, file_path: Optional[str] = None) -> pd.DataFrame:
         """
-        Load data from file (Excel, CSV, or JSON) with optional account ID validation.
+        Load data from file (Excel, CSV, or JSON).
         
         Args:
             file_path: Path to file. If None, uses path from configuration.
-            account_id_column: Name of column containing account IDs for validation.
-                              If None and validate_ids is True, will attempt auto-detection.
-            validate_ids: If True, validate account IDs using Account class.
             
         Returns:
             DataFrame containing file data
@@ -678,7 +620,6 @@ class DataLoader:
             ValueError: If file path is not provided or configured
             FileNotFoundError: If file does not exist
             ValueError: If file format is not supported
-            ValueError: If validate_ids is True and account IDs are invalid
         """
         # Use provided path or get from configuration
         if file_path is None:
@@ -714,133 +655,11 @@ class DataLoader:
                     "Supported formats: .json, .csv, .xlsx, .xls"
                 )
             
-            # Validate account IDs if requested
-            if validate_ids:
-                # Determine account ID column
-                if account_id_column is None:
-                    # Try to auto-detect
-                    account_id_column = self.auto_detect_account_column(df)
-                    if account_id_column is None:
-                        raise ValueError(
-                            "Could not auto-detect account ID column. "
-                            "Please specify account_id_column parameter."
-                        )
-                    logger.info("Auto-detected account ID column: %s", account_id_column)
-                
-                # Validate the account IDs
-                is_valid, invalid_ids = self.validate_account_ids(df, account_id_column)
-                
-                if not is_valid:
-                    error_msg = (
-                        f"Found {len(invalid_ids)} invalid account IDs in column '{account_id_column}':\n"
-                        + "\n".join(invalid_ids[:10])  # Show first 10 invalid IDs
-                    )
-                    if len(invalid_ids) > 10:
-                        error_msg += f"\n... and {len(invalid_ids) - 10} more"
-                    
-                    logger.error("Account ID validation failed: %s", error_msg)
-                    raise ValueError(error_msg)
-                
-                logger.info("Account ID validation passed for column '%s'", account_id_column)
-            
             return df
             
         except Exception as e:
             logger.error("Failed to load file %s: %s", file_path, str(e), exc_info=True)
             raise
-    
-    def auto_detect_account_column(self, df: pd.DataFrame) -> Optional[str]:
-        """
-        Auto-detect the account ID column in a DataFrame.
-        
-        Searches for common account ID column name patterns (case-insensitive):
-        - account_id
-        - accountid
-        - account
-        - id
-        - aws_account_id
-        
-        Args:
-            df: DataFrame to search
-            
-        Returns:
-            Column name if found, None otherwise
-            
-        Example:
-            >>> df = pd.DataFrame({'Account_ID': ['123456789012'], 'Name': ['Test']})
-            >>> loader = DataLoader(athena, {})
-            >>> loader.auto_detect_account_column(df)
-            'Account_ID'
-        """
-        # Common account ID column name patterns (in priority order)
-        patterns = ['account_id', 'accountid', 'account', 'aws_account_id', 'id']
-        
-        # Convert all column names to lowercase for comparison
-        columns_lower = {col.lower(): col for col in df.columns}
-        
-        # Search for patterns in priority order
-        for pattern in patterns:
-            if pattern in columns_lower:
-                detected_col = columns_lower[pattern]
-                logger.debug("Auto-detected account ID column: %s (matched pattern: %s)", 
-                           detected_col, pattern)
-                return detected_col
-        
-        logger.debug("Could not auto-detect account ID column from available columns: %s", 
-                    list(df.columns))
-        return None
-    
-    def validate_account_ids(self, df: pd.DataFrame, account_column: str) -> Tuple[bool, List[str]]:
-        """
-        Validate that all account IDs in the specified column are valid 12-digit AWS account IDs.
-
-        Uses the Account class to validate each account ID, ensuring they consist of
-        12 digits (0-9) and can be properly zero-padded.
-
-        Args:
-            df: DataFrame containing account data
-            account_column: Name of the column containing account IDs
-
-        Returns:
-            Tuple of (is_valid, invalid_ids) where:
-                - is_valid: True if all account IDs are valid, False otherwise
-                - invalid_ids: List of invalid account ID values
-
-        Example:
-            >>> df = pd.DataFrame({'account_id': ['123456789012', 'invalid', '999']})
-            >>> loader = DataLoader(athena, {})
-            >>> is_valid, invalid = loader.validate_account_ids(df, 'account_id')
-            >>> print(is_valid)
-            False
-            >>> print(invalid)
-            ['invalid']
-        """
-        if account_column not in df.columns:
-            raise ValueError(f"Column '{account_column}' not found in DataFrame")
-
-        invalid_ids = []
-
-        for idx, value in df[account_column].items():
-            # Skip NaN/None values
-            if pd.isna(value):
-                invalid_ids.append(f"Row {idx}: <empty>")
-                continue
-
-            # Try to create an Account instance to validate the ID
-            try:
-                Account(str(value))
-            except (TypeError, ValueError) as e:
-                invalid_ids.append(f"Row {idx}: {value}")
-                logger.debug("Invalid account ID at row %d: %s - %s", idx, value, str(e))
-
-        is_valid = len(invalid_ids) == 0
-
-        if is_valid:
-            logger.info("All %d account IDs in column '%s' are valid", len(df), account_column)
-        else:
-            logger.warning("Found %d invalid account IDs in column '%s'", len(invalid_ids), account_column)
-
-        return is_valid, invalid_ids
     
     def get_available_tag_keys(self, org_data: Optional[pd.DataFrame] = None, tag_column: str = 'hierarchytags') -> list:
         """
@@ -888,48 +707,6 @@ class DataLoader:
         logger.info("Found %d unique tag keys", len(tag_keys_list))
         
         return tag_keys_list
-    
-    def get_available_columns(self) -> List[str]:
-        """
-        Get list of available columns from the Athena table.
-        
-        Returns:
-            List of column names
-            
-        Raises:
-            ValueError: If Athena configuration is missing
-            RuntimeError: If query fails
-        """
-        athena_config = self.config.get('athena', {})
-        database = athena_config.get('database')
-        table = athena_config.get('table')
-        
-        if not database or not table:
-            raise ValueError("Athena database and table must be configured")
-        
-        logger.info("Getting columns from Athena table: %s.%s", database, table)
-        
-        try:
-            # Query to get column names (limit 0 to just get schema)
-            query = f'SELECT * FROM "{database}"."{table}" LIMIT 0'
-            
-            results = self.athena.query(
-                sql=query,
-                database=database,
-                include_header=True
-            )
-            
-            if results and len(results) > 0:
-                columns = results[0]  # First row is header
-                logger.info("Found %d columns", len(columns))
-                return columns
-            else:
-                logger.warning("No columns returned")
-                return []
-                
-        except Exception as e:
-            logger.error("Failed to get columns from Athena: %s", str(e), exc_info=True)
-            raise RuntimeError(f"Failed to get columns: {e}") from e
 
 class ConfigManager:
     """
@@ -2097,31 +1874,6 @@ class UnifiedWorkflow:
         results['status'] = 'success'
 
         return results
-
-    def _discover_database(self, database: Optional[str]) -> str:
-        """
-        Auto-discover or prompt for database selection.
-
-        Args:
-            database: Optional preferred database name
-
-        Returns:
-            str: Selected database name
-        """
-        return self.discovery.discover_databases(database)
-
-    def _discover_table(self, database: str, table: Optional[str]) -> str:
-        """
-        Auto-discover or prompt for table selection.
-
-        Args:
-            database: Database name to search in
-            table: Optional preferred table name
-
-        Returns:
-            str: Selected table name
-        """
-        return self.discovery.discover_tables(database, table)
 
     def _check_existing_config(self, database: str) -> Optional[dict]:
         """
@@ -3574,122 +3326,4 @@ def extract_from_file(
             exc_info=True
         )
         return None
-
-
-def extract_payer_info(
-    org_data: pd.DataFrame,
-    account_id: str,
-    info_type: str = 'name',
-    payer_names: Optional[Dict[str, str]] = None
-) -> Optional[str]:
-    """
-    Extract payer account information.
-    
-    This function retrieves the payer account ID or name for a given account.
-    If custom payer names are provided, they will be used instead of looking up
-    the payer account name from org_data.
-    
-    Args:
-        org_data: DataFrame containing organization data with payer_id column
-        account_id: 12-digit account ID to look up
-        info_type: Type of information to extract ('id' or 'name')
-        payer_names: Optional dictionary mapping payer IDs to custom names
-        
-    Returns:
-        Payer account ID or name if found, None otherwise
-        
-    Example:
-        >>> org_data = pd.DataFrame({
-        ...     'id': ['123456789012'],
-        ...     'payer_id': ['999888777666']
-        ... })
-        >>> extract_payer_info(org_data, '123456789012', 'id')
-        '999888777666'
-        >>> payer_names = {'999888777666': 'Production Payer'}
-        >>> extract_payer_info(org_data, '123456789012', 'name', payer_names)
-        'Production Payer'
-    """
-    try:
-        # Find the row matching the account ID
-        matching_rows = org_data.loc[org_data['id'] == account_id]
-        
-        if matching_rows.empty:
-            logger.warning("Account ID %s not found in organization data", account_id)
-            return None
-        
-        # Get the payer_id
-        payer_id = matching_rows.iloc[0].get('payer_id')
-        
-        if not payer_id or pd.isna(payer_id):
-            logger.debug("Payer ID is empty for account %s", account_id)
-            return None
-        
-        # Ensure payer_id is 12 digits with leading zeros
-        payer_id = str(payer_id).zfill(12)
-        
-        if info_type == 'id':
-            logger.debug("Extracted payer ID %s for account %s", payer_id, account_id)
-            return payer_id
-        elif info_type == 'name':
-            # Check if custom payer names are provided
-            if payer_names and payer_id in payer_names:
-                custom_name = payer_names[payer_id]
-                logger.debug(
-                    "Using custom payer name '%s' for payer ID %s (account %s)",
-                    custom_name, payer_id, account_id
-                )
-                return custom_name
-            
-            # Fall back to looking up the payer account name from org_data
-            payer_rows = org_data.loc[org_data['id'] == payer_id]
-            if not payer_rows.empty:
-                payer_name = payer_rows.iloc[0].get('name')
-                if payer_name and not pd.isna(payer_name):
-                    logger.debug(
-                        "Extracted payer name '%s' for account %s",
-                        payer_name, account_id
-                    )
-                    return str(payer_name)
-            
-            logger.debug("Payer name not found for payer ID %s", payer_id)
-            return None
-        else:
-            logger.error("Invalid info_type: %s (must be 'id' or 'name')", info_type)
-            return None
-        
-    except Exception as e:
-        logger.error(
-            "Error extracting payer info for account %s: %s",
-            account_id, str(e),
-            exc_info=True
-        )
-        return None
-
-
-def _get_config_hash(config: dict) -> str:
-    """
-    Generate a hash of the Athena configuration to detect changes.
-    
-    Args:
-        config: Configuration dictionary
-        
-    Returns:
-        String hash of relevant config values
-    """
-    athena_config = config.get('athena', {})
-    general_config = config.get('general', {})
-    
-    # Create a string from relevant config values
-    config_str = f"{general_config.get('aws_region')}|{athena_config.get('database')}|{athena_config.get('table')}"
-    return config_str
-
-def clear_athena_cache():
-    """Clear the Athena data cache."""
-    global _athena_data_cache
-    _athena_data_cache['data'] = None
-    _athena_data_cache['preview_data'] = None
-    _athena_data_cache['columns'] = None
-    _athena_data_cache['tag_keys'] = {}
-    _athena_data_cache['config_hash'] = None
-    logger.info("Cleared Athena data cache")
 
