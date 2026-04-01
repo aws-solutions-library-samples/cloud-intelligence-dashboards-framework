@@ -1952,12 +1952,18 @@ class Cid():
                 .replace('cost_category_', '')
                 .replace("'user_","'tag_")
                 .replace('accountTag/', '')
+                .replace('userAttribute/', '')
+                .replace('iamPrincipal/', '')
                 .replace("'aws_","'tag_aws_")
                 .split("['")[-1].split("']")[0]
             )
             if not tag_name.startswith('tag_'):
                 if tag.startswith('cost_category'):
                     tag_name = 'cost_category_' + tag_name
+                elif "userAttribute/" in tag:
+                    tag_name = 'user_attribute_' + tag_name
+                elif "iamPrincipal/" in tag:
+                    tag_name = 'iam_principal_' + tag_name
                 elif tag.startswith('tags'):
                     tag_name = 'account_tag_' + tag_name
                 else:

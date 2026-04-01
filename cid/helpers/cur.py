@@ -190,11 +190,54 @@ class AbstractCUR(CidBase):
                 if tag_type not in self.fields:
                     logging.debug(f'skipping {tag_type} scan')
 
-                display_name = "Account Tags (tags column)" if tag_type == "tags" else tag_type
-                cid_print(f'Scanning {display_name} in {self.table_name}.')
-                try:
-                    if tag_type == 'tags':
-                        # For comprehensive tags column, filter only account tags
+                if tag_type == 'tags':
+                    # Tags column contains multiple tag types, scan each separately
+                    tags_prefixes = [
+                        ('accountTag/', 'Account Tags'),
+                        ('userAttribute/', 'User Attributes'),
+                        ('iamPrincipal/', 'IAM Principal Tags'),
+                    ]
+                    for prefix, display_name in tags_prefixes:
+                        cid_print(f'Scanning {display_name} (tags column) in {self.table_name}.')
+                        try:
+                            res = self.athena.query(
+                                sql=f'''
+                                    SELECT
+                                        key,
+                                        COUNT(DISTINCT value) as unique_values
+                                    FROM (
+                                        SELECT {tag_type}
+                                        FROM "{self.database}"."{self.table_name}"
+                                        WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
+                                        AND line_item_usage_start_date > DATE_ADD('day', -60, CURRENT_DATE)
+                                        AND cardinality({tag_type}) > 0
+                                        LIMIT {number_of_rows_scanned}
+                                    ) t
+                                    CROSS JOIN UNNEST({tag_type}) AS t(key, value)
+                                    WHERE key LIKE '{prefix}%'
+                                    GROUP BY key
+                                    ORDER BY unique_values DESC;
+                                ''',
+                                database=self.database,
+                            )
+                            if res:
+                                max_width = max(len(str(line[0]).replace(prefix, '')) for line in res)
+                                cid_print(f' <BOLD>{display_name:<{max_width}} | Distinct Values (Top 20) <END> ')
+                                for line in res[:20]:
+                                    name = line[0].replace(prefix, '')
+                                    cid_print(f' <BOLD>{name:<{max_width}}<END> | {line[1]} ')
+                            self._tag_and_cost_category += sorted([f"{tag_type}['{line[0]}']" for line in res])
+                        except (self.athena.client.exceptions.ClientError, CidCritical, ValueError) as exc:
+                            if 'COLUMN_NOT_FOUND' in str(exc):
+                                cid_print(f'Column "{tag_type}" not found in {self.table_name}. Tags column, which contains Account Tags, User Attributes, and IAM Principal Tags, is only available in CUR2. To access these in CID, update the CID stack at payer account(s) to include "Tag" column in the CUR2 data export. Skipping tags discovery.')
+                                break  # No point trying other prefixes if the column doesn't exist
+                            else:
+                                cid_print(f'Failed to read {display_name} from {self.table_name}: "{exc}". Will continue without.')
+                        cid_print('')
+                else:
+                    display_name = tag_type
+                    cid_print(f'Scanning {display_name} in {self.table_name}.')
+                    try:
                         res = self.athena.query(
                             sql=f'''
                                 SELECT
@@ -209,52 +252,29 @@ class AbstractCUR(CidBase):
                                     LIMIT {number_of_rows_scanned}
                                 ) t
                                 CROSS JOIN UNNEST({tag_type}) AS t(key, value)
-                                WHERE key LIKE 'accountTag/%'
                                 GROUP BY key
                                 ORDER BY unique_values DESC;
                             ''',
                             database=self.database,
                         )
-                    else:
-                        res = self.athena.query(
-                            sql=f'''
-                                SELECT
-                                    key,
-                                    COUNT(DISTINCT value) as unique_values
-                                FROM (
-                                    SELECT {tag_type}
-                                    FROM "{self.database}"."{self.table_name}"
-                                    WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
-                                    AND line_item_usage_start_date > DATE_ADD('day', -60, CURRENT_DATE)
-                                    AND cardinality({tag_type}) > 0
-                                    LIMIT {number_of_rows_scanned}
-                                ) t
-                                CROSS JOIN UNNEST({tag_type}) AS t(key, value)
-                                GROUP BY key
-                                ORDER BY unique_values DESC;
-                            ''',
-                            database=self.database,
-                        )
-                    max_width = max(len(str(line[0])) for line in res) if res else 0
-                    cid_print(f' <BOLD>{display_name:<{max_width}} | Distinct Values (Top 20) <END> ')
+                        max_width = max(len(str(line[0])) for line in res) if res else 0
+                        cid_print(f' <BOLD>{display_name:<{max_width}} | Distinct Values (Top 20) <END> ')
 
-                    # Show top 20 tags by cardinality, regardless of count
-                    for line in res[:20]:
-                        name = line[0]
-                        name = name.replace('user_', '').replace('accountTag/', '')
-                        cid_print(f' <BOLD>{name:<{max_width}}<END> | {line[1]} ')
+                        # Show top 20 tags by cardinality, regardless of count
+                        for line in res[:20]:
+                            name = line[0]
+                            name = name.replace('user_', '')
+                            cid_print(f' <BOLD>{name:<{max_width}}<END> | {line[1]} ')
 
-                    self._tag_and_cost_category += sorted([f"{tag_type}['{line[0]}']" for line in res])
-                except (self.athena.client.exceptions.ClientError, CidCritical, ValueError) as exc:
-                    if 'COLUMN_NOT_FOUND' in str(exc):
-                        if tag_type == 'tags':
-                            cid_print(f'Column "{tag_type}" not found in {self.table_name}. Tags column, which contains Account level Tags, is only available in CUR2. To access Account Tags in CID, update the CID stack at payer account(s) to include "Tag" column in the CUR2 data export. Skipping account tags discovery.')
-                        elif tag_type == 'cost_category':
-                            cid_print(f'Column "{tag_type}" not found in {self.table_name}. Cost Categories are not available in this CUR table. Skipping cost categories discovery.')
+                        self._tag_and_cost_category += sorted([f"{tag_type}['{line[0]}']" for line in res])
+                    except (self.athena.client.exceptions.ClientError, CidCritical, ValueError) as exc:
+                        if 'COLUMN_NOT_FOUND' in str(exc):
+                            if tag_type == 'cost_category':
+                                cid_print(f'Column "{tag_type}" not found in {self.table_name}. Cost Categories are not available in this CUR table. Skipping cost categories discovery.')
+                            else:
+                                cid_print(f'Column "{tag_type}" not found in {self.table_name}. Skipping {tag_type} discovery.')
                         else:
-                            cid_print(f'Column "{tag_type}" not found in {self.table_name}. Skipping {tag_type} discovery.')
-                    else:
-                        cid_print(f'Failed to read {tag_type} from {self.table_name}: "{exc}". Will continue without.')
+                            cid_print(f'Failed to read {tag_type} from {self.table_name}: "{exc}". Will continue without.')
 
                 # Add empty line between sections
                 cid_print('')
