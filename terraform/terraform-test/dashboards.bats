@@ -1,5 +1,7 @@
 #!/bin/bats
 
+export AWS_PAGER=""
+
 account_id=$(aws sts get-caller-identity --query "Account" --output text)
 database_name="cid_cur" # If variable not set or null, use default
 tmp_dir="/tmp/cudos_test"
@@ -31,13 +33,15 @@ setup_file() {
   done
   
   # Check for additional dashboards
-  for var_name in trends datatransfer marketplace connect containers; do
+  for var_name in trends datatransfer marketplace connect containers focus cora; do
     case $var_name in
       trends) dashboard_id="trends-dashboard" ;;
       datatransfer) dashboard_id="datatransfer-cost-analysis-dashboard" ;;
       marketplace) dashboard_id="aws-marketplace" ;;
       connect) dashboard_id="amazon-connect-cost-insight-dashboard" ;;
       containers) dashboard_id="scad-containers-cost-allocation" ;;
+      focus) dashboard_id="focus-dashboard" ;;
+      cora) dashboard_id="cora" ;;
     esac
     if [ "${!var_name:-no}" = "yes" ]; then
       echo "$dashboard_id" >> "$tmp_dir/dashboard_ids"
@@ -260,7 +264,7 @@ teardown_file() {
   fi
   
   # Test additional dashboard views
-  for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-marketplace amazon-connect-cost-insight-dashboard scad-containers-cost-allocation; do
+  for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-marketplace amazon-connect-cost-insight-dashboard scad-containers-cost-allocation focus-dashboard cora; do
     if grep -q "$dashboard_id" "$tmp_dir/dashboard_ids"; then
       case $dashboard_id in
         trends-dashboard) view_name="daily_anomaly_detection" ;;
@@ -268,6 +272,8 @@ teardown_file() {
         aws-marketplace) view_name="marketplace_view" ;;
         amazon-connect-cost-insight-dashboard) view_name="resource_connect_view" ;;
         scad-containers-cost-allocation) view_name="scad_cca_summary_view" ;;
+        focus-dashboard) view_name="focus_consolidation_view" ;;
+        cora) view_name="cora_view" ;;
       esac
       echo "Testing $dashboard_id view: $view_name" | tee -a "$log_file"
       run aws athena get-table-metadata \

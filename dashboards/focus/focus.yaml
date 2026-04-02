@@ -497,7 +497,7 @@ views:
       , skuid
       , skumeter
       , skupriceid
-      , CAST(CAST(skupricedetails AS JSON) AS VARCHAR) skupricedetails_json
+      , json_format(CAST(skupricedetails AS JSON)) skupricedetails_json
       , subaccountid
       , subaccountname
       , subaccounttype
@@ -575,7 +575,7 @@ views:
       , skuid
       , skumeter
       , skupriceid
-      , CAST(CAST(skupricedetails AS JSON) AS VARCHAR) skupricedetails_json
+      , json_format(CAST(skupricedetails AS JSON)) skupricedetails_json
       , subaccountid
       , subaccountname
       , subaccounttype

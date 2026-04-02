@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+export AWS_PAGER=""
+
 # Verify account access
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 echo "Account ID: $ACCOUNT_ID"
@@ -64,7 +66,7 @@ echo "Using resource prefix: ${RESOURCE_PREFIX}"
 echo "Modifying variables.tf to use resource prefix: ${RESOURCE_PREFIX}"
 if [ -f "$TEMP_DIR/variables.tf" ]; then
   # Update only the resource_prefix in cid_dataexports_destination default section
-  sed -i.bak "s/resource_prefix  = \"cid\"/resource_prefix  = \"${RESOURCE_PREFIX}\"/g" "$TEMP_DIR/variables.tf"
+  sed -i.bak "s/resource_prefix *=  *\"cid\"/resource_prefix        = \"${RESOURCE_PREFIX}\"/g" "$TEMP_DIR/variables.tf"
   
   # Verify the change
   echo "Verifying change in variables.tf:"
@@ -101,7 +103,7 @@ fi
 # Override providers to use S3_REGION for standalone execution
 if [ ! -f "$TEMP_DIR/providers.tf" ] || [[ "$TEMP_DIR" == /tmp/* ]]; then
   echo "Creating providers.tf with region ${S3_REGION}..."
-  cat > "$TEMP_DIR/local_override.tf" << EOF
+  cat > "$TEMP_DIR/providers.tf" << EOF
 provider "aws" {
   alias  = "management"
   region = "${S3_REGION}"

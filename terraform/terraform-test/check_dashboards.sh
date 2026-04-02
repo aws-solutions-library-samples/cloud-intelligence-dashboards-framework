@@ -1,10 +1,16 @@
 #!/bin/bash
 set -e
 
+export AWS_PAGER=""
+
 # Dashboard checking script
 # This script extracts dashboard settings from Terraform configuration and runs tests
 
 echo "=== Dashboard Configuration Check ==="
+
+# Ensure AWS region is set for QuickSight API calls
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-${S3_REGION:-$(aws configure get region)}}"
+export AWS_REGION="$AWS_DEFAULT_REGION"
 
 # Check if TEMP_DIR is provided as argument
 if [ -z "$1" ]; then

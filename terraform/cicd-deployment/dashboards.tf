@@ -94,3 +94,25 @@ module "containers_dashboard" {
   config     = local.additional_dashboards.containers
   depends_on = [module.connect_dashboard]
 }
+
+# 6. FOCUS Dashboard - FinOps Open Cost and Usage Specification dashboard
+module "focus_dashboard" {
+  source = "./modules/cloudformation_stack"
+  providers = {
+    aws = aws.datacollection
+  }
+
+  config     = local.additional_dashboards.focus
+  depends_on = [module.containers_dashboard]
+}
+
+# 7. CORA Dashboard - Cost Optimization Recommended Actions
+module "cora_dashboard" {
+  source = "./modules/cloudformation_stack"
+  providers = {
+    aws = aws.datacollection
+  }
+
+  config     = local.additional_dashboards.cora
+  depends_on = [module.focus_dashboard]
+}

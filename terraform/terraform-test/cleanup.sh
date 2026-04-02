@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+export AWS_PAGER=""
+
 # Configuration
 BACKEND_TYPE=${BACKEND_TYPE:-"local"}  # Can be "local" or "s3"
 S3_BUCKET=${S3_BUCKET:-""}
@@ -55,9 +57,9 @@ terraform {
 EOF
   fi
   
-  # Override providers to use S3_REGION for standalone execution
-  echo "Creating provider override with region ${S3_REGION}..."
-  cat > "$TEMP_DIR/local_override.tf" << EOF
+  # Create providers for standalone execution
+  echo "Creating providers.tf with region ${S3_REGION}..."
+  cat > "$TEMP_DIR/providers.tf" << EOF
 provider "aws" {
   alias  = "management"
   region = "${S3_REGION}"
@@ -149,6 +151,12 @@ done
 # Run terraform destroy
 cd "$TEMP_DIR"
 echo "Running terraform destroy..."
+
+# Initialize terraform if not already done (standalone mode)
+if [ ! -d ".terraform" ]; then
+  echo "Initializing Terraform..."
+  terraform init -reconfigure
+fi
 
 # Use the override file if it exists
 TFVARS_FILES=()
