@@ -36,7 +36,8 @@ locals {
         SourceAccountIds     = var.global_values.source_account_ids
         EnableSCAD           = var.cid_dataexports_destination.enable_scad
         RolePath             = var.cid_dataexports_destination.role_path
-        TimeGranularity      = var.cid_dataexports_destination.time_granularity
+        CUR2TimeGranularity  = var.cid_dataexports_destination.time_granularity
+        FOCUSTimeGranularity = var.cid_dataexports_destination.focus_time_granularity
       }
       timeouts = local.default_timeouts
       tags     = local.common_tags
@@ -55,7 +56,8 @@ locals {
         SourceAccountIds     = var.global_values.source_account_ids
         EnableSCAD           = var.cid_dataexports_source.source_enable_scad
         RolePath             = var.cid_dataexports_source.source_role_path
-        TimeGranularity      = var.cid_dataexports_source.source_time_granularity
+        CUR2TimeGranularity  = var.cid_dataexports_source.source_time_granularity
+        FOCUSTimeGranularity = var.cid_dataexports_source.source_focus_time_granularity
       }
       timeouts = local.default_timeouts
       tags     = local.common_tags
@@ -175,6 +177,34 @@ locals {
       })
       dashboard_id = "scad-containers-cost-allocation"
       dataset_name = "scad_cca_summary_view"
+    }
+    focus = {
+      enabled      = var.dashboards.focus == "yes"
+      stack_name   = "FOCUS-Dashboard"
+      template_url = local.template_urls.cid_plugin
+      capabilities = local.common_capabilities
+      parameters   = { DashboardId = "focus-dashboard" }
+      timeouts     = local.default_timeouts
+      tags = merge(local.common_tags, {
+        DashboardType = "Additional"
+        DashboardId   = "focus-dashboard"
+      })
+      dashboard_id = "focus-dashboard"
+      dataset_name = "focus_consolidation_view"
+    }
+    cora = {
+      enabled      = var.dashboards.cora == "yes"
+      stack_name   = "CORA-Dashboard"
+      template_url = local.template_urls.cid_plugin
+      capabilities = local.common_capabilities
+      parameters   = { DashboardId = "cora" }
+      timeouts     = local.default_timeouts
+      tags = merge(local.common_tags, {
+        DashboardType = "Additional"
+        DashboardId   = "cora"
+      })
+      dashboard_id = "cora"
+      dataset_name = "cora_view"
     }
   }
 

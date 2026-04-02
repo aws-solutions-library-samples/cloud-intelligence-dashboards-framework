@@ -69,5 +69,13 @@ output "additional_dashboards_stacks" {
       stack_id = module.containers_dashboard.stack_id
       outputs  = module.containers_dashboard.stack_outputs
     } : null
+    focus = var.dashboards.focus == "yes" ? {
+      stack_id = module.focus_dashboard.stack_id
+      outputs  = module.focus_dashboard.stack_outputs
+    } : null
+    cora = var.dashboards.cora == "yes" ? {
+      stack_id = module.cora_dashboard.stack_id
+      outputs  = module.cora_dashboard.stack_outputs
+    } : null
   }
 }

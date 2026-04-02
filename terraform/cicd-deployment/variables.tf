@@ -14,18 +14,21 @@ variable "cid_dataexports_destination" {
     role_path = string
     # Time granularity for CUR 2.0
     time_granularity = string
+    # Time granularity for FOCUS
+    focus_time_granularity = string
   })
 
   description = "Configuration for data exports child account settings"
 
   default = {
-    resource_prefix  = "cid"
-    manage_cur2      = "yes"
-    manage_focus     = "no"
-    manage_coh       = "no"
-    enable_scad      = "yes"
-    role_path        = "/"
-    time_granularity = "HOURLY"
+    resource_prefix        = "cid"
+    manage_cur2            = "yes"
+    manage_focus           = "yes"
+    manage_coh             = "yes"
+    enable_scad            = "yes"
+    role_path              = "/"
+    time_granularity       = "HOURLY"
+    focus_time_granularity = "HOURLY"
   }
 
   validation {
@@ -57,6 +60,11 @@ variable "cid_dataexports_destination" {
     condition     = contains(["HOURLY", "DAILY", "MONTHLY"], var.cid_dataexports_destination.time_granularity)
     error_message = "TimeGranularity must be HOURLY, DAILY, or MONTHLY"
   }
+
+  validation {
+    condition     = contains(["HOURLY", "DAILY", "MONTHLY"], var.cid_dataexports_destination.focus_time_granularity)
+    error_message = "FOCUSTimeGranularity must be HOURLY, DAILY, or MONTHLY"
+  }
 }
 
 variable "cid_dataexports_source" {
@@ -75,18 +83,21 @@ variable "cid_dataexports_source" {
     source_role_path = string
     # Time granularity for CUR 2.0 in management account
     source_time_granularity = string
+    # Time granularity for FOCUS in management account
+    source_focus_time_granularity = string
   })
 
   description = "Configuration for data exports management account settings"
 
   default = {
-    source_resource_prefix  = "cid"
-    source_manage_cur2      = "yes" #
-    source_manage_focus     = "no"
-    source_manage_coh       = "no"
-    source_enable_scad      = "yes"
-    source_role_path        = "/"
-    source_time_granularity = "HOURLY"
+    source_resource_prefix        = "cid"
+    source_manage_cur2            = "yes" #
+    source_manage_focus           = "yes"
+    source_manage_coh             = "yes"
+    source_enable_scad            = "yes"
+    source_role_path              = "/"
+    source_time_granularity       = "HOURLY"
+    source_focus_time_granularity = "HOURLY"
   }
 
   validation {
@@ -117,6 +128,11 @@ variable "cid_dataexports_source" {
   validation {
     condition     = contains(["HOURLY", "DAILY", "MONTHLY"], var.cid_dataexports_source.source_time_granularity)
     error_message = "TimeGranularity must be HOURLY, DAILY, or MONTHLY"
+  }
+
+  validation {
+    condition     = contains(["HOURLY", "DAILY", "MONTHLY"], var.cid_dataexports_source.source_focus_time_granularity)
+    error_message = "FOCUSTimeGranularity must be HOURLY, DAILY, or MONTHLY"
   }
 }
 

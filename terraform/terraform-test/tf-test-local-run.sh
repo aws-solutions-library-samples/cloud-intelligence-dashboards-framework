@@ -12,6 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Set default environment variables if not provided
+export AWS_PAGER=""
 export ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 export RESOURCE_PREFIX="${RESOURCE_PREFIX:-cid-tf}"
 export BACKEND_TYPE="${BACKEND_TYPE:-local}"
@@ -71,9 +72,11 @@ echo "- Layer Prefix: $LAYER_PREFIX"
 echo "- Template Prefix: $TEMPLATE_PREFIX"
 
 
+# QuickSight identity operations must use the identity region (us-east-1)
+QS_IDENTITY_REGION="${QS_IDENTITY_REGION:-us-east-1}"
 export quicksight_user=$(aws quicksight list-users \
         --aws-account-id $ACCOUNT_ID \
-        --region $S3_REGION \
+        --region $QS_IDENTITY_REGION \
         --namespace default \
         --query "UserList[0].UserName" \
         --output text
@@ -96,6 +99,8 @@ DATATRANS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/datatransfer.*= *"/) {
 MARKET_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/marketplace.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
 CONNECT_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/connect.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
 CONTAINERS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/containers.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
+FOCUS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/focus.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
+CORA_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/cora.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
 
 # Extract CID CFN version from local cid-cfn.yml file
 CID_CFN_VERSION=$(sed -n '3p' "$PROJECT_ROOT/cfn-templates/cid-cfn.yml" | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/v//' || echo "${CID_VERSION}")
@@ -130,6 +135,8 @@ dashboards = {
   marketplace  = \"${MARKET_DASH}\"
   connect      = \"${CONNECT_DASH}\"
   containers   = \"${CONTAINERS_DASH}\"
+  focus        = \"${FOCUS_DASH}\"
+  cora         = \"${CORA_DASH}\"
 }
 " | tee $PROJECT_ROOT/terraform/cicd-deployment/terraform.tfvars
 
@@ -181,7 +188,7 @@ echo "Scanning for CID stacks (foundational + additional dashboards)..."
 # Foundational stacks
 FOUNDATIONAL_STACKS=("CID-DataExports-Destination" "Cloud-Intelligence-Dashboards")
 # Additional CUR-based dashboard stacks
-ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Cost-Allocation-Dashboard")
+ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Dashboard" "FOCUS-Dashboard" "CORA-Dashboard")
 # All stacks to check (excluding optional advanced stacks to reduce noise)
 STACKS_TO_CHECK=("${FOUNDATIONAL_STACKS[@]}" "${ADDITIONAL_STACKS[@]}")
 GOOD_STATES=("CREATE_COMPLETE" "UPDATE_COMPLETE")
@@ -257,6 +264,16 @@ if [ ${#FOUND_STACKS[@]} -gt 0 ]; then
     done
     echo "Running cleanup..."
     bash "$SCRIPT_DIR/cleanup.sh"
+    # Force-delete any stacks that survived terraform destroy
+    echo "Verifying all stacks are deleted..."
+    for stack in "${ADDITIONAL_STACKS[@]}" "Cloud-Intelligence-Dashboards" "CID-DataExports-Destination"; do
+      STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "$stack" --region "$S3_REGION" --query 'Stacks[0].StackStatus' --output text 2>/dev/null || echo "NOT_FOUND")
+      if [ "$STACK_STATUS" != "NOT_FOUND" ] && [ "$STACK_STATUS" != "DELETE_COMPLETE" ]; then
+        echo "  Force deleting $stack (status: $STACK_STATUS)..."
+        aws cloudformation delete-stack --stack-name "$stack" --region "$S3_REGION" || true
+        aws cloudformation wait stack-delete-complete --stack-name "$stack" --region "$S3_REGION" || echo "  WARNING: Wait timed out for $stack"
+      fi
+    done
     echo "Cleanup completed. Proceeding with fresh deployment..."
   # Auto-cleanup if partial foundational deployment (foundational stacks incomplete)
   elif [ ${#GOOD_STACKS[@]} -gt 0 ]; then
@@ -273,6 +290,16 @@ if [ ${#FOUND_STACKS[@]} -gt 0 ]; then
       echo "Found partial foundational deployment (only $FOUNDATIONAL_GOOD of ${#FOUNDATIONAL_STACKS[@]} foundational stacks in good state)."
       echo "Auto-cleaning up for fresh deployment..."
       bash "$SCRIPT_DIR/cleanup.sh"
+      # Force-delete any stacks that survived terraform destroy
+      echo "Verifying all stacks are deleted..."
+      for stack in "${ADDITIONAL_STACKS[@]}" "Cloud-Intelligence-Dashboards" "CID-DataExports-Destination"; do
+        STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "$stack" --region "$S3_REGION" --query 'Stacks[0].StackStatus' --output text 2>/dev/null || echo "NOT_FOUND")
+        if [ "$STACK_STATUS" != "NOT_FOUND" ] && [ "$STACK_STATUS" != "DELETE_COMPLETE" ]; then
+          echo "  Force deleting $stack (status: $STACK_STATUS)..."
+          aws cloudformation delete-stack --stack-name "$stack" --region "$S3_REGION" || true
+          aws cloudformation wait stack-delete-complete --stack-name "$stack" --region "$S3_REGION" || echo "  WARNING: Wait timed out for $stack"
+        fi
+      done
       echo "Cleanup completed. Proceeding with fresh deployment..."
     else
       echo ""
@@ -295,6 +322,16 @@ if [ ${#FOUND_STACKS[@]} -gt 0 ]; then
       if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "Running cleanup..."
         bash "$SCRIPT_DIR/cleanup.sh"
+        # Force-delete any stacks that survived terraform destroy
+        echo "Verifying all stacks are deleted..."
+        for stack in "${ADDITIONAL_STACKS[@]}" "Cloud-Intelligence-Dashboards" "CID-DataExports-Destination"; do
+          STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "$stack" --region "$S3_REGION" --query 'Stacks[0].StackStatus' --output text 2>/dev/null || echo "NOT_FOUND")
+          if [ "$STACK_STATUS" != "NOT_FOUND" ] && [ "$STACK_STATUS" != "DELETE_COMPLETE" ]; then
+            echo "  Force deleting $stack (status: $STACK_STATUS)..."
+            aws cloudformation delete-stack --stack-name "$stack" --region "$S3_REGION" || true
+            aws cloudformation wait stack-delete-complete --stack-name "$stack" --region "$S3_REGION" || echo "  WARNING: Wait timed out for $stack"
+          fi
+        done
         echo "Cleanup completed. Proceeding with fresh deployment..."
       else
         echo "Keeping existing deployment. Proceeding with current state..."
@@ -335,13 +372,15 @@ echo "=== Additional Dashboards Validation ==="
 echo "Checking for additional dashboards..."
 
 # Check each additional dashboard
-for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-marketplace amazon-connect-cost-insight-dashboard scad-containers-cost-allocation; do
+for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-marketplace amazon-connect-cost-insight-dashboard scad-containers-cost-allocation focus-dashboard cora; do
   case $dashboard_id in
     trends-dashboard) view_name="daily_anomaly_detection" ;;
     datatransfer-cost-analysis-dashboard) view_name="data_transfer_view" ;;
     aws-marketplace) view_name="marketplace_view" ;;
     amazon-connect-cost-insight-dashboard) view_name="resource_connect_view" ;;
     scad-containers-cost-allocation) view_name="scad_cca_summary_view" ;;
+    focus-dashboard) view_name="focus_consolidation_view" ;;
+    cora) view_name="cora_view" ;;
   esac
   
   echo "Checking dashboard: $dashboard_id"
