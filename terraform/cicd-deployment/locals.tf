@@ -36,7 +36,7 @@ locals {
         SourceAccountIds     = var.global_values.source_account_ids
         EnableSCAD           = var.cid_dataexports_destination.enable_scad
         RolePath             = var.cid_dataexports_destination.role_path
-        CUR2TimeGranularity  = var.cid_dataexports_destination.time_granularity
+        CUR2TimeGranularity  = var.cid_dataexports_destination.cur2_time_granularity
         FOCUSTimeGranularity = var.cid_dataexports_destination.focus_time_granularity
       }
       timeouts = local.default_timeouts
@@ -56,7 +56,7 @@ locals {
         SourceAccountIds     = var.global_values.source_account_ids
         EnableSCAD           = var.cid_dataexports_source.source_enable_scad
         RolePath             = var.cid_dataexports_source.source_role_path
-        CUR2TimeGranularity  = var.cid_dataexports_source.source_time_granularity
+        CUR2TimeGranularity  = var.cid_dataexports_source.source_cur2_time_granularity
         FOCUSTimeGranularity = var.cid_dataexports_source.source_focus_time_granularity
       }
       timeouts = local.default_timeouts

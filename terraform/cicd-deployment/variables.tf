@@ -13,7 +13,7 @@ variable "cid_dataexports_destination" {
     # Path for IAM roles
     role_path = string
     # Time granularity for CUR 2.0
-    time_granularity = string
+    cur2_time_granularity = string
     # Time granularity for FOCUS
     focus_time_granularity = string
   })
@@ -27,7 +27,7 @@ variable "cid_dataexports_destination" {
     manage_coh             = "yes"
     enable_scad            = "yes"
     role_path              = "/"
-    time_granularity       = "HOURLY"
+    cur2_time_granularity  = "HOURLY"
     focus_time_granularity = "HOURLY"
   }
 
@@ -57,8 +57,8 @@ variable "cid_dataexports_destination" {
   }
 
   validation {
-    condition     = contains(["HOURLY", "DAILY", "MONTHLY"], var.cid_dataexports_destination.time_granularity)
-    error_message = "TimeGranularity must be HOURLY, DAILY, or MONTHLY"
+    condition     = contains(["HOURLY", "DAILY", "MONTHLY"], var.cid_dataexports_destination.cur2_time_granularity)
+    error_message = "CUR2TimeGranularity must be HOURLY, DAILY, or MONTHLY"
   }
 
   validation {
@@ -82,7 +82,7 @@ variable "cid_dataexports_source" {
     # Path for IAM roles in management account
     source_role_path = string
     # Time granularity for CUR 2.0 in management account
-    source_time_granularity = string
+    source_cur2_time_granularity = string
     # Time granularity for FOCUS in management account
     source_focus_time_granularity = string
   })
@@ -96,7 +96,7 @@ variable "cid_dataexports_source" {
     source_manage_coh             = "yes"
     source_enable_scad            = "yes"
     source_role_path              = "/"
-    source_time_granularity       = "HOURLY"
+    source_cur2_time_granularity  = "HOURLY"
     source_focus_time_granularity = "HOURLY"
   }
 
@@ -126,8 +126,8 @@ variable "cid_dataexports_source" {
   }
 
   validation {
-    condition     = contains(["HOURLY", "DAILY", "MONTHLY"], var.cid_dataexports_source.source_time_granularity)
-    error_message = "TimeGranularity must be HOURLY, DAILY, or MONTHLY"
+    condition     = contains(["HOURLY", "DAILY", "MONTHLY"], var.cid_dataexports_source.source_cur2_time_granularity)
+    error_message = "CUR2TimeGranularity must be HOURLY, DAILY, or MONTHLY"
   }
 
   validation {
