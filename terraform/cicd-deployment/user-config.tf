@@ -86,6 +86,8 @@ variable "dashboards" {
     marketplace  = string
     connect      = string
     containers   = string
+    focus        = string
+    cora         = string
   })
 
   description = "Dashboard deployment configuration - choose which dashboards to deploy"
@@ -102,6 +104,8 @@ variable "dashboards" {
     marketplace  = "yes"
     connect      = "yes"
     containers   = "yes"
+    focus        = "yes"
+    cora         = "yes"
   }
 
   validation {
@@ -120,7 +124,9 @@ variable "dashboards" {
       var.dashboards.datatransfer == "yes",
       var.dashboards.marketplace == "yes",
       var.dashboards.connect == "yes",
-      var.dashboards.containers == "yes"
+      var.dashboards.containers == "yes",
+      var.dashboards.focus == "yes",
+      var.dashboards.cora == "yes"
     ])
     error_message = "At least one dashboard must be enabled"
   }
@@ -139,7 +145,9 @@ variable "dashboards" {
         var.dashboards.datatransfer == "yes",
         var.dashboards.marketplace == "yes",
         var.dashboards.connect == "yes",
-        var.dashboards.containers == "yes"
+        var.dashboards.containers == "yes",
+        var.dashboards.focus == "yes",
+        var.dashboards.cora == "yes"
       ])
     )
     error_message = "Additional dashboards require at least one foundational dashboard (cudos_v5, cost_intelligence, or kpi) to be enabled, OR set 'allow_standalone_dashboard = true' if foundational dashboards are already deployed elsewhere."

@@ -5,8 +5,27 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Thu, 20 Mar 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 25 Mar 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] Extended Support Cost Projection - v5.0.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v500
+      </link>
+      <pubDate>Wed, 25 Mar 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">efcedd3d-751d-4114-abf5-4182050afceb</guid>
+      <description>Extended Support Cost Projection - v5.0.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>Added taxonomy (tagging) support, enabling tag-based cost analysis and filtering across all Extended Support sheets.</li>
+    <li>New tagging view and dataset for tag aggregation by service dimensions.</li>
+    <li>Existing RDS, EKS, OpenSearch and ElastiCache views now include tag data for use with taxonomy controls.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] CUDOS Dashboard v5.7.3</title>
       <link>
