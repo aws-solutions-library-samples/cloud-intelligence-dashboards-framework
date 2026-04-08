@@ -97,19 +97,6 @@ def map(ctx, **kwargs):
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
 @cid_command
-def map_config(ctx, **kwargs):
-    """View and manage account mapper configuration
-
-    \b
-    Command options:
-     --database TEXT                       Athena database name (auto-discovered if not provided)
-     --view-name TEXT                      View name to check configuration for (default: account_map)
-    """
-    ctx.obj.map_config(**kwargs)
-
-@click.option('-v', '--verbose', count=True)
-@click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
-@cid_command
 def csv2view(ctx, **kwargs):
     """Create account sql code from CSV file
 

@@ -2050,13 +2050,6 @@ class Cid():
             raise
 
     @command
-    def map_config(self, **kwargs):
-        """Configure account mapper interactively"""
-        view_name = kwargs.get('view_name', 'account_map')
-        mapper = AccountMapper(athena=self.athena, view_name=view_name)
-        mapper.view_config(database=kwargs.get('database'))
-
-    @command
     def teardown(self, **kwargs):
         """remove all assets created by cid"""
         dashboards = list(self.qs.dashboards.values())
