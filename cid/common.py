@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import urllib
 import logging
 import functools
@@ -1299,9 +1300,10 @@ class Cid():
                     logger.critical(e, exc_info=True)
                     raise
                 try:
-                    if self.create_or_update_dataset(dataset_definition, dataset_id, recursive=recursive, update=update):
+                    result = self.create_or_update_dataset(dataset_definition, dataset_id, recursive=recursive, update=update)
+                    if result and result != 'skipped':
                         print(f'Updated dataset: "{dataset_name}"')
-                    else:
+                    elif not result:
                         print(f'Dataset "{dataset_name}" update failed, collect debug log for more info')
                 except self.qs.client.exceptions.AccessDeniedException as exc:
                     print(f'Unable to update, missing permissions: {exc}')
@@ -1782,7 +1784,42 @@ class Cid():
 
             if update_dataset and not identical:
                 merged_dataset = Dataset.merge_datasets(compiled_dataset, found_dataset)
-                self.qs.update_dataset(merged_dataset)
+                # Cannot update a legacy dataset to new experience in-place — must delete and recreate
+                if Dataset._is_new_experience(compiled_dataset) and not Dataset._is_new_experience(found_dataset.raw):
+                    cid_print(f'<BOLD><YELLOW>Important!<END> <BOLD>Dataset <YELLOW>{found_dataset.name}<END> <BOLD>will be updated to new QuickSight Data Preparation Experience as a part of this update.<END>')
+                    proceed_with_migration = self._confirm_dataset_experience_migration(found_dataset)
+                    if proceed_with_migration:
+                        logger.info(f'Dataset {found_dataset.name} is legacy but template uses new experience. Recreating.')
+                        existing_permissions = self.qs.describe_data_set_permissions(found_dataset.id)
+                        self.qs.delete_dataset(found_dataset.id)
+                        # Wait for deletion to complete before creating — API is async
+                        for attempt in range(30):
+                            try:
+                                self.qs.create_dataset(merged_dataset)
+                                break
+                            except self.qs.client.exceptions.ConflictException:
+                                logger.debug(f'Dataset deletion still in progress, waiting... (attempt {attempt + 1}/30)')
+                                time.sleep(2)
+                        else:
+                            raise CidError(f'Timed out waiting for dataset {found_dataset.id} deletion to complete.')
+
+                        if existing_permissions:
+                            cid_print(f'Reapplying {len(existing_permissions)} permission entries to dataset {found_dataset.name}')
+                            try:
+                                self.qs.update_data_set_permissions(
+                                    DataSetId=found_dataset.id,
+                                    GrantPermissions=existing_permissions
+                                )
+                            except Exception as e:
+                                logger.warning(f'Failed to reapply permissions for dataset {found_dataset.name} ({found_dataset.id}): {e}')
+                                cid_print(f'<BOLD><RED>Warning:<END> Failed to reapply permissions for dataset <BOLD>{found_dataset.name}<END> ({found_dataset.id}).')
+                                cid_print(f'Previous permissions were:\n{json.dumps(existing_permissions, indent=2)}')
+                    else:
+                        logger.info(f'User chose to skip new experience migration for dataset {found_dataset.name}. Skipping dataset update.')
+                        cid_print(f'Skipping dataset <BOLD>{found_dataset.name}<END> update.')
+                        return 'skipped'  # Dataset exists and is usable, just not migrated
+                else:
+                    self.qs.update_dataset(merged_dataset)
                 if compiled_dataset.get("ImportMode") == "SPICE":
                     dataset_id = compiled_dataset.get('DataSetId')
                     schedules_definitions = []
@@ -1906,6 +1943,39 @@ class Cid():
                 raise CidCritical(f'Crawler cannot be defined for a view ({view_name}). only for a table. Pease fix resource definitions')
             location = self.glue.get_table(name=view_name, catalog=self.base.account_id, database=self.athena.DatabaseName).get('StorageDescriptor', {}).get('Location')
             self.create_or_update_crawler(crawler_name=view_definition['crawler'], location=location)
+
+    def _confirm_dataset_experience_migration(self, found_dataset) -> bool:
+        """Check if other dashboards use this dataset and ask the user whether to proceed
+        with the new experience migration (delete/recreate). Returns True to proceed, False to skip."""
+        current_dashboard_id = get_parameters().get('dashboard-id')
+        other_dashboards = self.qs.find_dashboards_using_dataset(
+            dataset_id=found_dataset.id,
+            exclude_dashboard_ids=[current_dashboard_id] if current_dashboard_id else [],
+        )
+
+        if other_dashboards:
+            dashboard_list = '\n'.join(
+                f'  - {d["Name"]} ({d["DashboardId"]})'
+                for d in other_dashboards
+            )
+            current_dashboard = get_parameters().get('dashboard-id', 'this dashboard')
+            cid_print(
+                f'<BOLD><RED>Warning:<END> <BOLD><RED>The following dashboards also use dataset '
+                f'{found_dataset.name}:<END>\n{dashboard_list}\n\n'
+                f'<BOLD><RED>Migrating to the new QuickSight Data Preparation Experience will delete and recreate '
+                f'this dataset, temporarily breaking the dashboards listed above.<END>\n'
+                f'We recommend proceeding, but update those dashboards immediately after updating <BOLD>{current_dashboard}<END>.\n'
+                f'If you choose <BOLD>No<END>, the dataset will not be updated.'
+            )
+            return get_yesno_parameter(
+                param_name=f'migrate-{found_dataset.name.replace("_", "-")}-new-experience',
+                message=f'Proceed with new experience migration for {found_dataset.name}?',
+                default='no',
+            )
+        else:
+            return True
+
+
 
     def create_or_update_crawler(self, crawler_name, location):
         """ Create or Update Crawler """
