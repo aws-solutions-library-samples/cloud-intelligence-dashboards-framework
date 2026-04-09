@@ -1451,6 +1451,36 @@ class QuickSight(CidBase):
             logger.warning(f"Failed to describe dataset permissions for {dataset_id}: {e}")
             return []
 
+    def find_dashboards_using_dataset(self, dataset_id: str, exclude_dashboard_ids: list = None) -> list:
+        """Find all dashboards that reference a given dataset ID.
+
+        Returns a list of dicts with 'DashboardId' and 'Name' for each
+        dashboard whose current version references the dataset ARN.
+        Dashboards in *exclude_dashboard_ids* are omitted from the result.
+        """
+        exclude_dashboard_ids = set(exclude_dashboard_ids or [])
+        dataset_arn_suffix = f':dataset/{dataset_id}'
+        result = []
+        for dash_summary in self.list_dashboards():
+            dash_id = dash_summary.get('DashboardId', '')
+            if dash_id in exclude_dashboard_ids:
+                continue
+            try:
+                response = self.client.describe_dashboard(
+                    AwsAccountId=self.account_id,
+                    DashboardId=dash_id,
+                )
+                dataset_arns = response.get('Dashboard', {}).get('Version', {}).get('DataSetArns', [])
+                if any(arn.endswith(dataset_arn_suffix) for arn in dataset_arns):
+                    result.append({
+                        'DashboardId': dash_id,
+                        'Name': dash_summary.get('Name', dash_id),
+                    })
+            except Exception as e:
+                logger.debug(f'Error checking dashboard {dash_id}: {e}')
+        return result
+
+
 
 
     def update_data_source_permissions(self, **update_parameters):
