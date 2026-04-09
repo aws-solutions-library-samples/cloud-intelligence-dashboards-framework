@@ -61,10 +61,7 @@
   , "bill_billing_entity" "billing_entity"
   , "pricing_unit" "pricing_unit"
   , approx_distinct("line_item_resource_id") "resource_id_count"
-  , sum(CASE
-  WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "line_item_usage_amount"
-  WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "line_item_usage_amount"
-  WHEN ("line_item_line_item_type" = 'Usage') THEN "line_item_usage_amount" ELSE 0 END) "usage_quantity"
+  , sum(CASE WHEN line_item_line_item_type IN ('SavingsPlanCoveredUsage', 'DiscountedUsage', 'Usage','FlatRateSubscription') THEN line_item_usage_amount ELSE 0 END) "usage_quantity"
   , sum ("line_item_unblended_cost") "unblended_cost"
   , sum(CASE
       WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost"
