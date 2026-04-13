@@ -121,11 +121,7 @@ datasets:
               NewColumnName: account_id[account_map]
           Source:
             PhysicalTableId: fcf163c9-994b-477d-ace3-2c0873880793
-        831bafaa-7ba4-4096-bb93-1a519a76c576:
-          Alias: health_events_view
-          Source:
-            PhysicalTableId: b6e834d2-c61b-4327-a27a-e1d4b53d3d92
-        b639fff9-ae42-4806-93e3-db545e316d20:
+        6e7189b3-1618-41d1-b05f-b20e26559031:
           Alias: Intermediate Table
           DataTransforms:
           - CreateColumnsOperation:
@@ -177,7 +173,7 @@ datasets:
               - ColumnName: event_status_icon
                 ColumnId: daced9b2-0c83-4c02-8648-ef42ba805c2b
                 Expression: "ifelse(\n    {status_code} = \"upcoming\" AND dateDiff(now(),\
-                  \ start_time, \"DD\") < 60, \"\U0001F7E0 Impending\",\n    {status_code}\
+                  \ start_time, \"DD\") < 60, \"\U0001F7E0 Near\",\n    {status_code}\
                   \ = \"upcoming\" AND dateDiff(now(), start_time, \"DD\") >= 60,\
                   \ \"\U0001F7E1 Future\",\n    {status_code} = \"open\", \"\U0001F534\
                   \ Open\",\n    {status_code} = \"closed\", \"\U0001F7E2 Closed\"\
@@ -283,6 +279,10 @@ datasets:
               RightOperand: 46cadef7-f68d-4244-8e74-5a8fa370bd62
               Type: LEFT
               OnClause: '{account_id} = {account_id[account_map]}'
+        831bafaa-7ba4-4096-bb93-1a519a76c576:
+          Alias: health_events_view
+          Source:
+            PhysicalTableId: b6e834d2-c61b-4327-a27a-e1d4b53d3d92
     dependsOn:
       views:
       - health_events_view
