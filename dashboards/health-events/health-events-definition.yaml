@@ -95,7 +95,7 @@ CalculatedFields:
 - DataSetIdentifier: health_events_view
   Expression: |-
     ifelse(
-        {status_code} = "upcoming" and {warn_days_within} = 1, "Near",
+        {status_code} = "upcoming" and {warn_days_within} = 1, "Impending",
         {status_code} = "upcoming" and {warn_days_after} = 1, "Future",
         {status_code} = "open", "Current",
         {status_code} = "closed", "Closed",
@@ -251,7 +251,7 @@ CalculatedFields:
 - DataSetIdentifier: health_events_view
   Expression: |-
     ifelse(
-        {Event Status} = "Near", 1,
+        {Event Status} = "Impending", 1,
         {Event Status} = "Future", 2,
         {Event Status} = "Current", 0,
         -1
@@ -1694,7 +1694,7 @@ ParameterDeclarations:
     DefaultValues:
       StaticValues:
       - "\U0001F534 Open"
-      - "\U0001F7E0 Near"
+      - "\U0001F7E0 Impending"
       - "\U0001F7E1 Future"
     Name: EventStatus
     ParameterValueType: MULTI_VALUED
@@ -2811,7 +2811,7 @@ Sheets:
     SheetTextBoxId: d410db4b-2de5-4888-80db-f859e98b523f
   - Content: "<text-box>\n  <inline color=\"#fc850d\" font-size=\"26px\">\n    <b>All\
       \ Events</b>\n  </inline>\n  <br/>\n  <inline color=\"PrimaryForeground\" font-size=\"\
-      18px\">Near events start within\_</inline>\n  <inline color=\"#95cbf6\"\
+      18px\">Impending events start within\_</inline>\n  <inline color=\"#95cbf6\"\
       \ font-size=\"24px\">\n    <b>\n      <expression>${StartTimeWarn}</expression>\n\
       \    </b>\n  </inline>\n  <inline color=\"PrimaryForeground\" font-size=\"18px\"\
       >\_days.\_</inline>\n  <br/>\n  <inline color=\"PrimaryForeground\" font-size=\"\
@@ -3176,7 +3176,7 @@ Sheets:
           - Color: '#FF8700'
             Element:
               FieldId: be95ee21-3edb-4a9c-93d4-7cd392782e71.3.1711658988228
-              FieldValue: Near
+              FieldValue: Impending
           - Color: '#863CFF'
             Element:
               FieldId: be95ee21-3edb-4a9c-93d4-7cd392782e71.3.1711658988228
@@ -4180,7 +4180,7 @@ Sheets:
       Title:
         FormatText:
           RichText: "<visual-title>\n  <inline font-size=\"16px\">&#128992;\_</inline>\n\
-            \  <inline color=\"#fbdbc4\" font-size=\"18px\">\n    <i>Near events</i>\n\
+            \  <inline color=\"#fbdbc4\" font-size=\"18px\">\n    <i>Impending events</i>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 36506f97-5c92-4527-8c7f-d2bf04aa797d
@@ -4393,7 +4393,7 @@ Sheets:
           - Color: '#FF8700'
             Element:
               FieldId: be95ee21-3edb-4a9c-93d4-7cd392782e71.3.1711658988228
-              FieldValue: Near
+              FieldValue: Impending
           - Color: '#863CFF'
             Element:
               FieldId: be95ee21-3edb-4a9c-93d4-7cd392782e71.3.1711658988228
@@ -4682,7 +4682,7 @@ Sheets:
                   CustomValues:
                     StringValues:
                     - "\U0001F534 Open"
-                    - "\U0001F7E0 Near"
+                    - "\U0001F7E0 Impending"
                     - "\U0001F7E1 Future"
                   IncludeNullValue: false
             - DestinationParameterName: EventTitle

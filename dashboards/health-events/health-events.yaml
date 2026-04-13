@@ -177,7 +177,7 @@ datasets:
               - ColumnName: event_status_icon
                 ColumnId: daced9b2-0c83-4c02-8648-ef42ba805c2b
                 Expression: "ifelse(\n    {status_code} = \"upcoming\" AND dateDiff(now(),\
-                  \ start_time, \"DD\") < 60, \"\U0001F7E0 Near\",\n    {status_code}\
+                  \ start_time, \"DD\") < 60, \"\U0001F7E0 Impending\",\n    {status_code}\
                   \ = \"upcoming\" AND dateDiff(now(), start_time, \"DD\") >= 60,\
                   \ \"\U0001F7E1 Future\",\n    {status_code} = \"open\", \"\U0001F534\
                   \ Open\",\n    {status_code} = \"closed\", \"\U0001F7E2 Closed\"\
