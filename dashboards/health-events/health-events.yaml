@@ -203,6 +203,14 @@ datasets:
                   )
           - CreateColumnsOperation:
               Columns:
+              - ColumnName: is_lifecycle_event
+                ColumnId: 5c92765c-f7e2-4912-bcbd-614326c3f2fb
+                Expression: "ifelse(\n    strlen({deprecated_versions}) > 0, \"Yes\"\
+                  ,\n\tcontains({event_code}, \"PLANNED_LIFECYCLE_EVENT\"), \"Yes\"\
+                  ,\n\tcontains({event_code}, \"DEPRECATION\"), \"Yes\",\n\t\"No\"\
+                  \n)"
+          - CreateColumnsOperation:
+              Columns:
               - ColumnName: event_title_full
                 ColumnId: 214e030d-01b0-4e36-b617-806221d69db5
                 Expression: |-
@@ -211,14 +219,6 @@ datasets:
                       ifelse({is_lifecycle_event} = "Yes", " PLE ", ""),
                       ifelse(strlen(deprecated_versions_friendly) > 0, deprecated_versions_friendly, event_code_common)
                   )
-          - CreateColumnsOperation:
-              Columns:
-              - ColumnName: is_lifecycle_event
-                ColumnId: 5c92765c-f7e2-4912-bcbd-614326c3f2fb
-                Expression: "ifelse(\n    strlen({deprecated_versions}) > 0, \"Yes\"\
-                  ,\n\tcontains({event_code}, \"PLANNED_LIFECYCLE_EVENT\"), \"Yes\"\
-                  ,\n\tcontains({event_code}, \"DEPRECATION\"), \"Yes\",\n\t\"No\"\
-                  \n)"
           - ProjectOperation:
               ProjectedColumns:
               - payer_account_id
