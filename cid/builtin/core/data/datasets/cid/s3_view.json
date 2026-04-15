@@ -10,11 +10,13 @@
         "InputColumns": [
           {
             "Name": "account_id",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "am-account-id"
           },
           {
             "Name": "account_name",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "am-account-name"
           }
         ]
       }
@@ -27,128 +29,140 @@
         "InputColumns": [
           {
             "Name": "billing_period",
-            "Type": "DATETIME"
+            "Type": "DATETIME",
+            "Id": "sv-billing-period"
           },
           {
             "Name": "charge_type",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "sv-charge-type"
           },
           {
             "Name": "year",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "sv-year"
           },
           {
             "Name": "payer_account_id",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "sv-payer-account-id"
           },
           {
             "Name": "usage_date",
-            "Type": "DATETIME"
+            "Type": "DATETIME",
+            "Id": "sv-usage-date"
           },
           {
             "Name": "product_code",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "sv-product-code"
           },
           {
             "Name": "month",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "sv-month"
           },
           {
             "Name": "public_cost",
-            "Type": "DECIMAL"
+            "Type": "DECIMAL",
+            "Id": "sv-public-cost"
           },
           {
             "Name": "unblended_cost",
-            "Type": "DECIMAL"
+            "Type": "DECIMAL",
+            "Id": "sv-unblended-cost"
           },
           {
             "Name": "linked_account_id",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "sv-linked-account-id"
           },
           {
             "Name": "resource_id",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "sv-resource-id"
           },
           {
             "Name": "usage_quantity",
-            "Type": "DECIMAL"
+            "Type": "DECIMAL",
+            "Id": "sv-usage-quantity"
           },
           {
             "Name": "region",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "sv-region"
           },
           {
             "Name": "operation",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "sv-operation"
           },
           {
             "Name": "pricing_unit",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "sv-pricing-unit"
           }
         ]
       }
     }
   },
-  "LogicalTableMap": {
-    "4559aa95-4a54-4998-800b-5fd03af260ea": {
-      "Alias": "account_map",
-      "Source": {
+  "ImportMode": "SPICE",
+  "Permissions": [],
+  "DataPrepConfiguration": {
+    "SourceTableMap": {
+      "src-s3-view": {
+        "PhysicalTableId": "7bb99428-5dfd-4599-8893-b4f57f0c689f"
+      },
+      "src-account-map": {
         "PhysicalTableId": "516bd20f-660c-49e0-95d3-0b5d21ef39f7"
       }
     },
-    "6beb277c-4d74-47da-b425-1e255aa31be6": {
-      "Alias": "Intermediate Table",
-      "DataTransforms": [
-        {
-          "ProjectOperation": {
-            "ProjectedColumns": [
-              "year",
-              "month",
-              "billing_period",
-              "usage_date",
-              "payer_account_id",
-              "linked_account_id",
-              "resource_id",
-              "product_code",
-              "operation",
-              "region",
-              "charge_type",
-              "pricing_unit",
-              "usage_quantity",
-              "unblended_cost",
-              "public_cost",
-              "account_id",
-              "account_name"
-            ]
-          }
-        },
-        {
-          "TagColumnOperation": {
-            "ColumnName": "region",
-            "Tags": [
-              {
-                "ColumnGeographicRole": "STATE"
-              }
-            ]
+    "TransformStepMap": {
+      "import-s3-view": {
+        "ImportTableStep": {
+          "Alias": "s3_view",
+          "Source": {
+            "SourceTableId": "src-s3-view"
           }
         }
-      ],
-      "Source": {
-        "JoinInstruction": {
-          "LeftOperand": "ea0d1482-1bf2-46ee-8dc4-5aaea2ab2209",
-          "RightOperand": "4559aa95-4a54-4998-800b-5fd03af260ea",
+      },
+      "import-account-map": {
+        "ImportTableStep": {
+          "Alias": "account_map",
+          "Source": {
+            "SourceTableId": "src-account-map"
+          }
+        }
+      },
+      "join-account-map": {
+        "JoinStep": {
+          "Alias": "Join with account_map",
           "Type": "LEFT",
-          "OnClause": "{linked_account_id} = {account_id}"
+          "OnClause": "{linked_account_id} = {account_id}",
+          "LeftOperand": {
+            "TransformOperationId": "import-s3-view"
+          },
+          "RightOperand": {
+            "TransformOperationId": "import-account-map"
+          }
         }
       }
     },
-    "ea0d1482-1bf2-46ee-8dc4-5aaea2ab2209": {
-      "Alias": "s3_view",
-      "Source": {
-        "PhysicalTableId": "7bb99428-5dfd-4599-8893-b4f57f0c689f"
+    "DestinationTableMap": {
+      "destination-s3-view": {
+        "Alias": "s3_view",
+        "Source": {
+          "TransformOperationId": "join-account-map"
+        }
       }
     }
   },
-  "ImportMode": "SPICE",
-  "Permissions": []
+  "SemanticModelConfiguration": {
+    "TableMap": {
+      "semantic-s3-view": {
+        "Alias": "s3_view",
+        "DestinationTableId": "destination-s3-view"
+      }
+    }
+  }
 }
