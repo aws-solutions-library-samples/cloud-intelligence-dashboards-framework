@@ -1812,8 +1812,10 @@ class Cid():
                                 )
                             except Exception as e:
                                 logger.warning(f'Failed to reapply permissions for dataset {found_dataset.name} ({found_dataset.id}): {e}')
-                                cid_print(f'<BOLD><RED>Warning:<END> Failed to reapply permissions for dataset <BOLD>{found_dataset.name}<END> ({found_dataset.id}).')
+                                cid_print(f"<BOLD><YELLOW>Note:<END> Couldn't transfer existing dataset permissions to the new dataset experience for <BOLD>{found_dataset.name}<END>. If your datasets were shared with someone else, re-share them manually after update.")
                                 cid_print(f'Previous permissions were:\n{json.dumps(existing_permissions, indent=2)}')
+                        else:
+                            cid_print(f"<BOLD><YELLOW>Note:<END> Couldn't read existing dataset permissions for <BOLD>{found_dataset.name}<END>. If your datasets were shared with someone else, re-share them manually after update.")
                     else:
                         logger.info(f'User chose to skip new experience migration for dataset {found_dataset.name}. Skipping dataset update.')
                         cid_print(f'Skipping dataset <BOLD>{found_dataset.name}<END> update.')
