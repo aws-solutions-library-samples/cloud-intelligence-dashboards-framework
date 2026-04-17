@@ -1,5 +1,13 @@
 # What's new in Extended Support Cost Projection
 
+## Extended Support Cost Projection - v5.1.0
+
+- Redesigned RDS, EKS, OpenSearch and Elasticache sheets layout: consolidated visuals and updated positions.
+- Replaced pie chart with a stacked bar chart showing hours of usage grouped by a dynamic dimension.
+- Added "Group By" parameter control allowing users to switch between Account and Engine Version and selected tags groupings across usage visuals.
+- Replaced static per-account and per-version breakdown charts with a dynamic timeline and a horizontal bar visual with cross-filtering support.
+- Added subtitle context ("Based on last 30 days of usage") to cost breakdown and estimated cost visuals.
+
 ## Extended Support Cost Projection - v5.0.0
 
 **Important:** This is a major version upgrade. The `cid-cmd` tool will ask to confirm a recursive update. Please make sure to confirm the recursive update by answering **yes** to continue the update process and have the new tagging dataset and Athena view deployed for the dashboard.

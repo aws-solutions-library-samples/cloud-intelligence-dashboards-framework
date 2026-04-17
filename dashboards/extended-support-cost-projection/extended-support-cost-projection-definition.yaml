@@ -9,11 +9,29 @@ AnalysisDefaults:
     SheetContentType: INTERACTIVE
 CalculatedFields:
 - DataSetIdentifier: eks_extended_support_view
+  Expression: |-
+    ifelse(
+        ${EKSCostProjectionGroupBy} = 'Account', {account_name},
+        ${EKSCostProjectionGroupBy} = 'Cluster Version', {k8s_version},
+        // Add ${EKSCostProjectionGroupBy}
+        NULL
+    )
+  Name: EKS Cost Projection Group By
+- DataSetIdentifier: eks_extended_support_view
   Expression: '{usage_amount} * 0.6'
   Name: Estimated_Monthly_Cost
 - DataSetIdentifier: eks_extended_support_view
   Expression: dateDiff(now(), {start_of_extended_support}, 'MM')
   Name: Months_Before_Start_Ext_Supp
+- DataSetIdentifier: elasticache_extended_support_view
+  Expression: |-
+    ifelse(
+        ${ElastiCacheCostProjectionGroupBy} = 'Account', {account_name},
+        ${ElastiCacheCostProjectionGroupBy} = 'Engine Version', engineversion,
+        // Add ${ElastiCacheCostProjectionGroupBy}
+        NULL
+    )
+  Name: ElastiCache Cost Projection Group By
 - DataSetIdentifier: elasticache_extended_support_view
   Expression: '{ext_sup_year_1_2_price}'
   Name: Estimated_Monthly_Cost_Year_1_2
@@ -29,6 +47,15 @@ CalculatedFields:
 - DataSetIdentifier: opensearch_extended_support_view
   Expression: dateDiff(now(), {start_of_extended_support}, 'MM')
   Name: Months_Before_Start_Ext_Supp
+- DataSetIdentifier: opensearch_extended_support_view
+  Expression: |-
+    ifelse(
+        ${OpenSearchCostProjectionGroupBy} = 'Account', {account_name},
+        ${OpenSearchCostProjectionGroupBy} = 'Engine Version', engineversion,
+        // Add ${OpenSearchCostProjectionGroupBy}
+        NULL
+    )
+  Name: OpenSearch Cost Projection Group By
 - DataSetIdentifier: rds_extended_support_view
   Expression: '{year_1_2_cost}'
   Name: Actual_Year_1_2_Cost
@@ -48,6 +75,16 @@ CalculatedFields:
 - DataSetIdentifier: rds_extended_support_view
   Expression: dateDiff(now(), {year_1_start}, 'MM')
   Name: Months_Before_Year_1_2_Ext_Support_Start
+- DataSetIdentifier: rds_extended_support_view
+  Expression: |-
+    ifelse(
+        ${RDSCostProjectionGroupBy} = 'Account', {account_name},
+        ${RDSCostProjectionGroupBy} = 'Engine', engine,
+        ${RDSCostProjectionGroupBy} = 'Engine Version', engineversion,
+        // Add ${RDSCostProjectionGroupBy}
+        NULL
+    )
+  Name: RDS Cost Projection Group By
 - DataSetIdentifier: rds_extended_support_view
   Expression: ifelse(isNull({year_3_start}), 0, {year_3_pricing})
   Name: Year_3_Pricing_Fallback
@@ -417,9 +454,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+        SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
         VisualIds:
-        - 63456781-c0b6-4a5b-b6c5-c094c574db92
+        - 44d17f28-e836-4689-9ad6-33e5b95ba729
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: cf3e70f5-978c-4302-a173-fdbe932e7c5c
@@ -438,9 +475,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+        SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
         VisualIds:
-        - f9a8f065-ce20-445e-a46c-af99928a9eee
+        - 8b757e1e-a3b2-41aa-9cfc-092078629acb
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 833b8c86-9766-4b99-a5fb-ba3e4ef8d08c
@@ -459,9 +496,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+        SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
         VisualIds:
-        - f8d457e4-5ad8-4b3b-a5ae-3bc1e4d2f04e
+        - fb56cab7-2e27-429c-9a87-6ca7baa127ba
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 215e6218-84f1-4f2d-a089-2724f513dac4
@@ -480,9 +517,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+        SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
         VisualIds:
-        - f9a8f065-ce20-445e-a46c-af99928a9eee
+        - 8b757e1e-a3b2-41aa-9cfc-092078629acb
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 2fe3bdea-f9d9-4376-8c5a-774089117858
@@ -501,9 +538,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+        SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
         VisualIds:
-        - f8d457e4-5ad8-4b3b-a5ae-3bc1e4d2f04e
+        - fb56cab7-2e27-429c-9a87-6ca7baa127ba
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: bd90bee7-53ae-4185-ac0b-e63f97e3b866
@@ -522,9 +559,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+        SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
         VisualIds:
-        - d0828d4d-e769-4124-b330-2b66ddf39308
+        - e320fefe-270f-4689-b2d9-e5b41a944965
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: aa73eee4-f3c4-41d7-952a-00cd2105a67b
@@ -559,7 +596,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+        SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: e3a444dd-8196-4b96-afb2-8467b41edaac
@@ -578,11 +615,11 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
       - Scope: ALL_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
       - Scope: ALL_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 690def29-0236-4b47-bc6f-5b829189b3d8
@@ -601,11 +638,11 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
       - Scope: ALL_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
       - Scope: ALL_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 0205bf7f-6cd5-4f55-8d84-204fae79fb95
@@ -627,11 +664,11 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
       - Scope: ALL_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
       - Scope: ALL_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: c05373a5-2c9c-4092-bd59-70dbbb51fe0e
@@ -666,11 +703,11 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
       - Scope: ALL_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
       - Scope: ALL_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: c942fd6b-e51f-4a05-a651-199cb1f9726e
@@ -689,9 +726,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
         VisualIds:
-        - e918f9c3-2585-4dab-bdd3-f5226e9e5d3b
+        - dae10907-5b4e-4091-bf29-406bf43589be
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: fb5f848b-6e24-4eff-9c11-9a81fdc7f455
@@ -710,9 +747,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
         VisualIds:
-        - d842be7f-e5b7-4ecf-8f94-89e8e9a5f3ea
+        - 4db23b4d-0ca0-4af6-8b2a-52ddf4b9310d
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 80dc41f6-5c72-401f-9e7e-2398fae1d7d1
@@ -731,9 +768,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
         VisualIds:
-        - 11f2c694-9b4a-4b26-8751-fd75f69dbf69
+        - f444fefb-5fee-4c51-a4c3-32f142a5d3d6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: b257166c-4314-461c-9327-736fbf156abf
@@ -752,9 +789,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
         VisualIds:
-        - 98bec68a-1876-474b-9ab6-2aa50338750e
+        - 66665925-62e8-4933-8798-337841961974
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 2d0cfbf6-40c8-4c50-8cd0-6fe745c71a02
@@ -773,9 +810,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
         VisualIds:
-        - d842be7f-e5b7-4ecf-8f94-89e8e9a5f3ea
+        - 4db23b4d-0ca0-4af6-8b2a-52ddf4b9310d
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: ac9ca838-1685-4064-8cb8-1f3dd3e04d16
@@ -794,36 +831,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
         VisualIds:
-        - 11f2c694-9b4a-4b26-8751-fd75f69dbf69
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: b5fa5da0-e4d3-4071-be0e-28acb1e1400a
-  Filters:
-  - RelativeDatesFilter:
-      AnchorDateConfiguration:
-        AnchorOption: NOW
-      Column:
-        ColumnName: billing_period
-        DataSetIdentifier: eks_extended_support_view
-      ExcludePeriodConfiguration:
-        Amount: 1
-        Granularity: MONTH
-        Status: DISABLED
-      FilterId: 42060644-a8ef-43ea-9173-6396596ebfbb
-      MinimumGranularity: DAY
-      NullOption: NON_NULLS_ONLY
-      RelativeDateType: LAST
-      RelativeDateValue: 4
-      TimeGranularity: MONTH
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
-        VisualIds:
-        - 178e3b51-eb8d-4bc8-961d-555b25d9a397
+        - f444fefb-5fee-4c51-a4c3-32f142a5d3d6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 2bf1721f-2f2c-4ddb-a3e2-06abb44295d1
@@ -847,8 +857,20 @@ FilterGroups:
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
-      - Scope: ALL_VISUALS
-        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+      - Scope: SELECTED_VISUALS
+        SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
+        VisualIds:
+        - d6308c9f-53bd-41c1-99ab-70d009a5c1b5
+        - 76f7e00b-1acf-4cd8-b1bb-4a8d56d3247a
+        - e320fefe-270f-4689-b2d9-e5b41a944965
+        - fb56cab7-2e27-429c-9a87-6ca7baa127ba
+        - 8b757e1e-a3b2-41aa-9cfc-092078629acb
+        - 371ee19a-fb00-460e-b425-84097ed7c329
+        - c44e8535-0bd2-4186-97b1-b7c4d28dd413
+        - a28ee77a-bbe8-4a86-b2c6-d2be30bc5f96
+        - 15c48059-5103-4849-bac0-59b21a1bf81d
+        - 37e4a56e-5d0e-42f6-9f83-aea469f93eea
+        - 44d17f28-e836-4689-9ad6-33e5b95ba729
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 7ac956d1-efd9-48fc-8300-2ab504819d53
@@ -873,20 +895,17 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
         VisualIds:
-        - ef7cccb0-eaf7-4353-938d-55ab15f38de9
-        - da0303eb-c4a3-4fb5-bbe8-18b4b3a657bc
-        - d8dcc6f6-4114-45fc-b930-0a486e6a4b7d
-        - 8abb3abb-521c-405a-899f-7367793bc502
-        - dc7361e0-effc-4bd3-8e94-3e2c4279e38a
-        - 98bec68a-1876-474b-9ab6-2aa50338750e
-        - 11f2c694-9b4a-4b26-8751-fd75f69dbf69
-        - d842be7f-e5b7-4ecf-8f94-89e8e9a5f3ea
-        - 64ef4204-811b-4875-b520-912c1dd743b7
-        - e918f9c3-2585-4dab-bdd3-f5226e9e5d3b
-        - fc3b1a23-e7ba-436b-8c6f-05a29584885d
-        - f592c056-effb-48d6-82a4-47d7fd19af7a
+        - 8c96e13e-0a16-4639-8f5d-c03999dade34
+        - e3219ded-f04e-495e-bb6d-5ccc54b7bf47
+        - 66665925-62e8-4933-8798-337841961974
+        - f444fefb-5fee-4c51-a4c3-32f142a5d3d6
+        - 4db23b4d-0ca0-4af6-8b2a-52ddf4b9310d
+        - ce86a7dc-cc88-4ae3-a052-57f42f5f31d0
+        - dae10907-5b4e-4091-bf29-406bf43589be
+        - db9bae35-115f-454f-af5c-c1c1fed09268
+        - 3e7d65c7-aaeb-4127-b8f9-9efbc542d8c2
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 055d9d26-f055-4472-b369-fd8c02d79429
@@ -921,9 +940,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
       - Scope: ALL_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 22ed5fda-6c66-4b92-b5e1-ce1b0bd81f9e
@@ -942,9 +961,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
         VisualIds:
-        - bb34a21c-bcc6-4a80-8c0e-6029b81b4d48
+        - bdba4d30-a3ec-4fec-881b-626d7e0cd235
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: eb57b1f9-5718-4bf0-a172-bebf31541247
@@ -963,9 +982,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
         VisualIds:
-        - 19f1607f-8052-4c1a-94b4-8e8f9644c677
+        - 63f48196-cb32-4987-ba9b-373cabb9ecdc
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 76b8598d-1cb1-43bf-8c02-d598250d4fc9
@@ -984,9 +1003,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
         VisualIds:
-        - f426777e-50ec-4437-8260-55ed03239964
+        - aeff8855-7403-4d0d-b4fd-3a81b5a1a3fb
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: b51fe26d-6478-4571-a981-91b5256552f0
@@ -1005,9 +1024,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
         VisualIds:
-        - 5322db85-7f83-4fe0-bd3b-03e52216938d
+        - d6669926-ffec-4fd5-b948-18516821a30f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 5bf56111-2be6-4cc5-9bc0-3e7ceee3f699
@@ -1026,9 +1045,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
         VisualIds:
-        - 5322db85-7f83-4fe0-bd3b-03e52216938d
+        - d6669926-ffec-4fd5-b948-18516821a30f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: a21bd50c-90da-4b62-ab02-fc6d6fed8e4b
@@ -1047,9 +1066,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
         VisualIds:
-        - 19f1607f-8052-4c1a-94b4-8e8f9644c677
+        - 63f48196-cb32-4987-ba9b-373cabb9ecdc
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 7a39c08d-ef70-4116-aeed-5ba11513d7ba
@@ -1073,10 +1092,18 @@ FilterGroups:
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
-      - Scope: ALL_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
-      - Scope: ALL_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+      - Scope: SELECTED_VISUALS
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
+        VisualIds:
+        - d6669926-ffec-4fd5-b948-18516821a30f
+        - aeff8855-7403-4d0d-b4fd-3a81b5a1a3fb
+        - 63f48196-cb32-4987-ba9b-373cabb9ecdc
+        - 43eb97ab-7715-4f84-a37f-b8dd5f156e99
+        - bdba4d30-a3ec-4fec-881b-626d7e0cd235
+        - f15381b5-67d9-4b91-9ac0-8b8e66c11dd8
+        - 8dd6fc57-5382-45d9-b20b-91eb1f43a255
+        - dc80a335-5c3e-46b9-9e3c-0b1708b52e0a
+        - 9e9a7f55-b5fd-4142-8b81-0378f1e9fd79
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: fc278c0d-a6e1-4cab-beab-ec803565ab07
@@ -1095,7 +1122,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+        SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 4929d969-3c24-4d40-8df5-879840558921
@@ -1114,7 +1141,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+        SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: b79192af-bc59-4a96-8237-965e94b19ec9
@@ -1133,7 +1160,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+        SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: b931b454-dce0-4389-bbf1-b062f7115e83
@@ -1152,9 +1179,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+        SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
       - Scope: ALL_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 35184e8b-79b3-4312-b71c-93d274204d9d
@@ -1189,7 +1216,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 1ae5b0fa-ce9c-40a7-abfe-87dbb0383b39
@@ -1208,9 +1235,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
         VisualIds:
-        - 00225b75-b736-419b-94a8-ecfb6bba7c4b
+        - 3ca33f88-21ce-4332-be94-b96c05f3112f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: a59a9b43-089f-4671-a026-67d0ec23451a
@@ -1234,8 +1261,20 @@ FilterGroups:
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
-      - Scope: ALL_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+      - Scope: SELECTED_VISUALS
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
+        VisualIds:
+        - 76486a8d-ddb4-491c-9358-eafe5cf2e256
+        - a8055260-a0c8-4cf4-86c2-2af54a3f7c6d
+        - 015db4d9-f816-4192-bfa2-02c4ea782ffe
+        - 9197a13e-644b-4e67-b362-d08e41296cd0
+        - 66a5f6ed-5306-4424-8420-393b4b0b92dc
+        - ade0a752-4dd1-4e5d-b87f-060a599679e4
+        - 3ca33f88-21ce-4332-be94-b96c05f3112f
+        - 2b4d6d26-484d-457d-8a73-d73e9b575e8b
+        - 29f1ada5-f8f2-4661-b577-f78d1d167dad
+        - 34e2532b-dce8-4356-8417-8c44e2b75ca9
+        - 3444af11-f7a7-4d94-825a-16a07944321f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 80f6da07-39b2-4868-ae25-63dce8bae323
@@ -1254,7 +1293,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 3a9e030f-54a2-42cd-b315-1590615c6bea
@@ -1273,9 +1312,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
         VisualIds:
-        - 6a9749c0-2630-436f-9549-af225f94c97e
+        - 66a5f6ed-5306-4424-8420-393b4b0b92dc
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 4c1202cd-fba5-4821-98b1-90f01844baff
@@ -1294,9 +1333,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
         VisualIds:
-        - 75edf990-659d-4524-a30b-c42b6c85760d
+        - 9197a13e-644b-4e67-b362-d08e41296cd0
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 48a610b2-7d24-4d03-bdb4-1ebe278e57fd
@@ -1315,9 +1354,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
         VisualIds:
-        - 919a539c-81b6-41b8-8401-1874e40639ce
+        - 015db4d9-f816-4192-bfa2-02c4ea782ffe
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 46d0f1a7-63c1-48cd-8cb0-3d4517883746
@@ -1336,9 +1375,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
         VisualIds:
-        - 6a9749c0-2630-436f-9549-af225f94c97e
+        - 66a5f6ed-5306-4424-8420-393b4b0b92dc
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: e0f0d407-cb90-44c7-89b7-e49e5c0f9d68
@@ -1357,84 +1396,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+        SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
         VisualIds:
-        - 75edf990-659d-4524-a30b-c42b6c85760d
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: 45c2c0d4-b24b-423c-b616-06317e184e85
-  Filters:
-  - TopBottomFilter:
-      AggregationSortConfigurations:
-      - AggregationFunction:
-          NumericalAggregationFunction:
-            SimpleNumericalAggregation: SUM
-        Column:
-          ColumnName: ext_sup_year_1_2_price
-          DataSetIdentifier: elasticache_extended_support_view
-        SortDirection: DESC
-      Column:
-        ColumnName: linked_account_id
-        DataSetIdentifier: elasticache_extended_support_view
-      FilterId: 7726bf94-a885-4861-be07-6ec3aaf4f86e
-      Limit: 5
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
-        VisualIds:
-        - 5ab951e2-9c81-499a-9587-4a8078a63927
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: 0d98d1f1-4eca-4fed-a3af-cf5af3010d38
-  Filters:
-  - TopBottomFilter:
-      AggregationSortConfigurations:
-      - AggregationFunction:
-          NumericalAggregationFunction:
-            SimpleNumericalAggregation: SUM
-        Column:
-          ColumnName: usage_amount
-          DataSetIdentifier: elasticache_extended_support_view
-        SortDirection: DESC
-      Column:
-        ColumnName: linked_account_id
-        DataSetIdentifier: elasticache_extended_support_view
-      FilterId: 4491e1ac-a238-46cc-9505-80e6c8a00334
-      Limit: 5
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
-        VisualIds:
-        - 1819bbd5-bc7d-47f5-833e-b5e57f6216e2
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: 89abd9de-09a2-4b7a-b0e7-faf44601411a
-  Filters:
-  - TopBottomFilter:
-      AggregationSortConfigurations:
-      - AggregationFunction:
-          NumericalAggregationFunction:
-            SimpleNumericalAggregation: SUM
-        Column:
-          ColumnName: usage_amount
-          DataSetIdentifier: elasticache_extended_support_view
-        SortDirection: DESC
-      Column:
-        ColumnName: linked_account_id
-        DataSetIdentifier: elasticache_extended_support_view
-      FilterId: 52bb08b0-8df7-4488-bfe5-db8f5fc2b599
-      Limit: 5
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
-        VisualIds:
-        - 1f0d965e-b698-4091-a29f-abc0dd278cd9
+        - 9197a13e-644b-4e67-b362-d08e41296cd0
   Status: ENABLED
 Options:
   WeekStart: SUNDAY
@@ -1481,6 +1445,38 @@ ParameterDeclarations:
     ParameterValueType: MULTI_VALUED
     ValueWhenUnset:
       ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Engine Version
+    Name: RDSCostProjectionGroupBy
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Cluster Version
+    Name: EKSCostProjectionGroupBy
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Engine Version
+    Name: OpenSearchCostProjectionGroupBy
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - Engine Version
+    Name: ElastiCacheCostProjectionGroupBy
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
 Sheets:
 - ContentType: INTERACTIVE
   Layouts:
@@ -1499,7 +1495,7 @@ Sheets:
           RowSpan: 2
         - ColumnIndex: 1
           ColumnSpan: 18
-          ElementId: a45dd3f2-e7d3-4849-b68e-f75fa2a3154e
+          ElementId: 37e4a56e-5d0e-42f6-9f83-aea469f93eea
           ElementType: VISUAL
           RowIndex: 2
           RowSpan: 6
@@ -1511,78 +1507,106 @@ Sheets:
           RowSpan: 2
         - ColumnIndex: 19
           ColumnSpan: 4
-          ElementId: 63456781-c0b6-4a5b-b6c5-c094c574db92
+          ElementId: 44d17f28-e836-4689-9ad6-33e5b95ba729
           ElementType: VISUAL
           RowIndex: 4
           RowSpan: 4
         - ColumnIndex: 23
           ColumnSpan: 4
-          ElementId: f9a8f065-ce20-445e-a46c-af99928a9eee
+          ElementId: 8b757e1e-a3b2-41aa-9cfc-092078629acb
           ElementType: VISUAL
           RowIndex: 4
           RowSpan: 4
         - ColumnIndex: 27
           ColumnSpan: 4
-          ElementId: f8d457e4-5ad8-4b3b-a5ae-3bc1e4d2f04e
+          ElementId: fb56cab7-2e27-429c-9a87-6ca7baa127ba
           ElementType: VISUAL
           RowIndex: 4
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 4
-          ElementId: d0828d4d-e769-4124-b330-2b66ddf39308
+          ElementId: e320fefe-270f-4689-b2d9-e5b41a944965
           ElementType: VISUAL
           RowIndex: 4
           RowSpan: 4
         - ColumnIndex: 3
           ColumnSpan: 10
-          ElementId: c2a9d3c5-88ce-4371-af14-d82ba11c43a4
+          ElementId: c44e8535-0bd2-4186-97b1-b7c4d28dd413
           ElementType: VISUAL
           RowIndex: 8
           RowSpan: 4
         - ColumnIndex: 13
           ColumnSpan: 10
-          ElementId: e4a4229d-b607-47a3-8f47-a2735a92b9ab
+          ElementId: d6308c9f-53bd-41c1-99ab-70d009a5c1b5
           ElementType: VISUAL
           RowIndex: 8
           RowSpan: 4
         - ColumnIndex: 23
           ColumnSpan: 10
-          ElementId: 25a3a6f8-0882-46a7-a844-d4f25d6b8d05
+          ElementId: 371ee19a-fb00-460e-b425-84097ed7c329
           ElementType: VISUAL
           RowIndex: 8
           RowSpan: 4
         - ColumnIndex: 1
-          ColumnSpan: 14
-          ElementId: 3148a201-653d-41df-9ed3-d9a9503467ff
-          ElementType: VISUAL
+          ColumnSpan: 34
+          ElementId: d499b9d3-049a-4ea7-8cbd-f973c2676e45
+          ElementType: TEXT_BOX
           RowIndex: 12
-          RowSpan: 9
-        - ColumnIndex: 15
-          ColumnSpan: 20
-          ElementId: 96015dc2-961d-425e-b742-209d1b174624
-          ElementType: VISUAL
-          RowIndex: 12
-          RowSpan: 9
+          RowSpan: 1
         - ColumnIndex: 1
-          ColumnSpan: 17
-          ElementId: f090fcf8-98d4-4160-b4dc-b1f21865ea38
+          ColumnSpan: 5
+          ElementId: c2a13661-708a-4a56-9307-358194683f20
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 13
+          RowSpan: 10
+        - ColumnIndex: 6
+          ColumnSpan: 13
+          ElementId: a28ee77a-bbe8-4a86-b2c6-d2be30bc5f96
           ElementType: VISUAL
-          RowIndex: 21
-          RowSpan: 12
-        - ColumnIndex: 18
-          ColumnSpan: 17
-          ElementId: 5e8f4990-2d28-4ebf-9abf-0b94f16901fd
+          RowIndex: 13
+          RowSpan: 10
+        - ColumnIndex: 19
+          ColumnSpan: 16
+          ElementId: c16ee7aa-8199-481d-867a-a4c6fbe95c00
           ElementType: VISUAL
-          RowIndex: 21
-          RowSpan: 12
+          RowIndex: 13
+          RowSpan: 10
         - ColumnIndex: 1
           ColumnSpan: 34
-          ElementId: 6d018c62-16c0-44f5-bd35-31059ce5ed9f
+          ElementId: 76f7e00b-1acf-4cd8-b1bb-4a8d56d3247a
           ElementType: VISUAL
-          RowIndex: 33
+          RowIndex: 23
+          RowSpan: 11
+        - ColumnIndex: 1
+          ColumnSpan: 34
+          ElementId: 15c48059-5103-4849-bac0-59b21a1bf81d
+          ElementType: VISUAL
+          RowIndex: 34
           RowSpan: 13
   Name: RDS Extended Support (Cost Projection)
   ParameterControls:
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: c2a13661-708a-4a56-9307-358194683f20
+      SelectableValues:
+        Values:
+        - Account
+        - Engine
+        - Engine Version
+      SourceParameterName: RDSCostProjectionGroupBy
+      Title: Group By
+      Type: SINGLE_SELECT
   - Dropdown:
       DisplayOptions:
         SelectAllOptions:
@@ -1675,7 +1699,7 @@ Sheets:
           ElementId: 72131530-2e02-4792-b613-6c3d7457eb43
           ElementType: PARAMETER_CONTROL
           RowSpan: 1
-  SheetId: 4aacecef-dd64-4538-90d6-2e3da36dd49f
+  SheetId: def5bd55-85a4-4da2-982c-72a1b8493a57
   TextBoxes:
   - Content: |-
       <text-box>
@@ -1696,7 +1720,120 @@ Sheets:
         </ul>
       </text-box>
     SheetTextBoxId: 785d7a08-0096-499e-9cc4-2ab741704efe
+  - SheetTextBoxId: d499b9d3-049a-4ea7-8cbd-f973c2676e45
   Visuals:
+  - BarChartVisual:
+      Actions: []
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: usage_date
+                DataSetIdentifier: rds_extended_support_view
+              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.usage_date.1.1776415318611
+            CustomLabel: Date
+          SortIconVisibility: HIDDEN
+        DataLabels:
+          CategoryLabelVisibility: HIDDEN
+          LabelContent: VALUE
+          LabelFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          MeasureLabelVisibility: VISIBLE
+          Overlap: DISABLE_OVERLAP
+          Visibility: HIDDEN
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: usage_date
+                  DataSetIdentifier: rds_extended_support_view
+                DateGranularity: MONTH
+                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.usage_date.1.1776415318611
+                HierarchyId: ba51b0b7-2118-49f3-85f2-399ae50255b4.usage_date.1.1776415318611
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: RDS Cost Projection Group By
+                  DataSetIdentifier: rds_extended_support_view
+                FieldId: bed93a81-0b49-42f4-b097-b2eb6bc19e98.2.1776415325071
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: vcpu_acu_hours
+                  DataSetIdentifier: rds_extended_support_view
+                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707159708427
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+        Legend:
+          Title:
+            CustomLabel: <<$RDSCostProjectionGroupBy>>
+          Width: 165px
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.usage_date.1.1776415318611
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707159708427
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.usage_date.1.1776415318611
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: bed93a81-0b49-42f4-b097-b2eb6bc19e98.2.1776415325071
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: DETAILED
+          TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 58px
+          TickLabelOptions:
+            LabelOptions:
+              FontConfiguration:
+                FontSize:
+                  Absolute: 14px
+        ValueLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: vcpu_acu_hours
+                DataSetIdentifier: rds_extended_support_view
+              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707159708427
+            CustomLabel: vCPU/ACU Hours
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          HierarchyId: ba51b0b7-2118-49f3-85f2-399ae50255b4.usage_date.1.1776415318611
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              Timeline - vCPU/ACU Hours of Usage By
+              <parameter>${RDSCostProjectionGroupBy}</parameter>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: c16ee7aa-8199-481d-867a-a4c6fbe95c00
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -1736,115 +1873,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Estimated Monthly Cost (Year 2)</visual-title>
         Visibility: VISIBLE
-      VisualId: e4a4229d-b607-47a3-8f47-a2735a92b9ab
-  - BarChartVisual:
-      Actions:
-      - ActionOperations:
-        - FilterOperation:
-            SelectedFieldsConfiguration:
-              SelectedFieldOptions: ALL_FIELDS
-            TargetVisualsConfiguration:
-              SameSheetTargetVisualConfiguration:
-                TargetVisualOptions: ALL_VISUALS
-        CustomActionId: 9a8ca48d-21d6-43c6-93ee-fea577534cf3
-        Name: Action 1
-        Status: ENABLED
-        Trigger: DATA_POINT_CLICK
-      ChartConfiguration:
-        BarsArrangement: STACKED
-        CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: engineversion
-                DataSetIdentifier: rds_extended_support_view
-              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.engineversion.2.1707819987988
-            CustomLabel: Engine Version
-        DataLabels:
-          LabelFontConfiguration:
-            FontSize:
-              Relative: LARGE
-          Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: engineversion
-                  DataSetIdentifier: rds_extended_support_view
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.engineversion.2.1707819987988
-            Colors:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: rds_extended_support_view
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.linked_account_id.2.1707820225018
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: vcpu_acu_hours
-                  DataSetIdentifier: rds_extended_support_view
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707819954700
-        Legend:
-          Title:
-            CustomLabel: Account
-          Width: 148px
-        Orientation: VERTICAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707819954700
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707819954700
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.engineversion.2.1707819987988
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.linked_account_id.2.1707820225018
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 81px
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: EXTRA_LARGE
-        ValueLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: vcpu_acu_hours
-                DataSetIdentifier: rds_extended_support_view
-              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707819954700
-            CustomLabel: vCPU/ACU Hours
-      ColumnHierarchies: []
-      Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>vCPU/ACU Hours Breakdown - Account by Engine</visual-title>
-        Visibility: VISIBLE
-      VisualId: 5e8f4990-2d28-4ebf-9abf-0b94f16901fd
+      VisualId: d6308c9f-53bd-41c1-99ab-70d009a5c1b5
   - BarChartVisual:
       Actions:
       - ActionOperations:
@@ -1860,6 +1889,12 @@ Sheets:
         Trigger: DATA_POINT_CLICK
       ChartConfiguration:
         BarsArrangement: CLUSTERED
+        CategoryAxis:
+          TickLabelOptions:
+            LabelOptions:
+              FontConfiguration:
+                FontSize:
+                  Absolute: 14px
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -1867,7 +1902,7 @@ Sheets:
                 ColumnName: engineversion
                 DataSetIdentifier: rds_extended_support_view
               FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.engineversion.1.1707159877378
-            CustomLabel: Version
+            CustomLabel: Engine Version
           SortIconVisibility: HIDDEN
         DataLabels:
           CategoryLabelVisibility: HIDDEN
@@ -1877,6 +1912,7 @@ Sheets:
               Relative: EXTRA_LARGE
           MeasureLabelVisibility: VISIBLE
           Overlap: DISABLE_OVERLAP
+          Position: RIGHT
           Visibility: VISIBLE
         FieldWells:
           BarChartAggregatedFieldWells:
@@ -1905,7 +1941,7 @@ Sheets:
         Legend:
           Title:
             CustomLabel: Estimated Costs
-          Width: 185px
+          Width: 244px
         Orientation: HORIZONTAL
         SortConfiguration:
           CategoryItemsLimit:
@@ -1934,6 +1970,8 @@ Sheets:
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 191px
         VisualPalette:
           ColorMap:
           - Color: '#219FD7'
@@ -1947,13 +1985,13 @@ Sheets:
       ColumnHierarchies: []
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: <visual-subtitle>Based on last 30 days of usage</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Estimated Monthly Costs by Engine Version</visual-title>
         Visibility: VISIBLE
-      VisualId: 96015dc2-961d-425e-b742-209d1b174624
+      VisualId: 76f7e00b-1acf-4cd8-b1bb-4a8d56d3247a
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -1999,7 +2037,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: d0828d4d-e769-4124-b330-2b66ddf39308
+      VisualId: e320fefe-270f-4689-b2d9-e5b41a944965
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -2046,7 +2084,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: f8d457e4-5ad8-4b3b-a5ae-3bc1e4d2f04e
+      VisualId: fb56cab7-2e27-429c-9a87-6ca7baa127ba
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -2093,7 +2131,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: f9a8f065-ce20-445e-a46c-af99928a9eee
+      VisualId: 8b757e1e-a3b2-41aa-9cfc-092078629acb
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -2133,7 +2171,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Estimated Monthly Cost (Year 3)</visual-title>
         Visibility: VISIBLE
-      VisualId: 25a3a6f8-0882-46a7-a844-d4f25d6b8d05
+      VisualId: 371ee19a-fb00-460e-b425-84097ed7c329
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -2173,8 +2211,8 @@ Sheets:
         FormatText:
           RichText: <visual-title>Estimated Monthly Cost (Year 1)</visual-title>
         Visibility: VISIBLE
-      VisualId: c2a9d3c5-88ce-4371-af14-d82ba11c43a4
-  - PieChartVisual:
+      VisualId: c44e8535-0bd2-4186-97b1-b7c4d28dd413
+  - BarChartVisual:
       Actions:
       - ActionOperations:
         - FilterOperation:
@@ -2188,15 +2226,27 @@ Sheets:
         Status: ENABLED
         Trigger: DATA_POINT_CLICK
       ChartConfiguration:
+        BarsArrangement: STACKED
+        CategoryAxis:
+          ScrollbarOptions:
+            Visibility: VISIBLE
+            VisibleRange:
+              PercentRange:
+                From: 0.0
+                To: 52.631578947368304
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
               Column:
-                ColumnName: engineversion
+                ColumnName: account_name
                 DataSetIdentifier: rds_extended_support_view
-              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.engineversion.1.1707159877378
-            CustomLabel: Version
+              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.account_name.2.1776416441349
+            CustomLabel: Account
+            FontConfiguration:
+              FontSize:
+                Absolute: 14px
           SortIconVisibility: HIDDEN
+          Visibility: VISIBLE
         DataLabels:
           CategoryLabelVisibility: HIDDEN
           LabelContent: VALUE
@@ -2205,18 +2255,21 @@ Sheets:
               Relative: EXTRA_LARGE
           MeasureLabelVisibility: VISIBLE
           Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        DonutOptions:
-          ArcOptions:
-            ArcThickness: WHOLE
+          Visibility: HIDDEN
         FieldWells:
-          PieChartAggregatedFieldWells:
+          BarChartAggregatedFieldWells:
             Category:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: engineversion
+                  ColumnName: account_name
                   DataSetIdentifier: rds_extended_support_view
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.engineversion.1.1707159877378
+                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.account_name.2.1776416441349
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: RDS Cost Projection Group By
+                  DataSetIdentifier: rds_extended_support_view
+                FieldId: bed93a81-0b49-42f4-b097-b2eb6bc19e98.1.1776412070711
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -2227,8 +2280,9 @@ Sheets:
                 FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707159708427
         Legend:
           Title:
-            CustomLabel: Engine Version
-          Width: 127px
+            CustomLabel: <<$RDSCostProjectionGroupBy>>
+          Width: 195px
+        Orientation: HORIZONTAL
         SortConfiguration:
           CategoryItemsLimit:
             OtherCategories: INCLUDE
@@ -2236,6 +2290,12 @@ Sheets:
           - FieldSort:
               Direction: DESC
               FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707159708427
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          ColorSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: bed93a81-0b49-42f4-b097-b2eb6bc19e98.1.1776412070711
           SmallMultiplesLimitConfiguration:
             OtherCategories: INCLUDE
         Tooltip:
@@ -2246,11 +2306,16 @@ Sheets:
                 FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707159708427
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.engineversion.1.1707159877378
+                FieldId: bed93a81-0b49-42f4-b097-b2eb6bc19e98.1.1776412070711
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.account_name.2.1776416441349
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 108px
         ValueLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -2263,13 +2328,23 @@ Sheets:
       ColumnHierarchies: []
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: |-
+            <visual-subtitle>
+              Last 30 days
+              <br/>
+              <br/>
+              Clicking the listed items in this visual will filter other visuals in this sheet to focus on data for the selected group by dimension
+            </visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: <visual-title>vCPU/ACU Hours of Usage By Engine Version</visual-title>
+          RichText: |-
+            <visual-title>
+              vCPU/ACU Hours of Usage By
+              <parameter>${RDSCostProjectionGroupBy}</parameter>
+            </visual-title>
         Visibility: VISIBLE
-      VisualId: 3148a201-653d-41df-9ed3-d9a9503467ff
+      VisualId: a28ee77a-bbe8-4a86-b2c6-d2be30bc5f96
   - TableVisual:
       Actions:
       - ActionOperations:
@@ -2485,13 +2560,13 @@ Sheets:
           TotalsVisibility: VISIBLE
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: <visual-subtitle>Based on last 30 days of usage</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Extended Support Estimated Cost Breakdown</visual-title>
         Visibility: VISIBLE
-      VisualId: 6d018c62-16c0-44f5-bd35-31059ce5ed9f
+      VisualId: 15c48059-5103-4849-bac0-59b21a1bf81d
   - TableVisual:
       Actions:
       - ActionOperations:
@@ -2595,7 +2670,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Extended Support Details</visual-title>
         Visibility: VISIBLE
-      VisualId: a45dd3f2-e7d3-4849-b68e-f75fa2a3154e
+      VisualId: 37e4a56e-5d0e-42f6-9f83-aea469f93eea
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -2642,115 +2717,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 63456781-c0b6-4a5b-b6c5-c094c574db92
-  - BarChartVisual:
-      Actions:
-      - ActionOperations:
-        - FilterOperation:
-            SelectedFieldsConfiguration:
-              SelectedFieldOptions: ALL_FIELDS
-            TargetVisualsConfiguration:
-              SameSheetTargetVisualConfiguration:
-                TargetVisualOptions: ALL_VISUALS
-        CustomActionId: 8c61ba3e-3cea-4bb3-a45b-cf35bd316e85
-        Name: Action 1
-        Status: ENABLED
-        Trigger: DATA_POINT_CLICK
-      ChartConfiguration:
-        BarsArrangement: STACKED
-        CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: linked_account_id
-                DataSetIdentifier: rds_extended_support_view
-              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.linked_account_id.0.1707819946620
-            CustomLabel: Account
-        DataLabels:
-          LabelFontConfiguration:
-            FontSize:
-              Relative: LARGE
-          Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: rds_extended_support_view
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.linked_account_id.0.1707819946620
-            Colors:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: engineversion
-                  DataSetIdentifier: rds_extended_support_view
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.engineversion.2.1707819987988
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: vcpu_acu_hours
-                  DataSetIdentifier: rds_extended_support_view
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707819954700
-        Legend:
-          Title:
-            CustomLabel: Engine Version
-          Width: 147px
-        Orientation: VERTICAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707819954700
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.linked_account_id.0.1707819946620
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707819954700
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.engineversion.2.1707819987988
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 71px
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: EXTRA_LARGE
-        ValueLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: vcpu_acu_hours
-                DataSetIdentifier: rds_extended_support_view
-              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours.1.1707819954700
-            CustomLabel: vCPU/ACU Hours
-      ColumnHierarchies: []
-      Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>vCPU/ACU Hours Breakdown - Engine by Account</visual-title>
-        Visibility: VISIBLE
-      VisualId: f090fcf8-98d4-4160-b4dc-b1f21865ea38
+      VisualId: 44d17f28-e836-4689-9ad6-33e5b95ba729
 - ContentType: INTERACTIVE
   Layouts:
   - Configuration:
@@ -2768,7 +2735,7 @@ Sheets:
           RowSpan: 3
         - ColumnIndex: 1
           ColumnSpan: 18
-          ElementId: 64ef4204-811b-4875-b520-912c1dd743b7
+          ElementId: ce86a7dc-cc88-4ae3-a052-57f42f5f31d0
           ElementType: VISUAL
           RowIndex: 3
           RowSpan: 6
@@ -2780,78 +2747,93 @@ Sheets:
           RowSpan: 2
         - ColumnIndex: 19
           ColumnSpan: 4
-          ElementId: e918f9c3-2585-4dab-bdd3-f5226e9e5d3b
+          ElementId: dae10907-5b4e-4091-bf29-406bf43589be
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 23
           ColumnSpan: 4
-          ElementId: d842be7f-e5b7-4ecf-8f94-89e8e9a5f3ea
+          ElementId: 4db23b4d-0ca0-4af6-8b2a-52ddf4b9310d
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 27
           ColumnSpan: 4
-          ElementId: 11f2c694-9b4a-4b26-8751-fd75f69dbf69
+          ElementId: f444fefb-5fee-4c51-a4c3-32f142a5d3d6
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 4
-          ElementId: 98bec68a-1876-474b-9ab6-2aa50338750e
+          ElementId: 66665925-62e8-4933-8798-337841961974
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 11
           ColumnSpan: 14
-          ElementId: fc3b1a23-e7ba-436b-8c6f-05a29584885d
+          ElementId: db9bae35-115f-454f-af5c-c1c1fed09268
           ElementType: VISUAL
           RowIndex: 9
           RowSpan: 4
         - ColumnIndex: 1
           ColumnSpan: 34
-          ElementId: 178e3b51-eb8d-4bc8-961d-555b25d9a397
-          ElementType: VISUAL
+          ElementId: 1e9c1bc9-1430-44c0-ac81-2aac29402014
+          ElementType: TEXT_BOX
           RowIndex: 13
-          RowSpan: 9
+          RowSpan: 1
         - ColumnIndex: 1
-          ColumnSpan: 12
-          ElementId: f592c056-effb-48d6-82a4-47d7fd19af7a
+          ColumnSpan: 5
+          ElementId: 172fc5b1-6616-44d1-be44-a22306a04f03
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 14
+          RowSpan: 10
+        - ColumnIndex: 6
+          ColumnSpan: 13
+          ElementId: 3e7d65c7-aaeb-4127-b8f9-9efbc542d8c2
           ElementType: VISUAL
-          RowIndex: 22
-          RowSpan: 9
-        - ColumnIndex: 13
-          ColumnSpan: 11
-          ElementId: dc7361e0-effc-4bd3-8e94-3e2c4279e38a
+          RowIndex: 14
+          RowSpan: 10
+        - ColumnIndex: 19
+          ColumnSpan: 16
+          ElementId: fb414f43-d4a0-4f6f-9be2-8d5637fed49e
           ElementType: VISUAL
-          RowIndex: 22
-          RowSpan: 9
-        - ColumnIndex: 24
-          ColumnSpan: 11
-          ElementId: ef7cccb0-eaf7-4353-938d-55ab15f38de9
-          ElementType: VISUAL
-          RowIndex: 22
-          RowSpan: 9
-        - ColumnIndex: 1
-          ColumnSpan: 17
-          ElementId: 8abb3abb-521c-405a-899f-7367793bc502
-          ElementType: VISUAL
-          RowIndex: 31
-          RowSpan: 12
-        - ColumnIndex: 18
-          ColumnSpan: 17
-          ElementId: d8dcc6f6-4114-45fc-b930-0a486e6a4b7d
-          ElementType: VISUAL
-          RowIndex: 31
-          RowSpan: 12
+          RowIndex: 14
+          RowSpan: 10
         - ColumnIndex: 1
           ColumnSpan: 34
-          ElementId: da0303eb-c4a3-4fb5-bbe8-18b4b3a657bc
+          ElementId: e3219ded-f04e-495e-bb6d-5ccc54b7bf47
           ElementType: VISUAL
-          RowIndex: 43
+          RowIndex: 24
+          RowSpan: 11
+        - ColumnIndex: 1
+          ColumnSpan: 34
+          ElementId: 8c96e13e-0a16-4639-8f5d-c03999dade34
+          ElementType: VISUAL
+          RowIndex: 35
           RowSpan: 12
   Name: EKS Extended Support (Cost Projection)
   ParameterControls:
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 172fc5b1-6616-44d1-be44-a22306a04f03
+      SelectableValues:
+        Values:
+        - Account
+        - Cluster Version
+      SourceParameterName: EKSCostProjectionGroupBy
+      Title: Group By
+      Type: SINGLE_SELECT
   - Dropdown:
       DisplayOptions:
         InfoIconLabelOptions:
@@ -2927,7 +2909,7 @@ Sheets:
           ElementId: e471b8e7-29d0-4b20-b02b-f92e4266a232
           ElementType: PARAMETER_CONTROL
           RowSpan: 1
-  SheetId: ffb23762-806c-4fdf-877e-c4341f742fe8
+  SheetId: 86a71289-eb5c-46c1-92c2-2a83d8cea48c
   TextBoxes:
   - Content: |-
       <text-box>
@@ -2953,22 +2935,12 @@ Sheets:
         </ul>
       </text-box>
     SheetTextBoxId: cf2450fc-4d20-4d48-90c0-72810ad97b03
+  - SheetTextBoxId: 1e9c1bc9-1430-44c0-ac81-2aac29402014
   Visuals:
   - BarChartVisual:
-      Actions:
-      - ActionOperations:
-        - FilterOperation:
-            SelectedFieldsConfiguration:
-              SelectedFieldOptions: ALL_FIELDS
-            TargetVisualsConfiguration:
-              SameSheetTargetVisualConfiguration:
-                TargetVisualOptions: ALL_VISUALS
-        CustomActionId: fd6f0908-a672-4ec0-8507-a3ca376fee73
-        Name: Action 1
-        Status: ENABLED
-        Trigger: DATA_POINT_CLICK
+      Actions: []
       ChartConfiguration:
-        BarsArrangement: CLUSTERED
+        BarsArrangement: STACKED
         CategoryAxis:
           ScrollbarOptions:
             Visibility: VISIBLE
@@ -2976,142 +2948,16 @@ Sheets:
             LabelOptions:
               FontConfiguration:
                 FontSize:
-                  Relative: MEDIUM
-        CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: linked_account_id
-                DataSetIdentifier: eks_extended_support_view
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.2.1713291742554
-            CustomLabel: Account
-          SortIconVisibility: HIDDEN
-        DataLabels:
-          CategoryLabelVisibility: HIDDEN
-          LabelContent: VALUE
-          LabelFontConfiguration:
-            FontSize:
-              Relative: EXTRA_LARGE
-          MeasureLabelVisibility: VISIBLE
-          Overlap: DISABLE_OVERLAP
-          Visibility: HIDDEN
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.2.1713291742554
-            Colors: []
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: Estimated_Monthly_Cost
-                  DataSetIdentifier: eks_extended_support_view
-                FieldId: 47d82dba-3977-447d-b2a9-7d5ca59185d6.2.1713268600878
-                FormatConfiguration:
-                  FormatConfiguration:
-                    CurrencyDisplayFormatConfiguration:
-                      DecimalPlacesConfiguration:
-                        DecimalPlaces: 2
-                      NegativeValueConfiguration:
-                        DisplayMode: POSITIVE
-                      NullValueFormatConfiguration:
-                        NullString: 'null'
-                      NumberScale: AUTO
-                      SeparatorConfiguration:
-                        DecimalSeparator: DOT
-                        ThousandsSeparator:
-                          Symbol: COMMA
-                          Visibility: VISIBLE
-                      Symbol: USD
-        Legend:
-          Width: 138px
-        Orientation: HORIZONTAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: 47d82dba-3977-447d-b2a9-7d5ca59185d6.2.1713268600878
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: 47d82dba-3977-447d-b2a9-7d5ca59185d6.2.1713268600878
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.2.1713291742554
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: LARGE
-        ValueLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: Estimated_Monthly_Cost
-                DataSetIdentifier: eks_extended_support_view
-              FieldId: 47d82dba-3977-447d-b2a9-7d5ca59185d6.2.1713268600878
-            CustomLabel: Estimated Cost
-          SortIconVisibility: HIDDEN
-          Visibility: HIDDEN
-      ColumnHierarchies: []
-      Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>Estimated Monthly Cost by Account</visual-title>
-        Visibility: VISIBLE
-      VisualId: ef7cccb0-eaf7-4353-938d-55ab15f38de9
-  - BarChartVisual:
-      Actions:
-      - ActionOperations:
-        - FilterOperation:
-            SelectedFieldsConfiguration:
-              SelectedFieldOptions: ALL_FIELDS
-            TargetVisualsConfiguration:
-              SameSheetTargetVisualConfiguration:
-                TargetVisualOptions: ALL_VISUALS
-        CustomActionId: a5feb208-78bf-45d0-84b0-823a93077453
-        Name: Action 1
-        Status: ENABLED
-        Trigger: DATA_POINT_CLICK
-      ChartConfiguration:
-        BarsArrangement: STACKED
-        CategoryAxis:
-          ScrollbarOptions:
-            Visibility: HIDDEN
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
+                  Absolute: 10px
                   Relative: LARGE
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
               Column:
-                ColumnName: billing_period
+                ColumnName: usage_date
                 DataSetIdentifier: eks_extended_support_view
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.billing_period.2.1713290075646
-            CustomLabel: Month
+              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_date.2.1776435611221
+            CustomLabel: Date
           SortIconVisibility: HIDDEN
         DataLabels:
           CategoryLabelVisibility: HIDDEN
@@ -3121,26 +2967,23 @@ Sheets:
               Relative: LARGE
           MeasureLabelVisibility: VISIBLE
           Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
+          Visibility: HIDDEN
         FieldWells:
           BarChartAggregatedFieldWells:
             Category:
             - DateDimensionField:
                 Column:
-                  ColumnName: billing_period
+                  ColumnName: usage_date
                   DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.billing_period.2.1713290075646
-                FormatConfiguration:
-                  DateTimeFormat: MMM YYYY
-                  NullValueFormatConfiguration:
-                    NullString: 'null'
-                HierarchyId: fb87a59b-3632-4ff2-8248-2d0f9063fafd
+                DateGranularity: MONTH
+                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_date.2.1776435611221
+                HierarchyId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_date.2.1776435611221
             Colors:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: k8s_version
+                  ColumnName: EKS Cost Projection Group By
                   DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.2.1713290105037
+                FieldId: 635350ad-c237-4477-b0d6-2f5348d9d3cb.2.1776434092027
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -3154,11 +2997,9 @@ Sheets:
                     NumberDisplayFormatConfiguration:
                       NullValueFormatConfiguration:
                         NullString: 'null'
-                      NumberScale: NONE
-                      Suffix: ' hrs'
         Legend:
           Title:
-            CustomLabel: Cluster Version
+            CustomLabel: <<$EKSCostProjectionGroupBy>>
           Width: 147px
         Orientation: VERTICAL
         SortConfiguration:
@@ -3167,7 +3008,7 @@ Sheets:
           CategorySort:
           - FieldSort:
               Direction: ASC
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.billing_period.2.1713290075646
+              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_date.2.1776435611221
           ColorItemsLimit:
             OtherCategories: INCLUDE
           SmallMultiplesLimitConfiguration:
@@ -3180,20 +3021,21 @@ Sheets:
                 FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_amount.2.1713268734606
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.billing_period.2.1713290075646
+                FieldId: 635350ad-c237-4477-b0d6-2f5348d9d3cb.2.1776434092027
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.2.1713290105037
+                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_date.2.1776435611221
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 83px
+          AxisOffset: 65px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
                 FontSize:
+                  Absolute: 16px
                   Relative: EXTRA_LARGE
         ValueLabelOptions:
           AxisLabelOptions:
@@ -3205,15 +3047,18 @@ Sheets:
             CustomLabel: Hours
       ColumnHierarchies:
       - DateTimeHierarchy:
-          DrillDownFilters: []
-          HierarchyId: fb87a59b-3632-4ff2-8248-2d0f9063fafd
+          HierarchyId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_date.2.1776435611221
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: <visual-title>Usage by Cluster Version (Past 3 months + MTD)</visual-title>
+          RichText: |-
+            <visual-title>
+              Timeline - Usage by
+              <parameter>${EKSCostProjectionGroupBy}</parameter>
+            </visual-title>
         Visibility: VISIBLE
-      VisualId: 178e3b51-eb8d-4bc8-961d-555b25d9a397
+      VisualId: fb414f43-d4a0-4f6f-9be2-8d5637fed49e
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -3326,267 +3171,13 @@ Sheets:
           TotalsVisibility: VISIBLE
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: <visual-subtitle>Based on last 30 days of usage</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Extended Support Estimated Cost Breakdown</visual-title>
         Visibility: VISIBLE
-      VisualId: da0303eb-c4a3-4fb5-bbe8-18b4b3a657bc
-  - BarChartVisual:
-      Actions:
-      - ActionOperations:
-        - FilterOperation:
-            SelectedFieldsConfiguration:
-              SelectedFieldOptions: ALL_FIELDS
-            TargetVisualsConfiguration:
-              SameSheetTargetVisualConfiguration:
-                TargetVisualOptions: ALL_VISUALS
-        CustomActionId: d29ddb57-0bc9-4743-b18c-5c5912bca80d
-        Name: Action 1
-        Status: ENABLED
-        Trigger: DATA_POINT_CLICK
-      ChartConfiguration:
-        BarsArrangement: STACKED
-        CategoryAxis:
-          ScrollbarOptions:
-            Visibility: HIDDEN
-        CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: k8s_version
-                DataSetIdentifier: eks_extended_support_view
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.2.1713268839783
-            CustomLabel: Cluster Version
-          SortIconVisibility: HIDDEN
-        DataLabels:
-          CategoryLabelVisibility: HIDDEN
-          LabelContent: VALUE
-          LabelFontConfiguration:
-            FontSize:
-              Relative: LARGE
-          MeasureLabelVisibility: VISIBLE
-          Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: k8s_version
-                  DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.2.1713268839783
-            Colors:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.2.1713268696217
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: usage_amount
-                  DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_amount.2.1713268734606
-                FormatConfiguration:
-                  FormatConfiguration:
-                    NumberDisplayFormatConfiguration:
-                      NullValueFormatConfiguration:
-                        NullString: 'null'
-                      Suffix: ' hrs'
-        Legend:
-          Title:
-            CustomLabel: Account
-          Width: 147px
-        Orientation: VERTICAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.2.1713268839783
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          ColorSort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.2.1713268696217
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.2.1713268696217
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_amount.2.1713268734606
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.2.1713268839783
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 88px
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: EXTRA_LARGE
-        ValueLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: usage_amount
-                DataSetIdentifier: eks_extended_support_view
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_amount.2.1713268734606
-            CustomLabel: Hours
-      ColumnHierarchies: []
-      Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>Hours Breakdown - Account by Version</visual-title>
-        Visibility: VISIBLE
-      VisualId: d8dcc6f6-4114-45fc-b930-0a486e6a4b7d
-  - BarChartVisual:
-      Actions:
-      - ActionOperations:
-        - FilterOperation:
-            SelectedFieldsConfiguration:
-              SelectedFieldOptions: ALL_FIELDS
-            TargetVisualsConfiguration:
-              SameSheetTargetVisualConfiguration:
-                TargetVisualOptions: ALL_VISUALS
-        CustomActionId: 05178e6d-1886-4da6-b9cc-0ed6f7ec70d4
-        Name: Action 1
-        Status: ENABLED
-        Trigger: DATA_POINT_CLICK
-      ChartConfiguration:
-        BarsArrangement: STACKED
-        CategoryAxis:
-          ScrollbarOptions:
-            Visibility: HIDDEN
-        CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: linked_account_id
-                DataSetIdentifier: eks_extended_support_view
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.2.1713268696217
-            CustomLabel: Account
-          SortIconVisibility: HIDDEN
-        ColorLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: k8s_version
-                DataSetIdentifier: eks_extended_support_view
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.1.1713268446184
-            CustomLabel: Cluster Version
-        DataLabels:
-          CategoryLabelVisibility: HIDDEN
-          LabelContent: VALUE
-          LabelFontConfiguration:
-            FontSize:
-              Relative: LARGE
-          MeasureLabelVisibility: VISIBLE
-          Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.2.1713268696217
-            Colors:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: k8s_version
-                  DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.1.1713268446184
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: usage_amount
-                  DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_amount.2.1713268734606
-                FormatConfiguration:
-                  FormatConfiguration:
-                    NumberDisplayFormatConfiguration:
-                      NullValueFormatConfiguration:
-                        NullString: 'null'
-                      Suffix: ' hrs'
-        Legend:
-          Title:
-            CustomLabel: Cluster Version
-          Width: 130px
-        Orientation: VERTICAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.2.1713268696217
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.1.1713268446184
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.2.1713268696217
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_amount.2.1713268734606
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 87px
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: EXTRA_LARGE
-        ValueLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: usage_amount
-                DataSetIdentifier: eks_extended_support_view
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_amount.2.1713268734606
-            CustomLabel: Hours
-      ColumnHierarchies: []
-      Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>Hours Breakdown - Version by Account</visual-title>
-        Visibility: VISIBLE
-      VisualId: 8abb3abb-521c-405a-899f-7367793bc502
+      VisualId: 8c96e13e-0a16-4639-8f5d-c03999dade34
   - BarChartVisual:
       Actions:
       - ActionOperations:
@@ -3604,11 +3195,12 @@ Sheets:
         BarsArrangement: CLUSTERED
         CategoryAxis:
           ScrollbarOptions:
-            Visibility: HIDDEN
+            Visibility: VISIBLE
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
                 FontSize:
+                  Absolute: 14px
                   Relative: LARGE
         CategoryLabelOptions:
           AxisLabelOptions:
@@ -3627,7 +3219,8 @@ Sheets:
               Relative: EXTRA_LARGE
           MeasureLabelVisibility: VISIBLE
           Overlap: DISABLE_OVERLAP
-          Visibility: HIDDEN
+          Position: RIGHT
+          Visibility: VISIBLE
         FieldWells:
           BarChartAggregatedFieldWells:
             Category:
@@ -3688,6 +3281,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
+          AxisOffset: 90px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -3706,13 +3300,13 @@ Sheets:
       ColumnHierarchies: []
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: <visual-subtitle>Based on last 30 days of usage</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Estimated Monthly Cost by Cluster Version</visual-title>
         Visibility: VISIBLE
-      VisualId: dc7361e0-effc-4bd3-8e94-3e2c4279e38a
+      VisualId: e3219ded-f04e-495e-bb6d-5ccc54b7bf47
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -3758,7 +3352,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 98bec68a-1876-474b-9ab6-2aa50338750e
+      VisualId: 66665925-62e8-4933-8798-337841961974
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -3805,7 +3399,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 11f2c694-9b4a-4b26-8751-fd75f69dbf69
+      VisualId: f444fefb-5fee-4c51-a4c3-32f142a5d3d6
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -3852,7 +3446,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: d842be7f-e5b7-4ecf-8f94-89e8e9a5f3ea
+      VisualId: 4db23b4d-0ca0-4af6-8b2a-52ddf4b9310d
   - TableVisual:
       Actions:
       - ActionOperations:
@@ -3931,7 +3525,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Extended Support Details</visual-title>
         Visibility: VISIBLE
-      VisualId: 64ef4204-811b-4875-b520-912c1dd743b7
+      VisualId: ce86a7dc-cc88-4ae3-a052-57f42f5f31d0
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -3978,7 +3572,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: e918f9c3-2585-4dab-bdd3-f5226e9e5d3b
+      VisualId: dae10907-5b4e-4091-bf29-406bf43589be
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -4019,8 +3613,8 @@ Sheets:
         FormatText:
           RichText: <visual-title>Estimated Monthly Cost</visual-title>
         Visibility: VISIBLE
-      VisualId: fc3b1a23-e7ba-436b-8c6f-05a29584885d
-  - PieChartVisual:
+      VisualId: db9bae35-115f-454f-af5c-c1c1fed09268
+  - BarChartVisual:
       Actions:
       - ActionOperations:
         - FilterOperation:
@@ -4034,15 +3628,20 @@ Sheets:
         Status: ENABLED
         Trigger: DATA_POINT_CLICK
       ChartConfiguration:
+        BarsArrangement: STACKED
+        CategoryAxis:
+          ScrollbarOptions:
+            Visibility: VISIBLE
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
               Column:
-                ColumnName: k8s_version
+                ColumnName: account_name
                 DataSetIdentifier: eks_extended_support_view
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.1.1713268446184
-            CustomLabel: Cluster Version
+              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.account_name.2.1776435893374
+            CustomLabel: Account
           SortIconVisibility: HIDDEN
+          Visibility: VISIBLE
         DataLabels:
           CategoryLabelVisibility: HIDDEN
           LabelContent: VALUE
@@ -4051,18 +3650,21 @@ Sheets:
               Relative: MEDIUM
           MeasureLabelVisibility: VISIBLE
           Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        DonutOptions:
-          ArcOptions:
-            ArcThickness: WHOLE
+          Visibility: HIDDEN
         FieldWells:
-          PieChartAggregatedFieldWells:
+          BarChartAggregatedFieldWells:
             Category:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: k8s_version
+                  ColumnName: account_name
                   DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.1.1713268446184
+                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.account_name.2.1776435893374
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: EKS Cost Projection Group By
+                  DataSetIdentifier: eks_extended_support_view
+                FieldId: 635350ad-c237-4477-b0d6-2f5348d9d3cb.1.1776434067174
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -4076,11 +3678,11 @@ Sheets:
                     NumberDisplayFormatConfiguration:
                       NullValueFormatConfiguration:
                         NullString: 'null'
-                      Suffix: ' hrs'
         Legend:
           Title:
-            CustomLabel: Cluster Version
+            CustomLabel: <<$EKSCostProjectionGroupBy>>
           Width: 121px
+        Orientation: HORIZONTAL
         SortConfiguration:
           CategoryItemsLimit:
             OtherCategories: INCLUDE
@@ -4088,6 +3690,12 @@ Sheets:
           - FieldSort:
               Direction: DESC
               FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_amount.0.1713268442284
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          ColorSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: 635350ad-c237-4477-b0d6-2f5348d9d3cb.1.1776434067174
           SmallMultiplesLimitConfiguration:
             OtherCategories: INCLUDE
         Tooltip:
@@ -4098,11 +3706,16 @@ Sheets:
                 FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_amount.0.1713268442284
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version.1.1713268446184
+                FieldId: 635350ad-c237-4477-b0d6-2f5348d9d3cb.1.1776434067174
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.account_name.2.1776435893374
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 96px
         ValueLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -4115,13 +3728,25 @@ Sheets:
       ColumnHierarchies: []
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: |-
+            <visual-subtitle>
+              Last 30 days
+              <br/>
+              <br/>
+              Clicking the listed items in this visual will filter other visuals in
+              <br/>
+              this sheet to focus on data for the selected group by dimension.
+            </visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: <visual-title>Hours of Usage by Cluster Version</visual-title>
+          RichText: |-
+            <visual-title>
+              Hours of Usage by
+              <parameter>${EKSCostProjectionGroupBy}</parameter>
+            </visual-title>
         Visibility: VISIBLE
-      VisualId: f592c056-effb-48d6-82a4-47d7fd19af7a
+      VisualId: 3e7d65c7-aaeb-4127-b8f9-9efbc542d8c2
 - ContentType: INTERACTIVE
   Layouts:
   - Configuration:
@@ -4139,7 +3764,7 @@ Sheets:
           RowSpan: 3
         - ColumnIndex: 1
           ColumnSpan: 18
-          ElementId: d54cef88-d1e2-4298-890e-195b5ee8519c
+          ElementId: 43eb97ab-7715-4f84-a37f-b8dd5f156e99
           ElementType: VISUAL
           RowIndex: 3
           RowSpan: 6
@@ -4151,78 +3776,93 @@ Sheets:
           RowSpan: 2
         - ColumnIndex: 19
           ColumnSpan: 4
-          ElementId: bb34a21c-bcc6-4a80-8c0e-6029b81b4d48
+          ElementId: bdba4d30-a3ec-4fec-881b-626d7e0cd235
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 23
           ColumnSpan: 4
-          ElementId: 5322db85-7f83-4fe0-bd3b-03e52216938d
+          ElementId: d6669926-ffec-4fd5-b948-18516821a30f
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 27
           ColumnSpan: 4
-          ElementId: 19f1607f-8052-4c1a-94b4-8e8f9644c677
+          ElementId: 63f48196-cb32-4987-ba9b-373cabb9ecdc
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 4
-          ElementId: f426777e-50ec-4437-8260-55ed03239964
+          ElementId: aeff8855-7403-4d0d-b4fd-3a81b5a1a3fb
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 11
           ColumnSpan: 14
-          ElementId: 56953a68-2fde-448c-b07d-67e99ba9ad9f
+          ElementId: f15381b5-67d9-4b91-9ac0-8b8e66c11dd8
           ElementType: VISUAL
           RowIndex: 9
           RowSpan: 4
         - ColumnIndex: 1
           ColumnSpan: 34
-          ElementId: 073903a0-eece-46fd-82f3-975be7bd91db
-          ElementType: VISUAL
+          ElementId: 2074ddfe-568e-4a01-9c1a-f32e967d67df
+          ElementType: TEXT_BOX
           RowIndex: 13
-          RowSpan: 6
+          RowSpan: 1
         - ColumnIndex: 1
-          ColumnSpan: 12
-          ElementId: bf333309-d663-478d-b76f-e79d89a917cc
+          ColumnSpan: 5
+          ElementId: 08d22ad0-5bc2-4982-9688-093f2daefdce
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 14
+          RowSpan: 10
+        - ColumnIndex: 6
+          ColumnSpan: 13
+          ElementId: 8dd6fc57-5382-45d9-b20b-91eb1f43a255
           ElementType: VISUAL
-          RowIndex: 19
-          RowSpan: 9
-        - ColumnIndex: 13
-          ColumnSpan: 11
-          ElementId: cc264440-15fb-4109-83cb-774b1b0f67af
+          RowIndex: 14
+          RowSpan: 10
+        - ColumnIndex: 19
+          ColumnSpan: 16
+          ElementId: fbd22f72-4cd9-49d1-8f93-bfd815d3ede6
           ElementType: VISUAL
-          RowIndex: 19
-          RowSpan: 9
-        - ColumnIndex: 24
-          ColumnSpan: 11
-          ElementId: 6c874ea2-8edf-4283-a70a-2632a5d83554
-          ElementType: VISUAL
-          RowIndex: 19
-          RowSpan: 9
-        - ColumnIndex: 1
-          ColumnSpan: 17
-          ElementId: 2d25d42f-2147-4156-a5a2-845a7f849eca
-          ElementType: VISUAL
-          RowIndex: 28
-          RowSpan: 12
-        - ColumnIndex: 18
-          ColumnSpan: 17
-          ElementId: fc084d2c-ea92-46de-9b9b-a1c6391d883a
-          ElementType: VISUAL
-          RowIndex: 28
-          RowSpan: 12
+          RowIndex: 14
+          RowSpan: 10
         - ColumnIndex: 1
           ColumnSpan: 34
-          ElementId: 89dc2226-c17b-4d67-b68c-72ce820baef6
+          ElementId: dc80a335-5c3e-46b9-9e3c-0b1708b52e0a
           ElementType: VISUAL
-          RowIndex: 40
+          RowIndex: 24
+          RowSpan: 11
+        - ColumnIndex: 1
+          ColumnSpan: 34
+          ElementId: 9e9a7f55-b5fd-4142-8b81-0378f1e9fd79
+          ElementType: VISUAL
+          RowIndex: 47
           RowSpan: 12
   Name: OpenSearch Extended Support (Cost Projection)
   ParameterControls:
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 08d22ad0-5bc2-4982-9688-093f2daefdce
+      SelectableValues:
+        Values:
+        - Account
+        - Engine Version
+      SourceParameterName: OpenSearchCostProjectionGroupBy
+      Title: Group By
+      Type: SINGLE_SELECT
   - Dropdown:
       DisplayOptions:
         InfoIconLabelOptions:
@@ -4298,7 +3938,7 @@ Sheets:
           ElementId: 5711d566-10c5-4411-9b3f-6f128330755a
           ElementType: PARAMETER_CONTROL
           RowSpan: 1
-  SheetId: c8f10bb1-0a37-4720-936a-604c379520c7
+  SheetId: 3426d15f-d564-49db-a0dc-a90ac9c2513c
   TextBoxes:
   - Content: |-
       <text-box>
@@ -4320,187 +3960,8 @@ Sheets:
         </ul>
       </text-box>
     SheetTextBoxId: df57c9e1-b450-40fe-afbf-f62ff12ba50f
+  - SheetTextBoxId: 2074ddfe-568e-4a01-9c1a-f32e967d67df
   Visuals:
-  - BarChartVisual:
-      Actions: []
-      ChartConfiguration:
-        BarsArrangement: STACKED
-        CategoryAxis:
-          AxisOffset: 47px
-          ScrollbarOptions:
-            Visibility: VISIBLE
-        CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: engineversion
-                DataSetIdentifier: opensearch_extended_support_view
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.2.1732632136697
-            CustomLabel: Engine Version
-          SortIconVisibility: HIDDEN
-        DataLabels:
-          LabelFontConfiguration:
-            FontSize:
-              Relative: LARGE
-          Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: engineversion
-                  DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.2.1732632136697
-            Colors:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.linked_account_id.2.1732632252783
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: usage_amount
-                  DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732632108418
-        Legend:
-          Title:
-            CustomLabel: Account
-          Width: 132px
-        Orientation: VERTICAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.2.1732632136697
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732632108418
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.2.1732632136697
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.linked_account_id.2.1732632252783
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 99px
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: EXTRA_LARGE
-        ValueLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: usage_amount
-                DataSetIdentifier: opensearch_extended_support_view
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732632108418
-            CustomLabel: Hours
-          SortIconVisibility: HIDDEN
-      ColumnHierarchies: []
-      Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>Hours Breakdown - Account by Engine Version</visual-title>
-        Visibility: VISIBLE
-      VisualId: fc084d2c-ea92-46de-9b9b-a1c6391d883a
-  - BarChartVisual:
-      Actions: []
-      ChartConfiguration:
-        BarsArrangement: CLUSTERED
-        CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: linked_account_id
-                DataSetIdentifier: opensearch_extended_support_view
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.linked_account_id.1.1732631828346
-            CustomLabel: Account
-          Visibility: VISIBLE
-        DataLabels:
-          Overlap: DISABLE_OVERLAP
-          Visibility: HIDDEN
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.linked_account_id.1.1732631828346
-            Colors: []
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: Estimated_Monthly_Cost
-                  DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 164beee0-9ce5-43d2-9a84-f56acd9fca9e.1.1732631454635
-        Orientation: HORIZONTAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: 164beee0-9ce5-43d2-9a84-f56acd9fca9e.1.1732631454635
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: 164beee0-9ce5-43d2-9a84-f56acd9fca9e.1.1732631454635
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.linked_account_id.1.1732631828346
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: MEDIUM
-        ValueLabelOptions:
-          SortIconVisibility: HIDDEN
-          Visibility: HIDDEN
-      ColumnHierarchies: []
-      Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>Estimated Monthly Cost by Account</visual-title>
-        Visibility: VISIBLE
-      VisualId: 6c874ea2-8edf-4283-a70a-2632a5d83554
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -4547,7 +4008,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 5322db85-7f83-4fe0-bd3b-03e52216938d
+      VisualId: d6669926-ffec-4fd5-b948-18516821a30f
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -4593,7 +4054,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: f426777e-50ec-4437-8260-55ed03239964
+      VisualId: aeff8855-7403-4d0d-b4fd-3a81b5a1a3fb
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -4640,7 +4101,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 19f1607f-8052-4c1a-94b4-8e8f9644c677
+      VisualId: 63f48196-cb32-4987-ba9b-373cabb9ecdc
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -4706,7 +4167,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Extended Support Details</visual-title>
         Visibility: VISIBLE
-      VisualId: d54cef88-d1e2-4298-890e-195b5ee8519c
+      VisualId: 43eb97ab-7715-4f84-a37f-b8dd5f156e99
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -4753,7 +4214,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: bb34a21c-bcc6-4a80-8c0e-6029b81b4d48
+      VisualId: bdba4d30-a3ec-4fec-881b-626d7e0cd235
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -4794,7 +4255,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Estimated Monthly Cost</visual-title>
         Visibility: VISIBLE
-      VisualId: 56953a68-2fde-448c-b07d-67e99ba9ad9f
+      VisualId: f15381b5-67d9-4b91-9ac0-8b8e66c11dd8
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -4804,36 +4265,39 @@ Sheets:
             LabelOptions:
               FontConfiguration:
                 FontSize:
+                  Absolute: 10px
                   Relative: LARGE
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
               Column:
-                ColumnName: billing_period
+                ColumnName: usage_date
                 DataSetIdentifier: opensearch_extended_support_view
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.billing_period.0.1732629127936
-            CustomLabel: Month
+              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_date.2.1776435658216
+            CustomLabel: Date
+          SortIconVisibility: HIDDEN
         DataLabels:
           LabelFontConfiguration:
             FontSize:
               Relative: LARGE
           Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
+          Visibility: HIDDEN
         FieldWells:
           BarChartAggregatedFieldWells:
             Category:
             - DateDimensionField:
                 Column:
-                  ColumnName: billing_period
+                  ColumnName: usage_date
                   DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.billing_period.0.1732629127936
-                HierarchyId: 550df654-a7f0-444d-860c-5db3183879a3
+                DateGranularity: MONTH
+                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_date.2.1776435658216
+                HierarchyId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_date.2.1776435658216
             Colors:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: engineversion
+                  ColumnName: OpenSearch Cost Projection Group By
                   DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.2.1732629294300
+                FieldId: 1e155e92-ecdf-4491-9ca8-c92a8451a5e0.2.1776437202662
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -4842,9 +4306,14 @@ Sheets:
                   ColumnName: usage_amount
                   DataSetIdentifier: opensearch_extended_support_view
                 FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732629143901
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
         Legend:
           Title:
-            CustomLabel: Engine Version
+            CustomLabel: <<$OpenSearchCostProjectionGroupBy>>
           Width: 157px
         Orientation: VERTICAL
         SortConfiguration:
@@ -4853,7 +4322,7 @@ Sheets:
           CategorySort:
           - FieldSort:
               Direction: ASC
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.billing_period.0.1732629127936
+              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_date.2.1776435658216
           ColorItemsLimit:
             OtherCategories: INCLUDE
           SmallMultiplesLimitConfiguration:
@@ -4863,19 +4332,19 @@ Sheets:
             AggregationVisibility: HIDDEN
             TooltipFields:
             - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.billing_period.0.1732629127936
-                Visibility: VISIBLE
-            - FieldTooltipItem:
                 FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732629143901
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.2.1732629294300
+                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_date.2.1776435658216
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 1e155e92-ecdf-4491-9ca8-c92a8451a5e0.2.1776437202662
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 132px
+          AxisOffset: 63px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -4889,28 +4358,44 @@ Sheets:
                 DataSetIdentifier: opensearch_extended_support_view
               FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732629143901
             CustomLabel: Hours
+          SortIconVisibility: HIDDEN
       ColumnHierarchies:
       - DateTimeHierarchy:
-          DrillDownFilters: []
-          HierarchyId: 550df654-a7f0-444d-860c-5db3183879a3
+          HierarchyId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_date.2.1776435658216
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: <visual-title>Usage by Engine Version</visual-title>
+          RichText: |-
+            <visual-title>
+              Timeline - Usage by
+              <parameter>${OpenSearchCostProjectionGroupBy}</parameter>
+            </visual-title>
         Visibility: VISIBLE
-      VisualId: 073903a0-eece-46fd-82f3-975be7bd91db
-  - PieChartVisual:
-      Actions: []
+      VisualId: fbd22f72-4cd9-49d1-8f93-bfd815d3ede6
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 98d159ac-3634-424f-b5fb-8eb51e5fb527
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
       ChartConfiguration:
+        BarsArrangement: STACKED
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
               Column:
-                ColumnName: engineversion
+                ColumnName: account_name
                 DataSetIdentifier: opensearch_extended_support_view
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.0.1732631203520
-            CustomLabel: Engine Version
+              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.account_name.1.1776436221424
+            CustomLabel: Account
           SortIconVisibility: HIDDEN
         DataLabels:
           CategoryLabelVisibility: HIDDEN
@@ -4920,18 +4405,21 @@ Sheets:
               Relative: MEDIUM
           MeasureLabelVisibility: VISIBLE
           Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        DonutOptions:
-          ArcOptions:
-            ArcThickness: WHOLE
+          Visibility: HIDDEN
         FieldWells:
-          PieChartAggregatedFieldWells:
+          BarChartAggregatedFieldWells:
             Category:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: engineversion
+                  ColumnName: account_name
                   DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.0.1732631203520
+                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.account_name.1.1776436221424
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: OpenSearch Cost Projection Group By
+                  DataSetIdentifier: opensearch_extended_support_view
+                FieldId: 1e155e92-ecdf-4491-9ca8-c92a8451a5e0.2.1776436232154
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -4940,10 +4428,16 @@ Sheets:
                   ColumnName: usage_amount
                   DataSetIdentifier: opensearch_extended_support_view
                 FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732631212226
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
         Legend:
           Title:
-            CustomLabel: Engine Version
-          Width: 125px
+            CustomLabel: <<$OpenSearchCostProjectionGroupBy>>
+          Width: 150px
+        Orientation: HORIZONTAL
         SortConfiguration:
           CategoryItemsLimit:
             OtherCategories: INCLUDE
@@ -4951,6 +4445,8 @@ Sheets:
           - FieldSort:
               Direction: DESC
               FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732631212226
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
           SmallMultiplesLimitConfiguration:
             OtherCategories: INCLUDE
         Tooltip:
@@ -4958,10 +4454,13 @@ Sheets:
             AggregationVisibility: HIDDEN
             TooltipFields:
             - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.0.1732631203520
+                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732631212226
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732631212226
+                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.account_name.1.1776436221424
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 1e155e92-ecdf-4491-9ca8-c92a8451a5e0.2.1776436232154
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
@@ -4978,17 +4477,35 @@ Sheets:
       ColumnHierarchies: []
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: |-
+            <visual-subtitle>
+              Last 30 days
+              <br/>
+              <br/>
+              Clicking the listed items in this visual will filter other visuals in
+              <br/>
+              this sheet to focus on data for the selected group by dimension
+            </visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: <visual-title>Hours of Usage by Engine Version</visual-title>
+          RichText: |-
+            <visual-title>
+              Hours of Usage by
+              <parameter>${OpenSearchCostProjectionGroupBy}</parameter>
+            </visual-title>
         Visibility: VISIBLE
-      VisualId: bf333309-d663-478d-b76f-e79d89a917cc
+      VisualId: 8dd6fc57-5382-45d9-b20b-91eb1f43a255
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
         BarsArrangement: CLUSTERED
+        CategoryAxis:
+          TickLabelOptions:
+            LabelOptions:
+              FontConfiguration:
+                FontSize:
+                  Absolute: 14px
         CategoryLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -4999,8 +4516,11 @@ Sheets:
             CustomLabel: Engine Version
           Visibility: VISIBLE
         DataLabels:
+          LabelFontConfiguration:
+            FontSize:
+              Absolute: 16px
           Overlap: DISABLE_OVERLAP
-          Visibility: HIDDEN
+          Visibility: VISIBLE
         FieldWells:
           BarChartAggregatedFieldWells:
             Category:
@@ -5044,6 +4564,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
+          AxisOffset: 166px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -5055,114 +4576,13 @@ Sheets:
       ColumnHierarchies: []
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: <visual-subtitle>Based on last 30 days of usage</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Estimated Monthly Cost by Engine Version</visual-title>
         Visibility: VISIBLE
-      VisualId: cc264440-15fb-4109-83cb-774b1b0f67af
-  - BarChartVisual:
-      Actions: []
-      ChartConfiguration:
-        BarsArrangement: STACKED
-        CategoryAxis:
-          AxisOffset: 33px
-        CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: linked_account_id
-                DataSetIdentifier: opensearch_extended_support_view
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.linked_account_id.0.1732632079516
-            CustomLabel: Account
-          SortIconVisibility: HIDDEN
-        DataLabels:
-          LabelFontConfiguration:
-            FontSize:
-              Relative: LARGE
-          Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.linked_account_id.0.1732632079516
-            Colors:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: engineversion
-                  DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.2.1732632136697
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: usage_amount
-                  DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732632108418
-        Legend:
-          Title:
-            CustomLabel: Engine Version
-          Width: 132px
-        Orientation: VERTICAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.linked_account_id.0.1732632079516
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.linked_account_id.0.1732632079516
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732632108418
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.engineversion.2.1732632136697
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 105px
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: EXTRA_LARGE
-        ValueLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: usage_amount
-                DataSetIdentifier: opensearch_extended_support_view
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732632108418
-            CustomLabel: Hours
-          SortIconVisibility: HIDDEN
-      ColumnHierarchies: []
-      Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>Hours Breakdown - Engine Version by Account</visual-title>
-        Visibility: VISIBLE
-      VisualId: 2d25d42f-2147-4156-a5a2-845a7f849eca
+      VisualId: dc80a335-5c3e-46b9-9e3c-0b1708b52e0a
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -5307,13 +4727,13 @@ Sheets:
             TextWrap: WRAP
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: <visual-subtitle>Based on last 30 days of usage</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Extended Support Estimated Cost Breakdown</visual-title>
         Visibility: VISIBLE
-      VisualId: 89dc2226-c17b-4d67-b68c-72ce820baef6
+      VisualId: 9e9a7f55-b5fd-4142-8b81-0378f1e9fd79
 - ContentType: INTERACTIVE
   Layouts:
   - Configuration:
@@ -5331,7 +4751,7 @@ Sheets:
           RowSpan: 3
         - ColumnIndex: 1
           ColumnSpan: 18
-          ElementId: 45839bc4-ca21-48fc-a972-053a70c1b97e
+          ElementId: ade0a752-4dd1-4e5d-b87f-060a599679e4
           ElementType: VISUAL
           RowIndex: 3
           RowSpan: 6
@@ -5343,90 +4763,105 @@ Sheets:
           RowSpan: 2
         - ColumnIndex: 19
           ColumnSpan: 4
-          ElementId: 00225b75-b736-419b-94a8-ecfb6bba7c4b
+          ElementId: 3ca33f88-21ce-4332-be94-b96c05f3112f
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 23
           ColumnSpan: 4
-          ElementId: 6a9749c0-2630-436f-9549-af225f94c97e
+          ElementId: 66a5f6ed-5306-4424-8420-393b4b0b92dc
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 27
           ColumnSpan: 4
-          ElementId: 75edf990-659d-4524-a30b-c42b6c85760d
+          ElementId: 9197a13e-644b-4e67-b362-d08e41296cd0
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 4
-          ElementId: 919a539c-81b6-41b8-8401-1874e40639ce
+          ElementId: 015db4d9-f816-4192-bfa2-02c4ea782ffe
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 4
           ColumnSpan: 9
-          ElementId: fd087b09-eaca-4d2d-bc4d-6efbcf8a9330
+          ElementId: 2b4d6d26-484d-457d-8a73-d73e9b575e8b
           ElementType: VISUAL
           RowIndex: 9
-          RowSpan: 3
+          RowSpan: 4
         - ColumnIndex: 13
           ColumnSpan: 9
-          ElementId: 4a951d61-9625-4319-831f-f306bb3778bb
+          ElementId: a8055260-a0c8-4cf4-86c2-2af54a3f7c6d
           ElementType: VISUAL
           RowIndex: 9
-          RowSpan: 3
+          RowSpan: 4
         - ColumnIndex: 22
           ColumnSpan: 9
-          ElementId: b7c57127-82da-447f-88a8-c0c752e3959b
+          ElementId: 76486a8d-ddb4-491c-9358-eafe5cf2e256
           ElementType: VISUAL
           RowIndex: 9
-          RowSpan: 3
+          RowSpan: 4
         - ColumnIndex: 1
           ColumnSpan: 34
-          ElementId: 8c0e55ed-8fb9-42d1-80ef-0c6873353f3a
-          ElementType: VISUAL
-          RowIndex: 12
-          RowSpan: 8
+          ElementId: 5f66db8e-d444-40c4-a92f-7720843ac199
+          ElementType: TEXT_BOX
+          RowIndex: 13
+          RowSpan: 1
         - ColumnIndex: 1
-          ColumnSpan: 12
-          ElementId: e6a7c499-d441-4108-879a-ae0421dece4a
+          ColumnSpan: 5
+          ElementId: 615d5800-17ed-40cd-a47c-25cd8996b4b3
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 14
+          RowSpan: 10
+        - ColumnIndex: 6
+          ColumnSpan: 13
+          ElementId: 29f1ada5-f8f2-4661-b577-f78d1d167dad
           ElementType: VISUAL
-          RowIndex: 20
-          RowSpan: 9
-        - ColumnIndex: 13
-          ColumnSpan: 22
-          ElementId: cf72e169-95dc-472f-9d96-fb2a89bc8bec
+          RowIndex: 14
+          RowSpan: 10
+        - ColumnIndex: 19
+          ColumnSpan: 16
+          ElementId: b4d94ad1-d627-44ee-b830-4cb747e7e2d2
           ElementType: VISUAL
-          RowIndex: 20
-          RowSpan: 9
-        - ColumnIndex: 1
-          ColumnSpan: 34
-          ElementId: 5ab951e2-9c81-499a-9587-4a8078a63927
-          ElementType: VISUAL
-          RowIndex: 29
-          RowSpan: 9
-        - ColumnIndex: 1
-          ColumnSpan: 17
-          ElementId: 1819bbd5-bc7d-47f5-833e-b5e57f6216e2
-          ElementType: VISUAL
-          RowIndex: 38
-          RowSpan: 9
-        - ColumnIndex: 18
-          ColumnSpan: 17
-          ElementId: 1f0d965e-b698-4091-a29f-abc0dd278cd9
-          ElementType: VISUAL
-          RowIndex: 38
-          RowSpan: 9
+          RowIndex: 14
+          RowSpan: 10
         - ColumnIndex: 1
           ColumnSpan: 34
-          ElementId: dccde2c3-29de-46c3-811a-81c78f1a5bb6
+          ElementId: 34e2532b-dce8-4356-8417-8c44e2b75ca9
           ElementType: VISUAL
-          RowIndex: 47
+          RowIndex: 24
+          RowSpan: 11
+        - ColumnIndex: 1
+          ColumnSpan: 34
+          ElementId: 3444af11-f7a7-4d94-825a-16a07944321f
+          ElementType: VISUAL
+          RowIndex: 35
           RowSpan: 12
   Name: ElastiCache Extended Support (Cost Projection)
   ParameterControls:
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: 615d5800-17ed-40cd-a47c-25cd8996b4b3
+      SelectableValues:
+        Values:
+        - Account
+        - Engine Version
+      SourceParameterName: ElastiCacheCostProjectionGroupBy
+      Title: Group By
+      Type: SINGLE_SELECT
   - Dropdown:
       DisplayOptions:
         InfoIconLabelOptions:
@@ -5502,7 +4937,7 @@ Sheets:
           ElementId: 54741f97-819f-4319-9452-6e3f3a8f8104
           ElementType: PARAMETER_CONTROL
           RowSpan: 1
-  SheetId: b2cd9f14-af5b-41f4-b33b-101f41f3b7ca
+  SheetId: c0015c3c-2229-4ff2-abf4-10fe1bc446b2
   TextBoxes:
   - Content: |-
       <text-box>
@@ -5524,348 +4959,8 @@ Sheets:
         </ul>
       </text-box>
     SheetTextBoxId: 56010b59-5a7a-4d4a-8f0b-6af4dc3faa8b
+  - SheetTextBoxId: 5f66db8e-d444-40c4-a92f-7720843ac199
   Visuals:
-  - BarChartVisual:
-      Actions: []
-      ChartConfiguration:
-        BarsArrangement: STACKED
-        CategoryAxis:
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: LARGE
-        CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: engineversion
-                DataSetIdentifier: elasticache_extended_support_view
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.1.1758276764045
-            CustomLabel: Engine Version
-        DataLabels:
-          LabelFontConfiguration:
-            FontSize:
-              Relative: LARGE
-          Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: engineversion
-                  DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.1.1758276764045
-            Colors:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.linked_account_id.2.1758276772612
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: Estimated_Monthly_Cost_Year_1_2
-                  DataSetIdentifier: elasticache_extended_support_view
-                FieldId: b02e27d2-daf9-46c1-a4b9-8b52779bc884.2.1758281916725
-        Legend:
-          Width: 137px
-        Orientation: VERTICAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.1.1758276764045
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.1.1758276764045
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.linked_account_id.2.1758276772612
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: b02e27d2-daf9-46c1-a4b9-8b52779bc884.2.1758281916725
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: LARGE
-      ColumnHierarchies: []
-      Subtitle:
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>Hours Breakdown - Account by Engine Version</visual-title>
-        Visibility: VISIBLE
-      VisualId: 1f0d965e-b698-4091-a29f-abc0dd278cd9
-  - BarChartVisual:
-      Actions: []
-      ChartConfiguration:
-        BarsArrangement: STACKED
-        CategoryAxis:
-          AxisOffset: 98px
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: LARGE
-        CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: linked_account_id
-                DataSetIdentifier: elasticache_extended_support_view
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.linked_account_id.2.1758276532527
-            CustomLabel: Linked Account ID
-        DataLabels:
-          LabelFontConfiguration:
-            FontSize:
-              Relative: LARGE
-          Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.linked_account_id.2.1758276532527
-            Colors:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: engineversion
-                  DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.2.1758273955517
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: usage_amount
-                  DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.1.1758273923182
-                FormatConfiguration:
-                  FormatConfiguration:
-                    NumberDisplayFormatConfiguration:
-                      NullValueFormatConfiguration:
-                        NullString: 'null'
-                      Suffix: ' hrs'
-        Legend:
-          Title:
-            CustomLabel: Engine Version
-          Width: 114px
-        Orientation: VERTICAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.linked_account_id.2.1758276532527
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          ColorSort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.2.1758273955517
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.1.1758273923182
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.2.1758273955517
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.linked_account_id.2.1758276532527
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 71px
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: LARGE
-        ValueLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: usage_amount
-                DataSetIdentifier: elasticache_extended_support_view
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.1.1758273923182
-            CustomLabel: Hours
-        VisualPalette:
-          ColorMap:
-          - Color: '#C2C4E3'
-            Element:
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.2.1758273955517
-              FieldValue: redis OSS v6
-          - Color: '#FF8700'
-            Element:
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.2.1758273955517
-              FieldValue: redis OSS v5
-      ColumnHierarchies: []
-      Subtitle:
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>Hours Breakdown - Engine Version by Account</visual-title>
-        Visibility: VISIBLE
-      VisualId: 1819bbd5-bc7d-47f5-833e-b5e57f6216e2
-  - BarChartVisual:
-      Actions: []
-      ChartConfiguration:
-        BarsArrangement: CLUSTERED
-        CategoryAxis:
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: LARGE
-        DataLabels:
-          LabelFontConfiguration:
-            FontSize:
-              Relative: LARGE
-          Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        FieldWells:
-          BarChartAggregatedFieldWells:
-            Category:
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: linked_account_id
-                  DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.linked_account_id.2.1758275565756
-            Colors: []
-            Values:
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: Estimated_Monthly_Cost_Year_1_2
-                  DataSetIdentifier: elasticache_extended_support_view
-                FieldId: b02e27d2-daf9-46c1-a4b9-8b52779bc884.1.1758275054723
-                FormatConfiguration:
-                  FormatConfiguration:
-                    CurrencyDisplayFormatConfiguration:
-                      DecimalPlacesConfiguration:
-                        DecimalPlaces: 2
-                      NegativeValueConfiguration:
-                        DisplayMode: POSITIVE
-                      NullValueFormatConfiguration:
-                        NullString: 'null'
-                      SeparatorConfiguration:
-                        DecimalSeparator: DOT
-                        ThousandsSeparator:
-                          Symbol: COMMA
-                          Visibility: VISIBLE
-                      Symbol: USD
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: Estimated_Monthly_Cost_Year_3
-                  DataSetIdentifier: elasticache_extended_support_view
-                FieldId: bf7ff577-2479-4eee-9baa-93157b31f73e.2.1758275059143
-                FormatConfiguration:
-                  FormatConfiguration:
-                    CurrencyDisplayFormatConfiguration:
-                      DecimalPlacesConfiguration:
-                        DecimalPlaces: 2
-                      NegativeValueConfiguration:
-                        DisplayMode: POSITIVE
-                      NullValueFormatConfiguration:
-                        NullString: 'null'
-                      SeparatorConfiguration:
-                        DecimalSeparator: DOT
-                        ThousandsSeparator:
-                          Symbol: COMMA
-                          Visibility: VISIBLE
-                      Symbol: USD
-        Legend:
-          Title:
-            CustomLabel: Estimated Costs
-          Width: 245px
-        Orientation: HORIZONTAL
-        SortConfiguration:
-          CategoryItemsLimit:
-            OtherCategories: INCLUDE
-          CategorySort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: b02e27d2-daf9-46c1-a4b9-8b52779bc884.1.1758275054723
-          ColorItemsLimit:
-            OtherCategories: INCLUDE
-          SmallMultiplesLimitConfiguration:
-            OtherCategories: INCLUDE
-        Tooltip:
-          FieldBasedTooltip:
-            AggregationVisibility: HIDDEN
-            TooltipFields:
-            - FieldTooltipItem:
-                FieldId: b02e27d2-daf9-46c1-a4b9-8b52779bc884.1.1758275054723
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: bf7ff577-2479-4eee-9baa-93157b31f73e.2.1758275059143
-                Visibility: VISIBLE
-            - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.linked_account_id.2.1758275565756
-                Visibility: VISIBLE
-            TooltipTitleType: PRIMARY_VALUE
-          SelectedTooltipType: DETAILED
-          TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 146px
-          TickLabelOptions:
-            LabelOptions:
-              FontConfiguration:
-                FontSize:
-                  Relative: LARGE
-        VisualPalette:
-          ColorMap:
-          - Color: '#A8577B'
-            Element:
-              FieldId: b02e27d2-daf9-46c1-a4b9-8b52779bc884.1.1758275054723
-              FieldValue: Estimated_Monthly_Cost_Year_1_2
-          - Color: '#9FDEF1'
-            Element:
-              FieldId: bf7ff577-2479-4eee-9baa-93157b31f73e.2.1758275059143
-              FieldValue: Estimated_Monthly_Cost_Year_3
-      ColumnHierarchies: []
-      Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: <visual-title>Estimated Monthly Cost by Top 5 Account</visual-title>
-        Visibility: VISIBLE
-      VisualId: 5ab951e2-9c81-499a-9587-4a8078a63927
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -5922,7 +5017,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Estimated Monthly Cost (Year 3)</visual-title>
         Visibility: VISIBLE
-      VisualId: b7c57127-82da-447f-88a8-c0c752e3959b
+      VisualId: 76486a8d-ddb4-491c-9358-eafe5cf2e256
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -5979,7 +5074,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Estimated Monthly Cost (Year 2)</visual-title>
         Visibility: VISIBLE
-      VisualId: 4a951d61-9625-4319-831f-f306bb3778bb
+      VisualId: a8055260-a0c8-4cf4-86c2-2af54a3f7c6d
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -6026,7 +5121,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 919a539c-81b6-41b8-8401-1874e40639ce
+      VisualId: 015db4d9-f816-4192-bfa2-02c4ea782ffe
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -6073,7 +5168,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 75edf990-659d-4524-a30b-c42b6c85760d
+      VisualId: 9197a13e-644b-4e67-b362-d08e41296cd0
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -6122,7 +5217,7 @@ Sheets:
               <block align="center"/>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 6a9749c0-2630-436f-9549-af225f94c97e
+      VisualId: 66a5f6ed-5306-4424-8420-393b4b0b92dc
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -6191,7 +5286,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Extended Support Details</visual-title>
         Visibility: VISIBLE
-      VisualId: 45839bc4-ca21-48fc-a972-053a70c1b97e
+      VisualId: ade0a752-4dd1-4e5d-b87f-060a599679e4
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -6238,7 +5333,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 00225b75-b736-419b-94a8-ecfb6bba7c4b
+      VisualId: 3ca33f88-21ce-4332-be94-b96c05f3112f
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -6295,43 +5390,49 @@ Sheets:
         FormatText:
           RichText: <visual-title>Estimated Monthly Cost (Year 1)</visual-title>
         Visibility: VISIBLE
-      VisualId: fd087b09-eaca-4d2d-bc4d-6efbcf8a9330
+      VisualId: 2b4d6d26-484d-457d-8a73-d73e9b575e8b
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
         BarsArrangement: STACKED
         CategoryAxis:
-          AxisOffset: 38px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
                 FontSize:
+                  Absolute: 10px
                   Relative: LARGE
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: usage_date
+                DataSetIdentifier: elasticache_extended_support_view
+              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_date.2.1776435732109
+            CustomLabel: Date
+          SortIconVisibility: HIDDEN
         DataLabels:
           LabelFontConfiguration:
             FontSize:
               Relative: LARGE
           Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
+          Visibility: HIDDEN
         FieldWells:
           BarChartAggregatedFieldWells:
             Category:
             - DateDimensionField:
                 Column:
-                  ColumnName: billing_period
+                  ColumnName: usage_date
                   DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.billing_period.0.1758273905829
-                FormatConfiguration:
-                  DateTimeFormat: MMM YYYY
-                  NullValueFormatConfiguration:
-                    NullString: 'null'
-                HierarchyId: fb4a2a3d-9db3-478a-a526-861e6529eb36
+                DateGranularity: MONTH
+                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_date.2.1776435732109
+                HierarchyId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_date.2.1776435732109
             Colors:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: engineversion
+                  ColumnName: ElastiCache Cost Projection Group By
                   DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.2.1758273955517
+                FieldId: d207712d-28e9-4ddd-ad91-389337c2d61c.2.1776437075599
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -6345,11 +5446,10 @@ Sheets:
                     NumberDisplayFormatConfiguration:
                       NullValueFormatConfiguration:
                         NullString: 'null'
-                      Suffix: ' hrs'
         Legend:
           Title:
-            CustomLabel: Engine Version
-          Width: 114px
+            CustomLabel: <<$ElastiCacheCostProjectionGroupBy>>
+          Width: 173px
         Orientation: VERTICAL
         SortConfiguration:
           CategoryItemsLimit:
@@ -6357,7 +5457,7 @@ Sheets:
           CategorySort:
           - FieldSort:
               Direction: ASC
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.billing_period.0.1758273905829
+              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_date.2.1776435732109
           ColorItemsLimit:
             OtherCategories: INCLUDE
           SmallMultiplesLimitConfiguration:
@@ -6367,19 +5467,19 @@ Sheets:
             AggregationVisibility: HIDDEN
             TooltipFields:
             - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.billing_period.0.1758273905829
-                Visibility: VISIBLE
-            - FieldTooltipItem:
                 FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.1.1758273923182
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.2.1758273955517
+                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_date.2.1776435732109
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: d207712d-28e9-4ddd-ad91-389337c2d61c.2.1776437075599
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 84px
+          AxisOffset: 52px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -6393,30 +5493,42 @@ Sheets:
                 DataSetIdentifier: elasticache_extended_support_view
               FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.1.1758273923182
             CustomLabel: Hours
-        VisualPalette:
-          ColorMap:
-          - Color: '#C2C4E3'
-            Element:
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.2.1758273955517
-              FieldValue: redis OSS v6
-          - Color: '#FF8700'
-            Element:
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.2.1758273955517
-              FieldValue: redis OSS v5
+          SortIconVisibility: HIDDEN
       ColumnHierarchies:
       - DateTimeHierarchy:
-          DrillDownFilters: []
-          HierarchyId: fb4a2a3d-9db3-478a-a526-861e6529eb36
+          HierarchyId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_date.2.1776435732109
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: <visual-title>Usage by Engine Version</visual-title>
+          RichText: |-
+            <visual-title>
+              Timeline - Usage by
+              <parameter>${ElastiCacheCostProjectionGroupBy}</parameter>
+            </visual-title>
         Visibility: VISIBLE
-      VisualId: 8c0e55ed-8fb9-42d1-80ef-0c6873353f3a
-  - PieChartVisual:
-      Actions: []
+      VisualId: b4d94ad1-d627-44ee-b830-4cb747e7e2d2
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: ee830278-94b4-4c82-bd53-27207c3da2e5
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
       ChartConfiguration:
+        BarsArrangement: STACKED
+        CategoryAxis:
+          ScrollbarOptions:
+            VisibleRange:
+              PercentRange:
+                From: 23.076923076923023
+                To: 100.0
         CategoryLabelOptions:
           SortIconVisibility: HIDDEN
           Visibility: HIDDEN
@@ -6428,18 +5540,21 @@ Sheets:
               Relative: LARGE
           MeasureLabelVisibility: VISIBLE
           Overlap: DISABLE_OVERLAP
-          Visibility: VISIBLE
-        DonutOptions:
-          ArcOptions:
-            ArcThickness: WHOLE
+          Visibility: HIDDEN
         FieldWells:
-          PieChartAggregatedFieldWells:
+          BarChartAggregatedFieldWells:
             Category:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: engineversion
+                  ColumnName: account_name
                   DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.0.1758274620574
+                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.account_name.1.1776437037122
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: ElastiCache Cost Projection Group By
+                  DataSetIdentifier: elasticache_extended_support_view
+                FieldId: d207712d-28e9-4ddd-ad91-389337c2d61c.2.1776437041407
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -6448,10 +5563,16 @@ Sheets:
                   ColumnName: usage_amount
                   DataSetIdentifier: elasticache_extended_support_view
                 FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_amount.1.1758274629586
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
         Legend:
           Title:
-            CustomLabel: Engine Version
+            CustomLabel: <<$ElastiCacheCostProjectionGroupBy>>
           Width: 153px
+        Orientation: HORIZONTAL
         SortConfiguration:
           CategoryItemsLimit:
             OtherCategories: INCLUDE
@@ -6459,6 +5580,8 @@ Sheets:
           - FieldSort:
               Direction: DESC
               FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_amount.1.1758274629586
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
           SmallMultiplesLimitConfiguration:
             OtherCategories: INCLUDE
         Tooltip:
@@ -6466,14 +5589,19 @@ Sheets:
             AggregationVisibility: HIDDEN
             TooltipFields:
             - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.0.1758274620574
+                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_amount.1.1758274629586
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_amount.1.1758274629586
+                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.account_name.1.1776437037122
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: d207712d-28e9-4ddd-ad91-389337c2d61c.2.1776437041407
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 113px
         ValueLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -6482,23 +5610,28 @@ Sheets:
                 DataSetIdentifier: elasticache_extended_support_view
               FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_amount.1.1758274629586
             CustomLabel: Hours
-          Visibility: VISIBLE
-        VisualPalette:
-          ColorMap:
-          - Color: '#FF8700'
-            Element:
-              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.0.1758274620574
-              FieldValue: redis OSS v6
       ColumnHierarchies: []
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: |-
+            <visual-subtitle>
+              Last 30 days
+              <br/>
+              <br/>
+              Clicking the listed items in this visual will filter other visuals in
+              <br/>
+              this sheet to focus on data for the selected group by dimension
+            </visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: <visual-title>Hours of Usage by Engine Version</visual-title>
+          RichText: |-
+            <visual-title>
+              Hours of Usage by
+              <parameter>${ElastiCacheCostProjectionGroupBy}</parameter>
+            </visual-title>
         Visibility: VISIBLE
-      VisualId: e6a7c499-d441-4108-879a-ae0421dece4a
+      VisualId: 29f1ada5-f8f2-4661-b577-f78d1d167dad
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -6508,12 +5641,23 @@ Sheets:
             LabelOptions:
               FontConfiguration:
                 FontSize:
+                  Absolute: 14px
                   Relative: LARGE
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: engineversion
+                DataSetIdentifier: elasticache_extended_support_view
+              FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.0.1758275011244
+            CustomLabel: Engine Version
         DataLabels:
           LabelFontConfiguration:
             FontSize:
+              Absolute: 16px
               Relative: LARGE
           Overlap: DISABLE_OVERLAP
+          Position: RIGHT
           Visibility: VISIBLE
         FieldWells:
           BarChartAggregatedFieldWells:
@@ -6603,6 +5747,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
+          AxisOffset: 170px
           DataOptions:
             NumericAxisOptions:
               Scale:
@@ -6616,13 +5761,13 @@ Sheets:
       ColumnHierarchies: []
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 30 days</visual-subtitle>
+          RichText: <visual-subtitle>Based on last 30 days of usage</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Estimated Monthly Costs by Engine Version</visual-title>
         Visibility: VISIBLE
-      VisualId: cf72e169-95dc-472f-9d96-fb2a89bc8bec
+      VisualId: 34e2532b-dce8-4356-8417-8c44e2b75ca9
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -6717,12 +5862,14 @@ Sheets:
             HorizontalTextAlignment: CENTER
             TextWrap: WRAP
       Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Based on last 30 days of usage</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Extended Support Estimated Cost Breakdown</visual-title>
         Visibility: VISIBLE
-      VisualId: dccde2c3-29de-46c3-811a-81c78f1a5bb6
+      VisualId: 3444af11-f7a7-4d94-825a-16a07944321f
 - ContentType: INTERACTIVE
   Layouts:
   - Configuration:
@@ -6745,7 +5892,7 @@ Sheets:
           RowIndex: 7
           RowSpan: 11
   Name: About
-  SheetId: 67a7dc2f-6ce3-45ce-a30d-061f536cba50
+  SheetId: 029adaaf-6fcf-4b52-86be-d44c05707ae7
   TextBoxes:
   - Content: "<text-box>\n  <inline font-size=\"54.88px\">Notices</inline>\n  <inline\
       \ font-size=\"12.8px\">\n    <img src=\"https://d66mvi2kszsvt.cloudfront.net/resources/dashboard-visual-analytics/About/header.png\"\
@@ -6766,7 +5913,7 @@ Sheets:
       center\">\n    <inline color=\"#61d1d6\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/extended-support.html\"\
       \ target=\"_blank\">\n        <b>\n          <u>Extended Support Cost Projection</u>\n\
       \        </b>\n      </a>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"\
-      center\">\n    <b>v5.0.0</b>\n  </block>\n  <br/>\n  <block align=\"right\"\
+      center\">\n    <b>v5.1.0</b>\n  </block>\n  <br/>\n  <block align=\"right\"\
       />\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"\
       />\n  <br/>\n  <block align=\"right\">Built by: Julio Chaves, Yuriy Prykhodko,\
       \ Iakov Gan, Eric Christensen, Sumit Agarwal</block>\n  <br/>\n  <block align=\"\
