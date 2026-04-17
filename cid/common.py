@@ -530,6 +530,8 @@ class Cid():
         self.qs.pre_discover()
 
         dashboard_id = dashboard_id or get_parameters().get('dashboard-id')
+        if dashboard_id and not get_parameters().get('dashboard-id'):
+            set_parameters({'dashboard-id': dashboard_id})
         category_filter = [cat for cat in get_parameters().get('category', '').upper().split(',') if cat]
         if not dashboard_id:
             standard_categories = ['Foundational', 'Advanced', 'Additional'] # Show these categories first
