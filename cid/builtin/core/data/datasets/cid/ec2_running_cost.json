@@ -10,11 +10,13 @@
         "InputColumns": [
           {
             "Name": "account_id",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "am-account-id"
           },
           {
             "Name": "account_name",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "am-account-name"
           }
         ]
       }
@@ -27,88 +29,110 @@
         "InputColumns": [
           {
             "Name": "billing_period",
-            "Type": "DATETIME"
+            "Type": "DATETIME",
+            "Id": "erc-billing-period"
           },
           {
             "Name": "purchase_option",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "erc-purchase-option"
           },
           {
             "Name": "month",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "erc-month"
           },
           {
             "Name": "year",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "erc-year"
           },
           {
             "Name": "payer_account_id",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "erc-payer-account-id"
           },
           {
             "Name": "linked_account_id",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "erc-linked-account-id"
           },
           {
             "Name": "usage_date",
-            "Type": "DATETIME"
+            "Type": "DATETIME",
+            "Id": "erc-usage-date"
           },
           {
             "Name": "amortized_cost",
-            "Type": "DECIMAL"
+            "Type": "DECIMAL",
+            "Id": "erc-amortized-cost"
           },
           {
             "Name": "usage_quantity",
-            "Type": "DECIMAL"
+            "Type": "DECIMAL",
+            "Id": "erc-usage-quantity"
           }
         ]
       }
     }
   },
-  "LogicalTableMap": {
-    "0214ccfd-faf3-4d5f-b334-3171555ecba3": {
-      "Alias": "Intermediate Table",
-      "DataTransforms": [
-        {
-          "ProjectOperation": {
-            "ProjectedColumns": [
-              "year",
-              "month",
-              "billing_period",
-              "usage_date",
-              "payer_account_id",
-              "linked_account_id",
-              "purchase_option",
-              "amortized_cost",
-              "usage_quantity",
-              "account_id",
-              "account_name"
-            ]
+  "ImportMode": "SPICE",
+  "Permissions": [],
+  "DataPrepConfiguration": {
+    "SourceTableMap": {
+      "src-ec2-running-cost": {
+        "PhysicalTableId": "f664fb78-28ab-4119-a0f5-809a3f0b4d72"
+      },
+      "src-account-map": {
+        "PhysicalTableId": "9db232e0-a43d-4885-b122-6349618551b6"
+      }
+    },
+    "TransformStepMap": {
+      "import-ec2-running-cost": {
+        "ImportTableStep": {
+          "Alias": "ec2_running_cost",
+          "Source": {
+            "SourceTableId": "src-ec2-running-cost"
           }
         }
-      ],
-      "Source": {
-        "JoinInstruction": {
-          "LeftOperand": "8f4dd082-917c-4e44-9b7c-57bc6bb33ebe",
-          "RightOperand": "d1a3a9a4-0569-457f-bd14-9bd53ea96eb8",
+      },
+      "import-account-map": {
+        "ImportTableStep": {
+          "Alias": "account_map",
+          "Source": {
+            "SourceTableId": "src-account-map"
+          }
+        }
+      },
+      "join-account-map": {
+        "JoinStep": {
+          "Alias": "Join with account_map",
           "Type": "LEFT",
-          "OnClause": "{payer_account_id} = {account_id}"
+          "OnClause": "{payer_account_id} = {account_id}",
+          "LeftOperand": {
+            "TransformOperationId": "import-ec2-running-cost"
+          },
+          "RightOperand": {
+            "TransformOperationId": "import-account-map"
+          }
         }
       }
     },
-    "8f4dd082-917c-4e44-9b7c-57bc6bb33ebe": {
-      "Alias": "ec2_running_cost",
-      "Source": {
-        "PhysicalTableId": "f664fb78-28ab-4119-a0f5-809a3f0b4d72"
-      }
-    },
-    "d1a3a9a4-0569-457f-bd14-9bd53ea96eb8": {
-      "Alias": "account_map",
-      "Source": {
-        "PhysicalTableId": "9db232e0-a43d-4885-b122-6349618551b6"
+    "DestinationTableMap": {
+      "destination-ec2-running-cost": {
+        "Alias": "ec2_running_cost",
+        "Source": {
+          "TransformOperationId": "join-account-map"
+        }
       }
     }
   },
-  "ImportMode": "SPICE",
-  "Permissions": []
+  "SemanticModelConfiguration": {
+    "TableMap": {
+      "semantic-ec2-running-cost": {
+        "Alias": "ec2_running_cost",
+        "DestinationTableId": "destination-ec2-running-cost"
+      }
+    }
+  }
 }

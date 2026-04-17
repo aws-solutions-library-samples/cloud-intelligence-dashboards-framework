@@ -1,242 +1,118 @@
 {
-    "DataSetId": "ce8e358c-3621-4983-9e0e-ba65b86346d6",
-    "Name": "resource_view",
-    "PhysicalTableMap": {
-        "122b690e-e762-40eb-9c6c-cc97ff3420fa": {
-            "RelationalTable": {
-                "DataSourceArn": "${athena_datasource_arn}",
-                "Schema": "${athena_database_name}",
-                "Name": "resource_view",
-                "InputColumns": [
-                    {
-                        "Name": "usage_date",
-                        "Type": "DATETIME"
-                    },
-                    {
-                        "Name": "payer_account_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "linked_account_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "billing_entity",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "product_name",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "resource_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "product_code",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "operation",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "charge_type",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "usage_type",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "pricing_unit",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "region",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "item_description",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "legal_entity",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "pricing_term",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "database_engine",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "product_deployment_option",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "product_from_location",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "product_group",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "instance_type",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "instance_type_family",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "platform",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "product_family",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "service",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "product_storage",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "product_to_location",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "product_volume_api_name",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "reservation_a_r_n",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "savings_plan_a_r_n",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "savings_plan_effective_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "reservation_effective_cost",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "usage_quantity",
-                        "Type": "DECIMAL"
-                    },
-                    {
-                        "Name": "unblended_cost",
-                        "Type": "DECIMAL"
-                    }
-                ]
-            }
-        },
-        "bfc903ee-63a5-4e0b-bfb9-9ae033bb689b": {
-            "RelationalTable": {
-                "DataSourceArn": "${athena_datasource_arn}",
-                "Schema": "${athena_database_name}",
-                "Name": "account_map",
-                "InputColumns": [
-                    {
-                        "Name": "account_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "account_name",
-                        "Type": "STRING"
-                    }
-                ]
-            }
-        }
+  "DataSetId": "ce8e358c-3621-4983-9e0e-ba65b86346d6",
+  "Name": "resource_view",
+  "PhysicalTableMap": {
+    "122b690e-e762-40eb-9c6c-cc97ff3420fa": {
+      "RelationalTable": {
+        "DataSourceArn": "${athena_datasource_arn}",
+        "Schema": "${athena_database_name}",
+        "Name": "resource_view",
+        "InputColumns": [
+          {"Id": "rv-usage-date", "Name": "usage_date", "Type": "DATETIME"},
+          {"Id": "rv-payer-account-id", "Name": "payer_account_id", "Type": "STRING"},
+          {"Id": "rv-linked-account-id", "Name": "linked_account_id", "Type": "STRING"},
+          {"Id": "rv-billing-entity", "Name": "billing_entity", "Type": "STRING"},
+          {"Id": "rv-product-name", "Name": "product_name", "Type": "STRING"},
+          {"Id": "rv-resource-id", "Name": "resource_id", "Type": "STRING"},
+          {"Id": "rv-product-code", "Name": "product_code", "Type": "STRING"},
+          {"Id": "rv-operation", "Name": "operation", "Type": "STRING"},
+          {"Id": "rv-charge-type", "Name": "charge_type", "Type": "STRING"},
+          {"Id": "rv-usage-type", "Name": "usage_type", "Type": "STRING"},
+          {"Id": "rv-pricing-unit", "Name": "pricing_unit", "Type": "STRING"},
+          {"Id": "rv-region", "Name": "region", "Type": "STRING"},
+          {"Id": "rv-item-description", "Name": "item_description", "Type": "STRING"},
+          {"Id": "rv-legal-entity", "Name": "legal_entity", "Type": "STRING"},
+          {"Id": "rv-pricing-term", "Name": "pricing_term", "Type": "STRING"},
+          {"Id": "rv-database-engine", "Name": "database_engine", "Type": "STRING"},
+          {"Id": "rv-product-deployment-option", "Name": "product_deployment_option", "Type": "STRING"},
+          {"Id": "rv-product-from-location", "Name": "product_from_location", "Type": "STRING"},
+          {"Id": "rv-product-group", "Name": "product_group", "Type": "STRING"},
+          {"Id": "rv-instance-type", "Name": "instance_type", "Type": "STRING"},
+          {"Id": "rv-instance-type-family", "Name": "instance_type_family", "Type": "STRING"},
+          {"Id": "rv-platform", "Name": "platform", "Type": "STRING"},
+          {"Id": "rv-product-family", "Name": "product_family", "Type": "STRING"},
+          {"Id": "rv-service", "Name": "service", "Type": "STRING"},
+          {"Id": "rv-product-storage", "Name": "product_storage", "Type": "STRING"},
+          {"Id": "rv-product-to-location", "Name": "product_to_location", "Type": "STRING"},
+          {"Id": "rv-product-volume-api-name", "Name": "product_volume_api_name", "Type": "STRING"},
+          {"Id": "rv-reservation-arn", "Name": "reservation_a_r_n", "Type": "STRING"},
+          {"Id": "rv-savings-plan-arn", "Name": "savings_plan_a_r_n", "Type": "STRING"},
+          {"Id": "rv-savings-plan-effective-cost", "Name": "savings_plan_effective_cost", "Type": "DECIMAL", "SubType": "FLOAT"},
+          {"Id": "rv-reservation-effective-cost", "Name": "reservation_effective_cost", "Type": "DECIMAL", "SubType": "FLOAT"},
+          {"Id": "rv-usage-quantity", "Name": "usage_quantity", "Type": "DECIMAL", "SubType": "FLOAT"},
+          {"Id": "rv-unblended-cost", "Name": "unblended_cost", "Type": "DECIMAL", "SubType": "FLOAT"}
+        ]
+      }
     },
-    "LogicalTableMap": {
-        "6216b450-cc86-4960-9db1-36557c62fdd0": {
-            "Alias": "account_map",
-            "Source": {
-                "PhysicalTableId": "bfc903ee-63a5-4e0b-bfb9-9ae033bb689b"
-            }
-        },
-        "96dd49f3-b1fa-4b75-8052-887b4c64e1df": {
-            "Alias": "Intermediate Table",
-            "DataTransforms": [
-                {
-                    "ProjectOperation": {
-                        "ProjectedColumns": [
-                            "usage_date",
-                            "payer_account_id",
-                            "linked_account_id",
-                            "billing_entity",
-                            "product_name",
-                            "resource_id",
-                            "product_code",
-                            "operation",
-                            "charge_type",
-                            "usage_type",
-                            "pricing_unit",
-                            "region",
-                            "item_description",
-                            "legal_entity",
-                            "pricing_term",
-                            "database_engine",
-                            "product_deployment_option",
-                            "product_from_location",
-                            "product_group",
-                            "instance_type",
-                            "instance_type_family",
-                            "platform",
-                            "product_family",
-                            "service",
-                            "product_storage",
-                            "product_to_location",
-                            "product_volume_api_name",
-                            "reservation_a_r_n",
-                            "savings_plan_a_r_n",
-                            "savings_plan_effective_cost",
-                            "reservation_effective_cost",
-                            "usage_quantity",
-                            "unblended_cost",
-                            "account_id",
-                            "account_name"
-                        ]
-                    }
-                }
-            ],
-            "Source": {
-                "JoinInstruction": {
-                    "LeftOperand": "c3a83f91-b920-419d-a4fa-d5f023bd1aa6",
-                    "RightOperand": "6216b450-cc86-4960-9db1-36557c62fdd0",
-                    "Type": "LEFT",
-                    "OnClause": "{linked_account_id} = {account_id}"
-                }
-            }
-        },
-        "c3a83f91-b920-419d-a4fa-d5f023bd1aa6": {
-            "Alias": "resource_view",
-            "DataTransforms": [
-                {
-                    "CastColumnTypeOperation": {
-                        "ColumnName": "reservation_effective_cost",
-                        "NewColumnType": "DECIMAL"
-                    }
-                }
-            ],
-            "Source": {
-                "PhysicalTableId": "122b690e-e762-40eb-9c6c-cc97ff3420fa"
-            }
-        }
+    "bfc903ee-63a5-4e0b-bfb9-9ae033bb689b": {
+      "RelationalTable": {
+        "DataSourceArn": "${athena_datasource_arn}",
+        "Schema": "${athena_database_name}",
+        "Name": "account_map",
+        "InputColumns": [
+          {"Id": "am-account-id", "Name": "account_id", "Type": "STRING"},
+          {"Id": "am-account-name", "Name": "account_name", "Type": "STRING"}
+        ]
+      }
+    }
+  },
+  "DataPrepConfiguration": {
+    "SourceTableMap": {
+      "src-resource-view": {
+        "PhysicalTableId": "122b690e-e762-40eb-9c6c-cc97ff3420fa"
+      },
+      "src-account-map": {
+        "PhysicalTableId": "bfc903ee-63a5-4e0b-bfb9-9ae033bb689b"
+      }
     },
-    "ImportMode": "SPICE",
-    "Permissions": []
+    "TransformStepMap": {
+      "import-resource-view": {
+        "ImportTableStep": {
+          "Alias": "resource_view",
+          "Source": {
+            "SourceTableId": "src-resource-view"
+          }
+        }
+      },
+      "import-account-map": {
+        "ImportTableStep": {
+          "Alias": "account_map",
+          "Source": {
+            "SourceTableId": "src-account-map"
+          }
+        }
+      },
+      "join-account-map": {
+        "JoinStep": {
+          "Alias": "Join with account_map",
+          "Type": "LEFT",
+          "OnClause": "{linked_account_id} = {account_id}",
+          "LeftOperand": {
+            "TransformOperationId": "import-resource-view"
+          },
+          "RightOperand": {
+            "TransformOperationId": "import-account-map"
+          }
+        }
+      }
+    },
+    "DestinationTableMap": {
+      "destination-resource-view": {
+        "Alias": "resource_view",
+        "Source": {
+          "TransformOperationId": "join-account-map"
+        }
+      }
+    }
+  },
+  "SemanticModelConfiguration": {
+    "TableMap": {
+      "semantic-resource-view": {
+        "Alias": "resource_view",
+        "DestinationTableId": "destination-resource-view"
+      }
+    }
+  },
+  "ImportMode": "SPICE",
+  "Permissions": []
 }
