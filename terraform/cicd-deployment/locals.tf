@@ -38,7 +38,7 @@ locals {
         RolePath             = var.cid_dataexports_destination.role_path
         CUR2TimeGranularity  = var.cid_dataexports_destination.cur2_time_granularity
         FOCUSTimeGranularity = var.cid_dataexports_destination.focus_time_granularity
-        LegacyLocalBucket    = "no"
+        LegacyLocalBucket    = var.legacy_local_bucket
       }
       timeouts = local.default_timeouts
       tags     = local.common_tags
@@ -59,7 +59,7 @@ locals {
         RolePath             = var.cid_dataexports_source.source_role_path
         CUR2TimeGranularity  = var.cid_dataexports_source.source_cur2_time_granularity
         FOCUSTimeGranularity = var.cid_dataexports_source.source_focus_time_granularity
-        LegacyLocalBucket    = "no"
+        LegacyLocalBucket    = var.legacy_local_bucket
       }
       timeouts = local.default_timeouts
       tags     = local.common_tags
