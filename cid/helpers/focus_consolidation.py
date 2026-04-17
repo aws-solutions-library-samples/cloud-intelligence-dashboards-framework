@@ -370,11 +370,17 @@ class FocusConsolidationView:
 
         Returns True to proceed with execution, False to abort.
         """
+        # Check if view exists first. If it doesn't, just create it — no diff needed.
+        self.athena.discover_views([self.name])
+        if self.name not in self.athena._metadata:
+            logger.info(f'View {self.name} does not exist yet. Proceeding with creation.')
+            return True
+
         while isatty():
             cid_print(f'Analyzing view {self.name}')
             view_diff = self.athena.get_view_diff(self.name, sql)
 
-            # View doesn't exist yet or diff failed — ask to proceed
+            # Diff failed for some reason — ask to proceed
             if not view_diff:
                 return get_yesno_parameter(
                     param_name='view-' + self.name + '-override',

@@ -64,6 +64,10 @@ def format_field_name(field_name: str, ignore_prefix: bool=False) -> str:
             new_title = title.replace('Cost Category ', '')
         elif title.startswith('Account Tag '):
             new_title = title.replace('Account Tag ', '')
+        elif title.startswith('User Attribute '):
+            new_title = title.replace('User Attribute ', '')
+        elif title.startswith('Iam Principal '):
+            new_title = title.replace('Iam Principal ', '')
         elif title.startswith('Tag '):
             new_title = title.replace('Tag ', '')
         if title.lower() not in ('service', 'region', 'account'): # leave prefix for special terms

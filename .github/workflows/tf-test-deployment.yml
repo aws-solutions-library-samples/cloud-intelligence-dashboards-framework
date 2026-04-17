@@ -121,7 +121,7 @@ jobs:
           # Foundational stacks
           FOUNDATIONAL_STACKS=("CID-DataExports-Destination" "Cloud-Intelligence-Dashboards")
           # Additional CUR-based dashboard stacks
-          ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Cost-Allocation-Dashboard")
+          ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Dashboard" "FOCUS-Dashboard" "CORA-Dashboard")
           # Other optional stacks
           OTHER_STACKS=("CID-DataExports-Source" "CID-DataCollection" "CID-OptimizationDataCollection")
           # All stacks to check
@@ -177,6 +177,27 @@ jobs:
               bash ./terraform/terraform-test/cleanup.sh
               echo "Cleanup completed. Proceeding with fresh deployment..."
             fi
+          
+            # Verify all stacks are actually deleted after cleanup.
+            # terraform destroy may be a no-op if state is out of sync,
+            # leaving orphaned CloudFormation stacks that block the next deploy.
+            echo "Verifying all stacks are deleted after cleanup..."
+            # Delete in reverse dependency order: additional dashboards first, then foundational
+            ORDERED_STACKS=("${ADDITIONAL_STACKS[@]}" "${OTHER_STACKS[@]}" "Cloud-Intelligence-Dashboards" "CID-DataExports-Destination")
+            for stack in "${ORDERED_STACKS[@]}"; do
+              STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "$stack" --region "${{ secrets.AWS_REGION_TF }}" --query 'Stacks[0].StackStatus' --output text 2>/dev/null || echo "NOT_FOUND")
+              if [ "$STACK_STATUS" != "NOT_FOUND" ] && [ "$STACK_STATUS" != "DELETE_COMPLETE" ]; then
+                echo "Stack $stack still exists (status: $STACK_STATUS). Force deleting via CloudFormation API..."
+                aws cloudformation delete-stack --stack-name "$stack" --region "${{ secrets.AWS_REGION_TF }}" || true
+                echo "Waiting for $stack deletion..."
+                aws cloudformation wait stack-delete-complete --stack-name "$stack" --region "${{ secrets.AWS_REGION_TF }}" || echo "WARNING: Wait timed out for $stack"
+              fi
+            done
+            echo "Stack verification complete."
+          
+            # Clear the Terraform state to ensure a clean deploy
+            echo "Clearing Terraform S3 backend state for fresh deployment..."
+            aws s3 rm "s3://${S3_BUCKET}/${S3_KEY}" --region "${BACKEND_REGION}" || echo "No state file to clear"
           else
             echo "No existing stacks found. Proceeding with fresh deployment."
           fi
