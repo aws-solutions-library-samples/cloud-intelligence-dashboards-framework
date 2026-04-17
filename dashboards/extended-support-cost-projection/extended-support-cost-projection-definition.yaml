@@ -1552,36 +1552,36 @@ Sheets:
           ElementId: d499b9d3-049a-4ea7-8cbd-f973c2676e45
           ElementType: TEXT_BOX
           RowIndex: 12
-          RowSpan: 1
+          RowSpan: 2
         - ColumnIndex: 1
           ColumnSpan: 5
           ElementId: c2a13661-708a-4a56-9307-358194683f20
           ElementType: PARAMETER_CONTROL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 10
         - ColumnIndex: 6
           ColumnSpan: 13
           ElementId: a28ee77a-bbe8-4a86-b2c6-d2be30bc5f96
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 10
         - ColumnIndex: 19
           ColumnSpan: 16
           ElementId: c16ee7aa-8199-481d-867a-a4c6fbe95c00
           ElementType: VISUAL
-          RowIndex: 13
+          RowIndex: 14
           RowSpan: 10
         - ColumnIndex: 1
           ColumnSpan: 34
           ElementId: 76f7e00b-1acf-4cd8-b1bb-4a8d56d3247a
           ElementType: VISUAL
-          RowIndex: 23
+          RowIndex: 24
           RowSpan: 11
         - ColumnIndex: 1
           ColumnSpan: 34
           ElementId: 15c48059-5103-4849-bac0-59b21a1bf81d
           ElementType: VISUAL
-          RowIndex: 34
+          RowIndex: 35
           RowSpan: 13
   Name: RDS Extended Support (Cost Projection)
   ParameterControls:
@@ -1720,7 +1720,15 @@ Sheets:
         </ul>
       </text-box>
     SheetTextBoxId: 785d7a08-0096-499e-9cc4-2ab741704efe
-  - SheetTextBoxId: d499b9d3-049a-4ea7-8cbd-f973c2676e45
+  - Content: |-
+      <text-box>
+        <block align="center">
+          <inline font-size="36px">
+            <b>Usage and Estimated Monthly Cost Details</b>
+          </inline>
+        </block>
+      </text-box>
+    SheetTextBoxId: d499b9d3-049a-4ea7-8cbd-f973c2676e45
   Visuals:
   - BarChartVisual:
       Actions: []
@@ -2780,36 +2788,36 @@ Sheets:
           ElementId: 1e9c1bc9-1430-44c0-ac81-2aac29402014
           ElementType: TEXT_BOX
           RowIndex: 13
-          RowSpan: 1
+          RowSpan: 2
         - ColumnIndex: 1
           ColumnSpan: 5
           ElementId: 172fc5b1-6616-44d1-be44-a22306a04f03
           ElementType: PARAMETER_CONTROL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 10
         - ColumnIndex: 6
           ColumnSpan: 13
           ElementId: 3e7d65c7-aaeb-4127-b8f9-9efbc542d8c2
           ElementType: VISUAL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 10
         - ColumnIndex: 19
           ColumnSpan: 16
           ElementId: fb414f43-d4a0-4f6f-9be2-8d5637fed49e
           ElementType: VISUAL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 10
         - ColumnIndex: 1
           ColumnSpan: 34
           ElementId: e3219ded-f04e-495e-bb6d-5ccc54b7bf47
           ElementType: VISUAL
-          RowIndex: 24
+          RowIndex: 25
           RowSpan: 11
         - ColumnIndex: 1
           ColumnSpan: 34
           ElementId: 8c96e13e-0a16-4639-8f5d-c03999dade34
           ElementType: VISUAL
-          RowIndex: 35
+          RowIndex: 36
           RowSpan: 12
   Name: EKS Extended Support (Cost Projection)
   ParameterControls:
@@ -2935,7 +2943,15 @@ Sheets:
         </ul>
       </text-box>
     SheetTextBoxId: cf2450fc-4d20-4d48-90c0-72810ad97b03
-  - SheetTextBoxId: 1e9c1bc9-1430-44c0-ac81-2aac29402014
+  - Content: |-
+      <text-box>
+        <block align="center">
+          <inline font-size="36px">
+            <b>Usage and Estimated Monthly Cost Details</b>
+          </inline>
+        </block>
+      </text-box>
+    SheetTextBoxId: 1e9c1bc9-1430-44c0-ac81-2aac29402014
   Visuals:
   - BarChartVisual:
       Actions: []
@@ -3809,36 +3825,36 @@ Sheets:
           ElementId: 2074ddfe-568e-4a01-9c1a-f32e967d67df
           ElementType: TEXT_BOX
           RowIndex: 13
-          RowSpan: 1
+          RowSpan: 2
         - ColumnIndex: 1
           ColumnSpan: 5
           ElementId: 08d22ad0-5bc2-4982-9688-093f2daefdce
           ElementType: PARAMETER_CONTROL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 10
         - ColumnIndex: 6
           ColumnSpan: 13
           ElementId: 8dd6fc57-5382-45d9-b20b-91eb1f43a255
           ElementType: VISUAL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 10
         - ColumnIndex: 19
           ColumnSpan: 16
           ElementId: fbd22f72-4cd9-49d1-8f93-bfd815d3ede6
           ElementType: VISUAL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 10
         - ColumnIndex: 1
           ColumnSpan: 34
           ElementId: dc80a335-5c3e-46b9-9e3c-0b1708b52e0a
           ElementType: VISUAL
-          RowIndex: 24
+          RowIndex: 25
           RowSpan: 11
         - ColumnIndex: 1
           ColumnSpan: 34
           ElementId: 9e9a7f55-b5fd-4142-8b81-0378f1e9fd79
           ElementType: VISUAL
-          RowIndex: 47
+          RowIndex: 36
           RowSpan: 12
   Name: OpenSearch Extended Support (Cost Projection)
   ParameterControls:
@@ -3960,7 +3976,15 @@ Sheets:
         </ul>
       </text-box>
     SheetTextBoxId: df57c9e1-b450-40fe-afbf-f62ff12ba50f
-  - SheetTextBoxId: 2074ddfe-568e-4a01-9c1a-f32e967d67df
+  - Content: |-
+      <text-box>
+        <block align="center">
+          <inline font-size="36px">
+            <b>Usage and Estimated Monthly Cost Details</b>
+          </inline>
+        </block>
+      </text-box>
+    SheetTextBoxId: 2074ddfe-568e-4a01-9c1a-f32e967d67df
   Visuals:
   - KPIVisual:
       Actions: []
@@ -4808,36 +4832,36 @@ Sheets:
           ElementId: 5f66db8e-d444-40c4-a92f-7720843ac199
           ElementType: TEXT_BOX
           RowIndex: 13
-          RowSpan: 1
+          RowSpan: 2
         - ColumnIndex: 1
           ColumnSpan: 5
           ElementId: 615d5800-17ed-40cd-a47c-25cd8996b4b3
           ElementType: PARAMETER_CONTROL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 10
         - ColumnIndex: 6
           ColumnSpan: 13
           ElementId: 29f1ada5-f8f2-4661-b577-f78d1d167dad
           ElementType: VISUAL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 10
         - ColumnIndex: 19
           ColumnSpan: 16
           ElementId: b4d94ad1-d627-44ee-b830-4cb747e7e2d2
           ElementType: VISUAL
-          RowIndex: 14
+          RowIndex: 15
           RowSpan: 10
         - ColumnIndex: 1
           ColumnSpan: 34
           ElementId: 34e2532b-dce8-4356-8417-8c44e2b75ca9
           ElementType: VISUAL
-          RowIndex: 24
+          RowIndex: 25
           RowSpan: 11
         - ColumnIndex: 1
           ColumnSpan: 34
           ElementId: 3444af11-f7a7-4d94-825a-16a07944321f
           ElementType: VISUAL
-          RowIndex: 35
+          RowIndex: 36
           RowSpan: 12
   Name: ElastiCache Extended Support (Cost Projection)
   ParameterControls:
@@ -4959,7 +4983,15 @@ Sheets:
         </ul>
       </text-box>
     SheetTextBoxId: 56010b59-5a7a-4d4a-8f0b-6af4dc3faa8b
-  - SheetTextBoxId: 5f66db8e-d444-40c4-a92f-7720843ac199
+  - Content: |-
+      <text-box>
+        <block align="center">
+          <inline font-size="36px">
+            <b>Usage and Estimated Monthly Cost Details</b>
+          </inline>
+        </block>
+      </text-box>
+    SheetTextBoxId: 5f66db8e-d444-40c4-a92f-7720843ac199
   Visuals:
   - KPIVisual:
       Actions: []
