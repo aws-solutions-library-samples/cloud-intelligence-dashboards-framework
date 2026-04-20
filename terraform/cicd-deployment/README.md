@@ -68,6 +68,8 @@ dashboards = {
   marketplace  = "yes"  # AWS Marketplace Dashboard
   connect      = "yes"  # Amazon Connect Cost Insight
   containers   = "yes"  # SCAD Containers Cost Allocation
+  cora         = "yes"  # CORA Dashboard
+  focus        = "yes"  # FOCUS Dashboard
 }
 ```
 
@@ -174,6 +176,8 @@ These require a foundational dashboard to be deployed first and use the same CUR
 | Marketplace | `marketplace` | yes | AWS Marketplace Dashboard |
 | Connect | `connect` | yes | Amazon Connect Cost Insight |
 | Containers | `containers` | yes | SCAD Containers Cost Allocation |
+| CORA | `cora` | yes | CORA Dashboard |
+| FOCUS | `focus` | yes | FOCUS Dashboard |
 
 ## Advanced Configuration
 
@@ -283,6 +287,8 @@ If you're upgrading from the previous non-modular Terraform configuration, pleas
      marketplace  = "no"   # Based on your previous setup or desired to deploy
      connect      = "no"   # Based on your previous setup or desired to deploy
      containers   = "no"   # Based on your previous setup or desired to deploy
+     cora         = "no"   # Based on your previous setup or desired to deploy
+     focus        = "no"   # Based on your previous setup or desired to deploy
    }
    ```
 

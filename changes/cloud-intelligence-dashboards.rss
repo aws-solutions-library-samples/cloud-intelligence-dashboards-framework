@@ -5,8 +5,34 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Fri, 17 Apr 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 20 Apr 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] CID Data Exports v0.11.0 - Direct Cross-Account Delivery (S3BucketOwner)</title>
+      <link>
+        https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-exports.html
+      </link>
+      <pubDate>Mon, 20 Apr 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">c8d9e0f1-2a3b-4c5d-6e7f-8a9b0c1d2e3f</guid>
+      <description>CID Data Exports v0.11.0 — AWS Data Exports now supports direct cross-account delivery to S3</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    AWS Data Exports now supports direct cross-account delivery using the new <strong>S3BucketOwner</strong> property. Cloud Intelligence Dashboards Data Exports template has been updated to take full advantage of this feature.
+  </p>
+  <h3>What changed:</h3>
+  <ul>
+    <li><strong>Simplified architecture:</strong> Data Exports (CUR 2.0, FOCUS, Cost Optimization Hub, Carbon Emissions) now deliver directly to the destination S3 bucket in your Data Collection account — no more local bucket in the source account and no more S3 replication rules.</li>
+    <li><strong>Backward compatible:</strong> Existing deployments continue to work during the transition. Legacy replication policy is retained until customers complete migration.</li>
+    <li><strong>Secondary bucket replication:</strong> Optional replication to a secondary destination bucket is still supported for customers who need it.</li>
+  </ul>
+  <p>
+    For deployment instructions, refer to the updated documentation: <a href="https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-exports.html">Data Exports Guide</a>
+  </p>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Extended Support Cost Projection - v5.1.0</title>
       <link>
