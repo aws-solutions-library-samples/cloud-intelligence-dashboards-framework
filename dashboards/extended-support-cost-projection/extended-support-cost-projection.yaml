@@ -20,7 +20,7 @@ dashboards:
     - line_item_product_code
     - tags_json
     file: ./extended-support-cost-projection-definition.yaml
-    version: v5.0.0
+    version: v5.1.0
 datasets:
   elasticache_extended_support_view:
     data:

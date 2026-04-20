@@ -5,8 +5,25 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Wed, 25 Mar 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 17 Apr 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] Extended Support Cost Projection - v5.1.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v510
+      </link>
+      <pubDate>Fri, 17 Apr 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">a79d14ce-bd0b-4847-a905-2b5b8d8f3ef3</guid>
+      <description>Extended Support Cost Projection - v5.1.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>Added dynamic "Group By" control with tag support and redesigned visual layouts across all Extended Support sheets.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Extended Support Cost Projection - v5.0.0</title>
       <link>
