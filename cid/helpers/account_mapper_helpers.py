@@ -7,16 +7,28 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional, Tuple, List, Dict, Any
 import pandas as pd
-import boto3
 
 from InquirerPy import inquirer
-from InquirerPy.base.control import Choice
-from InquirerPy.separator import Separator
 
 from cid.helpers import Athena
 from cid.exceptions import CidCritical
+from cid.utils import cid_print, isatty
 
 logger = logging.getLogger(__name__)
+
+# Allowed separator characters for account name splitting.
+# Restricted to common delimiters to prevent SQL injection via the separator field.
+ALLOWED_SEPARATORS = set('-_./|:@# ')
+
+
+def _validate_separator(sep: str) -> bool:
+    """Validate that a separator is safe for use in SQL split_part()."""
+    return bool(sep) and len(sep) <= 2 and all(c in ALLOWED_SEPARATORS for c in sep)
+
+
+def _sanitize_separator_for_sql(sep: str) -> str:
+    """Escape single quotes in separator for safe SQL interpolation."""
+    return sep.replace("'", "''")
 
 
 @contextmanager
@@ -26,14 +38,16 @@ def spinner(message: str = "Processing..."):
     frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
 
     def _spin():
-        i = 0
+        i = 1  # Start from frame 1 since frame 0 is written by main thread
         while not stop_event.is_set():
             sys.stdout.write(f"\r{frames[i % len(frames)]} {message}")
             sys.stdout.flush()
             i += 1
-            time.sleep(0.1)
-        sys.stdout.write(f"\r✅ {message} done\n")
-        sys.stdout.flush()
+            stop_event.wait(0.1)
+
+    # Write first frame immediately on main thread to guarantee visibility
+    sys.stdout.write(f"\r{frames[0]} {message}")
+    sys.stdout.flush()
 
     t = threading.Thread(target=_spin, daemon=True)
     t.start()
@@ -42,6 +56,10 @@ def spinner(message: str = "Processing..."):
     finally:
         stop_event.set()
         t.join()
+        # Clear spinner line and write completion on the main thread
+        sys.stdout.write("\r" + " " * (len(message) + 4) + "\r")
+        sys.stdout.write(f"✅ {message} done\n")
+        sys.stdout.flush()
 
 
 def parse_athena_tags(tags_string: str) -> List[Dict[str, str]]:
@@ -103,186 +121,99 @@ def parse_athena_tags(tags_string: str) -> List[Dict[str, str]]:
         return []
 
 
+class AccountRegistry:
+    """
+    Instance-scoped storage for Account data during a transformation run.
+
+    Each TransformEngine creates its own registry, so concurrent or
+    sequential runs never share mutable state.
+    """
+
+    def __init__(self):
+        self._accounts: Dict[str, Dict] = {}
+
+    def ensure(self, account_id: str) -> None:
+        if account_id not in self._accounts:
+            self._accounts[account_id] = {}
+
+    def set(self, account_id: str, key: str, value) -> None:
+        self._accounts[account_id][key] = value
+
+    def get_all(self) -> Dict[str, Dict]:
+        return self._accounts
+
+    def to_dataframe(self) -> pd.DataFrame:
+        if not self._accounts:
+            return pd.DataFrame()
+        records = [{'account_id': aid, **meta} for aid, meta in self._accounts.items()]
+        return pd.DataFrame(records)
+
+
 class Account:
     """
     Represents an AWS account with metadata and business taxonomy information.
-    
-    The Account class ensures that account IDs are properly formatted (12 digits with
-    leading zeros) and provides class-level storage for all account instances to enable
-    easy lookup and export.
-    
-    Attributes:
-        _account_id (str): 12-digit account ID
-        _account_name (str): Account name
-        _payer_account_id (str): Payer account ID (12 digits)
-        _payer_account_name (str): Payer account name
-        _account_tags (dict): Account tags
-        _business_unit (dict): Business unit taxonomy information
-        
-    Class Attributes:
-        _all_accounts (dict): Class-level storage of all Account instances
+
+    Account IDs are validated and zero-padded to 12 digits. All data is stored
+    in the provided AccountRegistry rather than class-level state.
+
+    Args:
+        account_id: AWS account ID (will be zero-padded to 12 digits)
+        registry: AccountRegistry instance that owns this account's data
     """
-    
-    _all_accounts: Dict[str, Dict] = {}
-    
-    def __init__(self, account_id: str):
-        """
-        Initialize an Account instance with a validated account ID.
-        
-        Args:
-            account_id: AWS account ID (will be zero-padded to 12 digits)
-            
-        Raises:
-            TypeError: If account_id contains non-numeric characters
-        """
+
+    def __init__(self, account_id: str, registry: AccountRegistry):
         self._account_name = ""
         self._business_unit = {}
         self._payer_account_id = ""
-        
+        self._registry = registry
+
         self.set_account_id(account_id)
-    
+
     def set_account_id(self, account_id: str) -> None:
-        """
-        Set and validate the account ID, ensuring 12-digit format with leading zeros.
-        
-        Args:
-            account_id: Account ID as string or int
-            
-        Raises:
-            TypeError: If account_id contains non-numeric characters
-        """
         if isinstance(account_id, int):
-            # Convert to string and ensure 12 digits
             self._account_id = str(account_id).zfill(12)
         elif isinstance(account_id, str):
-            # Validate that all characters are digits
             try:
-                # Test if we can interpret each character as an integer
                 [int(x) for x in account_id]
                 self._account_id = account_id.zfill(12)
             except ValueError as e:
                 raise TypeError('Account ID must consist of 12 digits from 0-9.') from e
         else:
             raise TypeError('Account ID must be a string or integer')
-        
-        # Initialize entry in class-level storage
-        if self._account_id not in Account._all_accounts:
-            Account._all_accounts[self._account_id] = {}
-    
+
+        self._registry.ensure(self._account_id)
+
     def get_account_id(self) -> str:
-        """
-        Get the account ID.
-        
-        Returns:
-            12-digit account ID as string
-        """
         return self._account_id
-    
+
     def set_account_name(self, account_name: str) -> None:
-        """
-        Set the account name.
-        
-        Args:
-            account_name: Name of the account
-        """
         self._account_name = str(account_name)
-        Account._all_accounts[self._account_id]["account_name"] = self._account_name
-    
+        self._registry.set(self._account_id, "account_name", self._account_name)
+
     def get_account_name(self) -> str:
-        """
-        Get the account name.
-        
-        Returns:
-            Account name
-        """
         return self._account_name
-    
+
     def set_payer_id(self, payer_id: str) -> None:
-        """
-        Set the payer account ID with validation and zero-padding.
-        
-        Args:
-            payer_id: Payer account ID as string or int
-            
-        Raises:
-            TypeError: If payer_id contains non-numeric characters
-        """
         if isinstance(payer_id, int):
             self._payer_account_id = str(payer_id).zfill(12)
         elif isinstance(payer_id, str):
             try:
-                # Validate that all characters are digits
                 [int(x) for x in payer_id]
                 self._payer_account_id = payer_id.zfill(12)
             except ValueError as e:
                 raise TypeError('Payer Account ID must consist of 12 digits from 0-9.') from e
         else:
             raise TypeError('Payer Account ID must be a string or integer')
-        
-        Account._all_accounts[self._account_id]["payer_id"] = self._payer_account_id
-    
+
+        self._registry.set(self._account_id, "payer_id", self._payer_account_id)
+
     def get_payer_id(self) -> str:
-        """
-        Get the payer account ID.
-        
-        Returns:
-            12-digit payer account ID as string
-        """
         return self._payer_account_id
-    
+
     def set_business_unit(self, bu_name: str, bu_value: str) -> None:
-        """
-        Set a business unit taxonomy dimension for this account.
-        
-        Args:
-            bu_name: Business unit dimension name (e.g., 'level_1', 'level_2')
-            bu_value: Business unit value
-        """
         self._business_unit[bu_name] = bu_value
-        Account._all_accounts[self._account_id][bu_name] = bu_value
-    
-    @classmethod
-    def get_all_accounts(cls) -> Dict[str, Dict]:
-        """
-        Get all Account instances and their metadata.
-        
-        Returns:
-            Dictionary with account IDs as keys and metadata dictionaries as values
-        """
-        return cls._all_accounts
-    
-    @classmethod
-    def reset_all_accounts(cls) -> None:
-        """
-        Clear all stored account data.
-        
-        This is useful for testing or when starting a new transformation run.
-        """
-        cls._all_accounts = {}
-    
-    @classmethod
-    def to_dataframe(cls) -> pd.DataFrame:
-        """
-        Convert all accounts to a pandas DataFrame.
-        
-        Returns:
-            DataFrame with account_id as index and all metadata as columns
-        """
-        if not cls._all_accounts:
-            return pd.DataFrame()
-        
-        # Build a list of records with account_id included
-        records = []
-        for account_id, metadata in cls._all_accounts.items():
-            record = {'account_id': account_id}
-            record.update(metadata)
-            records.append(record)
-        
-        # Convert to DataFrame
-        df = pd.DataFrame(records)
-        
-        return df
-    
+        self._registry.set(self._account_id, bu_name, bu_value)
+
     # Properties for convenient access
     account_id = property(get_account_id, set_account_id)
     account_name = property(get_account_name, set_account_name)
@@ -315,6 +246,7 @@ class TransformEngine:
         self.config = config
         self.org_data = org_data
         self.file_data = file_data
+        self.registry = AccountRegistry()
         
         logger.info("Initialized TransformEngine with %d accounts", len(org_data))
     
@@ -323,11 +255,10 @@ class TransformEngine:
         Execute all transformation rules and return account map.
         
         This method orchestrates the complete transformation process:
-        1. Reset any existing Account instances
-        2. Create Account instances for each account in org_data
-        3. Set basic account information (name, payer)
-        4. Apply all taxonomy rules
-        5. Convert to DataFrame
+        1. Create Account instances for each account in org_data
+        2. Set basic account information (name, payer)
+        3. Apply all taxonomy rules
+        4. Convert to DataFrame
         
         Returns:
             DataFrame containing account map with all taxonomy dimensions
@@ -336,9 +267,6 @@ class TransformEngine:
             ValueError: If configuration is invalid or required data is missing
         """
         logger.info("Starting transformation process")
-        
-        # Reset Account class storage
-        Account.reset_all_accounts()
         
         # Validate that we have organization data
         if self.org_data.empty:
@@ -355,8 +283,8 @@ class TransformEngine:
                 continue
             
             try:
-                # Create Account instance
-                account = Account(account_id)
+                # Create Account instance with this run's registry
+                account = Account(account_id, self.registry)
                 
                 # Set basic account information
                 account_name = row.get('name', '')
@@ -367,7 +295,6 @@ class TransformEngine:
                 payer_id = row.get('payer_id', '')
                 if payer_id:
                     account.set_payer_id(str(payer_id))
-                    # Note: payer_name is only set if used in a taxonomy rule
                 
                 account_count += 1
                 
@@ -385,7 +312,7 @@ class TransformEngine:
         self.apply_taxonomy_rules()
         
         # Convert to DataFrame
-        result_df = Account.to_dataframe()
+        result_df = self.registry.to_dataframe()
         logger.info("Transformation complete. Generated %d rows", len(result_df))
         
         return result_df
@@ -408,8 +335,8 @@ class TransformEngine:
         # Sort dimensions by level number to ensure correct order (if level exists)
         sorted_dimensions = sorted(taxonomy_dimensions, key=lambda x: x.get('level', 0))
         
-        # Get all accounts
-        all_accounts = Account.get_all_accounts()
+        # Get all accounts from this run's registry
+        all_accounts = self.registry.get_all()
         
         # Apply each rule to each account
         for dimension_config in sorted_dimensions:
@@ -419,15 +346,13 @@ class TransformEngine:
             logger.debug("Applying rule for %s", dimension_name)
             
             success_count = 0
-            for account_id in all_accounts.keys():
+            for account_id in list(all_accounts.keys()):
                 try:
                     # Apply the rule for this dimension
                     value = self.apply_single_rule(dimension_config, account_id)
                     
                     if value is not None:
-                        # Create Account instance to set the business unit
-                        account = Account(account_id)
-                        account.set_business_unit(dimension_name, value)
+                        self.registry.set(account_id, dimension_name, value)
                         success_count += 1
                     
                 except Exception as e:
@@ -897,7 +822,6 @@ class ConfigManager:
             >>> config['metadata']['source_table']
             'organization_data'
         """
-        import json
         
         config = {
             'metadata': {},
@@ -920,7 +844,7 @@ class ConfigManager:
                     try:
                         parsed_value = json.loads(source_value)
                     except (json.JSONDecodeError, TypeError):
-                        logger.warning(f"Failed to parse name_split source_value for {key_name}: {source_value}")
+                        logger.warning("Failed to parse name_split source_value for %s: %s", key_name, source_value)
                         parsed_value = source_value
                 
                 # Store taxonomy dimension
@@ -985,7 +909,6 @@ class ConfigManager:
             >>> rows[0]['config_type']
             'metadata'
         """
-        import json
         
         rows = []
         
@@ -1283,10 +1206,15 @@ class AutoDiscovery:
             athena: CID Athena helper instance
         """
         self.athena = athena
+        self._source_cache = None
     
     def discover_source(self) -> Tuple[str, str]:
         """
-        Scan all Athena databases for an 'organization_data' table.
+        Scan Athena databases for an 'organization_data' table.
+
+        Checks common database names first (optimization_data, organization_data,
+        cur) before falling back to a full catalog scan. This avoids N API calls
+        in accounts with many Glue databases.
 
         If exactly one database contains the table, auto-selects it.
         If multiple databases contain it, prompts the user to choose.
@@ -1295,40 +1223,68 @@ class AutoDiscovery:
         Returns:
             Tuple of (database, table)
         """
-        from InquirerPy import inquirer as inq
 
-        logger.info("Scanning all databases for 'organization_data' table...")
+        logger.info("Scanning databases for 'organization_data' table...")
+
+        if self._source_cache:
+            logger.info("Using cached source: %s.%s", self._source_cache[0], self._source_cache[1])
+            return self._source_cache
+
         databases = self.athena.list_databases()
 
         if not databases:
             raise CidCritical("No databases found in Athena")
 
-        # Scan each database for organization_data
+        # Short-circuit: check common database names first to avoid full scan
+        common_names = ['optimization_data', 'organization_data', 'cur', 'default']
+        priority_dbs = [db for db in databases if db.lower() in common_names]
+        remaining_dbs = [db for db in databases if db.lower() not in common_names]
+
         matches = []
-        for db in databases:
-            try:
-                metadata = self.athena.get_table_metadata('organization_data', db)
-                if metadata:
-                    matches.append(db)
-            except Exception:
-                continue
+        with spinner("Scanning databases for organization_data table"):
+            for db in priority_dbs:
+                try:
+                    metadata = self.athena.get_table_metadata('organization_data', db)
+                    if metadata:
+                        matches.append(db)
+                except Exception:
+                    continue
+
+        # If we found exactly one in the priority set, skip the full scan
+        if len(matches) == 1:
+            logger.info("Found 'organization_data' in database '%s' — auto-selected", matches[0])
+            self._source_cache = (matches[0], 'organization_data')
+            return self._source_cache
+
+        # Otherwise scan remaining databases
+        with spinner("Scanning remaining databases"):
+            for db in remaining_dbs:
+                try:
+                    metadata = self.athena.get_table_metadata('organization_data', db)
+                    if metadata:
+                        matches.append(db)
+                except Exception:
+                    continue
 
         if len(matches) == 1:
-            logger.info(f"Found 'organization_data' in database '{matches[0]}' — auto-selected")
-            return matches[0], 'organization_data'
+            logger.info("Found 'organization_data' in database '%s' — auto-selected", matches[0])
+            self._source_cache = (matches[0], 'organization_data')
+            return self._source_cache
         elif len(matches) > 1:
-            logger.info(f"Found 'organization_data' in {len(matches)} databases: {matches}")
-            db = inq.select(
+            logger.info("Found 'organization_data' in %d databases: %s", len(matches), matches)
+            db = inquirer.select(
                 message="Multiple databases contain 'organization_data'. Select source database:",
                 choices=matches
             ).execute()
-            return db, 'organization_data'
+            self._source_cache = (db, 'organization_data')
+            return self._source_cache
         else:
             # Not found anywhere — fall back to manual selection
             logger.warning("'organization_data' table not found in any database")
             db = self.discover_databases()
             table = self.discover_tables(db)
-            return db, table
+            self._source_cache = (db, table)
+            return self._source_cache
 
     def discover_target_database(self, databases: Optional[List[str]] = None,
                                   source_database: Optional[str] = None) -> str:
@@ -1345,7 +1301,6 @@ class AutoDiscovery:
         Returns:
             Selected target database name
         """
-        from InquirerPy import inquirer as inq
 
         if databases is None:
             databases = self.athena.list_databases()
@@ -1358,14 +1313,15 @@ class AutoDiscovery:
 
         # Priority 1: find a database that already has an account_map view
         account_map_db = None
-        for db in databases:
-            try:
-                metadata = self.athena.get_table_metadata('account_map', db)
-                if metadata:
-                    account_map_db = db
-                    break
-            except Exception:
-                continue
+        with spinner("Discovering target database"):
+            for db in databases:
+                try:
+                    metadata = self.athena.get_table_metadata('account_map', db)
+                    if metadata:
+                        account_map_db = db
+                        break
+                except Exception:
+                    continue
 
         if account_map_db:
             suggested = account_map_db
@@ -1376,8 +1332,8 @@ class AutoDiscovery:
         else:
             suggested = databases[0]
 
-        print(f"\n📦 Choose target database for account_map, suggesting {suggested}")
-        confirm = inq.confirm(
+        cid_print(f"\n📦 Choose target database for account_map, suggesting {suggested}")
+        confirm = inquirer.confirm(
             message=f"Use the suggested database '{suggested}' to write account_map to?",
             default=True
         ).execute()
@@ -1385,7 +1341,7 @@ class AutoDiscovery:
         if confirm:
             return suggested
 
-        return inq.select(
+        return inquirer.select(
             message="Select target database for account_map deployment:",
             choices=databases,
             default=suggested
@@ -1411,10 +1367,10 @@ class AutoDiscovery:
         # Validate preferred database if provided
         if preferred:
             if self.athena.get_database(preferred):
-                logger.info(f"Using preferred database: {preferred}")
+                logger.info("Using preferred database: %s", preferred)
                 return preferred
             else:
-                logger.warning(f"Preferred database '{preferred}' not found, discovering alternatives...")
+                logger.warning("Preferred database '%s' not found, discovering alternatives...", preferred)
         
         # Get list of available databases
         databases = self.athena.list_databases()
@@ -1422,7 +1378,7 @@ class AutoDiscovery:
         if len(databases) == 0:
             raise Exception("No databases found in Athena")
         elif len(databases) == 1:
-            logger.info(f"Auto-selected database: {databases[0]}")
+            logger.info("Auto-selected database: %s", databases[0])
             return databases[0]
         else:
             # Multiple databases - prompt user to select
@@ -1456,10 +1412,10 @@ class AutoDiscovery:
         if preferred:
             metadata = self.athena.get_table_metadata(preferred, database)
             if metadata:
-                logger.info(f"Using preferred table: {preferred}")
+                logger.info("Using preferred table: %s", preferred)
                 return preferred
             else:
-                logger.warning(f"Preferred table '{preferred}' not found in database '{database}', discovering alternatives...")
+                logger.warning("Preferred table '%s' not found in database '%s', discovering alternatives...", preferred, database)
         
         # Get list of available tables
         table_metadata = self.athena.list_table_metadata(database)
@@ -1471,7 +1427,7 @@ class AutoDiscovery:
         tables = [table['Name'] for table in table_metadata]
         
         if len(tables) == 1:
-            logger.info(f"Auto-selected table: {tables[0]}")
+            logger.info("Auto-selected table: %s", tables[0])
             return tables[0]
         else:
             # Multiple tables - prompt user to select
@@ -1501,7 +1457,7 @@ class AutoDiscovery:
         Raises:
             Exception: If unable to query the table or parse tags
         """
-        logger.info(f"Discovering tag keys from {database}.{table}.{tag_column}")
+        logger.info("Discovering tag keys from %s.%s.%s", database, table, tag_column)
         
         try:
             # Query sample rows to extract tag keys
@@ -1515,7 +1471,7 @@ class AutoDiscovery:
             results = self.athena.query(query)
             
             if not results:
-                logger.warning(f"No data found in {tag_column} column")
+                logger.warning("No data found in %s column", tag_column)
                 return []
             
             # Extract unique tag keys
@@ -1539,12 +1495,12 @@ class AutoDiscovery:
                             tag_keys.add(tag_item['key'])
             
             tag_keys_list = sorted(list(tag_keys))
-            logger.info(f"Found {len(tag_keys_list)} unique tag keys")
+            logger.info("Found %d unique tag keys", len(tag_keys_list))
             
             return tag_keys_list
             
         except Exception as e:
-            logger.error(f"Failed to discover tag keys: {str(e)}")
+            logger.error("Failed to discover tag keys: %s", str(e))
             raise
     
     def discover_account_id_column(self, df: pd.DataFrame) -> Optional[str]:
@@ -1580,7 +1536,7 @@ class AutoDiscovery:
         for pattern in patterns:
             if pattern in columns_lower:
                 detected_column = columns_lower[pattern]
-                logger.info(f"Auto-detected account ID column: {detected_column}")
+                logger.info("Auto-detected account ID column: %s", detected_column)
                 return detected_column
         
         logger.warning("No account ID column auto-detected")
@@ -1600,7 +1556,6 @@ class AutoDiscovery:
         Returns:
             Selected file path
         """
-        from InquirerPy import inquirer
         import glob
         
         if extensions is None:
@@ -1609,7 +1564,7 @@ class AutoDiscovery:
         # Ensure extensions start with dot
         extensions = [ext if ext.startswith('.') else f'.{ext}' for ext in extensions]
         
-        logger.info(f"Searching for files with extensions: {extensions}")
+        logger.info("Searching for files with extensions: %s", extensions)
         
         # Search for files with specified extensions
         matching_files = []
@@ -1623,10 +1578,10 @@ class AutoDiscovery:
         matching_files = sorted(set(matching_files))
         
         if not matching_files:
-            logger.warning(f"No files found with extensions: {', '.join(extensions)}")
+            logger.warning("No files found with extensions: %s", ', '.join(extensions))
             # Fall back to manual entry
             selected_file = inquirer.text(
-                message=f"No files found. Enter file path manually:",
+                message="No files found. Enter file path manually:",
                 validate=lambda path: Path(path).is_file() or "File does not exist"
             ).execute()
         else:
@@ -1647,7 +1602,7 @@ class AutoDiscovery:
             else:
                 selected_file = selected
         
-        logger.info(f"Selected file: {selected_file}")
+        logger.info("Selected file: %s", selected_file)
         return str(selected_file)
 
 
@@ -1692,10 +1647,9 @@ class UnifiedWorkflow:
         Returns:
             list: Selected items (may be empty if user confirms)
         """
-        from InquirerPy import inquirer as inq
 
         while True:
-            result = inq.checkbox(
+            result = inquirer.checkbox(
                 message=message,
                 choices=choices,
                 **kwargs
@@ -1705,8 +1659,8 @@ class UnifiedWorkflow:
                 return result
 
             # Empty selection — confirm intent
-            print("\n💡 Tip: Use Space to select items, then Enter to confirm.")
-            retry = inq.confirm(
+            cid_print("\n💡 Tip: Use Space to select items, then Enter to confirm.")
+            retry = inquirer.confirm(
                 message="Nothing was selected. Try again?",
                 default=True
             ).execute()
@@ -1725,14 +1679,13 @@ class UnifiedWorkflow:
         Returns:
             Unique dimension name (original or user-provided replacement)
         """
-        from InquirerPy import inquirer as inq
 
         existing_names = {d['name'] for d in config.get('taxonomy_dimensions', [])}
 
         while name in existing_names:
-            print(f"\n⚠️  Dimension name '{name}' already exists.")
-            name = inq.text(
-                message=f"Enter a different name for this dimension:",
+            cid_print(f"\n⚠️  Dimension name '{name}' already exists.")
+            name = inquirer.text(
+                message="Enter a different name for this dimension:",
                 default=f"{name}_2",
                 validate=lambda x: (len(x.strip()) > 0) or "Name cannot be empty"
             ).execute()
@@ -1740,7 +1693,7 @@ class UnifiedWorkflow:
 
         return name
 
-    def execute(self, source_file: str = None) -> dict:
+    def execute(self, source_file: str = None, source_database: str = None) -> dict:
         """
         Execute the complete workflow with auto-discovery.
 
@@ -1755,18 +1708,29 @@ class UnifiedWorkflow:
 
         Args:
             source_file: Optional path to file for file-based taxonomy dimensions
+            source_database: Optional source database name (skips discovery if provided)
 
         Returns:
             dict: Results containing created view names and status
         """
         # Phase 1: Discovery — find source (organization_data) and target database
-        source_database, table = self.discovery.discover_source()
+        if not isatty():
+            raise CidCritical(
+                "Interactive mode requires a TTY. "
+                "Use 'cid-cmd map --simple' for non-interactive environments."
+            )
+
+        if source_database:
+            logger.info("Using provided source database: %s", source_database)
+            table = 'organization_data'
+        else:
+            source_database, table = self.discovery.discover_source()
         target_database = self.discovery.discover_target_database(
             source_database=source_database
         )
 
-        logger.info(f"Source: {source_database}.{table}")
-        logger.info(f"Target database for views: {target_database}")
+        logger.info("Source: %s.%s", source_database, table)
+        logger.info("Target database for views: %s", target_database)
 
         # Pre-set Athena parameters BEFORE any queries to avoid prompts
         from cid.utils import set_parameters, get_parameters
@@ -1779,7 +1743,7 @@ class UnifiedWorkflow:
         real_workgroups = [wg for wg in workgroups if not wg.endswith('(create new)')]
         
         if len(real_workgroups) == 1:
-            logger.info(f"Auto-selected workgroup: {real_workgroups[0]}")
+            logger.info("Auto-selected workgroup: %s", real_workgroups[0])
             params['athena-workgroup'] = real_workgroups[0]
         elif len(real_workgroups) == 0:
             # No workgroups exist, use default 'primary'
@@ -1789,7 +1753,8 @@ class UnifiedWorkflow:
         set_parameters(params)
 
         # Phase 2: Configuration — load/save config from target database
-        existing_config = self._check_existing_config(target_database)
+        with spinner("Checking for existing configuration"):
+            existing_config = self._check_existing_config(target_database)
 
         if existing_config:
             if self._prompt_config_reuse(existing_config):
@@ -1819,7 +1784,8 @@ class UnifiedWorkflow:
 
         # Phase 3: Data Loading
         logger.info("Loading organization data from Athena...")
-        org_data = self.data_loader.load_from_athena()
+        with spinner("Loading organization data from Athena"):
+            org_data = self.data_loader.load_from_athena()
 
         # Payer naming: prompt user to name management account IDs
         if not config.get('payer_names'):
@@ -1832,7 +1798,7 @@ class UnifiedWorkflow:
                 logger.info("Using file data from configuration")
                 file_data = config['file_source']['data']
             elif 'path' in config['file_source']:
-                logger.info(f"Loading file data from {config['file_source']['path']}...")
+                logger.info("Loading file data from %s...", config['file_source']['path'])
                 file_data = self.data_loader.load_from_file(config['file_source']['path'])
             else:
                 # File source exists but no data - using existing view
@@ -1870,7 +1836,7 @@ class UnifiedWorkflow:
 
         # Phase 6: Write Views
         logger.info("Writing views to Athena...")
-        results = self.writer.write_complete_mapping(config, transformed_data, target_database)
+        results = self.writer.write_complete_mapping(config, transformed_data, target_database, self.view_name)
         results['status'] = 'success'
 
         return results
@@ -1897,27 +1863,26 @@ class UnifiedWorkflow:
         Returns:
             bool: True if user wants to reuse config, False otherwise
         """
-        from InquirerPy import inquirer
 
-        print("\n" + "="*60)
-        print("📋 Existing Configuration Found")
-        print("="*60)
+        cid_print("\n" + "="*60)
+        cid_print("📋 Existing Configuration Found")
+        cid_print("="*60)
 
         source_db = config['metadata'].get('source_database')
         source_tbl = config['metadata'].get('source_table')
         target_db = config['metadata'].get('target_database')
 
-        print(f"\n  Source table : {source_db}.{source_tbl}")
+        cid_print(f"\n  Source table : {source_db}.{source_tbl}")
         if target_db:
-            print(f"  Target database : {target_db}")
+            cid_print(f"  Target database : {target_db}")
 
         if config.get('file_source'):
-            print(f"  File source view: {config['metadata'].get('file_source_view')}")
+            cid_print(f"  File source view: {config['metadata'].get('file_source_view')}")
 
         dims = config.get('taxonomy_dimensions', [])
         if dims:
-            print(f"\n  Taxonomy Dimensions ({len(dims)}):")
-            print("  " + "-"*56)
+            cid_print(f"\n  Taxonomy Dimensions ({len(dims)}):")
+            cid_print("  " + "-"*56)
             for i, dim in enumerate(dims, 1):
                 source_type = dim['source_type']
                 source_value = dim['source_value']
@@ -1931,18 +1896,18 @@ class UnifiedWorkflow:
                 else:
                     created_from = f"{source_type}: {source_value}"
 
-                print(f"    Dimension {i}:")
-                print(f"      Column name  : {dim['name']}")
-                print(f"      Created from : {created_from}")
+                cid_print(f"    Dimension {i}:")
+                cid_print(f"      Column name  : {dim['name']}")
+                cid_print(f"      Created from : {created_from}")
 
         payer_names = config.get('payer_names', {})
         if payer_names:
-            print(f"\n  Payer Account Names ({len(payer_names)}):")
-            print("  " + "-"*56)
+            cid_print(f"\n  Payer Account Names ({len(payer_names)}):")
+            cid_print("  " + "-"*56)
             for pid, pname in payer_names.items():
-                print(f"    {pid} → {pname}")
+                cid_print(f"    {pid} → {pname}")
 
-        print("\n" + "="*60 + "\n")
+        cid_print("\n" + "="*60 + "\n")
 
         return inquirer.confirm(
             message="Use existing configuration?",
@@ -1963,7 +1928,6 @@ class UnifiedWorkflow:
         Returns:
             dict: Updated configuration
         """
-        from InquirerPy import inquirer
 
         file_source_view = config['metadata'].get('file_source_view', f"{self.view_name}_file_source")
         
@@ -1977,11 +1941,11 @@ class UnifiedWorkflow:
             view_exists = False
         
         if not view_exists:
-            print(f"\n⚠️  File source view '{file_source_view}' no longer exists in Athena.")
-            print("You need to provide the file again to recreate it.\n")
+            cid_print(f"\n⚠️  File source view '{file_source_view}' no longer exists in Athena.")
+            cid_print("You need to provide the file again to recreate it.\n")
             update_file = True
         else:
-            logger.info(f"\nThis configuration uses a file source view: {file_source_view}")
+            logger.info("\nThis configuration uses a file source view: %s", file_source_view)
             
             update_file = inquirer.confirm(
                 message="Do you want to update the file source with new data?",
@@ -1995,7 +1959,7 @@ class UnifiedWorkflow:
             # Use --file parameter if provided, otherwise prompt
             if source_file:
                 file_path = source_file
-                print(f"Using file: {source_file}")
+                cid_print(f"Using file: {source_file}")
             else:
                 file_path = self.discovery.prompt_file_selection()
 
@@ -2011,7 +1975,7 @@ class UnifiedWorkflow:
                     choices=list(file_df.columns)
                 ).execute()
             else:
-                logger.info(f"Auto-detected account ID column: {account_col}")
+                logger.info("Auto-detected account ID column: %s", account_col)
 
             # Get file columns for dimensions (excluding account ID column)
             file_columns = [col for col in file_df.columns if col != account_col]
@@ -2068,7 +2032,7 @@ class UnifiedWorkflow:
             config['metadata']['file_source_view'] = file_source_view
         else:
             # Keep existing file source view - remove path/data so we don't try to reload
-            logger.info(f"Keeping existing file source view: {file_source_view}")
+            logger.info("Keeping existing file source view: %s", file_source_view)
             config['file_source'] = {
                 'use_existing_view': True
             }
@@ -2089,7 +2053,6 @@ class UnifiedWorkflow:
         Returns:
             dict: New configuration
         """
-        from InquirerPy import inquirer
 
         config = {
             'metadata': {
@@ -2122,10 +2085,10 @@ class UnifiedWorkflow:
 
         # Configure file source if selected
         if use_file:
-            print("\n" + "="*70)
-            print("📁 FILE SOURCE CONFIGURATION")
-            print("="*70)
-            print(f"Using file: {source_file}\n")
+            cid_print("\n" + "="*70)
+            cid_print("📁 FILE SOURCE CONFIGURATION")
+            cid_print("="*70)
+            cid_print(f"Using file: {source_file}\n")
             
             # Use the provided file path directly
             file_path = source_file
@@ -2142,7 +2105,7 @@ class UnifiedWorkflow:
                     choices=list(file_df.columns)
                 ).execute()
             else:
-                logger.info(f"Auto-detected account ID column: {account_col}")
+                logger.info("Auto-detected account ID column: %s", account_col)
 
             # Store file source info
             config['file_source'] = {
@@ -2191,23 +2154,33 @@ class UnifiedWorkflow:
 
         # Configure name splitting if selected
         if use_name_split:
-            print("\n" + "="*70)
-            print("✂️  ACCOUNT NAME SPLIT CONFIGURATION")
-            print("="*70)
-            print("Extract taxonomy dimensions by splitting the account name.")
-            print("Example: 'aws-account-awesomeproduct-prod'")
-            print("  - Separator: '-'")
-            print("  - Index 0: 'aws'")
-            print("  - Index 1: 'account'")
-            print("  - Index 2: 'awesomeproduct'")
-            print("  - Index 3: 'prod'")
-            print("\nEach dimension you create will become a column in the output.\n")
+            cid_print("\n" + "="*70)
+            cid_print("✂️  ACCOUNT NAME SPLIT CONFIGURATION")
+            cid_print("="*70)
+            cid_print("Extract taxonomy dimensions by splitting the account name.")
+            cid_print("Example: 'aws-account-awesomeproduct-prod'")
+            cid_print("  - Separator: '-'")
+            cid_print("  - Index 0: 'aws'")
+            cid_print("  - Index 1: 'account'")
+            cid_print("  - Index 2: 'awesomeproduct'")
+            cid_print("  - Index 3: 'prod'")
+            cid_print("\nEach dimension you create will become a column in the output.\n")
             
             # Keep adding split dimensions until user is done
             while True:
-                separator = inquirer.text(
-                    message="Enter separator character (e.g., '-', '_', '/') to split by:",
-                    validate=lambda x: len(x) > 0 or "Separator cannot be empty"
+                separator = inquirer.select(
+                    message="Select separator character to split account names by:",
+                    choices=[
+                        {"name": "- (hyphen)", "value": "-"},
+                        {"name": "_ (underscore)", "value": "_"},
+                        {"name": ". (dot)", "value": "."},
+                        {"name": "/ (slash)", "value": "/"},
+                        {"name": "| (pipe)", "value": "|"},
+                        {"name": ": (colon)", "value": ":"},
+                        {"name": "@ (at)", "value": "@"},
+                        {"name": "# (hash)", "value": "#"},
+                        {"name": "  (space)", "value": " "},
+                    ],
                 ).execute()
 
                 index = inquirer.number(
@@ -2233,7 +2206,7 @@ class UnifiedWorkflow:
                     }
                 })
 
-                logger.info(f"Added dimension '{dim_name}' from name split by '{separator}' at index {index}")
+                logger.info("Added dimension '%s' from name split by '%s' at index %d", dim_name, separator, index)
 
                 add_more = inquirer.confirm(
                     message="Add another name split dimension? (Each dimension = one output column)",
@@ -2245,18 +2218,18 @@ class UnifiedWorkflow:
 
         # Configure tags if selected
         if use_tags:
-            print("\n" + "="*70)
-            print("🏷️  TAG-BASED DIMENSIONS CONFIGURATION")
-            print("="*70)
-            print("Extract taxonomy dimensions from AWS resource tags in the source table.")
-            print("Each selected tag will become a column in the output.\n")
+            cid_print("\n" + "="*70)
+            cid_print("🏷️  TAG-BASED DIMENSIONS CONFIGURATION")
+            cid_print("="*70)
+            cid_print("Extract taxonomy dimensions from AWS resource tags in the source table.")
+            cid_print("Each selected tag will become a column in the output.\n")
             
             # Discover available tag keys
             logger.info("Discovering available tag keys...")
             tag_keys = self.discovery.discover_tag_keys(database, table)
 
             if tag_keys:
-                logger.info(f"Found {len(tag_keys)} tag keys")
+                logger.info("Found %d tag keys", len(tag_keys))
 
                 # Prompt for tag-based dimensions
                 selected_tags = self._checkbox_with_retry(
@@ -2297,7 +2270,7 @@ class UnifiedWorkflow:
         if not is_valid:
             logger.error("Configuration validation failed:")
             for error in errors:
-                logger.error(f"  - {error}")
+                logger.error("  - %s", error)
             raise CidCritical("Invalid configuration")
 
         return config
@@ -2316,7 +2289,6 @@ class UnifiedWorkflow:
         Returns:
             dict: Updated configuration with optional payer_names
         """
-        from InquirerPy import inquirer
 
         if 'payer_id' not in org_data.columns:
             logger.debug("No payer_id column in org data, skipping payer naming")
@@ -2329,7 +2301,7 @@ class UnifiedWorkflow:
         if not unique_payers:
             return config
 
-        print(f"\nFound {len(unique_payers)} management account(s): {', '.join(unique_payers)}")
+        cid_print(f"\nFound {len(unique_payers)} management account(s): {', '.join(unique_payers)}")
 
         name_payers = inquirer.confirm(
             message="Do you want to assign friendly names to management accounts?",
@@ -2348,7 +2320,7 @@ class UnifiedWorkflow:
 
             if payer_names:
                 config['payer_names'] = payer_names
-                logger.info(f"Configured {len(payer_names)} payer name(s)")
+                logger.info("Configured %d payer name(s)", len(payer_names))
 
         return config
 
@@ -2363,18 +2335,17 @@ class UnifiedWorkflow:
         Returns:
             bool: True if user confirms, False otherwise
         """
-        from InquirerPy import inquirer
 
-        print("\n" + "="*60)
-        print("🔍 Preview: Account Map View SQL")
-        print("="*60)
-        print(sql)
+        cid_print("\n" + "="*60)
+        cid_print("🔍 Preview: Account Map View SQL")
+        cid_print("="*60)
+        cid_print(sql)
 
-        print("\n" + "="*60)
-        print("📊 Preview: Sample Output (first 10 rows)")
-        print("="*60)
-        print(sample_data.to_string())
-        print("="*60 + "\n")
+        cid_print("\n" + "="*60)
+        cid_print("📊 Preview: Sample Output (first 10 rows)")
+        cid_print("="*60)
+        cid_print(sample_data.to_string())
+        cid_print("="*60 + "\n")
 
         return inquirer.confirm(
             message="Create views with this configuration?",
@@ -2398,38 +2369,16 @@ class AthenaWriter:
     
     MAX_SQL_SIZE = 262144  # Athena's maximum SQL statement size in bytes
     
-    def __init__(self, config: dict, athena_helper: Athena = None):
+    def __init__(self, config: dict, athena_helper: Athena):
         """
-        Initialize AthenaWriter with configuration and optional Athena helper.
+        Initialize AthenaWriter with configuration and Athena helper.
         
         Args:
-            config: Application configuration dictionary containing:
-                - general.aws_region: AWS region for Athena
-                - athena.database_target: Target database for views
-                - athena.catalog: Athena catalog name
-                - athena.workgroup: Athena workgroup
-            athena_helper: Optional Athena helper instance from cid-cmd.
-                          If not provided, creates a new instance.
+            config: Application configuration dictionary
+            athena_helper: Athena helper instance from cid-cmd
         """
         self.config = config
-        
-        if athena_helper:
-            # Use provided Athena helper from cid-cmd
-            self.athena_helper = athena_helper
-            logger.info("AthenaWriter using provided Athena helper instance")
-        else:
-            # Create new Athena helper instance
-            region = config['general']['aws_region']
-            session = boto3.Session(region_name=region)
-            self.athena_helper = Athena(session=session)
-
-            # Set workgroup and catalog from config to avoid interactive prompts
-            workgroup = config.get('athena', {}).get('workgroup', 'primary')
-            self.athena_helper._WorkGroup = workgroup
-            catalog = config.get('athena', {}).get('catalog', 'AwsDataCatalog')
-            self.athena_helper._CatalogName = catalog
-
-            logger.info("AthenaWriter initialized with Athena helper for workgroup: %s, catalog: %s", workgroup, catalog)
+        self.athena_helper = athena_helper
     
     def create_view_from_values(
         self,
@@ -2620,7 +2569,7 @@ SELECT * FROM (
             if all_fit:
                 # All chunks fit, create the views with progress indicators
                 total_parts = len(chunks)
-                logger.info(f"Creating {total_parts} view parts...")
+                logger.info("Creating %d view parts...", total_parts)
                 
                 for i, chunk in enumerate(chunks):
                     chunk_view_name = f"{view_name}_part{i + 1}"
@@ -2629,7 +2578,7 @@ SELECT * FROM (
                     sql = self._generate_values_sql(chunk, chunk_view_name, database, columns)
                     
                     # Display progress
-                    logger.info(f"Creating part {i + 1} of {total_parts}: {chunk_view_name} ({len(chunk)} rows)")
+                    logger.info("Creating part %d of %d: %s (%d rows)", i + 1, total_parts, chunk_view_name, len(chunk))
                     
                     # Don't log SQL on error for split views (they're large)
                     self._execute_view_creation(sql, database, log_sql_on_error=False)
@@ -2686,9 +2635,9 @@ SELECT * FROM (
             try:
                 test_query = f"SELECT COUNT(*) FROM {database}.{union_view_name}"
                 result = self.athena_helper.query(sql=test_query, database=database)
-                logger.info(f"UNION view verified: {result[0][0]} total rows")
+                logger.info("UNION view verified: %s total rows", result[0][0])
             except Exception as e:
-                logger.warning(f"Could not verify UNION view: {e}")
+                logger.warning("Could not verify UNION view: %s", e)
 
             return True
 
@@ -2735,7 +2684,7 @@ SELECT * FROM (
             raise RuntimeError(f"View creation failed: {error_msg}") from None
 
     def write_complete_mapping(self, config: dict, df: pd.DataFrame,
-                              database: str) -> dict:
+                              database: str, view_name: str = 'account_map') -> dict:
         """
         Write all views: file source, config, and account map.
 
@@ -2749,11 +2698,11 @@ SELECT * FROM (
             config: Configuration dictionary
             df: Transformed account map DataFrame
             database: Target database name
+            view_name: Name for the account map view (default: 'account_map')
 
         Returns:
             dict: Results containing created view names and status
         """
-        from InquirerPy import inquirer
 
         results = {
             'file_source_view': None,
@@ -2761,11 +2710,6 @@ SELECT * FROM (
             'account_map_view': None,
             'deleted_views': []
         }
-
-        # Get view name from config or use default
-        view_name = getattr(self, 'view_name', 'account_map')
-        if hasattr(self, 'config') and 'general' in self.config:
-            view_name = self.config.get('general', {}).get('view_name', 'account_map')
 
         # Step 1: Cleanup old views
         logger.info("Checking for existing views to cleanup...")
@@ -2781,13 +2725,13 @@ SELECT * FROM (
             ]
 
         if old_views:
-            print(f"\nFound {len(old_views)} existing views:")
+            cid_print(f"\nFound {len(old_views)} existing views:")
             for view_info in old_views:
                 view_display = f"  - {view_info['name']}"
                 if 'timestamp' in view_info:
                     view_display += f" (created: {view_info['timestamp']})"
-                print(view_display)
-            print()  # Empty line for readability
+                cid_print(view_display)
+            cid_print("")  # Empty line for readability
 
             confirm = inquirer.confirm(
                 message=f"Delete {len(old_views)} existing view(s)?",
@@ -2801,16 +2745,16 @@ SELECT * FROM (
                         try:
                             self._safe_drop_view_or_table(view_name_to_delete, database)
                             results['deleted_views'].append(view_name_to_delete)
-                            logger.info(f"Deleted view: {view_name_to_delete}")
+                            logger.info("Deleted view: %s", view_name_to_delete)
                         except Exception as e:
-                            logger.warning(f"Failed to delete view {view_name_to_delete}: {e}")
+                            logger.warning("Failed to delete view %s: %s", view_name_to_delete, e)
             else:
                 logger.info("Skipping view cleanup")
 
         # Step 2: Create file source view if needed
         if config.get('file_source') and not config['file_source'].get('use_existing_view'):
             file_view_name = config['metadata'].get('file_source_view', f"{view_name}_file_source")
-            logger.info(f"Creating file source view: {file_view_name}")
+            logger.info("Creating file source view: %s", file_view_name)
 
             try:
                 if 'data' not in config['file_source']:
@@ -2822,18 +2766,18 @@ SELECT * FROM (
                 # Rename account column to account_id for JOIN compatibility
                 if account_col != 'account_id':
                     file_df = file_df.rename(columns={account_col: 'account_id'})
-                    logger.info(f"Renamed column '{account_col}' to 'account_id' for file source view")
+                    logger.info("Renamed column '%s' to 'account_id' for file source view", account_col)
                 
                 with spinner("Creating file source view"):
                     success = self.create_file_source_view(file_df, file_view_name, database)
                 results['file_source_view'] = file_view_name if success else None
             except Exception as e:
-                logger.error(f"Failed to create file source view: {e}")
+                logger.error("Failed to create file source view: %s", e)
                 results['file_source_view'] = None
         elif config.get('file_source') and config['file_source'].get('use_existing_view'):
             # Using existing file source view - just record it
             file_view_name = config['metadata'].get('file_source_view', f"{view_name}_file_source")
-            logger.info(f"Using existing file source view: {file_view_name}")
+            logger.info("Using existing file source view: %s", file_view_name)
             results['file_source_view'] = file_view_name
         else:
             # No file source in config — check if stale file_source_view metadata needs cleanup
@@ -2842,26 +2786,26 @@ SELECT * FROM (
                 d['source_type'] == 'file' for d in config.get('taxonomy_dimensions', [])
             )
             if stale_view and not has_file_dims:
-                logger.info(f"Cleaning up stale file source view: {stale_view}")
+                logger.info("Cleaning up stale file source view: %s", stale_view)
                 try:
                     self._safe_drop_view_or_table(stale_view, database)
                     results['deleted_views'].append(stale_view)
-                    logger.info(f"Dropped stale file source view: {stale_view}")
+                    logger.info("Dropped stale file source view: %s", stale_view)
                 except BaseException:
-                    logger.debug(f"Stale file source view {stale_view} may not exist, skipping drop")
+                    logger.debug("Stale file source view %s may not exist, skipping drop", stale_view)
                 # Remove stale metadata entries
                 config['metadata'].pop('file_source_view', None)
                 config.pop('file_source', None)
 
         # Step 3: Create config view
-        logger.info(f"Creating config view: {view_name}_config")
+        logger.info("Creating config view: %s_config", view_name)
         config_mgr = ConfigManager(self.athena_helper, view_name)
         with spinner("Creating configuration view"):
             success = config_mgr.save_to_view(config, database)
         results['config_view'] = f"{view_name}_config" if success else None
 
         # Step 4: Create account map view
-        logger.info(f"Creating account map view: {view_name}")
+        logger.info("Creating account map view: %s", view_name)
         with spinner("Creating account map view"):
             success = self.create_account_map_view(config, df, view_name, database)
         results['account_map_view'] = view_name if success else None
@@ -2931,7 +2875,7 @@ SELECT * FROM (
             return sorted(related_views, key=lambda x: x['name'])
 
         except Exception as e:
-            logger.error(f"Failed to identify related views: {e}")
+            logger.error("Failed to identify related views: %s", e)
             return []
 
     def create_file_source_view(self, df: pd.DataFrame, view_name: str,
@@ -2951,16 +2895,16 @@ SELECT * FROM (
             view_names = self.create_view_from_values(df, view_name, database)
 
             if len(view_names) == 1:
-                logger.info(f"Created file source view: {view_name}")
+                logger.info("Created file source view: %s", view_name)
                 return True
             else:
                 # Multiple views created, need UNION view
-                logger.info(f"Created {len(view_names)} file source parts, creating UNION view")
+                logger.info("Created %d file source parts, creating UNION view", len(view_names))
                 success = self.create_union_view(view_names, view_name, database)
                 return success
 
         except Exception as e:
-            logger.error(f"Failed to create file source view: {e}")
+            logger.error("Failed to create file source view: %s", e)
             return False
 
     def create_account_map_view(self, config: dict, df: pd.DataFrame,
@@ -3001,7 +2945,7 @@ SELECT * FROM (
                 return True
 
         except Exception as e:
-            logger.error(f"Failed to create account map view: {e}")
+            logger.error("Failed to create account map view: %s", e)
             return False
 
     def _generate_account_map_transformation_sql(self, config: dict, view_name: str, database: str) -> str:
@@ -3069,7 +3013,7 @@ SELECT * FROM (
                     output_name = f"{dim_name}_file"
                 elif source_type == 'name_split':
                     output_name = f"{dim_name}_split"
-                logger.warning(f"Duplicate dimension name '{dim_name}' detected. Using '{output_name}' for {source_type} source.")
+                logger.warning("Duplicate dimension name '%s' detected. Using '%s' for %s source.", dim_name, output_name, source_type)
             
             dimension_names_used.add(output_name)
             
@@ -3084,17 +3028,21 @@ SELECT * FROM (
                 if file_source_view:
                     dimension_parts.append((output_name, f"file.{source_value} AS {output_name}"))
                 else:
-                    logger.warning(f"File source dimension {dim_name} specified but no file source view")
+                    logger.warning("File source dimension %s specified but no file source view", dim_name)
                     dimension_parts.append((output_name, f"NULL AS {output_name}"))
                     
             elif source_type == 'name_split':
                 if isinstance(source_value, dict):
                     separator = source_value.get('separator', '-')
+                    if not _validate_separator(separator):
+                        logger.warning("Invalid separator '%s' for dimension %s, falling back to '-'", separator, dim_name)
+                        separator = '-'
+                    safe_separator = _sanitize_separator_for_sql(separator)
                     index = source_value.get('index', 0)
-                    split_expr = f"split_part(org.name, '{separator}', {index + 1})"
+                    split_expr = f"split_part(org.name, '{safe_separator}', {index + 1})"
                     dimension_parts.append((output_name, f"{split_expr} AS {output_name}"))
                 else:
-                    logger.warning(f"Name split dimension {dim_name} has invalid source_value format")
+                    logger.warning("Name split dimension %s has invalid source_value format", dim_name)
                     dimension_parts.append((output_name, f"NULL AS {output_name}"))
         
         # Sort taxonomy dimensions alphabetically by output name

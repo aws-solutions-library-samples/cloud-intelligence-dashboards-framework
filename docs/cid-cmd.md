@@ -211,6 +211,7 @@ cid-cmd map --view-name my_account_map
 | `--view-name TEXT` | Output view name (default: `account_map`) |
 | `--simple` | Use simple account mapping (legacy mode) — creates a basic view with just `account_id` and `account_name` |
 | `--file PATH` | Path to CSV/Excel/JSON file for file-based taxonomy dimensions |
+| `--database TEXT` | Source database containing `organization_data` (skips auto-discovery) |
 
 #### How It Works
 

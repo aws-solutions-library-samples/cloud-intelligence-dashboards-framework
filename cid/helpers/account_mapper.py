@@ -24,12 +24,13 @@ class AccountMapper:
         self.athena = athena
         self.view_name = view_name
 
-    def create_mapping(self, source_file: str = None) -> dict:
+    def create_mapping(self, source_file: str = None, source_database: str = None) -> dict:
         """
         Execute the complete account mapping workflow.
 
         Args:
             source_file: Optional path to CSV/Excel/JSON file for file-based dimensions
+            source_database: Optional source database name (skips discovery if provided)
 
         Returns:
             dict: Results containing created view names and status
@@ -37,7 +38,7 @@ class AccountMapper:
         from cid.helpers.account_mapper_helpers import UnifiedWorkflow
 
         workflow = UnifiedWorkflow(athena=self.athena, view_name=self.view_name)
-        results = workflow.execute(source_file=source_file)
+        results = workflow.execute(source_file=source_file, source_database=source_database)
 
         # Display results summary
         if results.get('status') == 'success':
