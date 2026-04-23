@@ -6,7 +6,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional, Tuple, List, Dict, Any
-import pandas as pd
+import csv
 
 from InquirerPy import inquirer
 
@@ -29,6 +29,26 @@ def _validate_separator(sep: str) -> bool:
 def _sanitize_separator_for_sql(sep: str) -> str:
     """Escape single quotes in separator for safe SQL interpolation."""
     return sep.replace("'", "''")
+
+
+def _is_null(value) -> bool:
+    """Check if a value is null/empty (replaces pd.isna)."""
+    return value is None or (isinstance(value, str) and value.strip() == '') or (isinstance(value, float) and value != value)
+
+
+def _format_table(rows: List[Dict], max_rows: Optional[int] = None) -> str:
+    """Format list of dicts as an aligned text table."""
+    if not rows:
+        return "(empty)"
+    display = rows[:max_rows] if max_rows else rows
+    columns = list(display[0].keys())
+    col_widths = {col: max(len(str(col)), max((len(str(r.get(col, ''))) for r in display), default=0)) for col in columns}
+    header = ' | '.join(str(col).ljust(col_widths[col]) for col in columns)
+    separator = '-+-'.join('-' * col_widths[col] for col in columns)
+    lines = [header, separator]
+    for row in display:
+        lines.append(' | '.join(str(row.get(col, '')).ljust(col_widths[col]) for col in columns))
+    return '\n'.join(lines)
 
 
 @contextmanager
@@ -78,7 +98,7 @@ def parse_athena_tags(tags_string: str) -> List[Dict[str, str]]:
     Returns:
         List of dictionaries with 'key' and 'value' fields
     """
-    if not tags_string or pd.isna(tags_string) or tags_string == '[]':
+    if not tags_string or _is_null(tags_string) or tags_string == '[]':
         return []
     
     try:
@@ -142,11 +162,10 @@ class AccountRegistry:
     def get_all(self) -> Dict[str, Dict]:
         return self._accounts
 
-    def to_dataframe(self) -> pd.DataFrame:
+    def to_rows(self) -> List[Dict]:
         if not self._accounts:
-            return pd.DataFrame()
-        records = [{'account_id': aid, **meta} for aid, meta in self._accounts.items()]
-        return pd.DataFrame(records)
+            return []
+        return [{'account_id': aid, **meta} for aid, meta in self._accounts.items()]
 
 
 class Account:
@@ -226,22 +245,22 @@ class TransformEngine:
     
     The TransformEngine applies taxonomy rules to organization data, creating
     Account instances with business unit information and converting them to a
-    DataFrame for output.
+    List[Dict] for output.
     
     Attributes:
         config: Configuration dictionary containing transformation rules
-        org_data: DataFrame containing organization data from Athena
-        file_data: Optional DataFrame containing external file data
+        org_data: List[Dict] containing organization data from Athena
+        file_data: Optional List[Dict] containing external file data
     """
     
-    def __init__(self, config: dict, org_data: pd.DataFrame, file_data: Optional[pd.DataFrame] = None):
+    def __init__(self, config: dict, org_data: List[Dict], file_data: Optional[List[Dict]] = None):
         """
         Initialize TransformEngine with configuration and data.
         
         Args:
             config: Configuration dictionary with rules section
-            org_data: DataFrame containing organization data
-            file_data: Optional DataFrame containing external file data for file-based rules
+            org_data: List[Dict] containing organization data
+            file_data: Optional List[Dict] containing external file data for file-based rules
         """
         self.config = config
         self.org_data = org_data
@@ -250,7 +269,7 @@ class TransformEngine:
         
         logger.info("Initialized TransformEngine with %d accounts", len(org_data))
     
-    def transform(self) -> pd.DataFrame:
+    def transform(self) -> List[Dict]:
         """
         Execute all transformation rules and return account map.
         
@@ -258,10 +277,10 @@ class TransformEngine:
         1. Create Account instances for each account in org_data
         2. Set basic account information (name, payer)
         3. Apply all taxonomy rules
-        4. Convert to DataFrame
+        4. Convert to List[Dict]
         
         Returns:
-            DataFrame containing account map with all taxonomy dimensions
+            List[Dict] containing account map with all taxonomy dimensions
             
         Raises:
             ValueError: If configuration is invalid or required data is missing
@@ -269,13 +288,13 @@ class TransformEngine:
         logger.info("Starting transformation process")
         
         # Validate that we have organization data
-        if self.org_data.empty:
+        if not self.org_data:
             logger.warning("Organization data is empty")
-            return pd.DataFrame()
+            return []
         
         # Process each account
         account_count = 0
-        for _, row in self.org_data.iterrows():
+        for row in self.org_data:
             account_id = str(row.get('id', '')).zfill(12)
             
             if not account_id or account_id == '000000000000':
@@ -311,8 +330,8 @@ class TransformEngine:
         # Apply taxonomy rules
         self.apply_taxonomy_rules()
         
-        # Convert to DataFrame
-        result_df = self.registry.to_dataframe()
+        # Convert to List[Dict]
+        result_df = self.registry.to_rows()
         logger.info("Transformation complete. Generated %d rows", len(result_df))
         
         return result_df
@@ -458,12 +477,12 @@ class DataLoader:
         self.config = config
         logger.info("Initialized DataLoader")
     
-    def load_from_athena(self) -> pd.DataFrame:
+    def load_from_athena(self) -> List[Dict]:
         """
         Load organization data from Athena using CID helper.
         
         Returns:
-            DataFrame containing organization data with columns:
+            List[Dict] containing organization data with columns:
             id, name, hierarchy, hierarchytags, payer_id, parenttags
             
         Raises:
@@ -500,46 +519,50 @@ class DataLoader:
                 include_header=True
             )
             
-            # Convert results to DataFrame
+            # Convert results to list of dicts
             if not results or len(results) < 2:
                 logger.warning("No data returned from Athena query")
-                return pd.DataFrame()
+                return []
             
             # First row is header, rest are data
             header = results[0]
             data = results[1:]
-            df = pd.DataFrame(data, columns=header)
+            rows = [dict(zip(header, row)) for row in data]
             
             # Parse hierarchytags column from string format to list of dicts
-            if 'hierarchytags' in df.columns:
+            if rows and 'hierarchytags' in rows[0]:
                 logger.info("Parsing hierarchytags column from Athena string format")
-                df['hierarchytags'] = df['hierarchytags'].apply(
-                    lambda x: parse_athena_tags(x) if pd.notna(x) else []
-                )
+                for row in rows:
+                    if 'hierarchytags' in row and not _is_null(row['hierarchytags']):
+                        row['hierarchytags'] = parse_athena_tags(row['hierarchytags'])
+                    else:
+                        row['hierarchytags'] = []
             
             # Parse parenttags column if present
-            if 'parenttags' in df.columns:
+            if rows and 'parenttags' in rows[0]:
                 logger.info("Parsing parenttags column from Athena string format")
-                df['parenttags'] = df['parenttags'].apply(
-                    lambda x: parse_athena_tags(x) if pd.notna(x) else []
-                )
+                for row in rows:
+                    if 'parenttags' in row and not _is_null(row['parenttags']):
+                        row['parenttags'] = parse_athena_tags(row['parenttags'])
+                    else:
+                        row['parenttags'] = []
             
-            logger.info("Successfully loaded %d accounts from Athena", len(df))
-            return df
+            logger.info("Successfully loaded %d accounts from Athena", len(rows))
+            return rows
             
         except Exception as e:
             logger.error("Failed to load data from Athena: %s", str(e), exc_info=True)
             raise RuntimeError(f"Athena query failed: {e}") from e
     
-    def load_from_file(self, file_path: Optional[str] = None) -> pd.DataFrame:
+    def load_from_file(self, file_path: Optional[str] = None) -> List[Dict]:
         """
-        Load data from file (Excel, CSV, or JSON).
+        Load data from CSV file.
         
         Args:
             file_path: Path to file. If None, uses path from configuration.
             
         Returns:
-            DataFrame containing file data
+            List[Dict] containing file data
             
         Raises:
             ValueError: If file path is not provided or configured
@@ -565,33 +588,24 @@ class DataLoader:
         suffix = file_path_obj.suffix.lower()
         
         try:
-            if suffix == '.json':
-                df = pd.read_json(file_path)
-                logger.info("Loaded %d records from JSON file", len(df))
-            elif suffix == '.csv':
-                df = pd.read_csv(file_path)
-                logger.info("Loaded %d records from CSV file", len(df))
-            elif suffix in ['.xlsx', '.xls']:
-                df = pd.read_excel(file_path)
-                logger.info("Loaded %d records from Excel file", len(df))
-            else:
-                raise ValueError(
-                    f"Unsupported file format: {suffix}. "
-                    "Supported formats: .json, .csv, .xlsx, .xls"
-                )
-            
-            return df
+            if suffix != '.csv':
+                raise ValueError(f"Unsupported file format: {suffix}. Only .csv is supported.")
+            with open(file_path, newline='', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+            logger.info("Loaded %d records from CSV file", len(rows))
+            return rows
             
         except Exception as e:
             logger.error("Failed to load file %s: %s", file_path, str(e), exc_info=True)
             raise
     
-    def get_available_tag_keys(self, org_data: Optional[pd.DataFrame] = None, tag_column: str = 'hierarchytags') -> list:
+    def get_available_tag_keys(self, org_data: Optional[List[Dict]] = None, tag_column: str = 'hierarchytags') -> list:
         """
         Extract available tag keys from hierarchytags column.
         
         Args:
-            org_data: DataFrame containing organization data with hierarchytags column.
+            org_data: List[Dict] containing organization data with hierarchytags column.
                      If None, loads data from Athena.
             tag_column: Name of the column containing tags (default: 'hierarchytags')
         
@@ -606,7 +620,7 @@ class DataLoader:
             logger.info("Loading organization data to extract tag keys")
             org_data = self.load_from_athena()
         
-        if tag_column not in org_data.columns:
+        if not org_data or tag_column not in org_data[0]:
             raise ValueError(f"{tag_column} column not found in organization data")
         
         logger.info("Extracting available tag keys from %s", tag_column)
@@ -614,7 +628,7 @@ class DataLoader:
         # Extract unique keys from hierarchytags
         tag_keys = set()
         
-        for tags_value in org_data[tag_column].dropna():
+        for tags_value in [row[tag_column] for row in org_data if not _is_null(row.get(tag_column))]:
             # Handle different formats
             if isinstance(tags_value, str):
                 # Parse Athena string format
@@ -1503,9 +1517,9 @@ class AutoDiscovery:
             logger.error("Failed to discover tag keys: %s", str(e))
             raise
     
-    def discover_account_id_column(self, df: pd.DataFrame) -> Optional[str]:
+    def discover_account_id_column(self, data: List[Dict]) -> Optional[str]:
         """
-        Auto-detect account ID column in dataframe using pattern matching.
+        Auto-detect account ID column in data using pattern matching.
         
         Checks for common account ID column name patterns (case-insensitive):
         - account_id
@@ -1515,7 +1529,7 @@ class AutoDiscovery:
         - aws_account_id
         
         Args:
-            df: DataFrame to search for account ID column
+            data: List[Dict] to search for account ID column
             
         Returns:
             Name of the detected account ID column, or None if not found
@@ -1530,7 +1544,7 @@ class AutoDiscovery:
         ]
         
         # Get lowercase column names for comparison
-        columns_lower = {col.lower(): col for col in df.columns}
+        columns_lower = {col.lower(): col for col in (data[0].keys() if data else [])}
         
         # Check each pattern in order
         for pattern in patterns:
@@ -1559,7 +1573,7 @@ class AutoDiscovery:
         import glob
         
         if extensions is None:
-            extensions = ['.json', '.csv', '.xlsx', '.xls']
+            extensions = ['.csv']
         
         # Ensure extensions start with dot
         extensions = [ext if ext.startswith('.') else f'.{ext}' for ext in extensions]
@@ -1812,24 +1826,25 @@ class UnifiedWorkflow:
 
         # Add payer_name column to preview if payer names are configured
         payer_names = config.get('payer_names', {})
-        if payer_names and 'payer_id' in transformed_data.columns:
-            transformed_data['payer_name'] = transformed_data['payer_id'].map(
-                lambda pid: payer_names.get(str(pid).zfill(12), str(pid)) if pd.notna(pid) else pid
-            )
+        if payer_names and transformed_data and 'payer_id' in transformed_data[0]:
+            for row in transformed_data:
+                pid = row.get('payer_id')
+                if not _is_null(pid):
+                    row['payer_name'] = payer_names.get(str(pid).zfill(12), str(pid))
 
         # Reorder columns: fixed prefix, then remaining sorted alphabetically
-        fixed_cols = ['account_id', 'account_name', 'payer_id', 'payer_name']
-        prefix = [c for c in fixed_cols if c in transformed_data.columns]
-        rest = sorted(
-            [c for c in transformed_data.columns if c not in fixed_cols],
-            key=str.lower
-        )
-        transformed_data = transformed_data[prefix + rest]
+        if transformed_data:
+            fixed_cols = ['account_id', 'account_name', 'payer_id', 'payer_name']
+            all_cols = list(transformed_data[0].keys())
+            prefix = [c for c in fixed_cols if c in all_cols]
+            rest = sorted([c for c in all_cols if c not in fixed_cols], key=str.lower)
+            ordered_cols = prefix + rest
+            transformed_data = [{col: row.get(col, '') for col in ordered_cols} for row in transformed_data]
 
         # Phase 5: Preview and Confirmation
         with spinner("Generating preview"):
             sql = self.writer._generate_account_map_transformation_sql(config, self.view_name, target_database)
-            sample = transformed_data.head(10)
+            sample = transformed_data[:10]
 
         if not self._preview_and_confirm(sql, sample):
             return {"status": "cancelled", "message": "User cancelled operation"}
@@ -1972,13 +1987,13 @@ class UnifiedWorkflow:
             if not account_col:
                 account_col = inquirer.select(
                     message="Select the account ID column:",
-                    choices=list(file_df.columns)
+                    choices=list(file_df[0].keys()) if file_df else []
                 ).execute()
             else:
                 logger.info("Auto-detected account ID column: %s", account_col)
 
             # Get file columns for dimensions (excluding account ID column)
-            file_columns = [col for col in file_df.columns if col != account_col]
+            file_columns = [col for col in (file_df[0].keys() if file_df else []) if col != account_col]
 
             # Ask which columns to use as taxonomy dimensions
             if file_columns:
@@ -2102,7 +2117,7 @@ class UnifiedWorkflow:
             if not account_col:
                 account_col = inquirer.select(
                     message="Select the account ID column:",
-                    choices=list(file_df.columns)
+                    choices=list(file_df[0].keys()) if file_df else []
                 ).execute()
             else:
                 logger.info("Auto-detected account ID column: %s", account_col)
@@ -2116,7 +2131,7 @@ class UnifiedWorkflow:
             config['metadata']['file_source_view'] = f"{self.view_name}_file_source"
 
             # Get file columns for dimensions (excluding account ID column)
-            file_columns = [col for col in file_df.columns if col != account_col]
+            file_columns = [col for col in (file_df[0].keys() if file_df else []) if col != account_col]
 
             # Ask which columns to use as taxonomy dimensions
             if file_columns:
@@ -2275,7 +2290,7 @@ class UnifiedWorkflow:
 
         return config
 
-    def _prompt_payer_names(self, config: dict, org_data: pd.DataFrame) -> dict:
+    def _prompt_payer_names(self, config: dict, org_data: List[Dict]) -> dict:
         """
         Prompt user to assign friendly names to management account IDs.
 
@@ -2284,19 +2299,19 @@ class UnifiedWorkflow:
 
         Args:
             config: Current configuration dictionary
-            org_data: Organization DataFrame with payer_id column
+            org_data: Organization List[Dict] with payer_id column
 
         Returns:
             dict: Updated configuration with optional payer_names
         """
 
-        if 'payer_id' not in org_data.columns:
+        if not org_data or 'payer_id' not in org_data[0]:
             logger.debug("No payer_id column in org data, skipping payer naming")
             return config
 
         # Get distinct payer IDs
-        unique_payers = org_data['payer_id'].dropna().unique()
-        unique_payers = sorted([str(p).zfill(12) for p in unique_payers if p])
+        unique_payers = set(str(r.get('payer_id', '')).zfill(12) for r in org_data if not _is_null(r.get('payer_id')))
+        unique_payers = sorted(unique_payers)
 
         if not unique_payers:
             return config
@@ -2324,7 +2339,7 @@ class UnifiedWorkflow:
 
         return config
 
-    def _preview_and_confirm(self, sql: str, sample_data: pd.DataFrame) -> bool:
+    def _preview_and_confirm(self, sql: str, sample_data: List[Dict]) -> bool:
         """
         Display SQL and sample output for user confirmation.
 
@@ -2344,7 +2359,7 @@ class UnifiedWorkflow:
         cid_print("\n" + "="*60)
         cid_print("📊 Preview: Sample Output (first 10 rows)")
         cid_print("="*60)
-        cid_print(sample_data.to_string())
+        cid_print(_format_table(sample_data))
         cid_print("="*60 + "\n")
 
         return inquirer.confirm(
@@ -2355,9 +2370,9 @@ class UnifiedWorkflow:
 
 class AthenaWriter:
     """
-    Writes account map DataFrames to Athena as views.
+    Writes account map data to Athena as views.
     
-    The AthenaWriter handles creating Athena views from DataFrames, with automatic
+    The AthenaWriter handles creating Athena views from List[Dict] data, with automatic
     splitting when SQL statements exceed Athena's size limits. It uses the CID
     Athena helper for all Athena operations.
     
@@ -2382,7 +2397,7 @@ class AthenaWriter:
     
     def create_view_from_values(
         self,
-        df: pd.DataFrame,
+        rows: List[Dict],
         view_name: str,
         database: str
     ) -> List[str]:
@@ -2390,11 +2405,11 @@ class AthenaWriter:
         Create Athena view(s) using VALUES clause, splitting if needed.
 
         This method generates SQL CREATE VIEW statements using the VALUES clause.
-        If the SQL exceeds MAX_SQL_SIZE, it splits the DataFrame into chunks
+        If the SQL exceeds MAX_SQL_SIZE, it splits the data into chunks
         and creates multiple views with numeric suffixes.
 
         Args:
-            df: DataFrame to convert to view
+            rows: List[Dict] to convert to view
             view_name: Base name for the view(s)
             database: Target database name
 
@@ -2405,13 +2420,13 @@ class AthenaWriter:
             Exception: If view creation fails
         """
         # Generate column list for the view
-        columns = df.columns.tolist()
+        columns = list(rows[0].keys()) if rows else []
 
         # Drop existing view/table first (since Athena doesn't support CREATE OR REPLACE VIEW)
         self._safe_drop_view_or_table(view_name, database)
 
         # Try to create a single view first
-        sql = self._generate_values_sql(df, view_name, database, columns)
+        sql = self._generate_values_sql(rows, view_name, database, columns)
         sql_size = self.calculate_sql_size(sql)
 
         if sql_size <= self.MAX_SQL_SIZE:
@@ -2424,9 +2439,9 @@ class AthenaWriter:
         else:
             # Need to split into multiple views
             logger.info("SQL size (%d bytes) exceeds limit (%d bytes), creating separate views due to size limits", sql_size, self.MAX_SQL_SIZE)
-            logger.info("Splitting DataFrame into multiple views")
+            logger.info("Splitting data into multiple views")
 
-            return self._create_split_views(df, view_name, database, columns)
+            return self._create_split_views(rows, view_name, database, columns)
 
     def _safe_drop_view_or_table(self, name: str, database: str) -> None:
         """
@@ -2475,7 +2490,7 @@ class AthenaWriter:
     
     def _generate_values_sql(
         self,
-        df: pd.DataFrame,
+        rows: List[Dict],
         view_name: str,
         database: str,
         columns: List[str]
@@ -2487,7 +2502,7 @@ class AthenaWriter:
         Column names are quoted to handle special characters and reserved words.
 
         Args:
-            df: DataFrame to convert
+            rows: List[Dict] to convert
             view_name: Name for the view
             database: Target database
             columns: List of column names
@@ -2497,11 +2512,11 @@ class AthenaWriter:
         """
         # Generate VALUES rows - treat all values as strings for Athena compatibility
         values_rows = []
-        for _, row in df.iterrows():
+        for row in rows:
             values = []
             for col in columns:
                 value = row[col]
-                if pd.isna(value) or value is None or str(value).strip() == '':
+                if _is_null(value) or value is None or str(value).strip() == '':
                     values.append('NULL')
                 else:
                     # Convert everything to string and escape single quotes
@@ -2528,16 +2543,16 @@ SELECT * FROM (
     
     def _create_split_views(
         self,
-        df: pd.DataFrame,
+        rows: List[Dict],
         view_name: str,
         database: str,
         columns: List[str]
     ) -> List[str]:
         """
-        Split DataFrame and create multiple views with progress indicators.
+        Split data and create multiple views with progress indicators.
         
         Args:
-            df: DataFrame to split
+            rows: List[Dict] to split
             view_name: Base name for views
             database: Target database
             columns: List of column names
@@ -2546,12 +2561,12 @@ SELECT * FROM (
             List of created view names
         """
         view_names = []
-        chunk_size = len(df) // 2  # Start by splitting in half
+        chunk_size = len(rows) // 2  # Start by splitting in half
 
         # Keep splitting until all chunks fit
         while chunk_size > 0:
             view_names = []
-            chunks = [df[i:i + chunk_size] for i in range(0, len(df), chunk_size)]
+            chunks = [rows[i:i + chunk_size] for i in range(0, len(rows), chunk_size)]
 
             all_fit = True
             for i, chunk in enumerate(chunks):
@@ -2683,7 +2698,7 @@ SELECT * FROM (
             # Re-raise with clean error message (without SQL)
             raise RuntimeError(f"View creation failed: {error_msg}") from None
 
-    def write_complete_mapping(self, config: dict, df: pd.DataFrame,
+    def write_complete_mapping(self, config: dict, rows: List[Dict],
                               database: str, view_name: str = 'account_map') -> dict:
         """
         Write all views: file source, config, and account map.
@@ -2696,7 +2711,7 @@ SELECT * FROM (
 
         Args:
             config: Configuration dictionary
-            df: Transformed account map DataFrame
+            rows: Transformed account map List[Dict]
             database: Target database name
             view_name: Name for the account map view (default: 'account_map')
 
@@ -2760,12 +2775,12 @@ SELECT * FROM (
                 if 'data' not in config['file_source']:
                     raise RuntimeError("File source specified but no file data loaded")
                 
-                file_df = config['file_source']['data'].copy()
+                file_df = list(config['file_source']['data'])
                 account_col = config['file_source']['account_column']
                 
                 # Rename account column to account_id for JOIN compatibility
                 if account_col != 'account_id':
-                    file_df = file_df.rename(columns={account_col: 'account_id'})
+                    file_df = [{('account_id' if k == account_col else k): v for k, v in row.items()} for row in file_df]
                     logger.info("Renamed column '%s' to 'account_id' for file source view", account_col)
                 
                 with spinner("Creating file source view"):
@@ -2807,7 +2822,7 @@ SELECT * FROM (
         # Step 4: Create account map view
         logger.info("Creating account map view: %s", view_name)
         with spinner("Creating account map view"):
-            success = self.create_account_map_view(config, df, view_name, database)
+            success = self.create_account_map_view(config, rows, view_name, database)
         results['account_map_view'] = view_name if success else None
 
         return results
@@ -2878,13 +2893,13 @@ SELECT * FROM (
             logger.error("Failed to identify related views: %s", e)
             return []
 
-    def create_file_source_view(self, df: pd.DataFrame, view_name: str,
+    def create_file_source_view(self, rows: List[Dict], view_name: str,
                                database: str) -> bool:
         """
         Create view from file data using VALUES clause.
 
         Args:
-            df: File data DataFrame
+            rows: File data List[Dict]
             view_name: Name for the file source view
             database: Target database name
 
@@ -2892,7 +2907,7 @@ SELECT * FROM (
             True if successful, False otherwise
         """
         try:
-            view_names = self.create_view_from_values(df, view_name, database)
+            view_names = self.create_view_from_values(rows, view_name, database)
 
             if len(view_names) == 1:
                 logger.info("Created file source view: %s", view_name)
@@ -2907,7 +2922,7 @@ SELECT * FROM (
             logger.error("Failed to create file source view: %s", e)
             return False
 
-    def create_account_map_view(self, config: dict, df: pd.DataFrame,
+    def create_account_map_view(self, config: dict, rows: List[Dict],
                                view_name: str, database: str) -> bool:
         """
         Create account map transformation view.
@@ -2916,12 +2931,12 @@ SELECT * FROM (
         that queries the source table directly. If file sources are used, it
         creates a view that JOINs with the file source view.
 
-        The transformed DataFrame is only used as a fallback if the SQL
+        The transformed data is only used as a fallback if the SQL
         generation fails or exceeds size limits.
 
         Args:
             config: Configuration dictionary
-            df: Transformed account map DataFrame (used as fallback only)
+            rows: Transformed account map List[Dict] (used as fallback only)
             view_name: Name for the account map view
             database: Target database name
 
@@ -2936,7 +2951,7 @@ SELECT * FROM (
             # Check size and split if needed
             if len(sql.encode('utf-8')) > self.MAX_SQL_SIZE:
                 logger.info("Account map SQL exceeds Athena size limit, creating separate views due to size limits")
-                view_names = self.create_view_from_values(df, view_name, database)
+                view_names = self.create_view_from_values(rows, view_name, database)
                 if len(view_names) > 1:
                     return self.create_union_view(view_names, view_name, database)
                 return True
@@ -3070,7 +3085,7 @@ SELECT
 
 
 def extract_from_tag(
-    org_data: pd.DataFrame,
+    org_data: List[Dict],
     account_id: str,
     tag_key: str
 ) -> Optional[str]:
@@ -3081,7 +3096,7 @@ def extract_from_tag(
     fields. This function searches for the specified tag_key and returns its value.
     
     Args:
-        org_data: DataFrame containing organization data with hierarchytags column
+        org_data: List[Dict] containing organization data with hierarchytags column
         account_id: 12-digit account ID to look up
         tag_key: Tag key to search for in hierarchytags
         
@@ -3089,23 +3104,20 @@ def extract_from_tag(
         Tag value if found, None otherwise
         
     Example:
-        >>> org_data = pd.DataFrame({
-        ...     'id': ['123456789012'],
-        ...     'hierarchytags': [[{'key': 'Environment', 'value': 'Production'}]]
-        ... })
+        >>> org_data = [{'id': '123456789012', 'hierarchytags': [{'key': 'Environment', 'value': 'Production'}]}]
         >>> extract_from_tag(org_data, '123456789012', 'Environment')
         'Production'
     """
     try:
         # Find the row matching the account ID
-        matching_rows = org_data.loc[org_data['id'] == account_id, 'hierarchytags']
+        matching = [r for r in org_data if r.get('id') == account_id]
         
-        if matching_rows.empty:
+        if not matching:
             logger.warning("Account ID %s not found in organization data", account_id)
             return None
         
         # Get the hierarchytags list for this account
-        tags_list = matching_rows.iloc[0]
+        tags_list = matching[0].get('hierarchytags')
         
         if not isinstance(tags_list, list):
             logger.warning("hierarchytags for account %s is not a list", account_id)
@@ -3131,7 +3143,7 @@ def extract_from_tag(
 
 
 def extract_from_account_name(
-    org_data: pd.DataFrame,
+    org_data: List[Dict],
     account_id: str,
     separator: str,
     index: int
@@ -3143,7 +3155,7 @@ def extract_from_account_name(
     the part at the specified index position (0-based).
     
     Args:
-        org_data: DataFrame containing organization data with name column
+        org_data: List[Dict] containing organization data with name column
         account_id: 12-digit account ID to look up
         separator: Character(s) to split the account name by
         index: Zero-based index of the part to extract
@@ -3152,25 +3164,22 @@ def extract_from_account_name(
         Extracted part of account name if found, None otherwise
         
     Example:
-        >>> org_data = pd.DataFrame({
-        ...     'id': ['123456789012'],
-        ...     'name': ['dev-company-team-01']
-        ... })
+        >>> org_data = [{'id': '123456789012', 'name': 'dev-company-team-01'}]
         >>> extract_from_account_name(org_data, '123456789012', '-', 1)
         'company'
     """
     try:
         # Find the row matching the account ID
-        matching_rows = org_data.loc[org_data['id'] == account_id, 'name']
+        matching = [r for r in org_data if r.get('id') == account_id]
         
-        if matching_rows.empty:
+        if not matching:
             logger.warning("Account ID %s not found in organization data", account_id)
             return None
         
         # Get the account name
-        account_name = matching_rows.iloc[0]
+        account_name = matching[0].get('name')
         
-        if not account_name or pd.isna(account_name):
+        if not account_name or _is_null(account_name):
             logger.warning("Account name is empty for account %s", account_id)
             return None
         
@@ -3202,7 +3211,7 @@ def extract_from_account_name(
 
 
 def extract_from_file(
-    file_data: pd.DataFrame,
+    file_data: List[Dict],
     account_id: str,
     column_name: str,
     account_id_column: str
@@ -3214,7 +3223,7 @@ def extract_from_file(
     from the specified column.
     
     Args:
-        file_data: DataFrame containing external file data
+        file_data: List[Dict] containing external file data
         account_id: 12-digit account ID to look up
         column_name: Name of column to extract value from
         account_id_column: Name of column containing account IDs in file_data
@@ -3223,41 +3232,37 @@ def extract_from_file(
         Value from specified column if found, None otherwise
         
     Example:
-        >>> file_data = pd.DataFrame({
-        ...     'AccountID': ['123456789012'],
-        ...     'Department': ['Engineering']
-        ... })
+        >>> file_data = [{'AccountID': '123456789012', 'Department': 'Engineering'}]
         >>> extract_from_file(file_data, '123456789012', 'Department', 'AccountID')
         'Engineering'
     """
     try:
         # Validate that required columns exist
-        if account_id_column not in file_data.columns:
+        if not file_data or account_id_column not in file_data[0]:
             logger.error(
                 "Account ID column '%s' not found in file data. Available columns: %s",
-                account_id_column, list(file_data.columns)
+                account_id_column, list(file_data[0].keys()) if file_data else []
             )
             return None
         
-        if column_name not in file_data.columns:
+        if column_name not in file_data[0]:
             logger.error(
                 "Column '%s' not found in file data. Available columns: %s",
-                column_name, list(file_data.columns)
+                column_name, list(file_data[0].keys())
             )
             return None
         
         # Find the row matching the account ID
-        # Need to handle both string and numeric account IDs in the file
-        matching_rows = file_data[file_data[account_id_column].astype(str).str.zfill(12) == account_id]
+        matching = [r for r in file_data if str(r.get(account_id_column, '')).zfill(12) == account_id]
         
-        if matching_rows.empty:
+        if not matching:
             logger.debug("Account ID %s not found in file data", account_id)
             return None
         
         # Get the value from the specified column
-        value = matching_rows.iloc[0][column_name]
+        value = matching[0].get(column_name)
         
-        if pd.isna(value):
+        if _is_null(value):
             logger.debug("Value is null for account %s in column %s", account_id, column_name)
             return None
         

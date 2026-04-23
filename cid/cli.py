@@ -81,7 +81,7 @@ def main(ctx, **kwargs):
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
 @click.option('--simple', help='use simple account mapping (legacy mode)', is_flag=True, default=False)
-@click.option('--file', 'source_file', help='path to CSV/Excel/JSON file for file-based taxonomy dimensions', default=None, type=click.Path(exists=True))
+@click.option('--file', 'source_file', help='path to CSV file for file-based taxonomy dimensions', default=None, type=click.Path(exists=True))
 @click.option('--database', 'source_database', help='source database containing organization_data (skips discovery)', default=None)
 @cid_command
 def map(ctx, **kwargs):
@@ -91,7 +91,7 @@ def map(ctx, **kwargs):
     Command options:
      --view-name TEXT                      Output view name (default: account_map)
      --simple                              Use simple account mapping (legacy mode for backwards compatibility)
-     --file PATH                           Path to CSV/Excel/JSON file for file-based taxonomy dimensions
+     --file PATH                           Path to CSV file for file-based taxonomy dimensions
      --database TEXT                       Source database containing organization_data (skips discovery)
     """
     ctx.obj.map(**kwargs)
