@@ -7,7 +7,7 @@ dashboards:
     dashboardId: pricing-change-analysis
     category: ADVANCED
     theme: MIDNIGHT
-    version: v1.0.1
+    version: v1.0.2
     data: |-
       AnalysisDefaults:
         DefaultNewSheetConfiguration:
@@ -208,9 +208,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 54618636-e6a1-4525-a2d7-66f0d4680199
+              SheetId: 7c3a2961-769c-4d6f-b603-5070885d61db
               VisualIds:
-              - 70624a38-e715-4dd7-b74c-31689bf9ae2a
+              - fcb7d558-e86c-45f9-a912-deb2cc4c529a
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: 4467d16b-16a8-475a-a7d0-95e71d0b0b6f
@@ -235,9 +235,9 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 54618636-e6a1-4525-a2d7-66f0d4680199
+              SheetId: 7c3a2961-769c-4d6f-b603-5070885d61db
               VisualIds:
-              - 1c666850-3e51-4b6e-9e98-082eec347075
+              - e101edf8-c3b2-41ee-88b5-dade459defd2
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
         FilterGroupId: aff7b88d-6750-41ff-a6b7-9f32ccfc05a8
@@ -255,18 +255,18 @@ dashboards:
           SelectedSheets:
             SheetVisualScopingConfigurations:
             - Scope: SELECTED_VISUALS
-              SheetId: 54618636-e6a1-4525-a2d7-66f0d4680199
+              SheetId: 7c3a2961-769c-4d6f-b603-5070885d61db
               VisualIds:
-              - 3479cb60-3929-4d30-8e60-218116cb8f7e
-              - bf9ce663-2ec4-4baa-b794-f863fb07c07a
-              - 1c666850-3e51-4b6e-9e98-082eec347075
-              - c488ca45-5ad1-48f5-a8a8-c46b62b18a12
-              - 0642d583-ca3b-4131-9c60-cdf8aec6f655
-              - c391e01e-5378-492a-b65d-9fabae8eb115
-              - f146a26a-b3bc-4ba3-9f56-e4be67b36000
-              - 70624a38-e715-4dd7-b74c-31689bf9ae2a
-              - b493c218-f91c-45ae-ba28-ee5bad9e0294
-              - ccf2a886-3f34-456c-97fe-a0082a0eaddc
+              - 01c3bc3d-4441-4a73-a664-22637bce3fbd
+              - d9e034fe-002b-4bfd-b45d-ce0b493b0695
+              - e101edf8-c3b2-41ee-88b5-dade459defd2
+              - 5a2492bf-2162-4dfa-88a4-e68257fd6d62
+              - d8f5b8f4-d209-4afe-b008-979a756e6987
+              - a748d989-196b-46da-8974-dd6ad33091c3
+              - c4b9bb80-b271-494e-a11b-28df0deb83c0
+              - fcb7d558-e86c-45f9-a912-deb2cc4c529a
+              - e9dec707-9ace-4f14-8fb0-93faa323454d
+              - 18d3ee4c-9b82-468e-9bfb-17334367c88f
         Status: ENABLED
       Options:
         CustomActionDefaults:
@@ -340,64 +340,64 @@ dashboards:
                 RowIndex: 2
                 RowSpan: 4
               - ColumnIndex: 0
-                ColumnSpan: 27
-                ElementId: b493c218-f91c-45ae-ba28-ee5bad9e0294
+                ColumnSpan: 20
+                ElementId: e9dec707-9ace-4f14-8fb0-93faa323454d
                 ElementType: VISUAL
                 RowIndex: 6
-                RowSpan: 8
-              - ColumnIndex: 27
-                ColumnSpan: 9
-                ElementId: 1c666850-3e51-4b6e-9e98-082eec347075
+                RowSpan: 7
+              - ColumnIndex: 20
+                ColumnSpan: 8
+                ElementId: fcb7d558-e86c-45f9-a912-deb2cc4c529a
                 ElementType: VISUAL
                 RowIndex: 6
-                RowSpan: 4
-              - ColumnIndex: 27
-                ColumnSpan: 9
-                ElementId: 70624a38-e715-4dd7-b74c-31689bf9ae2a
+                RowSpan: 7
+              - ColumnIndex: 28
+                ColumnSpan: 8
+                ElementId: e101edf8-c3b2-41ee-88b5-dade459defd2
                 ElementType: VISUAL
-                RowIndex: 10
-                RowSpan: 4
+                RowIndex: 6
+                RowSpan: 7
               - ColumnIndex: 0
                 ColumnSpan: 18
-                ElementId: c488ca45-5ad1-48f5-a8a8-c46b62b18a12
+                ElementId: 5a2492bf-2162-4dfa-88a4-e68257fd6d62
                 ElementType: VISUAL
-                RowIndex: 14
+                RowIndex: 13
                 RowSpan: 12
               - ColumnIndex: 18
                 ColumnSpan: 18
-                ElementId: 0642d583-ca3b-4131-9c60-cdf8aec6f655
+                ElementId: d8f5b8f4-d209-4afe-b008-979a756e6987
                 ElementType: VISUAL
-                RowIndex: 14
+                RowIndex: 13
                 RowSpan: 12
               - ColumnIndex: 0
                 ColumnSpan: 18
-                ElementId: c391e01e-5378-492a-b65d-9fabae8eb115
+                ElementId: a748d989-196b-46da-8974-dd6ad33091c3
                 ElementType: VISUAL
-                RowIndex: 26
+                RowIndex: 25
                 RowSpan: 12
               - ColumnIndex: 18
                 ColumnSpan: 18
-                ElementId: bf9ce663-2ec4-4baa-b794-f863fb07c07a
+                ElementId: d9e034fe-002b-4bfd-b45d-ce0b493b0695
                 ElementType: VISUAL
-                RowIndex: 26
+                RowIndex: 25
                 RowSpan: 12
               - ColumnIndex: 0
                 ColumnSpan: 18
-                ElementId: f146a26a-b3bc-4ba3-9f56-e4be67b36000
+                ElementId: c4b9bb80-b271-494e-a11b-28df0deb83c0
                 ElementType: VISUAL
-                RowIndex: 38
+                RowIndex: 37
                 RowSpan: 12
               - ColumnIndex: 18
                 ColumnSpan: 18
-                ElementId: 3479cb60-3929-4d30-8e60-218116cb8f7e
+                ElementId: 01c3bc3d-4441-4a73-a664-22637bce3fbd
                 ElementType: VISUAL
-                RowIndex: 38
+                RowIndex: 37
                 RowSpan: 12
               - ColumnIndex: 0
                 ColumnSpan: 36
-                ElementId: ccf2a886-3f34-456c-97fe-a0082a0eaddc
+                ElementId: 18d3ee4c-9b82-468e-9bfb-17334367c88f
                 ElementType: VISUAL
-                RowIndex: 50
+                RowIndex: 49
                 RowSpan: 12
         Name: Pricing Change Analysis
         ParameterControls:
@@ -452,7 +452,7 @@ dashboards:
                 ElementId: 5bca216d-d11a-41cb-8de2-a6e6c5a74ab0
                 ElementType: PARAMETER_CONTROL
                 RowSpan: 1
-        SheetId: 54618636-e6a1-4525-a2d7-66f0d4680199
+        SheetId: 7c3a2961-769c-4d6f-b603-5070885d61db
         TextBoxes:
         - Content: "<text-box>\n  <inline color=\"#f9a713\" font-size=\"14px\">\n    <b>Navigating\
             \ the Dashboard</b>\n  </inline>\n  <br/>\n  <inline color=\"Accent\" font-size=\"\
@@ -465,9 +465,10 @@ dashboards:
             \ while Net Unblended costs reflect the cost after discounts.</inline>\n  <br/>\n\
             \  <br/>\n  <inline color=\"Accent\" font-size=\"14px\">\n    <b>IMPORTANT:\_\
             </b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"14px\">This dashboard\
-            \ is updated monthly, and contains cost data only for pricing SKUs that had\
-            \ a pricing change in the last 18 months. It does not include non-service items\
-            \ including Marketplace, Support, and taxes.</inline>\n</text-box>"
+            \ is updated monthly, and does not include all cost data for the listed services,\
+            \ it displays data only for pricing SKUs with a pricing change in the last 24\
+            \ months. It also does not include non-service items including Marketplace,\
+            \ Support, and taxes.</inline>\n</text-box>"
           SheetTextBoxId: f2a2b736-8897-4854-91f8-d4b83eef0315
         - Content: "<text-box>\n  <inline font-size=\"40px\">\n    <b>AWS Pricing Change</b>\n\
             \  </inline>\n  <inline font-size=\"40px\">\n    <b/>\n  </inline>\n  <inline\
@@ -568,13 +569,15 @@ dashboards:
                   CustomLabel: <<$CostType>> Cost Difference
             ColumnHierarchies: []
             Subtitle:
+              FormatText:
+                RichText: <visual-subtitle>Covering previous 24 months</visual-subtitle>
               Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: "<visual-title>Total Cost Difference by Region - Service SKUs\
                   \ Impacted by Price Change\_</visual-title>"
               Visibility: VISIBLE
-            VisualId: 3479cb60-3929-4d30-8e60-218116cb8f7e
+            VisualId: 01c3bc3d-4441-4a73-a664-22637bce3fbd
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -585,8 +588,8 @@ dashboards:
                   Visibility: VISIBLE
                   VisibleRange:
                     PercentRange:
-                      From: 7.622641509433969
-                      To: 26.679245283018897
+                      From: 0.0
+                      To: 19.05660377358492
                 TickLabelOptions:
                   LabelOptions:
                     Visibility: VISIBLE
@@ -689,13 +692,15 @@ dashboards:
                 Visibility: VISIBLE
             ColumnHierarchies: []
             Subtitle:
+              FormatText:
+                RichText: <visual-subtitle>Covering previous 24 months</visual-subtitle>
               Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: <visual-title>Total Cost Difference Impact by Account Name and
                   Service</visual-title>
               Visibility: VISIBLE
-            VisualId: bf9ce663-2ec4-4baa-b794-f863fb07c07a
+            VisualId: d9e034fe-002b-4bfd-b45d-ce0b493b0695
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -790,7 +795,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Cost Difference Last month</visual-title>
               Visibility: VISIBLE
-            VisualId: 1c666850-3e51-4b6e-9e98-082eec347075
+            VisualId: e101edf8-c3b2-41ee-88b5-dade459defd2
         - LineChartVisual:
             Actions: []
             ChartConfiguration:
@@ -904,12 +909,14 @@ dashboards:
             - DateTimeHierarchy:
                 HierarchyId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.0.1750952743997
             Subtitle:
+              FormatText:
+                RichText: <visual-subtitle>For usage types of services with price changes</visual-subtitle>
               Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: <visual-title>Total Cost per Month (pre- and post-price change)</visual-title>
               Visibility: VISIBLE
-            VisualId: c488ca45-5ad1-48f5-a8a8-c46b62b18a12
+            VisualId: 5a2492bf-2162-4dfa-88a4-e68257fd6d62
         - ComboChartVisual:
             Actions: []
             ChartConfiguration:
@@ -923,7 +930,7 @@ dashboards:
                   Visibility: VISIBLE
                   VisibleRange:
                     PercentRange:
-                      From: 64.19294990723562
+                      From: 64.19294990723563
                       To: 100.0
               CategoryLabelOptions:
                 AxisLabelOptions:
@@ -971,14 +978,14 @@ dashboards:
                         DateTimeFormat: MMM YYYY
                         NullValueFormatConfiguration:
                           NullString: 'null'
-                      HierarchyId: 0ef20152-4645-42a9-8c3e-8fb31a746beb
+                      HierarchyId: 77e13a98-a952-4c23-94f5-e305c0390968
                   Colors:
                   - CategoricalDimensionField:
                       Column:
                         ColumnName: account_name
                         DataSetIdentifier: pricing_changes
                       FieldId: e85d379d-5917-4140-8634-d2b53f2d5d5a.account_name.2.1750954129306
-                      HierarchyId: a7005454-4247-4fa1-8ba9-6b8fb2ed87d6
+                      HierarchyId: d6ef317b-c5a8-458f-86fd-6320fd00d62d
                   LineValues:
                   - NumericalMeasureField:
                       AggregationFunction:
@@ -1064,10 +1071,10 @@ dashboards:
                 - ColumnName: account_name
                   DataSetIdentifier: pricing_changes
                 DrillDownFilters: []
-                HierarchyId: a7005454-4247-4fa1-8ba9-6b8fb2ed87d6
+                HierarchyId: d6ef317b-c5a8-458f-86fd-6320fd00d62d
             - DateTimeHierarchy:
                 DrillDownFilters: []
-                HierarchyId: 0ef20152-4645-42a9-8c3e-8fb31a746beb
+                HierarchyId: 77e13a98-a952-4c23-94f5-e305c0390968
             Subtitle:
               Visibility: VISIBLE
             Title:
@@ -1075,7 +1082,7 @@ dashboards:
                 RichText: <visual-title>Monthly Cost Difference by Payer / Account Name  (Drill
                   Down Available)</visual-title>
               Visibility: VISIBLE
-            VisualId: 0642d583-ca3b-4131-9c60-cdf8aec6f655
+            VisualId: d8f5b8f4-d209-4afe-b008-979a756e6987
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -1171,12 +1178,14 @@ dashboards:
                   CustomLabel: <<$CostType>> Cost Difference
             ColumnHierarchies: []
             Subtitle:
+              FormatText:
+                RichText: <visual-subtitle>Covering previous 24 months</visual-subtitle>
               Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: <visual-title>Total Cost Difference Impact by Payer Account</visual-title>
               Visibility: VISIBLE
-            VisualId: c391e01e-5378-492a-b65d-9fabae8eb115
+            VisualId: a748d989-196b-46da-8974-dd6ad33091c3
         - BarChartVisual:
             Actions: []
             ChartConfiguration:
@@ -1263,12 +1272,14 @@ dashboards:
                   CustomLabel: <<$CostType>> Cost Difference
             ColumnHierarchies: []
             Subtitle:
+              FormatText:
+                RichText: <visual-subtitle>Covering previous 24 months</visual-subtitle>
               Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: <visual-title>Total Cost Difference Impact by Service</visual-title>
               Visibility: VISIBLE
-            VisualId: f146a26a-b3bc-4ba3-9f56-e4be67b36000
+            VisualId: c4b9bb80-b271-494e-a11b-28df0deb83c0
         - KPIVisual:
             Actions: []
             ChartConfiguration:
@@ -1365,7 +1376,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Cost Difference 2 Months Ago</visual-title>
               Visibility: VISIBLE
-            VisualId: 70624a38-e715-4dd7-b74c-31689bf9ae2a
+            VisualId: fcb7d558-e86c-45f9-a912-deb2cc4c529a
         - PivotTableVisual:
             Actions:
             - ActionOperations:
@@ -1475,7 +1486,7 @@ dashboards:
               FormatText:
                 RichText: <visual-title>Summary of Cost Differences by Service and Month</visual-title>
               Visibility: VISIBLE
-            VisualId: b493c218-f91c-45ae-ba28-ee5bad9e0294
+            VisualId: e9dec707-9ace-4f14-8fb0-93faa323454d
         - PivotTableVisual:
             Actions: []
             ChartConfiguration:
@@ -1527,7 +1538,11 @@ dashboards:
                 - CustomLabel: Cost Difference
                   FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.bill_month.3.1752164261371
                   Visibility: VISIBLE
-                - FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.7.1767893288597
+                - CustomLabel: Cost Difference
+                  FieldId: 29dc5db1-3621-4989-b592-a132b263a5b6.7.1767893288597
+                  Visibility: VISIBLE
+                - CustomLabel: Usage
+                  FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.usage_amount_excl_free_tier.8.1776962158048
                   Visibility: VISIBLE
               FieldWells:
                 PivotTableAggregatedFieldWells:
@@ -1592,6 +1607,13 @@ dashboards:
                                 Symbol: COMMA
                                 Visibility: VISIBLE
                             Symbol: USD
+                  - NumericalMeasureField:
+                      AggregationFunction:
+                        SimpleNumericalAggregation: SUM
+                      Column:
+                        ColumnName: usage_amount_excl_free_tier
+                        DataSetIdentifier: pricing_changes
+                      FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.usage_amount_excl_free_tier.8.1776962158048
               SortConfiguration:
                 FieldSortOptions: []
               TableOptions:
@@ -1602,12 +1624,17 @@ dashboards:
                 ColumnHeaderStyle:
                   TextWrap: NONE
                 ColumnNamesVisibility: HIDDEN
+                DefaultCellWidth: 105px
                 MetricPlacement: COLUMN
                 RowAlternateColorOptions:
                   Status: ENABLED
                   UsePrimaryBackgroundColor: ENABLED
                 RowFieldNamesStyle:
                   TextWrap: NONE
+                RowHeaderStyle:
+                  FontConfiguration:
+                    FontSize:
+                      Absolute: 10px
                 RowsLayout: TABULAR
                 SingleMetricVisibility: HIDDEN
                 ToggleButtonsVisibility: HIDDEN
@@ -1617,6 +1644,10 @@ dashboards:
                 ColumnTotalOptions:
                   CustomLabel: Service Total
                   Placement: END
+                  TotalAggregationOptions:
+                  - FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.usage_amount_excl_free_tier.8.1776962158048
+                    TotalAggregationFunction:
+                      SimpleTotalAggregationFunction: NONE
                   TotalsVisibility: VISIBLE
                 RowSubtotalOptions:
                   CustomLabel: <<$aws:subtotalDimension>> Subtotal
@@ -1631,17 +1662,25 @@ dashboards:
                 RowTotalOptions:
                   CustomLabel: Monthly Total
                   Placement: AUTO
+                  TotalAggregationOptions:
+                  - FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.usage_amount_excl_free_tier.8.1776962158048
+                    TotalAggregationFunction:
+                      SimpleTotalAggregationFunction: NONE
                   TotalsVisibility: VISIBLE
             Subtitle:
               FormatText:
-                RichText: <visual-subtitle>Monthly Cost Difference shown per rate</visual-subtitle>
+                RichText: "<visual-subtitle>\n  Monthly Cost Difference shown per rate\n\
+                  \  <br/>\n  Each SKU represents a specific usage type for a given service,\
+                  \ per region. The Description column contains the public pricing before\
+                  \ and after the pricing change. The Rate column contains the billed rate\
+                  \ for\n  <parameter>${CostType}</parameter>\n  \_Cost.\n</visual-subtitle>"
               Visibility: VISIBLE
             Title:
               FormatText:
                 RichText: "<visual-title>\n  Product SKUs with rate changes (\n  <parameter>${CostType}</parameter>\n\
                   \  \_Cost)\n</visual-title>"
               Visibility: VISIBLE
-            VisualId: ccf2a886-3f34-456c-97fe-a0082a0eaddc
+            VisualId: 18d3ee4c-9b82-468e-9bfb-17334367c88f
       - ContentType: INTERACTIVE
         FilterControls:
         - CrossSheet:
@@ -1666,7 +1705,7 @@ dashboards:
               Elements:
               - ColumnIndex: 0
                 ColumnSpan: 36
-                ElementId: 1966c233-f14e-4682-aa33-c0cae1222f3a
+                ElementId: 306d1d8c-4d15-4a15-81f3-5ec296ea4865
                 ElementType: VISUAL
                 RowIndex: 0
                 RowSpan: 12
@@ -1677,13 +1716,13 @@ dashboards:
                 RowIndex: 12
                 RowSpan: 8
         Name: About
-        SheetId: b5d3ebb5-ec1a-4ca2-b35f-d0a587e6ccc2
+        SheetId: 0260e1e4-1884-4827-b587-d939a7ae0e8f
         TextBoxes:
         - Content: "<text-box>\n  <block align=\"center\">\n    <inline font-size=\"40px\"\
             >\n      <a href=\"https://www.wellarchitectedlabs.com/cloud-intelligence-dashboards/\"\
             \ target=\"_blank\">Pricing Change Analysis</a>\n    </inline>\n  </block>\n\
             \  <br/>\n  <block align=\"center\">\n    <inline font-size=\"40px\">Version\
-            \ 1.0.1</inline>\n  </block>\n  <br/>\n  <br/>\n  <br/>\n  <br/>\n  <block align=\"\
+            \ 1.0.2</inline>\n  </block>\n  <br/>\n  <br/>\n  <br/>\n  <br/>\n  <block align=\"\
             right\">Built and maintained by: Jason Walp, Mohamed Sherif, Hicham Lahlali,\
             \ Prem Chandran</block>\n  <br/>\n  <block align=\"right\">\n    Learn more\
             \ about AWS Cloud Intelligence Dashboards (CID) on\n    <inline color=\"#61d1d6\"\
@@ -1729,7 +1768,7 @@ dashboards:
                     <inline font-size="54.88px">Notices</inline>
                   </visual-title>
               Visibility: VISIBLE
-            VisualId: 1966c233-f14e-4682-aa33-c0cae1222f3a
+            VisualId: 306d1d8c-4d15-4a15-81f3-5ec296ea4865
 datasets:
   pricing_changes:
     data:
@@ -1903,7 +1942,7 @@ views:
          , count(DISTINCT pricing_public_on_demand_rate) "count_sku_pricing"
          FROM
            ${cur_table_name}
-         WHERE ((product_sku <> '') AND (NOT ("pricing_public_on_demand_rate" IN ('0.0000000000', ''))) AND (NOT ("line_item_unblended_rate" IN (''))) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '18' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)))
+         WHERE ((product_sku <> '') AND (NOT ("pricing_public_on_demand_rate" IN ('0.0000000000', ''))) AND (NOT ("line_item_unblended_rate" IN (''))) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '24' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)))
          GROUP BY "product_product_name", "product_sku"
       )
       , cur_data AS (
@@ -1928,7 +1967,7 @@ views:
       FROM
         "count_sku_with_pricing_change"
       WHERE ("count_sku_pricing" > 1)
-      )) AND (NOT ("pricing_public_on_demand_rate" IN ('0.0000000000', ''))) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '18' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)))
+      )) AND (NOT ("pricing_public_on_demand_rate" IN ('0.0000000000', ''))) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '24' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)))
          GROUP BY 1, "product_product_name", 3, 4, "product_region", "product_sku", "pricing_rate_code", "line_item_line_item_description", "pricing_unit", "line_item_unblended_rate"
       )
       , sku_table AS (
@@ -2012,6 +2051,6 @@ views:
       FROM
         "count_sku_with_pricing_change"
       WHERE ("count_sku_pricing" > 1)
-      )) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '18' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)))
+      )) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '24' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)))
       GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
       ORDER BY "bill_month" ASC, "product_sku" ASC, "linked_account_number" ASC
