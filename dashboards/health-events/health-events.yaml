@@ -121,7 +121,11 @@ datasets:
               NewColumnName: account_id[account_map]
           Source:
             PhysicalTableId: fcf163c9-994b-477d-ace3-2c0873880793
-        6e7189b3-1618-41d1-b05f-b20e26559031:
+        831bafaa-7ba4-4096-bb93-1a519a76c576:
+          Alias: health_events_view
+          Source:
+            PhysicalTableId: b6e834d2-c61b-4327-a27a-e1d4b53d3d92
+        e4927e2b-6d92-4a76-bf7c-110522e1f622:
           Alias: Intermediate Table
           DataTransforms:
           - CreateColumnsOperation:
@@ -205,10 +209,9 @@ datasets:
               Columns:
               - ColumnName: is_lifecycle_event
                 ColumnId: 5c92765c-f7e2-4912-bcbd-614326c3f2fb
-                Expression: "ifelse(\n    strlen({deprecated_versions}) > 0, \"Yes\"\
-                  ,\n\tcontains({event_code}, \"PLANNED_LIFECYCLE_EVENT\"), \"Yes\"\
-                  ,\n\tcontains({event_code}, \"DEPRECATION\"), \"Yes\",\n\t\"No\"\
-                  \n)"
+                Expression: "ifelse(\n    strlen({deprecated_versions}) > 0, 1,\n\t\
+                  contains({event_code}, \"PLANNED_LIFECYCLE_EVENT\"), 1,\n\tcontains({event_code},\
+                  \ \"DEPRECATION\"), 1,\n\t0\n)"
           - CreateColumnsOperation:
               Columns:
               - ColumnName: event_title_full
@@ -216,9 +219,18 @@ datasets:
                 Expression: |-
                   concat(
                       service, ": ",
-                      ifelse({is_lifecycle_event} = "Yes", " PLE ", ""),
+                      ifelse({is_lifecycle_event} = 1, " PLE ", ""),
                       ifelse(strlen(deprecated_versions_friendly) > 0, deprecated_versions_friendly, event_code_common)
                   )
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: actionability_icon
+                ColumnId: 3f7b5a03-8847-4da0-9633-57f63bda651d
+                Expression: "ifelse(\n    contains({actionability}, \"may be required\"\
+                  , CASE_INSENSITIVE), \"\u2753 Action may be required\",\n    contains({actionability},\
+                  \ \"action required\", CASE_INSENSITIVE), \"\U0001F6A8 Action required\"\
+                  ,\n    contains({actionability}, \"informational\", CASE_INSENSITIVE),\
+                  \ \"\u2139\uFE0F Informational\",\n    actionability\n)"
           - ProjectOperation:
               ProjectedColumns:
               - payer_account_id
@@ -273,16 +285,13 @@ datasets:
               - account_name_id
               - event_title_full
               - is_lifecycle_event
+              - actionability_icon
           Source:
             JoinInstruction:
               LeftOperand: 831bafaa-7ba4-4096-bb93-1a519a76c576
               RightOperand: 46cadef7-f68d-4244-8e74-5a8fa370bd62
               Type: LEFT
               OnClause: '{account_id} = {account_id[account_map]}'
-        831bafaa-7ba4-4096-bb93-1a519a76c576:
-          Alias: health_events_view
-          Source:
-            PhysicalTableId: b6e834d2-c61b-4327-a27a-e1d4b53d3d92
     dependsOn:
       views:
       - health_events_view
