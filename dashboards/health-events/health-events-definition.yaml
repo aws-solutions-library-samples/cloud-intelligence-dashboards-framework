@@ -68,10 +68,10 @@ CalculatedFields:
 - DataSetIdentifier: health_events_view
   Expression: |-
     ifelse(
-        ${UtilDescriptionPageNumber} = 2, {Description 2},
-        ${UtilDescriptionPageNumber} = 3, {Description 3},
-        ${UtilDescriptionPageNumber} = 4, {Description 4},
-        ${UtilDescriptionPageNumber} = 5, {Description 5},
+        ${6ae4e600-65a3-4537-b750-9cc75de0b58d} = 2, {Description 2},
+        ${6ae4e600-65a3-4537-b750-9cc75de0b58d} = 3, {Description 3},
+        ${6ae4e600-65a3-4537-b750-9cc75de0b58d} = 4, {Description 4},
+        ${6ae4e600-65a3-4537-b750-9cc75de0b58d} = 5, {Description 5},
         {Description 1}
     )
   Name: Description Page
@@ -89,6 +89,23 @@ CalculatedFields:
     )
   Name: Event Category
 - DataSetIdentifier: health_events_view
+  Expression: |-
+    ifelse(
+        {util_single_event_filter} = 0, "Click a line item to the left to reveal its description",
+        left(${UtilDescriptionPage}, 1) = "0", {Event Summary},
+        concat("(", region, ")
+    ", ifelse(
+                ${UtilDescriptionPage} = "1", {Description 1},
+                ${UtilDescriptionPage} = "2", {Description 2},
+                ${UtilDescriptionPage} = "3", {Description 3},
+                ${UtilDescriptionPage} = "4", {Description 4},
+                ${UtilDescriptionPage} = "5", {Description 5},
+                {Description 1}
+            )
+        )
+    )
+  Name: Event Description Paginated
+- DataSetIdentifier: health_events_view
   Expression: '{event_group_title_service}'
   Name: Event Full Title
 - DataSetIdentifier: health_events_view
@@ -102,16 +119,15 @@ CalculatedFields:
     )
   Name: Event Status
 - DataSetIdentifier: health_events_view
-  Expression: "ifelse({util_single_event_filter} = 1,\nconcat(\n\"TITLE:   \", {event_title},\n\
-    ifelse({is_lifecycle_event} = 1, \"\nPLANNED LIFECYCLE EVENT \U0001F98B\",\"\"\
-    ),\"\nSTATUS:   \", {event_status_icon}, ifelse({relative_start_days_from_now}\
-    \ > 0 and {relative_start_days_from_now} < 30, \" \u26A0\uFE0F\", \"\"),\" (starts\
-    \ in \", toString({relative_start_days_from_now}), \" days)\nSERVICE:   \", service,\
-    \ \"\nREGION:   \", region, \"\nCATEGORY:   \", {event_category_icon}, \"\nPERSONAS:\
-    \   \", {persona_all_icons}, \"\nACTION:   \", actionability, \"\nSTART:   \"\
-    , formatDate({start_time}, \"MMM-dd-yyyy\"), ifelse(isNull({end_time}), \"\",\
-    \ concat(\"    END:   \", {End Day}))\n), \"Click a line item to the left to reveal\
-    \ its description\")"
+  Expression: "concat(\n\"TITLE:   \", {event_title},\nifelse({is_lifecycle_event}\
+    \ = 1, \"\nPLANNED LIFECYCLE EVENT \U0001F98B\",\"\"),\"\nSERVICE:   \", service,\
+    \ \"\nREGION:   \", region, \"\nCATEGORY:   \", {event_category_icon}, \"\nACTIONABILITY:\
+    \   \", {actionability_icon}, \"\nPERSONAS:   \", {persona_all_icons}, \"\nSTATUS:\
+    \   \", {event_status_icon}, ifelse({relative_start_days_from_now} > 0 and {relative_start_days_from_now}\
+    \ < 30, \" \u26A0\uFE0F\", \"\"),\"  (starts in \", toString({relative_start_days_from_now}),\
+    \ \" days)\nSTART:   \", formatDate({start_time}, \"MMM-dd-yyyy\"), ifelse(isNull({end_time}),\
+    \ \"\", concat(\"    END:   \", {End Day})), \"\nLAST UPDATE:   \", formatDate({last_updated_time},\
+    \ \"MMM-dd-yyyy\"), \"  (\", {last_update_days_ago_text}, \")\"\n)"
   Name: Event Summary
 - DataSetIdentifier: health_events_view
   Expression: |-
@@ -210,8 +226,8 @@ CalculatedFields:
   Expression: dateDiff(now(), {start_time}, "DD") >= ${ConfigNearDaysThreshold}
   Name: is_future_event
 - DataSetIdentifier: health_events_view
-  Expression: "ifelse({is_lifecycle_event} = 1, \"\U0001F98B PLE\", \"Non-PLE\")"
-  Name: is_lifecycle_event_text_icon
+  Expression: "ifelse({is_lifecycle_event} = 1, \"\U0001F98B\", \"\u2014\")"
+  Name: is_lifecycle_event_icon
 - DataSetIdentifier: health_events_view
   Expression: |-
     ifelse(
@@ -316,51 +332,6 @@ CalculatedFields:
   Expression: dateDiff(now(), {start_time}, "DD")
   Name: relative_start_days_from_now
 - DataSetIdentifier: health_events_view
-  Expression: |-
-    ifelse({util_single_event_filter} = 1, {Description 1}, "Click a line item to the left to reveal its description")
-    /*
-    ifelse({is_single_event_filter} = 1,
-    concat({Event Summary}, "
-    ", {Description 1}
-    ),
-    "Click a line item to the left to reveal its description")
-    */
-  Name: single_event_description_1
-- DataSetIdentifier: health_events_view
-  Expression: |-
-    ifelse({util_single_event_filter} = 1,
-    {Description 2}
-    ,
-    "Click a line item to the left to reveal its description")
-  Name: single_event_description_2
-- DataSetIdentifier: health_events_view
-  Expression: |-
-    ifelse({util_single_event_filter} = 1,
-    {Description 3}
-    ,
-    "Click a line item to the left to reveal its description")
-  Name: single_event_description_3
-- DataSetIdentifier: health_events_view
-  Expression: |-
-    ifelse({util_single_event_filter} = 1,
-    {Description 4}
-    ,
-    "Click a line item to the left to reveal its description")
-  Name: single_event_description_4
-- DataSetIdentifier: health_events_view
-  Expression: |-
-    ifelse({util_single_event_filter} = 1,
-    {Description 5}
-    ,
-    "Click a line item to the left to reveal its description")
-  Name: single_event_description_5
-- DataSetIdentifier: health_events_view
-  Expression: |-
-    ifelse({util_single_event_filter} = 1,
-    region
-    , "")
-  Name: single_event_region
-- DataSetIdentifier: health_events_view
   Expression: concat(formatDate({start_time}, "MMM-dd-yyyy"), "  (", toString({relative_start_days_from_now}),
     " days)")
   Name: start_date_with_days_out
@@ -417,8 +388,9 @@ CalculatedFields:
     Status},tags,{Resource Status},Description)
   Name: util_search_context
 - DataSetIdentifier: health_events_view
-  Expression: distinctCountOver(ifelse(${ConfigEventGroupFormat} = "Service and Event
-    Title",{event_group_title_service},{event_group}), [], PRE_AGG) = 1
+  Expression: ifelse(distinctCountOver(ifelse(${ConfigEventGroupFormat} = "Service
+    and Event Title",{event_group_title_service},{event_group}), [], PRE_AGG) = 1,
+    1, 0)
   Name: util_single_event_filter
 - DataSetIdentifier: health_events_view
   Expression: concat({account_id},region,{affected_entity_value})
@@ -1305,14 +1277,6 @@ ParameterDeclarations:
     ParameterValueType: SINGLE_VALUED
     ValueWhenUnset:
       ValueWhenUnsetOption: RECOMMENDED_VALUE
-- IntegerParameterDeclaration:
-    DefaultValues:
-      StaticValues:
-      - 1
-    Name: UtilDescriptionPageNumber
-    ParameterValueType: SINGLE_VALUED
-    ValueWhenUnset:
-      ValueWhenUnsetOption: RECOMMENDED_VALUE
 - StringParameterDeclaration:
     DefaultValues: {}
     Name: FilterPayer
@@ -1450,6 +1414,14 @@ ParameterDeclarations:
       StaticValues:
       - "Lifecycle Events only (\U0001F98B)"
     Name: FilterEventScopeMode
+    ParameterValueType: SINGLE_VALUED
+    ValueWhenUnset:
+      ValueWhenUnsetOption: RECOMMENDED_VALUE
+- StringParameterDeclaration:
+    DefaultValues:
+      StaticValues:
+      - 0 (Summary)
+    Name: UtilDescriptionPage
     ParameterValueType: SINGLE_VALUED
     ValueWhenUnset:
       ValueWhenUnsetOption: RECOMMENDED_VALUE
@@ -1744,76 +1716,88 @@ Sheets:
           RowIndex: 42
           RowSpan: 1
         - ColumnIndex: 0
-          ColumnSpan: 14
+          ColumnSpan: 8
           ElementId: ab2de069-97f8-42b3-ad0c-b43ffe8c8db2
           ElementType: TEXT_BOX
           RowIndex: 43
-          RowSpan: 3
-        - ColumnIndex: 14
+          RowSpan: 2
+        - ColumnIndex: 8
+          ColumnSpan: 12
+          ElementId: 1343bcfc-1d9b-4282-9031-ca232c315d8c
+          ElementType: TEXT_BOX
+          RowIndex: 43
+          RowSpan: 2
+        - ColumnIndex: 20
           ColumnSpan: 6
           ElementId: 0ac8893b-e33c-4038-a43f-9c79646f9dcb
           ElementType: VISUAL
           RowIndex: 43
-          RowSpan: 3
-        - ColumnIndex: 20
-          ColumnSpan: 8
+          RowSpan: 2
+        - ColumnIndex: 26
+          ColumnSpan: 5
           ElementId: c0892d97-5820-409c-abdc-0397e8e33ea0
           ElementType: VISUAL
           RowIndex: 43
-          RowSpan: 3
-        - ColumnIndex: 28
-          ColumnSpan: 8
+          RowSpan: 2
+        - ColumnIndex: 31
+          ColumnSpan: 5
           ElementId: ec08f1b1-27dd-4824-8c79-fe0c9bd8ab62
           ElementType: VISUAL
           RowIndex: 43
-          RowSpan: 3
+          RowSpan: 2
         - ColumnIndex: 0
-          ColumnSpan: 26
+          ColumnSpan: 23
           ElementId: 8ead3828-b76c-4e61-ae1c-e493fc9378bc
           ElementType: VISUAL
-          RowIndex: 46
+          RowIndex: 45
           RowSpan: 10
-        - ColumnIndex: 26
+        - ColumnIndex: 23
           ColumnSpan: 10
           ElementId: 6589eee2-0aeb-4f0b-b2b5-d467e0c60202
           ElementType: VISUAL
-          RowIndex: 46
+          RowIndex: 45
+          RowSpan: 10
+        - ColumnIndex: 33
+          ColumnSpan: 3
+          ElementId: f9167c97-6fa5-4564-a6c3-221d1f832eef
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 45
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 35c731c0-767d-4144-98ca-e302dfbcc62d
           ElementType: TEXT_BOX
-          RowIndex: 56
+          RowIndex: 55
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 24
           ElementId: 1af54d7d-86aa-4909-a3ae-42bf9eac0db9
           ElementType: TEXT_BOX
-          RowIndex: 59
+          RowIndex: 58
           RowSpan: 4
         - ColumnIndex: 24
           ColumnSpan: 5
           ElementId: ac9de249-413c-4358-88dc-0e13f4428c0e
           ElementType: PARAMETER_CONTROL
-          RowIndex: 59
+          RowIndex: 58
           RowSpan: 4
         - ColumnIndex: 29
           ColumnSpan: 7
           ElementId: 84f8c067-da87-41a4-87fd-c6411a3dc2c9
           ElementType: PARAMETER_CONTROL
-          RowIndex: 59
+          RowIndex: 58
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 15e81844-8c70-4237-8770-0fd3babd74d7
           ElementType: VISUAL
-          RowIndex: 63
+          RowIndex: 62
           RowSpan: 15
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 4bbe50d9-21b1-4206-b014-8ee18b3e8097
           ElementType: VISUAL
-          RowIndex: 78
+          RowIndex: 77
           RowSpan: 16
   Name: Main
   ParameterControls:
@@ -2053,6 +2037,31 @@ Sheets:
       SourceParameterName: RecentGrouping
       Title: DISPLAY MODE
       Type: SINGLE_SELECT
+  - List:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SearchOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: HIDDEN
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      ParameterControlId: f9167c97-6fa5-4564-a6c3-221d1f832eef
+      SelectableValues:
+        Values:
+        - 0 (Summary)
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+      SourceParameterName: UtilDescriptionPage
+      Title: PAGE
+      Type: SINGLE_SELECT
   - Dropdown:
       CascadingControlConfiguration:
         SourceControls:
@@ -2227,6 +2236,26 @@ Sheets:
       ParameterControlId: a0bfef67-98ef-42e8-bb68-9687df3ed937
       SourceParameterName: FilterSearchText
       Title: SEARCH
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnSpan: 3
+          ElementId: 23311185-063e-4acc-a6d8-2bdd0af488a1
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: a1c0b335-2ccd-46c5-aa0f-f78f738c3a60
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: 8e2ffe8a-2158-4c81-87ff-bdcc0e1e9e2f
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 3
+          ElementId: 59be02b4-0835-410b-9a92-ec797f830d2f
+          ElementType: PARAMETER_CONTROL
+          RowSpan: 1
   SheetId: e523a577-b3fc-4e38-bd7e-bdb892fbbfd6
   TextBoxes:
   - Content: "<text-box>\n  <inline color=\"#fc850d\" font-family=\"Amazon Ember\"\
@@ -2366,24 +2395,31 @@ Sheets:
       40px\">\n    <b>D</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
       36px\">\n    <b>OWN</b>\n  </inline>\n</text-box>"
     SheetTextBoxId: 5fadb987-38e4-45ea-bad2-03346fecc344
-  - Content: "<text-box>\n  <inline color=\"Accent\" font-size=\"28px\">\n    <b>Filtered\
-      \ Events</b>\n  </inline>\n  <br/>\n  <inline color=\"PrimaryForeground\" font-size=\"\
-      12px\">\n    <b>CATEGORY KEY:\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
-      \ font-size=\"12px\">&#128293;= Issue   &#128276;= Notification   &#128198;=Scheduled\
-      \ Change   &#128269;= Investigation</inline>\n  <br/>\n  <inline font-size=\"\
-      12px\">\n    <b>ACTIONABILITY KEY:</b>\n  </inline>\n  <inline font-size=\"\
-      12px\">\u2753= Action may be required  &#128680;= Action required \u2139\uFE0F\
-      \ = Informational</inline>\n  <br/>\n  <inline font-size=\"12px\">PERSONA KEY:\
-      \ &#128736;\uFE0F = Operations  &#129534; = Billing  &#128737;\uFE0F = Security</inline>\n\
-      \  <br/>\n  <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <b>STATUS\
-      \ KEY:\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\" font-size=\"\
-      12px\">&#128308;= Open   &#128992; = Impending   &#128993; = Future   &#128994;\
-      \ = Closed</inline>\n  <br/>\n</text-box>"
+  - Content: |-
+      <text-box>
+        <inline color="Accent" font-size="28px">
+          <b>Filtered Events</b>
+        </inline>
+      </text-box>
     SheetTextBoxId: ab2de069-97f8-42b3-ad0c-b43ffe8c8db2
   - Content: "<text-box>\_\_\_\_\_\_</text-box>"
     SheetTextBoxId: 45a079ef-1123-49d4-845b-dcc4fc2ef7c3
   - Content: "<text-box>\_\_\_\_\_\_</text-box>"
     SheetTextBoxId: 08975b84-7d74-4608-8221-ba966ff6a76a
+  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"12px\">\n    <b>CATEGORY\
+      \ KEY:\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\" font-size=\"\
+      12px\">&#128293;= Issue   &#128276;= Notification   &#128198;=Scheduled Change\
+      \   &#128269;= Investigation</inline>\n  <br/>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"12px\">\n    <b>ACTIONABILITY KEY:</b>\n  </inline>\n  <inline\
+      \ font-size=\"12px\">\u2753= Action may be required  &#128680;= Action required\
+      \ \u2139\uFE0F = Informational</inline>\n  <br/>\n  <inline color=\"#fec48c\"\
+      \ font-size=\"12px\">\n    <b>PERSONA KEY:\_</b>\n  </inline>\n  <inline font-size=\"\
+      12px\">&#128736;\uFE0F = Operations  &#129534; = Billing  &#128737;\uFE0F =\
+      \ Security</inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"12px\"\
+      >\n    <b>STATUS KEY:\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
+      \ font-size=\"12px\">&#128308;= Open   &#128992; = Impending   &#128993; = Future\
+      \   &#128994; = Closed</inline>\n</text-box>"
+    SheetTextBoxId: 1343bcfc-1d9b-4282-9031-ca232c315d8c
   Visuals:
   - KPIVisual:
       Actions: []
@@ -2733,6 +2769,8 @@ Sheets:
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
+        ValueAxis:
+          AxisOffset: 116px
         ValueLabelOptions:
           Visibility: HIDDEN
         VisualPalette:
@@ -2867,7 +2905,7 @@ Sheets:
           PrimaryValueFontConfiguration:
             FontColor: '#DFE3E4'
             FontSize:
-              Relative: MEDIUM
+              Relative: SMALL
           SecondaryValueFontConfiguration:
             FontSize:
               Relative: EXTRA_LARGE
@@ -2915,7 +2953,7 @@ Sheets:
           PrimaryValueFontConfiguration:
             FontColor: '#DFE3E4'
             FontSize:
-              Relative: MEDIUM
+              Relative: SMALL
           SecondaryValueFontConfiguration:
             FontSize:
               Relative: EXTRA_LARGE
@@ -3043,10 +3081,10 @@ Sheets:
             FieldId: 2e0668d4-20f6-4138-8e95-5afca2811c62.payer_account_id.11.1724905016713
             Width: 143px
           - FieldId: 41eef918-50d8-4716-bb98-686fa62951d4.16.1775055946211
-            Width: 177px
+            Width: 148px
           - CustomLabel: Service
             FieldId: c7507e70-92ed-4104-96d8-735cdaa999c6.service.3.1707842078781
-            Width: 144px
+            Width: 131px
           - CustomLabel: Region
             FieldId: c7507e70-92ed-4104-96d8-735cdaa999c6.region.9.1707845032542
             Width: 108px
@@ -4019,7 +4057,6 @@ Sheets:
                 - ee90ca2b-ea84-402d-af0f-8a36e4138710
                 - 4bbe50d9-21b1-4206-b014-8ee18b3e8097
                 - 15e81844-8c70-4237-8770-0fd3babd74d7
-                - 576939d2-2ef7-4379-a208-b811f3fcb1b5
                 - 6589eee2-0aeb-4f0b-b2b5-d467e0c60202
         CustomActionId: ea4f1569-6ffd-4a76-bddf-da38d4517902
         Name: Filter Description
@@ -4030,39 +4067,40 @@ Sheets:
           SelectedFieldOptions:
           - CustomLabel: Start
             FieldId: 2e0668d4-20f6-4138-8e95-5afca2811c62.start_time.9.1724256941162
-            Width: 102px
+            Width: 93px
           - CustomLabel: Event
             FieldId: afcea642-28dc-43a8-958c-d20eb95b99c6.14.1762891369944
-            Width: 334px
+            Width: 322px
           - CustomLabel: PLE
             FieldId: 3f310f0c-5354-45bd-9976-c78d3922c4a4.11.1776094438738
-            Width: 68px
+            Width: 48px
           - CustomLabel: Cat.
             FieldId: c0575d4c-8325-437c-9d6d-e0dc1a75928c.16.1774974556656
             Width: 46px
           - CustomLabel: Act.
             FieldId: a00053b8-fff4-4c0d-b65d-53a0c598fc88.11.1777005922104
+            Width: 43px
           - CustomLabel: Pers.
             FieldId: 4ee4a54f-a3ef-4d2b-8e45-2bb737ae86c6.15.1774912381977
-            Width: 56px
-          - CustomLabel: Status
+            Width: 55px
+          - CustomLabel: Stat.
             FieldId: 4bfb0ac6-8308-4a76-89b8-627a9836b9dd.15.1774975028505
-            Width: 65px
+            Width: 48px
           - CustomLabel: Days Out
             FieldId: 68936dbc-a510-4b2c-ae7c-03b1ce6d0169.12.1726691169211
-            Width: 78px
+            Width: 75px
           - CustomLabel: Updated
             FieldId: d01436e2-64f0-4020-906e-8ade18179d0a.11.1776999629500
-            Width: 100px
-          - CustomLabel: Accounts
+            Width: 90px
+          - CustomLabel: Accts.
             FieldId: 02cfb3b6-9cc6-48a7-8848-72b03cec3519.account_id.2.1712085867749
-            Width: 77px
-          - CustomLabel: Regions
+            Width: 55px
+          - CustomLabel: Regs.
             FieldId: 2e0668d4-20f6-4138-8e95-5afca2811c62.region.7.1724175144276
-            Width: 77px
-          - CustomLabel: Resources
+            Width: 58px
+          - CustomLabel: Resrc.
             FieldId: 831bafaa-7ba4-4096-bb93-1a519a76c576.affected_entity_value.11.1777005706923
-            Width: 83px
+            Width: 59px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -4082,7 +4120,7 @@ Sheets:
                 FieldId: afcea642-28dc-43a8-958c-d20eb95b99c6.14.1762891369944
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: is_lifecycle_event_text_icon
+                  ColumnName: is_lifecycle_event_icon
                   DataSetIdentifier: health_events_view
                 FieldId: 3f310f0c-5354-45bd-9976-c78d3922c4a4.11.1776094438738
             - CategoricalDimensionField:
@@ -4159,13 +4197,16 @@ Sheets:
         TableOptions:
           CellStyle:
             BackgroundColor: '#14363D'
-            Height: 27
+            FontConfiguration:
+              FontSize:
+                Absolute: 11px
+            Height: 22
             TextWrap: NONE
           HeaderStyle:
             BackgroundColor: '#7D7D7D'
             FontConfiguration:
               FontSize:
-                Absolute: 13px
+                Absolute: 12px
             Height: 25
             HorizontalTextAlignment: LEFT
             TextWrap: WRAP
@@ -4305,7 +4346,7 @@ Sheets:
         FieldOptions:
           SelectedFieldOptions:
           - FieldId: 369d5b85-af1f-4466-ad9e-9441e84b8c76.0.1724384638948
-            Width: 246px
+            Width: 243px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -4326,11 +4367,11 @@ Sheets:
             FontConfiguration:
               FontColor: '#EEEEEE'
               FontSize:
-                Absolute: 20px
+                Absolute: 16px
                 Relative: EXTRA_LARGE
               FontWeight:
                 Name: BOLD
-            Height: 108
+            Height: 70
             HorizontalTextAlignment: CENTER
           HeaderStyle:
             TextWrap: WRAP
@@ -4515,59 +4556,16 @@ Sheets:
       ChartConfiguration:
         FieldOptions:
           SelectedFieldOptions:
-          - FieldId: 15996b9f-036e-487f-94a4-9df1c62d715c.5.1776265058486
-            Visibility: HIDDEN
-            Width: 341px
-          - FieldId: 57c3d89b-314e-49d8-a9ba-4e075f578757.6.1776265782702
-            Width: 96px
-          - FieldId: de83eb2d-724d-4e84-a86b-cca796369348.0.1775068362111
-            Width: 291px
-          - FieldId: 12844cff-3077-4beb-ac18-80d24e39e4ca.1.1776187602947
-            Width: 340px
-          - FieldId: 1e6e15ad-43a8-4e7b-b002-fc236946f4a9.2.1776187607842
-            Width: 350px
-          - FieldId: 3df540d6-fba9-4fdf-aeea-5efb34cdcbb6.3.1776264949270
-            Width: 421px
-          - FieldId: 4f128fb4-e3c8-4f92-812a-595bdf155a41.4.1776264953987
-            Width: 419px
+          - FieldId: c7dc03f3-27f4-4dd4-a565-3a68b4ee9167.7.1777062600248
+            Width: 416px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
-            - CategoricalDimensionField:
+            - NumericalDimensionField:
                 Column:
-                  ColumnName: Event Summary
+                  ColumnName: c7dc03f3-27f4-4dd4-a565-3a68b4ee9167
                   DataSetIdentifier: health_events_view
-                FieldId: 15996b9f-036e-487f-94a4-9df1c62d715c.5.1776265058486
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: single_event_region
-                  DataSetIdentifier: health_events_view
-                FieldId: 57c3d89b-314e-49d8-a9ba-4e075f578757.6.1776265782702
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: single_event_description_1
-                  DataSetIdentifier: health_events_view
-                FieldId: de83eb2d-724d-4e84-a86b-cca796369348.0.1775068362111
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: single_event_description_2
-                  DataSetIdentifier: health_events_view
-                FieldId: 12844cff-3077-4beb-ac18-80d24e39e4ca.1.1776187602947
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: single_event_description_3
-                  DataSetIdentifier: health_events_view
-                FieldId: 1e6e15ad-43a8-4e7b-b002-fc236946f4a9.2.1776187607842
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: single_event_description_4
-                  DataSetIdentifier: health_events_view
-                FieldId: 3df540d6-fba9-4fdf-aeea-5efb34cdcbb6.3.1776264949270
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: single_event_description_5
-                  DataSetIdentifier: health_events_view
-                FieldId: 4f128fb4-e3c8-4f92-812a-595bdf155a41.4.1776264953987
+                FieldId: c7dc03f3-27f4-4dd4-a565-3a68b4ee9167.7.1777062600248
             Values: []
         SortConfiguration:
           PaginationConfiguration:
@@ -4575,7 +4573,7 @@ Sheets:
             PageSize: 100
         TableOptions:
           CellStyle:
-            Height: 351
+            Height: 371
             HorizontalTextAlignment: LEFT
             VerticalTextAlignment: TOP
           HeaderStyle:
@@ -4585,12 +4583,6 @@ Sheets:
             VerticalTextAlignment: MIDDLE
             Visibility: HIDDEN
       Subtitle:
-        FormatText:
-          RichText: |-
-            <visual-subtitle>
-              <inline font-size="14px">U</inline>
-              <inline font-size="12px">SE THE MAXIMIZE BUTTON TO SHOW EXTENDED DESCRIPTION TEXT</inline>
-            </visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -5314,11 +5306,11 @@ Sheets:
             TotalsVisibility: HIDDEN
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline color=\"#f97d2a\" font-size=\"12px\"\
-            >\n    <b>CATEGORY KEY:</b>\n  </inline>\n  <inline color=\"#c7c7c7\"\
-            \ font-size=\"12px\">\n    <b>\_&#128293;= ISSUE   &#128276;= NOTIFICATION\
-            \   &#128198;=SCHEDULED CHANGE   &#128269;= INVESTIGATION</b>\n  </inline>\n\
-            </visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#fec48c\" font-size=\"12px\"\
+            >\n    <b>CATEGORY KEY:\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
+            \ font-size=\"12px\">&#128293;= Issue   &#128276;= Notification   &#128198;=Scheduled\
+            \ Change   &#128269;= Investigation</inline>\n  <br/>\n  <inline color=\"\
+            PrimaryForeground\" font-size=\"12px\">\_</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -5442,11 +5434,12 @@ Sheets:
           HierarchyId: 00b79e9d-5358-4589-ae60-b93c0f70aebc
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline font-size=\"12px\">\n    <b>CLICK\
-            \ TO FOCUS. USE</b>\n  </inline>\n  <inline color=\"#21a0d7\" font-size=\"\
-            12px\">\n    <b>\_</b>\n  </inline>\n  <inline color=\"#21a0d7\" font-size=\"\
-            14px\">\n    <b>\u2193\u2191\_</b>\n  </inline>\n  <inline font-size=\"\
-            12px\">\n    <b>TO CHANGE GROUPING</b>\n  </inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">T</inline>\n\
+            \  <inline font-size=\"12px\">OGGLE GROUPING AND DATE GRANULARITY WITH\_\
+            </inline>\n  <inline font-size=\"16px\">\u2191\u2193</inline>\n  <inline\
+            \ font-size=\"12px\">CONTROLS.</inline>\n  <inline font-size=\"14px\"\
+            >\_C</inline>\n  <inline font-size=\"12px\">LICK A DATA POINT TO ADD PAGE\
+            \ FILTER.\_</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -5545,7 +5538,7 @@ Sheets:
             Width: 104px
           - DataPathList:
             - FieldId: 3f310f0c-5354-45bd-9976-c78d3922c4a4.10.1776094564519
-              FieldValue: is_lifecycle_event_text_icon
+              FieldValue: is_lifecycle_event_icon
             Width: 98px
           - DataPathList:
             - FieldId: c0575d4c-8325-437c-9d6d-e0dc1a75928c.9.1725942977915
@@ -5612,7 +5605,7 @@ Sheets:
                 FieldId: c0575d4c-8325-437c-9d6d-e0dc1a75928c.9.1725942977915
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: is_lifecycle_event_text_icon
+                  ColumnName: is_lifecycle_event_icon
                   DataSetIdentifier: health_events_view
                 FieldId: 3f310f0c-5354-45bd-9976-c78d3922c4a4.10.1776094564519
             - CategoricalDimensionField:
@@ -5689,11 +5682,10 @@ Sheets:
             TotalsVisibility: HIDDEN
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline color=\"#f97d2a\" font-size=\"12px\"\
-            >\n    <b>CATEGORY KEY:</b>\n  </inline>\n  <inline color=\"#c7c7c7\"\
-            \ font-size=\"12px\">\n    <b>\_&#128293;= ISSUE   &#128276;= NOTIFICATION\
-            \   &#128198;=SCHEDULED CHANGE   &#128269;= INVESTIGATION</b>\n  </inline>\n\
-            </visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#fec48c\" font-size=\"12px\"\
+            >\n    <b>CATEGORY KEY:\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
+            \ font-size=\"12px\">&#128293;= Issue   &#128276;= Notification   &#128198;=Scheduled\
+            \ Change   &#128269;= Investigation</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -5711,6 +5703,8 @@ Sheets:
         - FilterOperation:
             SelectedFieldsConfiguration:
               SelectedColumns:
+              - ColumnName: Account
+                DataSetIdentifier: health_events_view
               - ColumnName: Event Category
                 DataSetIdentifier: health_events_view
               - ColumnName: actionability
@@ -5755,6 +5749,7 @@ Sheets:
                   ColumnName: Account
                   DataSetIdentifier: health_events_view
                 FieldId: 41eef918-50d8-4716-bb98-686fa62951d4.2.1725416527245
+                HierarchyId: aedf14ec-a0ab-4e4d-8b99-560e43affb04
             Colors:
             - CategoricalDimensionField:
                 Column:
@@ -5791,13 +5786,13 @@ Sheets:
             AggregationVisibility: HIDDEN
             TooltipFields:
             - FieldTooltipItem:
-                FieldId: 41eef918-50d8-4716-bb98-686fa62951d4.2.1725416527245
-                Visibility: VISIBLE
-            - FieldTooltipItem:
                 FieldId: e10942ea-441f-4c63-8d01-2aad5d349e2f.2.1731361426094
                 Visibility: VISIBLE
             - FieldTooltipItem:
                 FieldId: f00c3a85-ce29-4b88-951f-5c432bb12d73.2.1725469341803
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 41eef918-50d8-4716-bb98-686fa62951d4.2.1725416527245
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
@@ -5819,13 +5814,24 @@ Sheets:
             DataSetIdentifier: health_events_view
           DrillDownFilters: []
           HierarchyId: 10b1521f-f8ad-43a3-a0bc-18cade0bf180
+      - ExplicitHierarchy:
+          Columns:
+          - ColumnName: Account
+            DataSetIdentifier: health_events_view
+          - ColumnName: payer_account_id
+            DataSetIdentifier: health_events_view
+          - ColumnName: region
+            DataSetIdentifier: health_events_view
+          DrillDownFilters: []
+          HierarchyId: aedf14ec-a0ab-4e4d-8b99-560e43affb04
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline font-size=\"12px\">\n    <b>CLICK\
-            \ TO FOCUS. USE</b>\n  </inline>\n  <inline color=\"#21a0d7\" font-size=\"\
-            12px\">\n    <b>\_</b>\n  </inline>\n  <inline color=\"#21a0d7\" font-size=\"\
-            14px\">\n    <b>\u2193\u2191\_</b>\n  </inline>\n  <inline font-size=\"\
-            12px\">\n    <b>TO CHANGE GROUPING</b>\n  </inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">T</inline>\n\
+            \  <inline font-size=\"12px\">OGGLE GROUPING AND Y DIMENSION WITH\_</inline>\n\
+            \  <inline font-size=\"16px\">\u2191\u2193</inline>\n  <inline font-size=\"\
+            12px\">CONTROLS.</inline>\n  <inline font-size=\"14px\">\_C</inline>\n\
+            \  <inline font-size=\"12px\">LICK A DATA POINT TO ADD PAGE FILTER.\_\
+            </inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
