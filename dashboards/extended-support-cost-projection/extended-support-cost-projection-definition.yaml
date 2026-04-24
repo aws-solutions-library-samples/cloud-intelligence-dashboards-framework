@@ -1814,7 +1814,6 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 58px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -2238,19 +2237,9 @@ Sheets:
         CategoryAxis:
           ScrollbarOptions:
             Visibility: VISIBLE
-            VisibleRange:
-              PercentRange:
-                From: 0.0
-                To: 52.631578947368304
         CategoryLabelOptions:
           AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: account_name
-                DataSetIdentifier: rds_extended_support_view
-              FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.account_name.2.1776416441349
-            CustomLabel: Account
-            FontConfiguration:
+          - FontConfiguration:
               FontSize:
                 Absolute: 14px
           SortIconVisibility: HIDDEN
@@ -2271,7 +2260,7 @@ Sheets:
                 Column:
                   ColumnName: account_name
                   DataSetIdentifier: rds_extended_support_view
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.account_name.2.1776416441349
+                FieldId: 064649d2-642b-4928-84bd-7861d224298a.account_name.2.1776866153303
             Colors:
             - CategoricalDimensionField:
                 Column:
@@ -2317,13 +2306,11 @@ Sheets:
                 FieldId: bed93a81-0b49-42f4-b097-b2eb6bc19e98.1.1776412070711
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.account_name.2.1776416441349
+                FieldId: 064649d2-642b-4928-84bd-7861d224298a.account_name.2.1776866153303
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 108px
         ValueLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -2374,7 +2361,7 @@ Sheets:
           - CustomLabel: Linked Account ID
             FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.linked_account_id.16.1715260006610
           - CustomLabel: Account Name
-            FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.account_name.17.1715261849310
+            FieldId: 064649d2-642b-4928-84bd-7861d224298a.account_name.20.1776866125247
           - CustomLabel: DB Instance ID
             FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.dbresourceidentifier.16.1707820559498
             Width: 417px
@@ -2431,7 +2418,7 @@ Sheets:
                 Column:
                   ColumnName: account_name
                   DataSetIdentifier: rds_extended_support_view
-                FieldId: ba51b0b7-2118-49f3-85f2-399ae50255b4.account_name.17.1715261849310
+                FieldId: 064649d2-642b-4928-84bd-7861d224298a.account_name.20.1776866125247
             - CategoricalDimensionField:
                 Column:
                   ColumnName: dbresourceidentifier
@@ -3046,7 +3033,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 65px
+          AxisOffset: 59px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -3085,7 +3072,7 @@ Sheets:
           - CustomLabel: Linked Account ID
             FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id.10.1715262215369
           - CustomLabel: Account Name
-            FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.account_name.8.1715262207699
+            FieldId: adfdbf7d-6b22-44f9-995e-576b7c3489ed.account_name.10.1776866908091
           - CustomLabel: Cluster Name
             FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.cluster_name.7.1713269679118
           - CustomLabel: Cluster ARN
@@ -3121,7 +3108,7 @@ Sheets:
                 Column:
                   ColumnName: account_name
                   DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.account_name.8.1715262207699
+                FieldId: adfdbf7d-6b22-44f9-995e-576b7c3489ed.account_name.10.1776866908091
             - CategoricalDimensionField:
                 Column:
                   ColumnName: cluster_name
@@ -3649,13 +3636,6 @@ Sheets:
           ScrollbarOptions:
             Visibility: VISIBLE
         CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: account_name
-                DataSetIdentifier: eks_extended_support_view
-              FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.account_name.2.1776435893374
-            CustomLabel: Account
           SortIconVisibility: HIDDEN
           Visibility: VISIBLE
         DataLabels:
@@ -3674,7 +3654,7 @@ Sheets:
                 Column:
                   ColumnName: account_name
                   DataSetIdentifier: eks_extended_support_view
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.account_name.2.1776435893374
+                FieldId: adfdbf7d-6b22-44f9-995e-576b7c3489ed.account_name.2.1776866874331
             Colors:
             - CategoricalDimensionField:
                 Column:
@@ -3725,13 +3705,11 @@ Sheets:
                 FieldId: 635350ad-c237-4477-b0d6-2f5348d9d3cb.1.1776434067174
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.account_name.2.1776435893374
+                FieldId: adfdbf7d-6b22-44f9-995e-576b7c3489ed.account_name.2.1776866874331
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 96px
         ValueLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -4368,7 +4346,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 63px
+          AxisOffset: 79px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -4413,13 +4391,6 @@ Sheets:
       ChartConfiguration:
         BarsArrangement: STACKED
         CategoryLabelOptions:
-          AxisLabelOptions:
-          - ApplyTo:
-              Column:
-                ColumnName: account_name
-                DataSetIdentifier: opensearch_extended_support_view
-              FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.account_name.1.1776436221424
-            CustomLabel: Account
           SortIconVisibility: HIDDEN
         DataLabels:
           CategoryLabelVisibility: HIDDEN
@@ -4437,7 +4408,7 @@ Sheets:
                 Column:
                   ColumnName: account_name
                   DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.account_name.1.1776436221424
+                FieldId: f7798214-7469-4dc4-a6c4-90b2dfbd1839.account_name.2.1776867332037
             Colors:
             - CategoricalDimensionField:
                 Column:
@@ -4481,10 +4452,10 @@ Sheets:
                 FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.usage_amount.1.1732631212226
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.account_name.1.1776436221424
+                FieldId: 1e155e92-ecdf-4491-9ca8-c92a8451a5e0.2.1776436232154
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: 1e155e92-ecdf-4491-9ca8-c92a8451a5e0.2.1776436232154
+                FieldId: f7798214-7469-4dc4-a6c4-90b2dfbd1839.account_name.2.1776867332037
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
@@ -4618,7 +4589,7 @@ Sheets:
             FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.linked_account_id.1.1732632783557
             Width: 143px
           - CustomLabel: Account Name
-            FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.account_name.2.1732632788742
+            FieldId: f7798214-7469-4dc4-a6c4-90b2dfbd1839.account_name.15.1776867362907
           - CustomLabel: Domain Name
             FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.domainname.3.1732632794723
           - CustomLabel: Domain ARN
@@ -4669,7 +4640,7 @@ Sheets:
                 Column:
                   ColumnName: account_name
                   DataSetIdentifier: opensearch_extended_support_view
-                FieldId: 6f0bc2eb-2e93-42f6-a747-b4facc207d58.account_name.2.1732632788742
+                FieldId: f7798214-7469-4dc4-a6c4-90b2dfbd1839.account_name.15.1776867362907
             - CategoricalDimensionField:
                 Column:
                   ColumnName: domainname
@@ -5511,7 +5482,7 @@ Sheets:
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
         ValueAxis:
-          AxisOffset: 52px
+          AxisOffset: 44px
           TickLabelOptions:
             LabelOptions:
               FontConfiguration:
@@ -5555,12 +5526,6 @@ Sheets:
         Trigger: DATA_POINT_CLICK
       ChartConfiguration:
         BarsArrangement: STACKED
-        CategoryAxis:
-          ScrollbarOptions:
-            VisibleRange:
-              PercentRange:
-                From: 23.076923076923023
-                To: 100.0
         CategoryLabelOptions:
           SortIconVisibility: HIDDEN
           Visibility: HIDDEN
@@ -5580,7 +5545,7 @@ Sheets:
                 Column:
                   ColumnName: account_name
                   DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.account_name.1.1776437037122
+                FieldId: 658a81e9-b100-4a7d-992f-5d7bd5e98b60.account_name.2.1776867528132
             Colors:
             - CategoricalDimensionField:
                 Column:
@@ -5624,16 +5589,14 @@ Sheets:
                 FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.usage_amount.1.1758274629586
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.account_name.1.1776437037122
+                FieldId: d207712d-28e9-4ddd-ad91-389337c2d61c.2.1776437041407
                 Visibility: VISIBLE
             - FieldTooltipItem:
-                FieldId: d207712d-28e9-4ddd-ad91-389337c2d61c.2.1776437041407
+                FieldId: 658a81e9-b100-4a7d-992f-5d7bd5e98b60.account_name.2.1776867528132
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
-        ValueAxis:
-          AxisOffset: 113px
         ValueLabelOptions:
           AxisLabelOptions:
           - ApplyTo:
@@ -5811,9 +5774,13 @@ Sheets:
             FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.linked_account_id.2.1758277184611
             Width: 129px
           - CustomLabel: Account Name
-            FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.account_name.1.1758277161509
+            FieldId: 658a81e9-b100-4a7d-992f-5d7bd5e98b60.account_name.10.1776867557288
           - CustomLabel: Cache Cluster ID
             FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.cacheclusterid.3.1758277201961
+          - CustomLabel: Region
+            FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.region_code.10.1758278668218
+          - CustomLabel: Engine Version
+            FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion.9.1758278657651
           - CustomLabel: Instance Type
             FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.instance_type.8.1758277342664
           - CustomLabel: Start of Extended Support
@@ -5841,7 +5808,7 @@ Sheets:
                 Column:
                   ColumnName: account_name
                   DataSetIdentifier: elasticache_extended_support_view
-                FieldId: c0037c45-1148-426d-9e1c-7f99c291c297.account_name.1.1758277161509
+                FieldId: 658a81e9-b100-4a7d-992f-5d7bd5e98b60.account_name.10.1776867557288
             - CategoricalDimensionField:
                 Column:
                   ColumnName: cacheclusterid
@@ -5945,7 +5912,7 @@ Sheets:
       center\">\n    <inline color=\"#61d1d6\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/extended-support.html\"\
       \ target=\"_blank\">\n        <b>\n          <u>Extended Support Cost Projection</u>\n\
       \        </b>\n      </a>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"\
-      center\">\n    <b>v5.1.0</b>\n  </block>\n  <br/>\n  <block align=\"right\"\
+      center\">\n    <b>v5.2.0</b>\n  </block>\n  <br/>\n  <block align=\"right\"\
       />\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"\
       />\n  <br/>\n  <block align=\"right\">Built by: Julio Chaves, Yuriy Prykhodko,\
       \ Iakov Gan, Eric Christensen, Sumit Agarwal</block>\n  <br/>\n  <block align=\"\
