@@ -96,6 +96,10 @@ datasets:
               Type: STRING
             - Name: actionability
               Type: STRING
+            - Name: first_event_updated_time_in_collection
+              Type: DATETIME
+            - Name: first_resource_updated_time_in_collection
+              Type: DATETIME
             - Name: duration_hours
               Type: INTEGER
             - Name: qs_refresh
@@ -125,7 +129,7 @@ datasets:
           Alias: health_events_view
           Source:
             PhysicalTableId: b6e834d2-c61b-4327-a27a-e1d4b53d3d92
-        e4927e2b-6d92-4a76-bf7c-110522e1f622:
+        cc3c82fb-1a8b-490a-bc2b-d0d4ca7351ea:
           Alias: Intermediate Table
           DataTransforms:
           - CreateColumnsOperation:
@@ -270,6 +274,8 @@ datasets:
               - persona_03
               - persona_04
               - actionability
+              - first_event_updated_time_in_collection
+              - first_resource_updated_time_in_collection
               - duration_hours
               - qs_refresh
               - account_name
@@ -348,9 +354,12 @@ views:
            "${data_collection_database_name}"."health_events_detail_data"
       )
       , "hed_latest" AS (
-         SELECT "core".*
+         SELECT
+           "core".*
+         , "first_event_updated_time_in_collection"
+         , "first_resource_updated_time_in_collection"
          FROM
-           ("core"
+           ((("core"
          INNER JOIN (
             SELECT
               "payer_account_id"
@@ -360,6 +369,25 @@ views:
               "core"
             GROUP BY 1, 2
          )  "latest" ON (("core"."payer_account_id" = "latest"."payer_account_id") AND ("core"."event_arn" = "latest"."event_arn") AND ("core"."ingestion_time" = "latest"."ingestion_time")))
+         INNER JOIN (
+            SELECT
+              "payer_account_id"
+            , "event_arn"
+            , min("last_updated_time") "first_event_updated_time_in_collection"
+            FROM
+              "core"
+            GROUP BY 1, 2
+         )  "first" ON (("core"."payer_account_id" = "first"."payer_account_id") AND ("core"."event_arn" = "first"."event_arn")))
+         INNER JOIN (
+            SELECT
+              "payer_account_id"
+            , "event_arn"
+            , "affected_entity_arn"
+            , min("affected_entity_last_update") "first_resource_updated_time_in_collection"
+            FROM
+              "core"
+            GROUP BY 1, 2, 3
+         )  "first_res" ON (("core"."payer_account_id" = "first_res"."payer_account_id") AND ("core"."event_arn" = "first_res"."event_arn") AND ("core"."affected_entity_arn" = "first_res"."affected_entity_arn")))
       )
       SELECT
         "hed_latest".*

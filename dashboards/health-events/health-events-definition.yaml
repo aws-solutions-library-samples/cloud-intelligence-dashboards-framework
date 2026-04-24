@@ -120,14 +120,16 @@ CalculatedFields:
   Name: Event Status
 - DataSetIdentifier: health_events_view
   Expression: "concat(\n\"TITLE:   \", {event_title},\nifelse({is_lifecycle_event}\
-    \ = 1, \"\nPLANNED LIFECYCLE EVENT \U0001F98B\",\"\"),\"\nSERVICE:   \", service,\
+    \ = 1, \"\nPLANNED LIFECYCLE EVENT \U0001F98B\",\"\n\"),\"\nSERVICE:   \", service,\
     \ \"\nREGION:   \", region, \"\nCATEGORY:   \", {event_category_icon}, \"\nACTIONABILITY:\
     \   \", {actionability_icon}, \"\nPERSONAS:   \", {persona_all_icons}, \"\nSTATUS:\
     \   \", {event_status_icon}, ifelse({relative_start_days_from_now} > 0 and {relative_start_days_from_now}\
     \ < 30, \" \u26A0\uFE0F\", \"\"),\"  (starts in \", toString({relative_start_days_from_now}),\
     \ \" days)\nSTART:   \", formatDate({start_time}, \"MMM-dd-yyyy\"), ifelse(isNull({end_time}),\
     \ \"\", concat(\"    END:   \", {End Day})), \"\nLAST UPDATE:   \", formatDate({last_updated_time},\
-    \ \"MMM-dd-yyyy\"), \"  (\", {last_update_days_ago_text}, \")\"\n)"
+    \ \"MMM-dd-yyyy\"), \"  (\", {last_update_days_ago_text}, \")\", \"\nFIRST EVENT\
+    \ UPDATE FOUND LOCALLY:    \", formatDate({first_event_updated_time_in_collection},\
+    \ \"MMM-dd-yyyy\"), \" *\", \"\n* \", {util_first_update_disclaimer}\n)"
   Name: Event Summary
 - DataSetIdentifier: health_events_view
   Expression: |-
@@ -220,7 +222,9 @@ CalculatedFields:
     Lifecycle Events (PLE) and non-PLEs.")
   Name: filter_description
 - DataSetIdentifier: health_events_view
-  Expression: minOver({last_updated_time}, [{event_arn}], PRE_FILTER)
+  Expression: |-
+    // minOver({last_updated_time}, [{event_arn}], PRE_FILTER)
+    {first_event_updated_time_in_collection}
   Name: first_updated_time
 - DataSetIdentifier: health_events_view
   Expression: dateDiff(now(), {start_time}, "DD") >= ${ConfigNearDaysThreshold}
@@ -357,6 +361,11 @@ CalculatedFields:
         -1
     )
   Name: util_event_status_numeric
+- DataSetIdentifier: health_events_view
+  Expression: '"NOTE: First Update time is not an indication of the first official
+    notification from AWS Health. It is only a reference to the first event entry
+    captured since this dashboard was installed."'
+  Name: util_first_update_disclaimer
 - DataSetIdentifier: health_events_view
   Expression: "ifelse(\n    min({last_ingest_days_ago_payer}, [{payer_account_id}])\
     \ > 13, \"\U0001F534\",\n    min({last_ingest_days_ago_payer}, [{payer_account_id}])\
@@ -1722,15 +1731,15 @@ Sheets:
           RowIndex: 43
           RowSpan: 2
         - ColumnIndex: 8
-          ColumnSpan: 12
-          ElementId: 1343bcfc-1d9b-4282-9031-ca232c315d8c
-          ElementType: TEXT_BOX
-          RowIndex: 43
-          RowSpan: 2
-        - ColumnIndex: 20
           ColumnSpan: 6
           ElementId: 0ac8893b-e33c-4038-a43f-9c79646f9dcb
           ElementType: VISUAL
+          RowIndex: 43
+          RowSpan: 2
+        - ColumnIndex: 14
+          ColumnSpan: 12
+          ElementId: 1343bcfc-1d9b-4282-9031-ca232c315d8c
+          ElementType: TEXT_BOX
           RowIndex: 43
           RowSpan: 2
         - ColumnIndex: 26
@@ -3105,10 +3114,13 @@ Sheets:
           - CustomLabel: End
             FieldId: 2e0668d4-20f6-4138-8e95-5afca2811c62.end_time.9.1725397759712
             Width: 80px
-          - CustomLabel: First Instance
-            FieldId: c398f9ae-69bd-49a0-85a9-92c186e4c96b.15.1770253371998
           - CustomLabel: Last Update
             FieldId: 2e0668d4-20f6-4138-8e95-5afca2811c62.last_updated_time.10.1725397827998
+          - CustomLabel: First Update
+            FieldId: c398f9ae-69bd-49a0-85a9-92c186e4c96b.15.1770253371998
+          - CustomLabel: NOTE
+            FieldId: 2821b3d3-f713-40f5-be44-47c74a730657.13.1777069715109
+            Width: 145px
           - CustomLabel: Console Link (valid in payer account only)
             FieldId: f6138813-ba26-4ad0-8806-aa333a7c2a69.13.1725398249764
             Width: 247px
@@ -3170,14 +3182,19 @@ Sheets:
                     NullString: --
             - DateDimensionField:
                 Column:
-                  ColumnName: first_updated_time
-                  DataSetIdentifier: health_events_view
-                FieldId: c398f9ae-69bd-49a0-85a9-92c186e4c96b.15.1770253371998
-            - DateDimensionField:
-                Column:
                   ColumnName: last_updated_time
                   DataSetIdentifier: health_events_view
                 FieldId: 2e0668d4-20f6-4138-8e95-5afca2811c62.last_updated_time.10.1725397827998
+            - DateDimensionField:
+                Column:
+                  ColumnName: first_updated_time
+                  DataSetIdentifier: health_events_view
+                FieldId: c398f9ae-69bd-49a0-85a9-92c186e4c96b.15.1770253371998
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: util_first_update_disclaimer
+                  DataSetIdentifier: health_events_view
+                FieldId: 2821b3d3-f713-40f5-be44-47c74a730657.13.1777069715109
             - CategoricalDimensionField:
                 Column:
                   ColumnName: Console Link
@@ -3236,13 +3253,26 @@ Sheets:
         Trigger: DATA_POINT_CLICK
       ChartConfiguration:
         FieldOptions:
+          Order:
+          - 2e0668d4-20f6-4138-8e95-5afca2811c62.payer_account_id.11.1724902556088
+          - 41eef918-50d8-4716-bb98-686fa62951d4.9.1764969047536
+          - 831bafaa-7ba4-4096-bb93-1a519a76c576.actionability.10.1776195468495
+          - bdda3dba-1f21-4988-a873-387552ae7ce7.13.1777045169700
+          - c7507e70-92ed-4104-96d8-735cdaa999c6.service.3.1707842078781
+          - dd3891d4-7a1b-40bb-81f2-38d5d4e617df.11.1719445300009
+          - 02cfb3b6-9cc6-48a7-8848-72b03cec3519.start_time.11.1718207815820
+          - 9402710b-4a95-4c26-97ba-e3d074cc7b12.8.1727378595776
+          - 2e0668d4-20f6-4138-8e95-5afca2811c62.region.8.1725409799291
+          - afc6fe37-136f-4dab-91d3-3ec6e25e237a.9.1725410368241
           SelectedFieldOptions:
           - CustomLabel: Payer ID
             FieldId: 2e0668d4-20f6-4138-8e95-5afca2811c62.payer_account_id.11.1724902556088
             Width: 133px
+          - FieldId: 41eef918-50d8-4716-bb98-686fa62951d4.9.1764969047536
+            Width: 128px
           - CustomLabel: Action
             FieldId: 831bafaa-7ba4-4096-bb93-1a519a76c576.actionability.10.1776195468495
-            Width: 104px
+            Width: 133px
           - CustomLabel: Persona
             FieldId: bdda3dba-1f21-4988-a873-387552ae7ce7.13.1777045169700
             Width: 109px
@@ -3257,10 +3287,7 @@ Sheets:
             Width: 98px
           - CustomLabel: Description
             FieldId: 9402710b-4a95-4c26-97ba-e3d074cc7b12.8.1727378595776
-            Width: 308px
-          - CustomLabel: Event Group
-            FieldId: afcea642-28dc-43a8-958c-d20eb95b99c6.9.1749488698927
-            Visibility: HIDDEN
+            Width: 355px
           - CustomLabel: Regions
             FieldId: 2e0668d4-20f6-4138-8e95-5afca2811c62.region.8.1725409799291
             Width: 88px
@@ -3310,11 +3337,6 @@ Sheets:
                   ColumnName: description_summary_report
                   DataSetIdentifier: health_events_view
                 FieldId: 9402710b-4a95-4c26-97ba-e3d074cc7b12.8.1727378595776
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: event_group
-                  DataSetIdentifier: health_events_view
-                FieldId: afcea642-28dc-43a8-958c-d20eb95b99c6.9.1749488698927
             Values:
             - CategoricalMeasureField:
                 AggregationFunction: DISTINCT_COUNT
@@ -4068,7 +4090,7 @@ Sheets:
           - CustomLabel: Start
             FieldId: 2e0668d4-20f6-4138-8e95-5afca2811c62.start_time.9.1724256941162
             Width: 93px
-          - CustomLabel: Event
+          - CustomLabel: Event Group
             FieldId: afcea642-28dc-43a8-958c-d20eb95b99c6.14.1762891369944
             Width: 322px
           - CustomLabel: PLE
@@ -4561,9 +4583,9 @@ Sheets:
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
-            - NumericalDimensionField:
+            - CategoricalDimensionField:
                 Column:
-                  ColumnName: c7dc03f3-27f4-4dd4-a565-3a68b4ee9167
+                  ColumnName: Event Description Paginated
                   DataSetIdentifier: health_events_view
                 FieldId: c7dc03f3-27f4-4dd4-a565-3a68b4ee9167.7.1777062600248
             Values: []
@@ -4583,6 +4605,11 @@ Sheets:
             VerticalTextAlignment: MIDDLE
             Visibility: HIDDEN
       Subtitle:
+        FormatText:
+          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">E</inline>\n\
+            \  <inline font-size=\"12px\">VENT DESCRIPTIONS ARE PAGINATED.\_</inline>\n\
+            \  <inline font-size=\"14px\">U</inline>\n  <inline font-size=\"12px\"\
+            >SE THE CONTROLS TO THE RIGHT.</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
