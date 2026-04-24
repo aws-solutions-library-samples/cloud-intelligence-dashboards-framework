@@ -2249,21 +2249,29 @@ Sheets:
   - Configuration:
       GridLayout:
         Elements:
-        - ColumnSpan: 3
-          ElementId: 23311185-063e-4acc-a6d8-2bdd0af488a1
-          ElementType: PARAMETER_CONTROL
-          RowSpan: 1
-        - ColumnSpan: 3
+        - ColumnIndex: 0
+          ColumnSpan: 2
           ElementId: a1c0b335-2ccd-46c5-aa0f-f78f738c3a60
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 3
+        - ColumnIndex: 2
+          ColumnSpan: 3
           ElementId: 8e2ffe8a-2158-4c81-87ff-bdcc0e1e9e2f
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
-        - ColumnSpan: 3
+        - ColumnIndex: 5
+          ColumnSpan: 2
           ElementId: 59be02b4-0835-410b-9a92-ec797f830d2f
           ElementType: PARAMETER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 7
+          ColumnSpan: 2
+          ElementId: 23311185-063e-4acc-a6d8-2bdd0af488a1
+          ElementType: PARAMETER_CONTROL
+          RowIndex: 0
           RowSpan: 1
   SheetId: e523a577-b3fc-4e38-bd7e-bdb892fbbfd6
   TextBoxes:
@@ -2296,24 +2304,30 @@ Sheets:
   - Content: "<text-box>\n  <inline font-size=\"6px\">\_</inline>\n  <inline color=\"\
       Accent\" font-size=\"24px\">\n    <b>\n      <i>How to Use</i>\n    </b>\n \
       \ </inline>\n  <br/>\n  <br/>\n  <inline color=\"#fc850d\" font-size=\"16px\"\
-      >\n    <b>\_\_\u26A1 SUMMARY</b>\n  </inline>\n  <inline font-size=\"16px\"\
-      >\_</inline>\n  <inline color=\"#c1c9cb\" font-size=\"16px\">\n    <i>for stats\
-      \ of all events and recent updates</i>\n  </inline>\n  <br/>\n  <inline color=\"\
-      PrimaryForeground\" font-size=\"16px\">\n    <b>\_\_\_\u29E9\_\_</b>\n  </inline>\n\
-      \  <inline color=\"#fc850d\" font-size=\"16px\">\n    <b>\_DRILL\_DOWN</b>\n\
+      >\n    <b>\_\_\u26A1\_</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
+      18px\">\n    <b>\_S</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
+      16px\">\n    <b>UMMARY</b>\n  </inline>\n  <inline font-size=\"16px\">\_</inline>\n\
+      \  <inline color=\"#c1c9cb\" font-size=\"16px\">\n    <i>for stats of all events\
+      \ and recent updates</i>\n  </inline>\n  <br/>\n  <inline color=\"PrimaryForeground\"\
+      \ font-size=\"16px\">\n    <b>\_\_\_\u29E9\_\_</b>\n  </inline>\n  <inline color=\"\
+      #fc850d\" font-size=\"16px\">\n    <b>\_</b>\n  </inline>\n  <inline color=\"\
+      #fc850d\" font-size=\"18px\">\n    <b>F</b>\n  </inline>\n  <inline color=\"\
+      #fc850d\" font-size=\"16px\">\n    <b>ILTER</b>\n  </inline>\n  <inline color=\"\
+      #c1c9cb\" font-size=\"16px\">\_</inline>\n  <inline color=\"#c1c9cb\" font-size=\"\
+      16px\">\n    <i>to refine and search by various criteria</i>\n  </inline>\n\
+      \  <br/>\n  <inline color=\"#fc850d\" font-size=\"16px\">\n    <b>\_\_&#128190;\_\
+      </b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"18px\">\n    <b>\_\
+      E</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"16px\">\n    <b>XPORT</b>\n\
       \  </inline>\n  <inline color=\"#c1c9cb\" font-size=\"16px\">\_</inline>\n \
-      \ <inline color=\"#c1c9cb\" font-size=\"16px\">\n    <i>to refine and search\
-      \ by various criteria</i>\n  </inline>\n  <br/>\n  <inline color=\"#fc850d\"\
-      \ font-size=\"16px\">\n    <b>\_\_&#128190; EXPORT</b>\n  </inline>\n  <inline\
-      \ color=\"#c1c9cb\" font-size=\"16px\">\_</inline>\n  <inline color=\"#c1c9cb\"\
-      \ font-size=\"16px\">\n    <i>to Export and share event notices</i>\n  </inline>\n\
-      \  <br/>\n  <br/>\n  <br/>\n  <inline color=\"#dbdbdb\" font-size=\"14px\">\n\
-      \    <b>NOTE:</b>\n  </inline>\n  <inline color=\"#dbdbdb\" font-size=\"14px\"\
-      >\_</inline>\n  <inline color=\"#dbdbdb\" font-size=\"14px\">\n    <i>Multiple\
-      \ events may be related but differentiated by region and account. Any event\
-      \ can reference multiple resources. Visuals aggregate distinct events or resources\
-      \ using various grouping dimensions and filters such that impacted resource\
-      \ count numbers may vary between charts.</i>\n  </inline>\n</text-box>"
+      \ <inline color=\"#c1c9cb\" font-size=\"16px\">\n    <i>to Export and share\
+      \ event notices</i>\n  </inline>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"\
+      #dbdbdb\" font-size=\"14px\">\n    <b>NOTE:</b>\n  </inline>\n  <inline color=\"\
+      #dbdbdb\" font-size=\"14px\">\_</inline>\n  <inline color=\"#dbdbdb\" font-size=\"\
+      14px\">\n    <i>Multiple events may be related but differentiated by region\
+      \ and account. Any event can reference multiple resources. Visuals aggregate\
+      \ distinct events or resources using various grouping dimensions and filters\
+      \ such that impacted resource count numbers may vary between charts.</i>\n \
+      \ </inline>\n</text-box>"
     SheetTextBoxId: ffd58e6d-cb65-4963-9460-008f6508b5aa
   - Content: "<text-box>\n  <inline font-size=\"18px\">The tables below are designed\
       \ for exporting to CSV or Excel and are based on the filtering applied above.\_\
@@ -2399,10 +2413,8 @@ Sheets:
       36px\">\n    <b>\_</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
       44px\">\n    <b>\u29E9</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
       36px\">\n    <b>\_\_</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
-      40px\">\n    <b>D</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
-      36px\">\n    <b>RILL\_</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
-      40px\">\n    <b>D</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
-      36px\">\n    <b>OWN</b>\n  </inline>\n</text-box>"
+      40px\">\n    <b>F</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
+      36px\">\n    <b>ILTER</b>\n  </inline>\n</text-box>"
     SheetTextBoxId: 5fadb987-38e4-45ea-bad2-03346fecc344
   - Content: |-
       <text-box>
@@ -4609,7 +4621,7 @@ Sheets:
           RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">E</inline>\n\
             \  <inline font-size=\"12px\">VENT DESCRIPTIONS ARE PAGINATED.\_</inline>\n\
             \  <inline font-size=\"14px\">U</inline>\n  <inline font-size=\"12px\"\
-            >SE THE CONTROLS TO THE RIGHT.</inline>\n</visual-subtitle>"
+            >SE THE CONTROL TO THE RIGHT.</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -4626,6 +4638,7 @@ Sheets:
       ChartConfiguration:
         DataLabels:
           Overlap: DISABLE_OVERLAP
+          Position: OUTSIDE
           Visibility: VISIBLE
         DonutOptions:
           ArcOptions:
@@ -4647,6 +4660,10 @@ Sheets:
                   ColumnName: affected_entity_arn
                   DataSetIdentifier: health_events_view
                 FieldId: 831bafaa-7ba4-4096-bb93-1a519a76c576.affected_entity_arn.0.1776957015385
+        Legend:
+          Title:
+            Visibility: VISIBLE
+          Visibility: HIDDEN
         SortConfiguration:
           CategoryItemsLimit:
             OtherCategories: INCLUDE
@@ -4669,6 +4686,11 @@ Sheets:
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
+        ValueLabelOptions:
+          AxisLabelOptions:
+          - FontConfiguration:
+              FontSize:
+                Absolute: 10px
         VisualPalette:
           ColorMap:
           - Color: '#2CAD00'
@@ -5203,7 +5225,7 @@ Sheets:
           - DataPathList:
             - FieldId: 605dc709-ffe1-4fe7-8d1d-b8c555b3e876.11.1718626491000
               FieldValue: Title
-            Width: 434px
+            Width: 581px
           - DataPathList:
             - FieldId: 12b76ea4-f74c-4528-801a-d97dc5cd1950.9.1718781369135
               FieldValue: Affected resource
@@ -5244,8 +5266,6 @@ Sheets:
             Visibility: VISIBLE
           - FieldId: 605dc709-ffe1-4fe7-8d1d-b8c555b3e876.11.1718626491000
             Visibility: VISIBLE
-          - FieldId: 6801f71f-009b-4e34-b9f9-d144afd0ece2.7.1775848618548
-            Visibility: VISIBLE
         FieldWells:
           PivotTableAggregatedFieldWells:
             Columns: []
@@ -5285,11 +5305,6 @@ Sheets:
                   ColumnName: Title
                   DataSetIdentifier: health_events_view
                 FieldId: 605dc709-ffe1-4fe7-8d1d-b8c555b3e876.11.1718626491000
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: Description
-                  DataSetIdentifier: health_events_view
-                FieldId: 6801f71f-009b-4e34-b9f9-d144afd0ece2.7.1775848618548
             Values: []
         SortConfiguration:
           FieldSortOptions:
@@ -5550,7 +5565,7 @@ Sheets:
           - DataPathList:
             - FieldId: c7507e70-92ed-4104-96d8-735cdaa999c6.service.3.1707842078781
               FieldValue: service
-            Width: 126px
+            Width: 158px
           - DataPathList:
             - FieldId: 02cfb3b6-9cc6-48a7-8848-72b03cec3519.start_time.11.1718207815820
               FieldValue: start_time
