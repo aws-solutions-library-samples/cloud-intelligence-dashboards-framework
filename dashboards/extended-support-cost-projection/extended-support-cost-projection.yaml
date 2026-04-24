@@ -20,7 +20,7 @@ dashboards:
     - line_item_product_code
     - tags_json
     file: ./extended-support-cost-projection-definition.yaml
-    version: v5.0.0
+    version: v5.2.0
 datasets:
   elasticache_extended_support_view:
     data:
@@ -90,9 +90,20 @@ datasets:
             - Name: ext_sup_year_3_price
               Type: DECIMAL
               SubType: FLOAT
+        19e7f4ff-203f-478e-a12e-754ee6a312cb:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${account_map_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
       LogicalTableMap:
-        c0037c45-1148-426d-9e1c-7f99c291c297:
-          Alias: elasticache_extended_support_view
+        6470784a-be08-4645-a95d-16902c3923ae:
+          Alias: Intermediate Table
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
@@ -100,7 +111,6 @@ datasets:
               - usage_date
               - payer_account_id
               - linked_account_id
-              - account_name
               - engine
               - region_code
               - engineversion
@@ -121,14 +131,38 @@ datasets:
               - ext_sup_year_1_2_price
               - year_3_cost
               - ext_sup_year_3_price
+              - account_id
+              - account_name
+          Source:
+            JoinInstruction:
+              LeftOperand: c0037c45-1148-426d-9e1c-7f99c291c297
+              RightOperand: 658a81e9-b100-4a7d-992f-5d7bd5e98b60
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+        658a81e9-b100-4a7d-992f-5d7bd5e98b60:
+          Alias: account_map
+          Source:
+            PhysicalTableId: 19e7f4ff-203f-478e-a12e-754ee6a312cb
+        c0037c45-1148-426d-9e1c-7f99c291c297:
+          Alias: elasticache_extended_support_view
           Source:
             PhysicalTableId: a201689c-b688-4037-a5ad-6282c4056d01
       ImportMode: SPICE
     dependsOn:
       views:
+      - account_map
       - elasticache_extended_support_view
     schedules:
     - default
+    parameters:
+      account_map_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'account_map'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        error: You need to install Foundational Dashboards that provide account_map view.
+        default: cid_cur
+        description: Database of account_map table (from foundational dashboards)
+        global: True
   eks_extended_support_view:
     data:
       DataSetId: 321e897c-7912-4cfd-bd4c-d15d0f948127
@@ -177,9 +211,24 @@ datasets:
               Type: DATETIME
             - Name: is_out_of_extended_support
               Type: STRING
+        effd7cff-853e-45ff-b71d-b08cd0117824:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${account_map_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
       LogicalTableMap:
         2cbef0f5-bd73-4791-840e-7221b6fb58e0:
           Alias: eks_extended_support_view
+          Source:
+            PhysicalTableId: 2ae1dbc5-c18b-4751-8473-5864f5e91d44
+        42ee4bbc-a6c6-4df1-ab20-09546ec05fd4:
+          Alias: Intermediate Table
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
@@ -187,7 +236,6 @@ datasets:
               - usage_date
               - payer_account_id
               - linked_account_id
-              - account_name
               - region_code
               - original_usage_type
               - k8s_version
@@ -200,19 +248,50 @@ datasets:
               - extended_support_cost
               - end_of_extended_support
               - is_out_of_extended_support
+              - account_id
+              - account_name
           Source:
-            PhysicalTableId: 2ae1dbc5-c18b-4751-8473-5864f5e91d44
+            JoinInstruction:
+              LeftOperand: 2cbef0f5-bd73-4791-840e-7221b6fb58e0
+              RightOperand: adfdbf7d-6b22-44f9-995e-576b7c3489ed
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+        adfdbf7d-6b22-44f9-995e-576b7c3489ed:
+          Alias: account_map
+          Source:
+            PhysicalTableId: effd7cff-853e-45ff-b71d-b08cd0117824
       ImportMode: SPICE
     dependsOn:
       views:
       - eks_extended_support_view
+      - account_map
     schedules:
     - default
+    parameters:
+      account_map_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'account_map'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        error: You need to install Foundational Dashboards that provide account_map view.
+        default: cid_cur
+        description: Database of account_map table (from foundational dashboards)
+        global: True
   rds_extended_support_view:
     data:
       DataSetId: 31961243-0137-4201-a8d1-c2a00755765e
       Name: rds_extended_support_view
       PhysicalTableMap:
+        0d4de22c-5e16-47c0-bf31-c248baf48499:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${account_map_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
         76a6ad9d-caf0-447f-8609-1c4d8fb89673:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
@@ -289,8 +368,12 @@ datasets:
               Type: DECIMAL
               SubType: FLOAT
       LogicalTableMap:
-        ba51b0b7-2118-49f3-85f2-399ae50255b4:
-          Alias: rds_extended_support_view
+        064649d2-642b-4928-84bd-7861d224298a:
+          Alias: account_map
+          Source:
+            PhysicalTableId: 0d4de22c-5e16-47c0-bf31-c248baf48499
+        18c4c51f-5008-444e-ae9f-2874e670d8f1:
+          Alias: Intermediate Table
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
@@ -298,7 +381,6 @@ datasets:
               - usage_date
               - payer_account_id
               - linked_account_id
-              - account_name
               - region_code
               - rds_type
               - deployment_option
@@ -325,14 +407,34 @@ datasets:
               - year_1_2_cost
               - year_3_pricing
               - year_3_cost
+              - account_id
+              - account_name
+          Source:
+            JoinInstruction:
+              LeftOperand: ba51b0b7-2118-49f3-85f2-399ae50255b4
+              RightOperand: 064649d2-642b-4928-84bd-7861d224298a
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+        ba51b0b7-2118-49f3-85f2-399ae50255b4:
+          Alias: rds_extended_support_view
           Source:
             PhysicalTableId: 76a6ad9d-caf0-447f-8609-1c4d8fb89673
       ImportMode: SPICE
     dependsOn:
       views:
+      - account_map
       - rds_extended_support_view
     schedules:
     - default
+    parameters:
+      account_map_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'account_map'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        error: You need to install Foundational Dashboards that provide account_map view.
+        default: cid_cur
+        description: Database of account_map table (from foundational dashboards)
+        global: True
   opensearch_extended_support_view:
     data:
       DataSetId: ecb9e3a1-3e67-482a-989c-1c403c8bd912
@@ -394,9 +496,24 @@ datasets:
             - Name: projected_extended_support_cost
               Type: DECIMAL
               SubType: FLOAT
+        cbd42501-c0e4-4cb5-a85f-50cbaa20776e:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${account_map_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
       LogicalTableMap:
         6f0bc2eb-2e93-42f6-a747-b4facc207d58:
           Alias: opensearch_extended_support_view
+          Source:
+            PhysicalTableId: b51ef4eb-f8bd-41d1-8ed4-bce50612fb1b
+        bcdd7260-ea8b-41ab-a0bd-4c300b110bd3:
+          Alias: Intermediate Table
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
@@ -404,7 +521,6 @@ datasets:
               - usage_date
               - payer_account_id
               - linked_account_id
-              - account_name
               - region_code
               - domainname
               - domainidentifier
@@ -422,14 +538,34 @@ datasets:
               - end_of_extended_support
               - nih_pricing
               - projected_extended_support_cost
+              - account_id
+              - account_name
           Source:
-            PhysicalTableId: b51ef4eb-f8bd-41d1-8ed4-bce50612fb1b
+            JoinInstruction:
+              LeftOperand: 6f0bc2eb-2e93-42f6-a747-b4facc207d58
+              RightOperand: f7798214-7469-4dc4-a6c4-90b2dfbd1839
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+        f7798214-7469-4dc4-a6c4-90b2dfbd1839:
+          Alias: account_map
+          Source:
+            PhysicalTableId: cbd42501-c0e4-4cb5-a85f-50cbaa20776e
       ImportMode: SPICE
     dependsOn:
       views:
       - opensearch_extended_support_view
+      - account_map
     schedules:
     - default
+    parameters:
+      account_map_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'account_map'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        error: You need to install Foundational Dashboards that provide account_map view.
+        default: cid_cur
+        description: Database of account_map table (from foundational dashboards)
+        global: True
   extended_support_tagging_view:
     data:
       DataSetId: 0655eb28-3f36-4a5d-8e8a-c2d70cd09fc7
@@ -446,6 +582,8 @@ datasets:
               Type: STRING
             - Name: tags_json
               Type: STRING
+            - Name: rows
+              Type: INTEGER
       LogicalTableMap:
         30248d27-4a3a-4350-bf1d-dd382f040c95:
           Alias: extended_support_tagging_view
@@ -454,6 +592,7 @@ datasets:
               ProjectedColumns:
               - line_item_product_code
               - tags_json
+              - rows
           Source:
             PhysicalTableId: 5a574f8c-5e74-4da8-97cc-4f6802a7d360
       ImportMode: SPICE
@@ -462,6 +601,15 @@ datasets:
       - extended_support_tagging_view
     schedules:
     - default
+    parameters:
+      account_map_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'account_map'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        error: You need to install Foundational Dashboards that provide account_map view.
+        default: cid_cur
+        description: Database of account_map table (from foundational dashboards)
+        global: True
 views:
   elasticache_extended_support_view:
     dependsOn:
@@ -509,13 +657,12 @@ views:
            preprocessed_elasticache_clusters
          WHERE (collection_date = max_collection_date)
       )
-      , elasticache_resources (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, engine, engineversion, instance_type, item_description, cacheclusterid, resource_id, original_usage_type, on_demand_rate_per_unit, tags_json, usage_amount, ext_sup_year_1_2_price, ext_sup_year_3_price) AS (
+      , elasticache_resources (billing_period, usage_date, payer_account_id, linked_account_id, region_code, engine, engineversion, instance_type, item_description, cacheclusterid, resource_id, original_usage_type, on_demand_rate_per_unit, tags_json, usage_amount, ext_sup_year_1_2_price, ext_sup_year_3_price) AS (
          SELECT
            c.bill_billing_period_start_date billing_period
          , date_trunc('day', c.line_item_usage_start_date) usage_date
          , c.bill_payer_account_id payer_account_id
          , c.line_item_usage_account_id linked_account_id
-         , accmap.account_name
          , c.product['region'] region_code
          , engine
          , engineversion
@@ -531,17 +678,15 @@ views:
          , sum(((line_item_usage_amount * round(CAST(c.pricing_public_on_demand_rate AS double), 4)) * 1.6E0)) ext_sup_year_3_price
          FROM
            (("${cur2_database}"."${cur2_table_name}" c
-         INNER JOIN sanitised_elasticache_clusters ecsu ON ((c.bill_payer_account_id = ecsu.payer_id) AND (c.line_item_usage_account_id = ecsu.accountid) AND (c.product['region'] = ecsu.region) AND (split_part(c.line_item_resource_id, ':', 7) = ecsu.cacheclusterid)))
-         INNER JOIN account_map accmap ON (c.line_item_usage_account_id = accmap.account_id))
+         INNER JOIN sanitised_elasticache_clusters ecsu ON ((c.bill_payer_account_id = ecsu.payer_id) AND (c.line_item_usage_account_id = ecsu.accountid) AND (c.product['region'] = ecsu.region) AND (split_part(c.line_item_resource_id, ':', 7) = ecsu.cacheclusterid))))
          WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND (c.product_servicecode = 'AmazonElastiCache') AND (c.product_product_family = 'Cache Instance') AND (c.product['cache_engine'] = 'Redis') AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage')))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
       )
       SELECT
         ecr.billing_period
       , ecr.usage_date
       , ecr.payer_account_id
       , ecr.linked_account_id
-      , ecr.account_name
       , ecr.engine
       , ecr.region_code
       , erc.engineversion
@@ -629,13 +774,12 @@ views:
              FROM preprocessed_eks_clusters_inventory
              WHERE collection_date = max_collection_date
       )
-      , eks_clusters_usage (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, cluster_name, k8s_version, item_description, usage_unit, resource_id, original_usage_type, tags_json, usage_amount) AS (
+      , eks_clusters_usage (billing_period, usage_date, payer_account_id, linked_account_id, region_code, cluster_name, k8s_version, item_description, usage_unit, resource_id, original_usage_type, tags_json, usage_amount) AS (
          SELECT
            c.bill_billing_period_start_date
          , date_trunc('day', c.line_item_usage_start_date)
          , c.bill_payer_account_id payer_account_id
          , c.line_item_usage_account_id linked_account_id
-         , accmap.account_name
          , c.product['region'] region_code
          , eksinv.cluster_name
          , eksinv.k8s_version
@@ -648,16 +792,14 @@ views:
          FROM
            ("${cur2_database}"."${cur2_table_name}" c
          INNER JOIN eks_clusters_inventory eksinv ON ((c.bill_payer_account_id = eksinv.payer_id) AND (c.line_item_usage_account_id = eksinv.accountid) AND (c.product['region'] = eksinv.region) AND (c.line_item_resource_id = eksinv.cluster_arn)))
-         INNER JOIN account_map accmap on c.line_item_usage_account_id = accmap.account_id
          WHERE (((c.bill_billing_period_start_date >= ("date_trunc"('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND (c.product_servicecode = 'AmazonEKS') AND (c.line_item_line_item_type IN ('Usage')) AND ((c.product_product_family = 'Compute') AND (c.line_item_usage_type LIKE '%AmazonEKS-Hours:perCluster')))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
       )
       SELECT
         ekscus.billing_period
       , ekscus.usage_date
       , ekscus.payer_account_id
       , ekscus.linked_account_id
-      , ekscus.account_name
       , ekscus.region_code
       , ekscus.original_usage_type
       , ekscus.k8s_version
@@ -877,13 +1019,12 @@ views:
              , engineversion
            FROM sanitised_rds_clusters
       )
-      , rds_resources (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, rds_type, deployment_option, engine, engineversion, instance_type_family, instance_type, item_description, vcpus, usage_unit, dbresourceidentifier, resource_id, original_deployment_option, original_usage_type, tags_json, usage_amount, vcpu_acu_hours) AS (
+      , rds_resources (billing_period, usage_date, payer_account_id, linked_account_id, region_code, rds_type, deployment_option, engine, engineversion, instance_type_family, instance_type, item_description, vcpus, usage_unit, dbresourceidentifier, resource_id, original_deployment_option, original_usage_type, tags_json, usage_amount, vcpu_acu_hours) AS (
          SELECT
            c.bill_billing_period_start_date billing_period
          , date_trunc('day', c.line_item_usage_start_date) usage_date
          , c.bill_payer_account_id payer_account_id
          , c.line_item_usage_account_id linked_account_id
-         , accmap.account_name
          , c.product['region'] region_code
          , (CASE WHEN (c.product['database_engine'] LIKE 'Aurora%') THEN 'Aurora' ELSE 'AmazonRDS' END) rds_type
          , (CASE WHEN (c.line_item_usage_type LIKE '%InstanceUsage%') THEN 'SINGLE-AZ' WHEN (c.line_item_usage_type LIKE '%Multi-AZUsage%') THEN 'MULTI-AZ' WHEN (c.line_item_usage_type LIKE '%Multi-AZClusterUsage%') THEN 'MULTI-AZ-CLUSTER' WHEN ((c.product_product_family = 'Serverless') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage')) THEN 'SERVERLESS' WHEN ((c.product_product_family = 'ServerlessV2') AND (c.line_item_usage_type like '%Aurora:ServerlessV2%Usage')) THEN 'SERVERLESSV2' ELSE 'UNDEFINED (Check the usage type)' END) deployment_option
@@ -903,17 +1044,15 @@ views:
          , sum((CASE WHEN (c.pricing_unit = 'ACU-Hr') THEN c.line_item_usage_amount WHEN (c.line_item_usage_type LIKE '%Multi-AZUsage%') THEN (CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount * 2) ELSE (CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount) END)) vcpu_acu_hours
          FROM
            (("${cur2_database}"."${cur2_table_name}" c
-         INNER JOIN all_sanitised_rds_resources rdsu ON ((c.bill_payer_account_id = rdsu.payer_id) AND (c.line_item_usage_account_id = rdsu.accountid) AND (c.product['region'] = rdsu.region) AND (split_part(c.line_item_resource_id, ':', 7) = rdsu.dbresourceidentifier)))
-         INNER JOIN account_map accmap ON (c.line_item_usage_account_id = accmap.account_id))
+         INNER JOIN all_sanitised_rds_resources rdsu ON ((c.bill_payer_account_id = rdsu.payer_id) AND (c.line_item_usage_account_id = rdsu.accountid) AND (c.product['region'] = rdsu.region) AND (split_part(c.line_item_resource_id, ':', 7) = rdsu.dbresourceidentifier))))
          WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND (c.product_servicecode = 'AmazonRDS') AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage')) AND ((c.product_product_family = 'Database Instance') OR ((c.product_product_family like 'Serverless%') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage'))))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
       )
       SELECT
         rdsr.billing_period
       , rdsr.usage_date
       , rdsr.payer_account_id
       , rdsr.linked_account_id
-      , rdsr.account_name
       , rdsr.region_code
       , rdsr.rds_type
       , rdsr.deployment_option
@@ -1097,13 +1236,12 @@ views:
            preprocessed_opensearch_domains
          WHERE (collection_date = max_collection_date)
       )
-      , opensearch_resources (billing_period, usage_date, payer_account_id, linked_account_id, account_name, region_code, domainidentifier, domainname, resourceid, engineversion, instance_type, instance_size, norm_factor, usage_unit, item_description, original_usage_type, tags_json, usage_amount, nihs) AS (
+      , opensearch_resources (billing_period, usage_date, payer_account_id, linked_account_id, region_code, domainidentifier, domainname, resourceid, engineversion, instance_type, instance_size, norm_factor, usage_unit, item_description, original_usage_type, tags_json, usage_amount, nihs) AS (
          SELECT
            c.bill_billing_period_start_date billing_period
          , date_trunc('day', c.line_item_usage_start_date) usage_date
          , c.bill_payer_account_id payer_account_id
          , c.line_item_usage_account_id linked_account_id
-         , accmap.account_name
          , c.product['region'] region_code
          , osu.domainidentifier
          , osu.domainname
@@ -1120,18 +1258,16 @@ views:
          , sum((isnf.normalization_factor * c.line_item_usage_amount))
          FROM
            ((("${cur2_database}"."${cur2_table_name}" c
-         INNER JOIN sanitised_opensearch_domains osu ON ((c.bill_payer_account_id = osu.payer_id) AND (c.line_item_usage_account_id = osu.accountid) AND (c.product['region'] = osu.region) AND (split_part(c.line_item_resource_id, ':', 6) = osu.domainidentifier)))
-         INNER JOIN account_map accmap ON (c.line_item_usage_account_id = accmap.account_id))
+         INNER JOIN sanitised_opensearch_domains osu ON ((c.bill_payer_account_id = osu.payer_id) AND (c.line_item_usage_account_id = osu.accountid) AND (c.product['region'] = osu.region) AND (split_part(c.line_item_resource_id, ':', 6) = osu.domainidentifier))))
          INNER JOIN instance_size_norm_factors isnf ON (regexp_extract(c.product_instance_type, '.+?\.(.+?)\.search', 1) = isnf.instance_size))
          WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND ((c.product_servicecode = 'AmazonES') AND (product_product_family = 'Amazon OpenSearch Service Instance') AND (line_item_operation = 'ESDomain')) AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage')) AND (NOT (c.line_item_usage_type IN ('OpenSearchExtendedSupport'))))
-         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
       )
       SELECT
         osr.billing_period
       , osr.usage_date
       , osr.payer_account_id
       , osr.linked_account_id
-      , osr.account_name
       , osr.region_code
       , osr.domainname
       , osr.domainidentifier

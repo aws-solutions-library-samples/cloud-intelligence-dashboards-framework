@@ -1,5 +1,31 @@
 # What's new in Extended Support Cost Projection
 
+## Extended Support Cost Projection - v5.2.0
+
+**Important:** This version requires the data collection version 3.2.0+. Update to this version requires a forced update. Since this is a major version upgrade, the `cid-cmd` tool will ask to confirm a recursive update or not. Please make sure to confirm the recursive update by answering **yes** to continue the update process and have the view queries and datasets updated.
+
+If you have modified the Extended Support Cost Projection dashboard visuals, these changes will be overridden when the dashboard is updated. Consider backing-up the existing dashboard by creating an analysis from it if you want to keep a reference to customised visuals so you can re-apply them after the update takes place.
+
+To update run these commands in your CloudShell (recommended) or other terminal:
+
+```
+python3 -m ensurepip --upgrade
+pip3 install --upgrade cid-cmd
+cid-cmd update --dashboard-id extended-support-cost-projection --force --recursive
+```
+
+- Moved account name resolution from Athena view queries to QuickSight dataset joins for RDS, EKS, OpenSearch, and ElastiCache datasets. This improves reliability by sourcing account names directly from the `account_map` table via a LEFT JOIN at the dataset level, avoiding dependency on the join being present in the underlying Athena views.
+- Fixed visual field references for account name across RDS, EKS, OpenSearch, and ElastiCache sheets to reflect the updated dataset join structure.
+- Minor visual adjustments: removed axis offsets and scrollbar range constraints on usage breakdown charts.
+
+## Extended Support Cost Projection - v5.1.0
+
+- Redesigned RDS, EKS, OpenSearch and Elasticache sheets layout: consolidated visuals and updated positions.
+- Replaced pie chart with a stacked bar chart showing hours of usage grouped by a dynamic dimension.
+- Added "Group By" parameter control allowing users to switch between Account and Engine Version and selected tags groupings across usage visuals.
+- Replaced static per-account and per-version breakdown charts with a dynamic timeline and a horizontal bar visual with cross-filtering support.
+- Added subtitle context ("Based on last 30 days of usage") to cost breakdown and estimated cost visuals.
+
 ## Extended Support Cost Projection - v5.0.0
 
 **Important:** This is a major version upgrade. The `cid-cmd` tool will ask to confirm a recursive update. Please make sure to confirm the recursive update by answering **yes** to continue the update process and have the new tagging dataset and Athena view deployed for the dashboard.

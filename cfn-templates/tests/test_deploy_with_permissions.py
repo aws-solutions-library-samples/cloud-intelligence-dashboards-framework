@@ -13,6 +13,11 @@ Procedure:
     3. Delete all in reverse order
 
 This must be executed with admin privileges. And takes around 15mins to complete.
+
+Environment variables:
+    DATA_EXPORTS_TEMPLATE: Optional path to a local data-exports-aggregation.yaml template.
+        If set, the test uploads and uses this template instead of the published one.
+        Example: export DATA_EXPORTS_TEMPLATE=/path/to/cid-data-collection-framework/data-exports/deploy/data-exports-aggregation.yaml
 """
 import os
 import json
@@ -258,18 +263,27 @@ def create_cid_as_finops(update):
     )
     logger.info('Finops Session created')
 
+    data_exports_template = os.environ.get('DATA_EXPORTS_TEMPLATE')
+    if data_exports_template:
+        template_url = upload_to_s3(data_exports_template)
+        logger.info('Using local template: %s', data_exports_template)
+    else:
+        template_url = 'https://aws-managed-cost-intelligence-dashboards.s3.amazonaws.com/cfn/data-exports/latest/data-exports-aggregation.yaml'
+        logger.info('Using published template from S3')
+
     logger.info('As Finops Creating CUR')
     finops_cfn = finops_session.client('cloudformation')
     #finops_cfn = admin_cfn #FIXME !!!
     params = dict(
         StackName="CID-CUR-Destination",
-        TemplateURL='https://aws-managed-cost-intelligence-dashboards.s3.amazonaws.com/cfn/data-exports/latest/data-exports-aggregation.yaml',
+        TemplateURL=template_url,
         Parameters=[
             {"ParameterKey": 'DestinationAccountId', "ParameterValue": account_id},
             {"ParameterKey": 'ResourcePrefix', "ParameterValue": 'cid'},
             {"ParameterKey": 'ManageCUR2', "ParameterValue": 'yes'},
             {"ParameterKey": 'ManageFOCUS', "ParameterValue": 'yes'},
             {"ParameterKey": 'SourceAccountIds', "ParameterValue": account_id},
+            {"ParameterKey": 'LegacyLocalBucket', "ParameterValue": 'no'},
         ],
         Capabilities=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
     )
