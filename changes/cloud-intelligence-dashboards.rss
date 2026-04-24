@@ -7,6 +7,27 @@
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
     <lastBuildDate>Wed, 22 Apr 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+
+    <item>
+      <title>[Update] Health Events Dashboard - v3.0.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-hed
+      </link>
+      <pubDate>Mon, 27 Apr 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">a3f7b2c1-9e84-4d6f-b053-8c1e9a7f2d45</guid>
+      <description>Health Events Dashboard - v3.0.0 </description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>** NOTE: requires Data Collection Framework v3.14.5+ **</li>
+    <li>New Health fields for Actionability and Personas added.</li>
+    <li>Significant revision of user interface for landing page.</li>
+    <li>Emphasis for reporting on AWS Planned Lifecycle Events (PLEs), such as servive version deprecations.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Extended Support Cost Projection - v5.2.0</title>
       <link>
