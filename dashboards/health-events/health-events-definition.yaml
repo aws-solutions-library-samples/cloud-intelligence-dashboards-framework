@@ -2280,68 +2280,71 @@ Sheets:
       \ font-size=\"40px\">\n    <b>AWS</b>\n  </inline>\n  <inline color=\"#fc850d\"\
       \ font-size=\"40px\">\n    <b>\_</b>\n  </inline>\n  <inline color=\"Accent\"\
       \ font-size=\"40px\">\n    <b>Health Events Dashboard</b>\n  </inline>\n  <br/>\n\
-      \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
-      16px\">\n        <i>This dashboard requires the Health Events module from the\_\
-      </i>\n      </inline>\n      <inline color=\"#95cbf6\" font-size=\"16px\">\n\
-      \        <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html\"\
+      \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline color=\"#cdd1d2\"\
+      \ font-size=\"16px\">\n        <i>This dashboard requires the Health Events\
+      \ module from the\_</i>\n      </inline>\n      <inline color=\"#95cbf6\" font-size=\"\
+      16px\">\n        <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html\"\
       \ target=\"_blank\">\n          <b>\n            <i>\n              <u>Cloud\
       \ Intelligence Dashboards Data Collection framework</u>\n            </i>\n\
-      \          </b>\n        </a>\n      </inline>\n      <inline font-size=\"16px\"\
-      >\n        <i>.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline font-size=\"16px\">\n        <i>The dashboard is not realtime\
-      \ but the data collected typically refreshes daily, depending on the schedules\
-      \ established for the collector module and QuickSight refresh</i>\n      </inline>\n\
-      \    </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\"\
-      >\n        <i>Use the\_</i>\n      </inline>\n      <inline font-size=\"16px\"\
-      >\n        <b>\n          <i>Main\_</i>\n        </b>\n      </inline>\n   \
-      \   <inline font-size=\"16px\">\n        <i>tab for high level statistics, drill-down,\
-      \ and reporting.\_</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
-      >\n      <inline font-size=\"16px\">\n        <i>The\_</i>\n      </inline>\n\
-      \      <inline font-size=\"16px\">\n        <b>\n          <i>Quick View\_</i>\n\
-      \        </b>\n      </inline>\n      <inline font-size=\"16px\">\n        <i>tab\
-      \ supports quick filtering and reporting.\_</i>\n      </inline>\n    </li>\n\
-      \  </ul>\n</text-box>"
+      \          </b>\n        </a>\n      </inline>\n      <inline color=\"#cdd1d2\"\
+      \ font-size=\"16px\">\n        <i>.</i>\n      </inline>\n    </li>\n    <li\
+      \ class=\"ql-indent-0\">\n      <inline color=\"#cdd1d2\" font-size=\"16px\"\
+      >\n        <i>The dashboard is not realtime but the data collected typically\
+      \ refreshes daily, depending on the schedules established for the collector\
+      \ module and QuickSight refresh</i>\n      </inline>\n    </li>\n    <li class=\"\
+      ql-indent-0\">\n      <inline color=\"#cdd1d2\" font-size=\"16px\">\n      \
+      \  <i>Use the\_</i>\n      </inline>\n      <inline color=\"#cdd1d2\" font-size=\"\
+      16px\">\n        <b>\n          <i>Main\_</i>\n        </b>\n      </inline>\n\
+      \      <inline color=\"#cdd1d2\" font-size=\"16px\">\n        <i>tab for high\
+      \ level statistics, drill-down, and reporting.\_</i>\n      </inline>\n    </li>\n\
+      \    <li class=\"ql-indent-0\">\n      <inline color=\"#cdd1d2\" font-size=\"\
+      16px\">\n        <i>The\_</i>\n      </inline>\n      <inline color=\"#cdd1d2\"\
+      \ font-size=\"16px\">\n        <b>\n          <i>Quick View\_</i>\n        </b>\n\
+      \      </inline>\n      <inline color=\"#cdd1d2\" font-size=\"16px\">\n    \
+      \    <i>tab supports quick filtering and reporting.\_</i>\n      </inline>\n\
+      \    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: bb872bf5-f947-4d7d-adfb-34b27cfeb63e
   - Content: "<text-box>\n  <inline font-size=\"6px\">\_</inline>\n  <inline color=\"\
       Accent\" font-size=\"24px\">\n    <b>\n      <i>How to Use</i>\n    </b>\n \
       \ </inline>\n  <br/>\n  <br/>\n  <inline color=\"#fc850d\" font-size=\"16px\"\
       >\n    <b>\_\_\u26A1\_</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
       18px\">\n    <b>\_S</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"\
-      16px\">\n    <b>UMMARY</b>\n  </inline>\n  <inline font-size=\"16px\">\_</inline>\n\
-      \  <inline color=\"#c1c9cb\" font-size=\"16px\">\n    <i>for stats of all events\
-      \ and recent updates</i>\n  </inline>\n  <br/>\n  <inline color=\"PrimaryForeground\"\
-      \ font-size=\"16px\">\n    <b>\_\_\_\u29E9\_\_</b>\n  </inline>\n  <inline color=\"\
-      #fc850d\" font-size=\"16px\">\n    <b>\_</b>\n  </inline>\n  <inline color=\"\
-      #fc850d\" font-size=\"18px\">\n    <b>F</b>\n  </inline>\n  <inline color=\"\
-      #fc850d\" font-size=\"16px\">\n    <b>ILTER</b>\n  </inline>\n  <inline color=\"\
-      #c1c9cb\" font-size=\"16px\">\_</inline>\n  <inline color=\"#c1c9cb\" font-size=\"\
-      16px\">\n    <i>to refine and search by various criteria</i>\n  </inline>\n\
-      \  <br/>\n  <inline color=\"#fc850d\" font-size=\"16px\">\n    <b>\_\_&#128190;\_\
-      </b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"18px\">\n    <b>\_\
-      E</b>\n  </inline>\n  <inline color=\"#fc850d\" font-size=\"16px\">\n    <b>XPORT</b>\n\
-      \  </inline>\n  <inline color=\"#c1c9cb\" font-size=\"16px\">\_</inline>\n \
-      \ <inline color=\"#c1c9cb\" font-size=\"16px\">\n    <i>to Export and share\
-      \ event notices</i>\n  </inline>\n  <br/>\n  <br/>\n  <br/>\n  <inline color=\"\
-      #dbdbdb\" font-size=\"14px\">\n    <b>NOTE:</b>\n  </inline>\n  <inline color=\"\
-      #dbdbdb\" font-size=\"14px\">\_</inline>\n  <inline color=\"#dbdbdb\" font-size=\"\
-      14px\">\n    <i>Multiple events may be related but differentiated by region\
-      \ and account. Any event can reference multiple resources. Visuals aggregate\
-      \ distinct events or resources using various grouping dimensions and filters\
-      \ such that impacted resource count numbers may vary between charts.</i>\n \
-      \ </inline>\n</text-box>"
+      16px\">\n    <b>UMMARY</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+      16px\">\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"16px\">\n    <i>for\
+      \ stats of all events and recent updates</i>\n  </inline>\n  <br/>\n  <inline\
+      \ color=\"PrimaryForeground\" font-size=\"16px\">\n    <b>\_\_\_\u29E9\_\_</b>\n\
+      \  </inline>\n  <inline color=\"#fc850d\" font-size=\"16px\">\n    <b>\_</b>\n\
+      \  </inline>\n  <inline color=\"#fc850d\" font-size=\"18px\">\n    <b>F</b>\n\
+      \  </inline>\n  <inline color=\"#fc850d\" font-size=\"16px\">\n    <b>ILTER</b>\n\
+      \  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"16px\">\_</inline>\n \
+      \ <inline color=\"#cdd1d2\" font-size=\"16px\">\n    <i>to refine and search\
+      \ by various criteria</i>\n  </inline>\n  <br/>\n  <inline color=\"#fc850d\"\
+      \ font-size=\"16px\">\n    <b>\_\_&#128190;\_</b>\n  </inline>\n  <inline color=\"\
+      #fc850d\" font-size=\"18px\">\n    <b>\_E</b>\n  </inline>\n  <inline color=\"\
+      #fc850d\" font-size=\"16px\">\n    <b>XPORT</b>\n  </inline>\n  <inline color=\"\
+      #cdd1d2\" font-size=\"16px\">\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+      16px\">\n    <i>to Export and share event notices</i>\n  </inline>\n  <br/>\n\
+      \  <br/>\n  <br/>\n  <inline color=\"#cdd1d2\" font-size=\"14px\">\n    <b>NOTE:</b>\n\
+      \  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"14px\">\_</inline>\n \
+      \ <inline color=\"#cdd1d2\" font-size=\"14px\">\n    <i>Multiple events may\
+      \ be related but differentiated by region and account. Any event can reference\
+      \ multiple resources. Visuals aggregate distinct events or resources using various\
+      \ grouping dimensions and filters such that impacted resource count numbers\
+      \ may vary between charts.</i>\n  </inline>\n</text-box>"
     SheetTextBoxId: ffd58e6d-cb65-4963-9460-008f6508b5aa
-  - Content: "<text-box>\n  <inline font-size=\"18px\">The tables below are designed\
-      \ for exporting to CSV or Excel and are based on the filtering applied above.\_\
-      </inline>\n  <br/>\n  <inline font-size=\"18px\"/>\n  <inline font-size=\"18px\"\
-      >Use the controls at the top right of each report to export.</inline>\n  <br/>\n\
-      \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
-      16px\">\n        <i>Adjust the scope via the filter controls above.</i>\n  \
-      \    </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
-      16px\">\n        <i>You can alter the length of the description with the Report\
-      \ Summary Description Format contol at the top.</i>\n      </inline>\n    </li>\n\
-      \    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">\n       \
-      \ <i>\n          <u>A single event may have multiple entries</u>\n        </i>\n\
-      \      </inline>\n      <inline font-size=\"16px\">\n        <i>\_if the descriptions\
+  - Content: "<text-box>\n  <inline color=\"#cdd1d2\" font-size=\"18px\">The tables\
+      \ below are designed for exporting to CSV or Excel and are based on the filtering\
+      \ applied above.\_</inline>\n  <br/>\n  <inline color=\"#cdd1d2\" font-size=\"\
+      18px\">Use the controls at the top right of each report to export.</inline>\n\
+      \  <br/>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
+      #cdd1d2\" font-size=\"16px\">\n        <i>Adjust the scope via the filter controls\
+      \ above.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n \
+      \     <inline color=\"#cdd1d2\" font-size=\"16px\">\n        <i>You can alter\
+      \ the length of the description with the Report Summary Description Format contol\
+      \ at the top.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#cdd1d2\" font-size=\"16px\">\n        <i>\n      \
+      \    <u>A single event may have multiple entries</u>\n        </i>\n      </inline>\n\
+      \      <inline color=\"#cdd1d2\" font-size=\"16px\">\n        <i>\_if the descriptions\
       \ vary across regions or accounts.</i>\n      </inline>\n    </li>\n  </ul>\n\
       </text-box>"
     SheetTextBoxId: 1af54d7d-86aa-4909-a3ae-42bf9eac0db9
@@ -2383,9 +2386,9 @@ Sheets:
       \ font-size=\"12px\">\n    <i>&#128993;</i>\n  </inline>\n  <inline color=\"\
       #cdd1d2\" font-size=\"18px\">\n    <b>\n      <i>\_Future</i>\n    </b>\n  </inline>\n\
       \  <inline color=\"#cdd1d2\" font-size=\"18px\">\n    <i>\_start beyond that.</i>\n\
-      \  </inline>\n  <br/>\n  <br/>\n  <inline font-size=\"12px\">\u2731\_</inline>\n\
-      \  <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <i>Adjust days\
-      \ threshold with the slider at the top</i>\n  </inline>\n</text-box>"
+      \  </inline>\n  <br/>\n  <br/>\n  <inline color=\"#cdd1d2\" font-size=\"12px\"\
+      >\u2731\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">\n    <i>Adjust\
+      \ days threshold with the slider at the top</i>\n  </inline>\n</text-box>"
     SheetTextBoxId: 2fbc16bc-7efe-45df-b9be-4a036c1ffd9a
   - Content: "<text-box>\n  <inline color=\"Accent\" font-size=\"26px\">\n    <b>Event\
       \ Schedule</b>\n  </inline>\n  <br/>\n  <inline color=\"#cdd1d2\" font-size=\"\
@@ -2684,11 +2687,12 @@ Sheets:
       ColumnHierarchies: []
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">C</inline>\n\
-            \  <inline font-size=\"12px\">HANGE GROUPING WITH THE SELECTOR.\_</inline>\n\
-            \  <inline font-size=\"14px\">\_C</inline>\n  <inline font-size=\"12px\"\
-            >LICK A DATA POINT TO ADD PAGE FILTER.\_</inline>\n  <br/>\n  <inline\
-            \ font-size=\"12px\">\n    <b>\_</b>\n  </inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >C</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">HANGE GROUPING\
+            \ WITH THE SELECTOR.\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            14px\">\_C</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">LICK\
+            \ A DATA POINT TO ADD PAGE FILTER.\_</inline>\n  <br/>\n  <inline color=\"\
+            #cdd1d2\" font-size=\"12px\">\n    <b>\_</b>\n  </inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -2721,8 +2725,8 @@ Sheets:
           ScrollbarOptions:
             VisibleRange:
               PercentRange:
-                From: 77.0
-                To: 97.0
+                From: 80.0
+                To: 100.0
           TickLabelOptions:
             LabelOptions:
               Visibility: VISIBLE
@@ -2888,14 +2892,15 @@ Sheets:
           HierarchyId: ee9b075b-fd01-4cef-851e-73afc3e27042
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">C</inline>\n\
-            \  <inline font-size=\"12px\">HANGE GROUPING WITH THE SELECTOR.\_</inline>\n\
-            \  <inline font-size=\"14px\">\_U</inline>\n  <inline font-size=\"12px\"\
-            >SE</inline>\n  <inline color=\"#21a0d7\" font-size=\"12px\">\_</inline>\n\
-            \  <inline color=\"#21a0d7\" font-size=\"14px\">\u2193\u2191\_</inline>\n\
-            \  <inline font-size=\"12px\">TO CHANGE AGGREGATION.\_\_</inline>\n  <inline\
-            \ font-size=\"14px\">C</inline>\n  <inline font-size=\"12px\">LICK A DATA\
-            \ POINT TO ADD PAGE FILTER.\_</inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >C</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">HANGE GROUPING\
+            \ WITH THE SELECTOR.\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            14px\">\_U</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">SE\_\
+            </inline>\n  <inline color=\"#cdd1d2\" font-size=\"14px\">\u2193\u2191\
+            \_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">TO CHANGE\
+            \ AGGREGATION.\_\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            14px\">C</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">LICK\
+            \ A DATA POINT TO ADD PAGE FILTER.\_</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -3560,25 +3565,24 @@ Sheets:
             UsePrimaryBackgroundColor: ENABLED
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline color=\"PrimaryForeground\" font-size=\"\
-            14px\">\n    <b>R</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
-            \ font-size=\"12px\">\n    <b>EFRESH\_</b>\n  </inline>\n  <inline color=\"\
-            PrimaryForeground\" font-size=\"14px\">\n    <b>S</b>\n  </inline>\n \
-            \ <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <b>TATUS\_\
-            </b>\n  </inline>\n  <inline color=\"PrimaryForeground\">\u26E8</inline>\n\
-            \  <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <b>:\_\
-            </b>\n  </inline>\n  <inline font-size=\"12px\">&#128154;</inline>\n \
-            \ <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <b>\_&lt;\
-            \ 7 days\_\_\_</b>\n  </inline>\n  <inline color=\"#ffda04\" font-size=\"\
-            16px\">\n    <b>\u26A0\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
-            \ font-size=\"12px\">\n    <b>\_7 -14 DAYS\_\_\_</b>\n  </inline>\n  <inline\
-            \ color=\"#df000f\" font-size=\"16px\">\n    <b>\u26A0\_</b>\n  </inline>\n\
-            \  <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <b>\_\
-            &gt; 14 DAYS</b>\n  </inline>\n  <br/>\n  <inline color=\"PrimaryForeground\"\
-            \ font-size=\"14px\">\n    <b>C</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
-            \ font-size=\"12px\">\n    <b>LICK AN ACCOUNT TO FILTER PAGE</b>\n  </inline>\n\
-            \  <br/>\n  <inline color=\"PrimaryForeground\" font-size=\"12px\">\n\
-            \    <b>\_\_</b>\n  </inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >\n    <b>R</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            12px\">\n    <b>EFRESH\_</b>\n  </inline>\n  <inline color=\"#cdd1d2\"\
+            \ font-size=\"14px\">\n    <b>S</b>\n  </inline>\n  <inline color=\"#cdd1d2\"\
+            \ font-size=\"12px\">\n    <b>TATUS\_</b>\n  </inline>\n  <inline color=\"\
+            #cdd1d2\">\u26E8</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\"\
+            >\n    <b>:\_</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            12px\">&#128154;</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\"\
+            >\n    <b>\_&lt; 7 days\_\_\_</b>\n  </inline>\n  <inline color=\"#cdd1d2\"\
+            \ font-size=\"16px\">\n    <b>\u26A0\_</b>\n  </inline>\n  <inline color=\"\
+            #cdd1d2\" font-size=\"12px\">\n    <b>\_7 -14 DAYS\_\_\_</b>\n  </inline>\n\
+            \  <inline color=\"#cdd1d2\" font-size=\"16px\">\n    <b>\u26A0\_</b>\n\
+            \  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">\n    <b>\_\
+            &gt; 14 DAYS</b>\n  </inline>\n  <br/>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            14px\">\n    <b>C</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            12px\">\n    <b>LICK AN ACCOUNT TO FILTER PAGE</b>\n  </inline>\n  <br/>\n\
+            \  <inline color=\"#cdd1d2\" font-size=\"12px\">\n    <b>\_\_</b>\n  </inline>\n\
+            </visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -4063,12 +4067,13 @@ Sheets:
           HierarchyId: 83067ff3-f74e-400d-983f-332144dd2a9c
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">T</inline>\n\
-            \  <inline font-size=\"12px\">OGGLE GROUPING AND DATE GRANULARITY WITH\_\
-            </inline>\n  <inline font-size=\"16px\">\u2191\u2193</inline>\n  <inline\
-            \ font-size=\"12px\">CONTROLS.</inline>\n  <inline font-size=\"14px\"\
-            >\_C</inline>\n  <inline font-size=\"12px\">LICK A DATA POINT TO ADD PAGE\
-            \ FILTER.\_</inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >T</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">OGGLE GROUPING\
+            \ AND DATE GRANULARITY WITH\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            16px\">\u2191\u2193</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            12px\">CONTROLS.</inline>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >\_C</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">LICK A DATA\
+            \ POINT TO ADD PAGE FILTER.\_</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -4275,11 +4280,12 @@ Sheets:
                     Icon: FLAG
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">R</inline>\n\
-            \  <inline font-size=\"12px\">ELATED EVENTS ARE GROUPED BY SERVICE, TITLE,\
-            \ AND START TIME.\_\_</inline>\n  <inline font-size=\"14px\">\_C</inline>\n\
-            \  <inline font-size=\"12px\">LICK AN EVENT TO TOGGLE A DEEPER FILTER\
-            \ AND REVEAL THE REGION-SPECIFIC TEXT OF THE NOTICE.</inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >R</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">ELATED EVENTS\
+            \ ARE GROUPED BY SERVICE, TITLE, AND START TIME.\_\_</inline>\n  <inline\
+            \ color=\"#cdd1d2\" font-size=\"14px\">\_C</inline>\n  <inline color=\"\
+            #cdd1d2\" font-size=\"12px\">LICK AN EVENT TO TOGGLE A DEEPER FILTER AND\
+            \ REVEAL THE REGION-SPECIFIC TEXT OF THE NOTICE.</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -4621,10 +4627,11 @@ Sheets:
             Visibility: HIDDEN
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">E</inline>\n\
-            \  <inline font-size=\"12px\">VENT DESCRIPTIONS ARE PAGINATED.\_</inline>\n\
-            \  <inline font-size=\"14px\">U</inline>\n  <inline font-size=\"12px\"\
-            >SE THE CONTROL TO THE RIGHT.</inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >E</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">VENT DESCRIPTIONS\
+            \ ARE PAGINATED.\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            14px\">U</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">SE THE\
+            \ CONTROL TO THE RIGHT.</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -5060,25 +5067,24 @@ Sheets:
             UsePrimaryBackgroundColor: ENABLED
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline color=\"PrimaryForeground\" font-size=\"\
-            14px\">\n    <b>R</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
-            \ font-size=\"12px\">\n    <b>EFRESH\_</b>\n  </inline>\n  <inline color=\"\
-            PrimaryForeground\" font-size=\"14px\">\n    <b>S</b>\n  </inline>\n \
-            \ <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <b>TATUS\_\
-            </b>\n  </inline>\n  <inline color=\"PrimaryForeground\">\u26E8</inline>\n\
-            \  <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <b>:\_\
-            </b>\n  </inline>\n  <inline font-size=\"12px\">&#128154;</inline>\n \
-            \ <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <b>\_&lt;\
-            \ 7 days\_\_\_</b>\n  </inline>\n  <inline color=\"#ffda04\" font-size=\"\
-            16px\">\n    <b>\u26A0\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
-            \ font-size=\"12px\">\n    <b>\_7 -14 DAYS\_\_\_</b>\n  </inline>\n  <inline\
-            \ color=\"#df000f\" font-size=\"16px\">\n    <b>\u26A0\_</b>\n  </inline>\n\
-            \  <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <b>\_\
-            &gt; 14 DAYS</b>\n  </inline>\n  <br/>\n  <inline color=\"PrimaryForeground\"\
-            \ font-size=\"14px\">\n    <b>C</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
-            \ font-size=\"12px\">\n    <b>LICK AN ACCOUNT TO FILTER PAGE</b>\n  </inline>\n\
-            \  <br/>\n  <inline color=\"PrimaryForeground\" font-size=\"12px\">\n\
-            \    <b>\_\_</b>\n  </inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >\n    <b>R</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            12px\">\n    <b>EFRESH\_</b>\n  </inline>\n  <inline color=\"#cdd1d2\"\
+            \ font-size=\"14px\">\n    <b>S</b>\n  </inline>\n  <inline color=\"#cdd1d2\"\
+            \ font-size=\"12px\">\n    <b>TATUS\_</b>\n  </inline>\n  <inline color=\"\
+            #cdd1d2\">\u26E8</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\"\
+            >\n    <b>:\_</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            12px\">&#128154;</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\"\
+            >\n    <b>\_&lt; 7 days\_\_\_</b>\n  </inline>\n  <inline color=\"#cdd1d2\"\
+            \ font-size=\"16px\">\n    <b>\u26A0\_</b>\n  </inline>\n  <inline color=\"\
+            #cdd1d2\" font-size=\"12px\">\n    <b>\_7 -14 DAYS\_\_\_</b>\n  </inline>\n\
+            \  <inline color=\"#cdd1d2\" font-size=\"16px\">\n    <b>\u26A0\_</b>\n\
+            \  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">\n    <b>\_\
+            &gt; 14 DAYS</b>\n  </inline>\n  <br/>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            14px\">\n    <b>C</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            12px\">\n    <b>LICK AN ACCOUNT TO FILTER PAGE</b>\n  </inline>\n  <br/>\n\
+            \  <inline color=\"PrimaryForeground\" font-size=\"12px\">\n    <b>\_\_\
+            </b>\n  </inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -5232,7 +5238,11 @@ Sheets:
           - DataPathList:
             - FieldId: 12b76ea4-f74c-4528-801a-d97dc5cd1950.9.1718781369135
               FieldValue: Affected resource
-            Width: 322px
+            Width: 261px
+          - DataPathList:
+            - FieldId: e6f5e0b0-bad0-48b8-8235-44292efa9c35.7.1777304814311
+              FieldValue: event_category_icon
+            Width: 154px
           - DataPathList:
             - FieldId: 02cfb3b6-9cc6-48a7-8848-72b03cec3519.start_time.11.1718207815820
               FieldValue: start_time
@@ -5241,10 +5251,6 @@ Sheets:
             - FieldId: c7507e70-92ed-4104-96d8-735cdaa999c6.service.3.1707842078781
               FieldValue: service
             Width: 112px
-          - DataPathList:
-            - FieldId: c0575d4c-8325-437c-9d6d-e0dc1a75928c.7.1775845588012
-              FieldValue: event_category_icon_only
-            Width: 82px
           - DataPathList:
             - DataPathType:
                 PivotTableDataPathType: COUNT_METRIC_COLUMN
@@ -5259,7 +5265,7 @@ Sheets:
             FieldId: 12b76ea4-f74c-4528-801a-d97dc5cd1950.9.1718781369135
             Visibility: VISIBLE
           - CustomLabel: Category
-            FieldId: c0575d4c-8325-437c-9d6d-e0dc1a75928c.7.1775845588012
+            FieldId: e6f5e0b0-bad0-48b8-8235-44292efa9c35.7.1777304814311
             Visibility: VISIBLE
           - CustomLabel: Start time
             FieldId: 02cfb3b6-9cc6-48a7-8848-72b03cec3519.start_time.11.1718207815820
@@ -5290,9 +5296,9 @@ Sheets:
                 FieldId: 12b76ea4-f74c-4528-801a-d97dc5cd1950.9.1718781369135
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: event_category_icon_only
+                  ColumnName: event_category_icon
                   DataSetIdentifier: health_events_view
-                FieldId: c0575d4c-8325-437c-9d6d-e0dc1a75928c.7.1775845588012
+                FieldId: e6f5e0b0-bad0-48b8-8235-44292efa9c35.7.1777304814311
             - DateDimensionField:
                 Column:
                   ColumnName: start_time
@@ -5350,12 +5356,6 @@ Sheets:
           RowTotalOptions:
             TotalsVisibility: HIDDEN
       Subtitle:
-        FormatText:
-          RichText: "<visual-subtitle>\n  <inline color=\"#fec48c\" font-size=\"12px\"\
-            >\n    <b>CATEGORY KEY:\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
-            \ font-size=\"12px\">&#128293;= Issue   &#128276;= Notification   &#128198;=Scheduled\
-            \ Change   &#128269;= Investigation</inline>\n  <br/>\n  <inline color=\"\
-            PrimaryForeground\" font-size=\"12px\">\_</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -5413,7 +5413,7 @@ Sheets:
             Colors:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: Lifecycle Event
+                  ColumnName: Resource Status
                   DataSetIdentifier: health_events_view
                 FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
                 HierarchyId: 00b79e9d-5358-4589-ae60-b93c0f70aebc
@@ -5455,6 +5455,63 @@ Sheets:
             TooltipTitleType: PRIMARY_VALUE
           SelectedTooltipType: DETAILED
           TooltipVisibility: VISIBLE
+        VisualPalette:
+          ColorMap:
+          - Color: '#2CAD00'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: "\u2705 closed"
+          - Color: '#DE3B00'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: "\U0001F6A8 open"
+          - Color: '#FF8700'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: "\u23F3 soon"
+          - Color: '#DE3B00'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: PENDING
+          - Color: '#2CAD00'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: RESOLVED
+          - Color: '#AAAAAA'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+          - Color: '#0251D3'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: UNIMPAIRED
+          - Color: '#863CFF'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: IMPAIRED
+          - Color: '#464343'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: NO STATUS
+          - Color: '#DFE3E4'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: No status
+          - Color: '#0251D3'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: Unimpaired
+          - Color: '#863CFF'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: Impaired
+          - Color: '#D43134'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: Pending
+          - Color: '#2CAD00'
+            Element:
+              FieldId: a17df69f-8a76-4730-80f0-82ac4b31daf6.2.1718781988978
+              FieldValue: Resolved
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
@@ -5479,12 +5536,13 @@ Sheets:
           HierarchyId: 00b79e9d-5358-4589-ae60-b93c0f70aebc
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">T</inline>\n\
-            \  <inline font-size=\"12px\">OGGLE GROUPING AND DATE GRANULARITY WITH\_\
-            </inline>\n  <inline font-size=\"16px\">\u2191\u2193</inline>\n  <inline\
-            \ font-size=\"12px\">CONTROLS.</inline>\n  <inline font-size=\"14px\"\
-            >\_C</inline>\n  <inline font-size=\"12px\">LICK A DATA POINT TO ADD PAGE\
-            \ FILTER.\_</inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >T</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">OGGLE GROUPING\
+            \ AND DATE GRANULARITY WITH\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            16px\">\u2191\u2193</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            12px\">CONTROLS.</inline>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >\_C</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">LICK A DATA\
+            \ POINT TO ADD PAGE FILTER.\_</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -5728,7 +5786,7 @@ Sheets:
       Subtitle:
         FormatText:
           RichText: "<visual-subtitle>\n  <inline color=\"#fec48c\" font-size=\"12px\"\
-            >\n    <b>CATEGORY KEY:\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
+            >\n    <b>CATEGORY KEY:\_</b>\n  </inline>\n  <inline color=\"#cdd1d2\"\
             \ font-size=\"12px\">&#128293;= Issue   &#128276;= Notification   &#128198;=Scheduled\
             \ Change   &#128269;= Investigation</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
@@ -5871,12 +5929,13 @@ Sheets:
           HierarchyId: aedf14ec-a0ab-4e4d-8b99-560e43affb04
       Subtitle:
         FormatText:
-          RichText: "<visual-subtitle>\n  <inline font-size=\"14px\">T</inline>\n\
-            \  <inline font-size=\"12px\">OGGLE GROUPING AND Y DIMENSION WITH\_</inline>\n\
-            \  <inline font-size=\"16px\">\u2191\u2193</inline>\n  <inline font-size=\"\
-            12px\">CONTROLS.</inline>\n  <inline font-size=\"14px\">\_C</inline>\n\
-            \  <inline font-size=\"12px\">LICK A DATA POINT TO ADD PAGE FILTER.\_\
-            </inline>\n</visual-subtitle>"
+          RichText: "<visual-subtitle>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >T</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">OGGLE GROUPING\
+            \ AND Y DIMENSION WITH\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            16px\">\u2191\u2193</inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
+            12px\">CONTROLS.</inline>\n  <inline color=\"#cdd1d2\" font-size=\"14px\"\
+            >\_C</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">LICK A DATA\
+            \ POINT TO ADD PAGE FILTER.\_</inline>\n</visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
