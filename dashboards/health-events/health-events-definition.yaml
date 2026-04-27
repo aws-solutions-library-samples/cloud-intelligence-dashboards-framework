@@ -91,7 +91,8 @@ CalculatedFields:
 - DataSetIdentifier: health_events_view
   Expression: |-
     ifelse(
-        {util_single_event_filter} = 0, "Click a line item to the left to reveal its description",
+        {util_single_event_filter} = 0, "Click a line item to the left to reveal its summary and description.
+    Multi-regional events will have an entry per region. Scroll down for each regional description.",
         left(${UtilDescriptionPage}, 1) = "0", {Event Summary},
         concat("(", region, ")
     ", ifelse(
@@ -4045,6 +4046,8 @@ Sheets:
           - ColumnName: Resource Status
             DataSetIdentifier: health_events_view
           - ColumnName: Account
+            DataSetIdentifier: health_events_view
+          - ColumnName: Event Category
             DataSetIdentifier: health_events_view
           - ColumnName: service
             DataSetIdentifier: health_events_view

@@ -395,7 +395,7 @@ views:
       , CAST(current_timestamp AS timestamp) "qs_refresh"
       FROM
         "hed_latest"
-      WHERE ("ingestion_time" >= ("date_trunc"('day', current_timestamp) - INTERVAL  '90' DAY))
+      WHERE ("ingestion_time" >= ("date_trunc"('day', current_timestamp) - INTERVAL  '120' DAY))
 
     parameters:
       data_collection_database_name:
