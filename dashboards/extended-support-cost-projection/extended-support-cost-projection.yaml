@@ -29,7 +29,7 @@ dashboards:
     - parent_account_name
     - tags_json
     file: ./extended-support-cost-projection-definition.yaml
-    version: v5.2.0
+    version: v5.2.1
 datasets:
   elasticache_extended_support_view:
     data:

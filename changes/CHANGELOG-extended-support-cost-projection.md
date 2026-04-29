@@ -1,5 +1,20 @@
 # What's new in Extended Support Cost Projection
 
+## Extended Support Cost Projection - v5.2.1
+
+**Important:** This version updates the tagging view Athena query and the tagging view dataset definition. A forced and recursive update is required to pick up the changes.
+
+To update run these commands in your CloudShell (recommended) or other terminal:
+
+```
+python3 -m ensurepip --upgrade
+pip3 install --upgrade cid-cmd
+cid-cmd update --dashboard-id extended-support-cost-projection --force --recursive
+```
+
+- Joined `account_map` to the `extended_support_tagging_view` dataset so account-level taxonomy fields (e.g. OU columns) are carried through to the tagging dataset. This enables them to be included in the taxonomy candidate list during `cid-cmd` install/update, alongside the four resource datasets that already join `account_map`.
+- Added `line_item_usage_account_id` to the tagging Athena view so the dataset-level join has a matching key.
+
 ## Extended Support Cost Projection - v5.2.0
 
 **Important:** This version requires the data collection version 3.2.0+. Update to this version requires a forced update. Since this is a major version upgrade, the `cid-cmd` tool will ask to confirm a recursive update or not. Please make sure to confirm the recursive update by answering **yes** to continue the update process and have the view queries and datasets updated.
