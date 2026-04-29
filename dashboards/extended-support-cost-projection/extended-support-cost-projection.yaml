@@ -17,7 +17,16 @@ dashboards:
     - opensearch_extended_support_view
     - elasticache_extended_support_view
     nonTaxonomyColumns:
+    - account_email_id
+    - account_id
+    - account_name
+    - account_prefix
+    - account_suffix
+    - line_item_usage_account_id
     - line_item_product_code
+    - o_u
+    - parent_account_id
+    - parent_account_name
     - tags_json
     file: ./extended-support-cost-projection-definition.yaml
     version: v5.2.0
@@ -578,26 +587,55 @@ datasets:
             Schema: ${athena_database_name}
             Name: extended_support_tagging_view
             InputColumns:
+            - Name: line_item_usage_account_id
+              Type: STRING
             - Name: line_item_product_code
               Type: STRING
             - Name: tags_json
               Type: STRING
             - Name: rows
               Type: INTEGER
+        90e1376c-d426-4481-9af2-e30d8e9a10c1:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${account_map_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
       LogicalTableMap:
         30248d27-4a3a-4350-bf1d-dd382f040c95:
           Alias: extended_support_tagging_view
+          Source:
+            PhysicalTableId: 5a574f8c-5e74-4da8-97cc-4f6802a7d360
+        56854c6e-a164-4519-9bc0-35fe9d016a25:
+          Alias: account_map
+          Source:
+            PhysicalTableId: 90e1376c-d426-4481-9af2-e30d8e9a10c1
+        dc16d610-7393-42bf-8735-29e2a1165178:
+          Alias: Intermediate Table
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
+              - line_item_usage_account_id
               - line_item_product_code
               - tags_json
               - rows
+              - account_id
+              - account_name
           Source:
-            PhysicalTableId: 5a574f8c-5e74-4da8-97cc-4f6802a7d360
+            JoinInstruction:
+              LeftOperand: 30248d27-4a3a-4350-bf1d-dd382f040c95
+              RightOperand: 56854c6e-a164-4519-9bc0-35fe9d016a25
+              Type: LEFT
+              OnClause: '{line_item_usage_account_id} = {account_id}'
       ImportMode: SPICE
     dependsOn:
       views:
+      - account_map
       - extended_support_tagging_view
     schedules:
     - default
@@ -1306,10 +1344,11 @@ views:
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".extended_support_tagging_view AS
       SELECT
-        line_item_product_code
+        line_item_usage_account_id
+      , line_item_product_code
       , ${cur_tags_json} tags_json
       , count(1) rows
       FROM
         "${cur2_database}"."${cur2_table_name}" cur
       WHERE ((COALESCE(line_item_product_code, '') <> '') AND ((bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(split_part("billing_period", '-', 1), '-', split_part("billing_period", '-', 2), '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '7' MONTH))))
-      GROUP BY 1, 2
+      GROUP BY 1, 2, 3
