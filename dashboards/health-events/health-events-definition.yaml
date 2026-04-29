@@ -261,10 +261,10 @@ CalculatedFields:
 - DataSetIdentifier: health_events_view
   Expression: |-
     ifelse(
-        dateDiff({last_updated_time}, now()) <= ${ConfigRecentActivityDaysThreshold} or dateDiff({first_updated_time}, now()) <= ${ConfigRecentActivityDaysThreshold}, "Yes",
-        "No"
+        dateDiff({last_updated_time}, now()) <= ${ConfigRecentActivityDaysThreshold} or dateDiff({first_updated_time}, now()) <= ${ConfigRecentActivityDaysThreshold}, 1,
+        0
     )
-  Name: is_recent_update_text
+  Name: is_recent_update
 - DataSetIdentifier: health_events_view
   Expression: ifelse({affected_entity_status_code} = "IMPAIRED", 1, 0)
   Name: is_resource_impaired
@@ -372,6 +372,12 @@ CalculatedFields:
     \ > 13, \"\U0001F534\",\n    min({last_ingest_days_ago_payer}, [{payer_account_id}])\
     \ > 6, \"\U0001F7E1\",\n    \"\U0001F49A\"\n)"
   Name: util_ingest_health
+- DataSetIdentifier: health_events_view
+  Expression: |-
+    ifelse(
+        contains(${RecentGrouping}, "lifecycle", CASE_INSENSITIVE) AND {is_lifecycle_event} = 0, 0, 1
+    )
+  Name: util_is_summary_display_scope
 - DataSetIdentifier: health_events_view
   Expression: |-
     ifelse(
@@ -1015,30 +1021,6 @@ FilterGroups:
         - 6589eee2-0aeb-4f0b-b2b5-d467e0c60202
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
-  FilterGroupId: 470bf0fa-8ed9-4e64-a263-9877cbc7bfb6
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: is_recent_update_text
-        DataSetIdentifier: health_events_view
-      Configuration:
-        FilterListConfiguration:
-          CategoryValues:
-          - 'Yes'
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-      FilterId: eb467d63-e3e2-4715-942c-a6318c0c82c2
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: e523a577-b3fc-4e38-bd7e-bdb892fbbfd6
-        VisualIds:
-        - d1cfc20b-24a1-4aa9-9e4a-2bcec8b00c0e
-        - 7b541acb-30b4-4490-8cdc-e25320f78c03
-        - bd97c1e2-4451-472c-8a41-f91e881d1e4b
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
   FilterGroupId: 0d4fbb7d-34b1-4748-9f1f-259a9649988b
   Filters:
   - TimeRangeFilter:
@@ -1259,6 +1241,46 @@ FilterGroups:
         SheetId: d82fb28e-83f3-48d1-b6aa-8dca65396d73
         VisualIds:
         - bc3b0982-d081-49c6-8d84-8f4431f5c7a4
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fb660a4b-0137-4568-969e-bfa167786fae
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: util_is_summary_display_scope
+        DataSetIdentifier: health_events_view
+      FilterId: 9c7e439e-5215-470e-901a-3e44f250145e
+      MatchOperator: EQUALS
+      NullOption: ALL_VALUES
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: e523a577-b3fc-4e38-bd7e-bdb892fbbfd6
+        VisualIds:
+        - 576939d2-2ef7-4379-a208-b811f3fcb1b5
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 3e21a701-0aca-495c-8a49-fcec5e60c568
+  Filters:
+  - NumericRangeFilter:
+      Column:
+        ColumnName: last_update_days_ago
+        DataSetIdentifier: health_events_view
+      FilterId: 46bfd024-015f-4d46-b3ae-1501c4c01644
+      IncludeMaximum: true
+      IncludeMinimum: false
+      NullOption: ALL_VALUES
+      RangeMaximum:
+        Parameter: ConfigRecentActivityDaysThreshold
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: e523a577-b3fc-4e38-bd7e-bdb892fbbfd6
+        VisualIds:
+        - d1cfc20b-24a1-4aa9-9e4a-2bcec8b00c0e
   Status: ENABLED
 Options:
   WeekStart: SUNDAY
@@ -1576,24 +1598,24 @@ Sheets:
           RowIndex: 14
           RowSpan: 1
         - ColumnIndex: 0
-          ColumnSpan: 8
+          ColumnSpan: 9
           ElementId: 958b5989-38bb-4ae1-aed4-df2a3d598334
           ElementType: TEXT_BOX
           RowIndex: 15
           RowSpan: 3
-        - ColumnIndex: 8
+        - ColumnIndex: 9
           ColumnSpan: 4
           ElementId: 7b541acb-30b4-4490-8cdc-e25320f78c03
           ElementType: VISUAL
           RowIndex: 15
           RowSpan: 3
-        - ColumnIndex: 12
+        - ColumnIndex: 13
           ColumnSpan: 4
           ElementId: bd97c1e2-4451-472c-8a41-f91e881d1e4b
           ElementType: VISUAL
           RowIndex: 15
           RowSpan: 3
-        - ColumnIndex: 16
+        - ColumnIndex: 17
           ColumnSpan: 4
           ElementId: c79106bf-91eb-4e52-81e0-26324cc13e63
           ElementType: PARAMETER_CONTROL
@@ -1612,15 +1634,15 @@ Sheets:
           RowIndex: 17
           RowSpan: 8
         - ColumnIndex: 0
+          ColumnSpan: 17
+          ElementId: d1cfc20b-24a1-4aa9-9e4a-2bcec8b00c0e
+          ElementType: VISUAL
+          RowIndex: 18
+          RowSpan: 7
+        - ColumnIndex: 17
           ColumnSpan: 4
           ElementId: f6a042f7-24dd-4473-baf9-573cc607251b
           ElementType: PARAMETER_CONTROL
-          RowIndex: 18
-          RowSpan: 7
-        - ColumnIndex: 4
-          ColumnSpan: 16
-          ElementId: d1cfc20b-24a1-4aa9-9e4a-2bcec8b00c0e
-          ElementType: VISUAL
           RowIndex: 18
           RowSpan: 7
         - ColumnIndex: 0
@@ -2368,9 +2390,9 @@ Sheets:
       \   </inline>\n      <inline color=\"#cdd1d2\" font-size=\"18px\">&#129419;</inline>\n\
       \      <inline color=\"#cdd1d2\" font-size=\"18px\">\n        <i>\_PLE) by default.</i>\n\
       \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #cdd1d2\" font-size=\"18px\">\n        <i>You can adjust that event scope as\
-      \ needed.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
-      \      <inline color=\"#cdd1d2\" font-size=\"18px\">\n        <i>Use the reset\
+      #cdd1d2\" font-size=\"18px\">\n        <i>You can expand or shrink event scope\
+      \ as needed.</i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      >\n      <inline color=\"#cdd1d2\" font-size=\"18px\">\n        <i>Use the reset\
       \ button (below) to return to default.</i>\n      </inline>\n    </li>\n  </ul>\n\
       </text-box>"
     SheetTextBoxId: 2b2df5f2-7ba2-4069-bd35-614e510e47b4
@@ -2382,13 +2404,13 @@ Sheets:
       \ color=\"#fec48c\" font-size=\"20px\">\n    <b>\n      <i>\n        <expression>${ConfigNearDaysThreshold}</expression>\n\
       \      </i>\n    </b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
       20px\">\n    <i>\_</i>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
-      18px\">\n    <i>days.\_</i>\n  </inline>\n  <br/>\n  <inline color=\"#cdd1d2\"\
+      18px\">\n    <i>days *.\_</i>\n  </inline>\n  <br/>\n  <inline color=\"#cdd1d2\"\
       \ font-size=\"12px\">\n    <i>&#128993;</i>\n  </inline>\n  <inline color=\"\
       #cdd1d2\" font-size=\"18px\">\n    <b>\n      <i>\_Future</i>\n    </b>\n  </inline>\n\
       \  <inline color=\"#cdd1d2\" font-size=\"18px\">\n    <i>\_start beyond that.</i>\n\
       \  </inline>\n  <br/>\n  <br/>\n  <inline color=\"#cdd1d2\" font-size=\"12px\"\
       >\u2731\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">\n    <i>Adjust\
-      \ days threshold with the slider at the top</i>\n  </inline>\n</text-box>"
+      \ near days threshold with the slider at the top</i>\n  </inline>\n</text-box>"
     SheetTextBoxId: 2fbc16bc-7efe-45df-b9be-4a036c1ffd9a
   - Content: "<text-box>\n  <inline color=\"Accent\" font-size=\"26px\">\n    <b>Event\
       \ Schedule</b>\n  </inline>\n  <br/>\n  <inline color=\"#cdd1d2\" font-size=\"\
@@ -2431,19 +2453,19 @@ Sheets:
     SheetTextBoxId: 45a079ef-1123-49d4-845b-dcc4fc2ef7c3
   - Content: "<text-box>\_\_\_\_\_\_</text-box>"
     SheetTextBoxId: 08975b84-7d74-4608-8221-ba966ff6a76a
-  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"12px\">\n    <b>CATEGORY\
-      \ KEY:\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\" font-size=\"\
-      12px\">&#128293;= Issue   &#128276;= Notification   &#128198;=Scheduled Change\
-      \   &#128269;= Investigation</inline>\n  <br/>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"12px\">\n    <b>ACTIONABILITY KEY:</b>\n  </inline>\n  <inline\
-      \ font-size=\"12px\">\u2753= Action may be required  &#128680;= Action required\
-      \ \u2139\uFE0F = Informational</inline>\n  <br/>\n  <inline color=\"#fec48c\"\
-      \ font-size=\"12px\">\n    <b>PERSONA KEY:\_</b>\n  </inline>\n  <inline font-size=\"\
-      12px\">&#128736;\uFE0F = Operations  &#129534; = Billing  &#128737;\uFE0F =\
-      \ Security</inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"12px\"\
-      >\n    <b>STATUS KEY:\_</b>\n  </inline>\n  <inline color=\"PrimaryForeground\"\
-      \ font-size=\"12px\">&#128308;= Open   &#128992; = Impending   &#128993; = Future\
-      \   &#128994; = Closed</inline>\n</text-box>"
+  - Content: "<text-box>\n  <inline color=\"#fec48c\" font-size=\"12px\">\n    <b>CATEGORY:\_\
+      </b>\n  </inline>\n  <inline color=\"PrimaryForeground\" font-size=\"12px\"\
+      >&#128293;= Issue   &#128276;= Notification   &#128198;=Scheduled Change   &#128269;=\
+      \ Investigation</inline>\n  <br/>\n  <inline color=\"#fec48c\" font-size=\"\
+      12px\">\n    <b>ACTIONABILITY:</b>\n  </inline>\n  <inline font-size=\"12px\"\
+      >\u2753= Action may be required  &#128680;= Action required \u2139\uFE0F = Informational</inline>\n\
+      \  <br/>\n  <inline color=\"#fec48c\" font-size=\"12px\">\n    <b>PERSONA:\_\
+      </b>\n  </inline>\n  <inline font-size=\"12px\">&#128736;\uFE0F = Operations\
+      \  &#129534; = Billing  &#128737;\uFE0F = Security</inline>\n  <br/>\n  <inline\
+      \ color=\"#fec48c\" font-size=\"12px\">\n    <b>STATUS:\_</b>\n  </inline>\n\
+      \  <inline color=\"PrimaryForeground\" font-size=\"12px\">&#128308;= Open  \
+      \ &#128992; = Impending   &#128993; = Future   &#128994; = Closed</inline>\n\
+      </text-box>"
     SheetTextBoxId: 1343bcfc-1d9b-4282-9031-ca232c315d8c
   Visuals:
   - KPIVisual:
@@ -2725,7 +2747,7 @@ Sheets:
           ScrollbarOptions:
             VisibleRange:
               PercentRange:
-                From: 80.0
+                From: 65.56701030927834
                 To: 100.0
           TickLabelOptions:
             LabelOptions:
@@ -3573,10 +3595,10 @@ Sheets:
             #cdd1d2\">\u26E8</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\"\
             >\n    <b>:\_</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
             12px\">&#128154;</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\"\
-            >\n    <b>\_&lt; 7 days\_\_\_</b>\n  </inline>\n  <inline color=\"#cdd1d2\"\
+            >\n    <b>\_&lt; 7 days\_\_\_</b>\n  </inline>\n  <inline color=\"#ffdc51\"\
             \ font-size=\"16px\">\n    <b>\u26A0\_</b>\n  </inline>\n  <inline color=\"\
             #cdd1d2\" font-size=\"12px\">\n    <b>\_7 -14 DAYS\_\_\_</b>\n  </inline>\n\
-            \  <inline color=\"#cdd1d2\" font-size=\"16px\">\n    <b>\u26A0\_</b>\n\
+            \  <inline color=\"#de3b00\" font-size=\"16px\">\n    <b>\u26A0\_</b>\n\
             \  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\">\n    <b>\_\
             &gt; 14 DAYS</b>\n  </inline>\n  <br/>\n  <inline color=\"#cdd1d2\" font-size=\"\
             14px\">\n    <b>C</b>\n  </inline>\n  <inline color=\"#cdd1d2\" font-size=\"\
@@ -3988,7 +4010,7 @@ Sheets:
             Colors:
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: Lifecycle Event
+                  ColumnName: service
                   DataSetIdentifier: health_events_view
                 FieldId: 3f2f32bb-fbf6-4017-bfc3-189955bc128b.2.1776800506401
                 HierarchyId: 83067ff3-f74e-400d-983f-332144dd2a9c
@@ -4045,6 +4067,8 @@ Sheets:
           HierarchyId: 5a2e444d-749b-49ac-baca-511fb1b4cd8f
       - ExplicitHierarchy:
           Columns:
+          - ColumnName: service
+            DataSetIdentifier: health_events_view
           - ColumnName: Lifecycle Event
             DataSetIdentifier: health_events_view
           - ColumnName: Resource Status
@@ -4052,8 +4076,6 @@ Sheets:
           - ColumnName: Account
             DataSetIdentifier: health_events_view
           - ColumnName: Event Category
-            DataSetIdentifier: health_events_view
-          - ColumnName: service
             DataSetIdentifier: health_events_view
           - ColumnName: region
             DataSetIdentifier: health_events_view
@@ -4534,8 +4556,9 @@ Sheets:
             >&#129419;= L</inline>\n  <inline color=\"#cdd1d2\" font-size=\"12px\"\
             >IFECYCLE\_</inline>\n  <inline color=\"#cdd1d2\" font-size=\"16px\">E</inline>\n\
             \  <inline color=\"#cdd1d2\" font-size=\"12px\">VENT.\_\_</inline>\n \
-            \ <inline font-size=\"16px\">C</inline>\n  <inline font-size=\"12px\"\
-            >LICK AN EVENT TO FILTER THE SHEET.\_</inline>\n</visual-subtitle>"
+            \ <inline color=\"#cdd1d2\" font-size=\"16px\">C</inline>\n  <inline color=\"\
+            #cdd1d2\" font-size=\"12px\">LICK AN EVENT TO FILTER THE SHEET.\_</inline>\n\
+            </visual-subtitle>"
         Visibility: VISIBLE
       Title:
         FormatText:
