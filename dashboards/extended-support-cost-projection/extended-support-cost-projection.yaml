@@ -17,16 +17,8 @@ dashboards:
     - opensearch_extended_support_view
     - elasticache_extended_support_view
     nonTaxonomyColumns:
-    - account_email_id
-    - account_id
-    - account_name
-    - account_prefix
-    - account_suffix
     - line_item_usage_account_id
     - line_item_product_code
-    - o_u
-    - parent_account_id
-    - parent_account_name
     - tags_json
     file: ./extended-support-cost-projection-definition.yaml
     version: v5.2.1
