@@ -5,7 +5,7 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Wed, 22 Apr 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 29 Apr 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
       <title>[Update] Media Services Information Hub - v2.2.0</title>
@@ -21,6 +21,23 @@
   <ul>
     <li>Enhancewments to MediaLive reservation modeling.</li>
     <li>NOTE: requires --force --recursive update process.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Extended Support Cost Projection - v5.2.1</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v521
+      </link>
+      <pubDate>Wed, 29 Apr 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">62a39c63-9f01-4a4a-8301-23117aee0101</guid>
+      <description>Extended Support Cost Projection - v5.2.1</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>Joined <code>account_map</code> to the <code>extended_support_tagging_view</code> dataset so account-level taxonomy fields (e.g. OU columns) are carried through and included in the taxonomy candidate list during <code>cid-cmd</code> install/update.</li>
   </ul>
 </div>
     ]]></content:encoded>
