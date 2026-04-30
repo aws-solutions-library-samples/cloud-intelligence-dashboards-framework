@@ -1,5 +1,10 @@
 # What's new in the Media Services Insights Hub (MSIH)
 
+## Media Services Insights Hub - v2.2.0
+
+- Refine MediaLive Reservations modeling
+- NOTE: requires --force --recursive update process
+
 ## Media Services Insights Hub - v2.1.0
 
 - Added new EMT data transfer visuals
