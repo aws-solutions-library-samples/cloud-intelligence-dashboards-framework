@@ -824,6 +824,7 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: !Ref RolePath
+      PermissionsBoundary: !If [NeedPermissionsBoundary, !Ref PermissionsBoundary, !Ref 'AWS::NoValue']
       Policies:
         - PolicyName: root
           PolicyDocument:
@@ -1975,6 +1976,8 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
+      Path: !Ref RolePath
+      PermissionsBoundary: !If [NeedPermissionsBoundary, !Ref PermissionsBoundary, !Ref 'AWS::NoValue']
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
       Policies:
