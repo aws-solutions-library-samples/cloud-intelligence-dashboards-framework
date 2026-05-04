@@ -4251,10 +4251,6 @@ Sheets:
             NegativeColor: '#DE3B00'
             PositiveColor: '#AAAAAA'
         - DataBars:
-            FieldId: afc6fe37-136f-4dab-91d3-3ec6e25e237a.10.1724245575979
-            NegativeColor: '#DE3B00'
-            PositiveColor: '#DE3B00'
-        - DataBars:
             FieldId: 831bafaa-7ba4-4096-bb93-1a519a76c576.affected_entity_value.11.1777005706923
             NegativeColor: '#DE3B00'
             PositiveColor: '#DE3B00'
