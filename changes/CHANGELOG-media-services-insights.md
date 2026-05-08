@@ -3,7 +3,7 @@
 ## Media Services Insights Hub - v2.2.0
 
 - Refine MediaLive Reservations modeling
-- NOTE: requires --force --recursive update process
+- NOTE: this update requires recursive update process. Please run `cid-cmd --recursive --dashboard-id media-services-insights` to update
 
 ## Media Services Insights Hub - v2.1.0
 
