@@ -954,7 +954,7 @@ ColumnConfigurations:
 DataSetIdentifierDeclarations:
 - DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-reservations
   Identifier: msih_reservations
-- DataSetArn: arn:aws:quicksight:::dataset/msih_reservation_optimize
+- DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-res-optimize
   Identifier: msih_reservation_optimize
 - DataSetArn: arn:aws:quicksight:::dataset/media-services-insights-main
   Identifier: msih_view
