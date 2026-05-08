@@ -1,0 +1,90 @@
+dashboards:
+  BEDROCK_COST_ATTRIBUTION:
+    dependsOn:
+      datasets:
+      - bedrock_cost_view
+      views:
+      - account_map
+      - bedrock_cost_view
+    name: Bedrock Cost Attribution Dashboard
+    dashboardId: bedrock-cost-attribution
+    category: Advanced
+    theme: MIDNIGHT
+    version: v1.0.0
+    file: ./bedrock-cost-attribution-definition.yaml
+datasets:
+  bedrock_cost_view:
+    data:
+      DataSetId: bedrock-cost-view-001
+      Name: bedrock_cost_view
+      PhysicalTableMap:
+        bedrock-table:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: bedrock_cost_view
+            InputColumns:
+            - Name: billing_period
+              Type: DATETIME
+            - Name: usage_date
+              Type: DATETIME
+            - Name: payer_account_id
+              Type: STRING
+            - Name: linked_account_id
+              Type: STRING
+            - Name: service_name
+              Type: STRING
+            - Name: usage_category
+              Type: STRING
+            - Name: model_id
+              Type: STRING
+            - Name: token_direction
+              Type: STRING
+            - Name: usage_type
+              Type: STRING
+            - Name: pricing_unit
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: resource_id
+              Type: STRING
+            - Name: tags_json
+              Type: STRING
+            - Name: usage_amount
+              Type: DECIMAL
+            - Name: unblended_cost
+              Type: DECIMAL
+            - Name: net_unblended_cost
+              Type: DECIMAL
+            - Name: token_count
+              Type: DECIMAL
+        account-map-table:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+      LogicalTableMap:
+        bedrock-logical:
+          Alias: bedrock_cost_view
+          Source:
+            PhysicalTableId: bedrock-table
+        account-map-logical:
+          Alias: account_map
+          Source:
+            PhysicalTableId: account-map-table
+        bedrock-joined:
+          Alias: bedrock_cost_with_accounts
+          Source:
+            JoinInstruction:
+              LeftOperand: bedrock-logical
+              RightOperand: account-map-logical
+              Type: LEFT
+              OnClause: linked_account_id = account_id
+      ImportMode: SPICE

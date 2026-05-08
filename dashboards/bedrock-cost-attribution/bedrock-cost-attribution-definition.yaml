@@ -1,0 +1,251 @@
+data: |-
+  AnalysisDefaults:
+    DefaultNewSheetConfiguration:
+      InteractiveLayoutConfiguration:
+        Grid:
+          CanvasSizeOptions:
+            ScreenCanvasSizeOptions:
+              OptimizedViewPortWidth: 1600px
+              ResizeOption: FIXED
+      SheetContentType: INTERACTIVE
+  CalculatedFields:
+  - DataSetIdentifier: bedrock_cost_view
+    Expression: unblended_cost
+    Name: Total Cost
+  - DataSetIdentifier: bedrock_cost_view
+    Expression: token_count
+    Name: Total Tokens
+  - DataSetIdentifier: bedrock_cost_view
+    Expression: |-
+      ifelse(
+        token_count > 0, unblended_cost / token_count * 1000,
+        0
+      )
+    Name: Cost Per 1K Tokens
+  - DataSetIdentifier: bedrock_cost_view
+    Expression: usage_amount
+    Name: Usage Amount
+  Sheets:
+  - ContentType: INTERACTIVE
+    Name: Bedrock Cost Overview
+    SheetId: bedrock-overview
+    Visuals:
+    - KPIVisual:
+        VisualId: kpi-total-cost
+        Title:
+          Visibility: VISIBLE
+          FormatText:
+            PlainText: Total Bedrock Spend
+        ChartConfiguration:
+          FieldWells:
+            Values:
+            - NumericalMeasureField:
+                FieldId: cost-field
+                Column:
+                  DataSetIdentifier: bedrock_cost_view
+                  ColumnName: unblended_cost
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+    - KPIVisual:
+        VisualId: kpi-total-tokens
+        Title:
+          Visibility: VISIBLE
+          FormatText:
+            PlainText: Total Tokens Processed
+        ChartConfiguration:
+          FieldWells:
+            Values:
+            - NumericalMeasureField:
+                FieldId: token-field
+                Column:
+                  DataSetIdentifier: bedrock_cost_view
+                  ColumnName: token_count
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+    - BarChartVisual:
+        VisualId: cost-by-model
+        Title:
+          Visibility: VISIBLE
+          FormatText:
+            PlainText: Cost by Model
+        ChartConfiguration:
+          FieldWells:
+            BarChartAggregatedFieldWells:
+              Category:
+              - CategoricalDimensionField:
+                  FieldId: model-field
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: model_id
+              Values:
+              - NumericalMeasureField:
+                  FieldId: cost-val
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: unblended_cost
+                  AggregationFunction:
+                    SimpleNumericalAggregation: SUM
+          SortConfiguration:
+            CategorySort:
+            - FieldSort:
+                FieldId: cost-val
+                Direction: DESC
+    - BarChartVisual:
+        VisualId: cost-by-account
+        Title:
+          Visibility: VISIBLE
+          FormatText:
+            PlainText: Cost by Account (Team)
+        ChartConfiguration:
+          FieldWells:
+            BarChartAggregatedFieldWells:
+              Category:
+              - CategoricalDimensionField:
+                  FieldId: account-field
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: linked_account_id
+              Values:
+              - NumericalMeasureField:
+                  FieldId: cost-val-2
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: unblended_cost
+                  AggregationFunction:
+                    SimpleNumericalAggregation: SUM
+          SortConfiguration:
+            CategorySort:
+            - FieldSort:
+                FieldId: cost-val-2
+                Direction: DESC
+    - LineChartVisual:
+        VisualId: daily-trend
+        Title:
+          Visibility: VISIBLE
+          FormatText:
+            PlainText: Daily Bedrock Spend Trend
+        ChartConfiguration:
+          FieldWells:
+            LineChartAggregatedFieldWells:
+              Category:
+              - DateDimensionField:
+                  FieldId: date-field
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: usage_date
+                  DateGranularity: DAY
+              Values:
+              - NumericalMeasureField:
+                  FieldId: daily-cost
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: unblended_cost
+                  AggregationFunction:
+                    SimpleNumericalAggregation: SUM
+    - PieChartVisual:
+        VisualId: cost-by-category
+        Title:
+          Visibility: VISIBLE
+          FormatText:
+            PlainText: Cost by Usage Category
+        ChartConfiguration:
+          FieldWells:
+            PieChartAggregatedFieldWells:
+              Category:
+              - CategoricalDimensionField:
+                  FieldId: category-field
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: usage_category
+              Values:
+              - NumericalMeasureField:
+                  FieldId: cat-cost
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: unblended_cost
+                  AggregationFunction:
+                    SimpleNumericalAggregation: SUM
+    - BarChartVisual:
+        VisualId: tokens-by-direction
+        Title:
+          Visibility: VISIBLE
+          FormatText:
+            PlainText: Token Usage (Input vs Output)
+        ChartConfiguration:
+          FieldWells:
+            BarChartAggregatedFieldWells:
+              Category:
+              - CategoricalDimensionField:
+                  FieldId: direction-field
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: token_direction
+              Values:
+              - NumericalMeasureField:
+                  FieldId: token-val
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: token_count
+                  AggregationFunction:
+                    SimpleNumericalAggregation: SUM
+    - TableVisual:
+        VisualId: top-consumers-table
+        Title:
+          Visibility: VISIBLE
+          FormatText:
+            PlainText: Top Bedrock Consumers
+        ChartConfiguration:
+          FieldWells:
+            TableAggregatedFieldWells:
+              GroupBy:
+              - CategoricalDimensionField:
+                  FieldId: tbl-account
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: linked_account_id
+              - CategoricalDimensionField:
+                  FieldId: tbl-model
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: model_id
+              - CategoricalDimensionField:
+                  FieldId: tbl-region
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: region
+              Values:
+              - NumericalMeasureField:
+                  FieldId: tbl-cost
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: unblended_cost
+                  AggregationFunction:
+                    SimpleNumericalAggregation: SUM
+              - NumericalMeasureField:
+                  FieldId: tbl-tokens
+                  Column:
+                    DataSetIdentifier: bedrock_cost_view
+                    ColumnName: token_count
+                  AggregationFunction:
+                    SimpleNumericalAggregation: SUM
+          SortConfiguration:
+            RowSort:
+            - FieldSort:
+                FieldId: tbl-cost
+                Direction: DESC
+  FilterGroups:
+  - FilterGroupId: date-filter-group
+    Filters:
+    - RelativeDatesFilter:
+        FilterId: last-6-months
+        Column:
+          DataSetIdentifier: bedrock_cost_view
+          ColumnName: usage_date
+        RelativeDateType: LAST
+        RelativeDateValue: 6
+        TimeGranularity: MONTH
+        AnchorDateConfiguration:
+          AnchorOption: NOW
+    ScopeConfiguration:
+      AllSheets: {}
+    CrossDataset: ALL_DATASETS
