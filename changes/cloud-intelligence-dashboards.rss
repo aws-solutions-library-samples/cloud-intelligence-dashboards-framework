@@ -8,6 +8,24 @@
     <lastBuildDate>Wed, 29 Apr 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Media Services Information Hub - v2.2.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md
+      </link>
+      <pubDate>Fri, 1 May 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">ad90c56a-6b8a-4750-95f6-6fa4d29b1b73</guid>
+      <description>Media Services Information Hub - v2.2.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>Enhancewments to MediaLive reservation modeling.</li>
+    <li>NOTE: requires --force --recursive update process.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
       <title>[Update] Extended Support Cost Projection - v5.2.1</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v521
