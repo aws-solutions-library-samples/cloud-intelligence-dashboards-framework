@@ -61,7 +61,7 @@
   , "bill_billing_entity" "billing_entity"
   , "pricing_unit" "pricing_unit"
   , approx_distinct("line_item_resource_id") "resource_id_count"
-  , sum("usage_quantity") "usage_quantity"
+  , sum("line_item_usage_amount") "usage_quantity"
   , sum ("line_item_unblended_cost") "unblended_cost"
   , sum(CASE
       WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost"
