@@ -7,7 +7,7 @@ dashboards:
     dashboardId: pricing-change-analysis
     category: ADVANCED
     theme: MIDNIGHT
-    version: v1.0.2
+    version: v1.1.0
     data: |-
       AnalysisDefaults:
         DefaultNewSheetConfiguration:
@@ -268,6 +268,22 @@ dashboards:
               - e9dec707-9ace-4f14-8fb0-93faa323454d
               - 18d3ee4c-9b82-468e-9bfb-17334367c88f
         Status: ENABLED
+      - CrossDataset: SINGLE_DATASET
+        FilterGroupId: 3fa4fcfe-d6a9-4ca0-b08d-160e0034aa0e
+        Filters:
+        - TimeRangeFilter:
+            Column:
+              ColumnName: bill_month
+              DataSetIdentifier: pricing_changes
+            FilterId: 1c31bfed-c173-4cfd-b0f6-8f1222503cc8
+            NullOption: NON_NULLS_ONLY
+            TimeGranularity: DAY
+        ScopeConfiguration:
+          SelectedSheets:
+            SheetVisualScopingConfigurations:
+            - Scope: ALL_VISUALS
+              SheetId: 7c3a2961-769c-4d6f-b603-5070885d61db
+        Status: ENABLED
       Options:
         CustomActionDefaults:
           highlightOperation:
@@ -276,6 +292,14 @@ dashboards:
         QBusinessInsightsStatus: DISABLED
         WeekStart: SUNDAY
       ParameterDeclarations:
+      - IntegerParameterDeclaration:
+          DefaultValues:
+            StaticValues:
+            - 24
+          Name: PreviousNMonths
+          ParameterValueType: SINGLE_VALUED
+          ValueWhenUnset:
+            ValueWhenUnsetOption: RECOMMENDED_VALUE
       - StringParameterDeclaration:
           DefaultValues: {}
           Name: Payer
@@ -303,7 +327,7 @@ dashboards:
       - StringParameterDeclaration:
           DefaultValues:
             StaticValues:
-            - Unblended
+            - Net Unblended
           Name: CostType
           ParameterValueType: SINGLE_VALUED
           ValueWhenUnset:
@@ -323,6 +347,25 @@ dashboards:
         - CrossSheet:
             FilterControlId: 3aa652d1-0df1-4cc7-b6b0-34997e18746c
             SourceFilterId: d8d51925-0519-4502-a1ce-d0a41a34831b
+        - DateTimePicker:
+            CommitMode: MANUAL
+            DisplayOptions:
+              DateIconVisibility: VISIBLE
+              DateTimeFormat: YYYY/MM/DD
+              HelperTextVisibility: HIDDEN
+              InfoIconLabelOptions:
+                InfoIconText: Select a start and end date within the previous 24 months
+                  to filter data totals
+                Visibility: VISIBLE
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            FilterControlId: f7e356bf-f205-4055-87aa-cf2c6c1e8f8c
+            SourceFilterId: 1c31bfed-c173-4cfd-b0f6-8f1222503cc8
+            Title: Date Range
+            Type: DATE_RANGE
         Layouts:
         - Configuration:
             GridLayout:
@@ -448,9 +491,17 @@ dashboards:
                 ElementType: FILTER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
-              - ColumnSpan: 2
+              - ColumnIndex: 8
+                ColumnSpan: 2
+                ElementId: f7e356bf-f205-4055-87aa-cf2c6c1e8f8c
+                ElementType: FILTER_CONTROL
+                RowIndex: 0
+                RowSpan: 1
+              - ColumnIndex: 10
+                ColumnSpan: 2
                 ElementId: 5bca216d-d11a-41cb-8de2-a6e6c5a74ab0
                 ElementType: PARAMETER_CONTROL
+                RowIndex: 0
                 RowSpan: 1
         SheetId: 7c3a2961-769c-4d6f-b603-5070885d61db
         TextBoxes:
@@ -459,16 +510,15 @@ dashboards:
             14px\">This dashboard provides analysis into AWS pricing changes and their financial\
             \ impact across your AWS workloads. It allows analysis of cost differences resulting\
             \ from AWS price adjustments across multiple services, accounts, and time periods.\_\
-            </inline>\n  <br/>\n  <br/>\n  <inline color=\"Accent\" font-size=\"14px\">\n\
-            \    <expression>${CostType}</expression>\n  </inline>\n  <inline color=\"Accent\"\
-            \ font-size=\"14px\">\_costs do not include any discounts applied to usage,\
-            \ while Net Unblended costs reflect the cost after discounts.</inline>\n  <br/>\n\
-            \  <br/>\n  <inline color=\"Accent\" font-size=\"14px\">\n    <b>IMPORTANT:\_\
-            </b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"14px\">This dashboard\
-            \ is updated monthly, and does not include all cost data for the listed services,\
-            \ it displays data only for pricing SKUs with a pricing change in the last 24\
-            \ months. It also does not include non-service items including Marketplace,\
-            \ Support, and taxes.</inline>\n</text-box>"
+            </inline>\n  <br/>\n  <br/>\n  <inline color=\"Accent\" font-size=\"14px\">The\
+            \ Unblended Cost Type does not include any discounts applied to usage (public\
+            \ pricing), while the Net Unblended Cost Type reflects costs after any applicable\
+            \ discounts.</inline>\n  <br/>\n  <br/>\n  <inline color=\"Accent\" font-size=\"\
+            14px\">\n    <b>IMPORTANT:\_</b>\n  </inline>\n  <inline color=\"Accent\" font-size=\"\
+            14px\">This dashboard is updated monthly. It does not include all cost data\
+            \ for the listed services, it displays data only for pricing SKUs with a pricing\
+            \ change in the last 24 months. It also does not include non-service items including\
+            \ Marketplace, Support, and taxes.\_</inline>\n</text-box>"
           SheetTextBoxId: f2a2b736-8897-4854-91f8-d4b83eef0315
         - Content: "<text-box>\n  <inline font-size=\"40px\">\n    <b>AWS Pricing Change</b>\n\
             \  </inline>\n  <inline font-size=\"40px\">\n    <b/>\n  </inline>\n  <inline\
@@ -589,7 +639,7 @@ dashboards:
                   VisibleRange:
                     PercentRange:
                       From: 0.0
-                      To: 19.05660377358492
+                      To: 19.05660377358494
                 TickLabelOptions:
                   LabelOptions:
                     Visibility: VISIBLE
@@ -930,7 +980,7 @@ dashboards:
                   Visibility: VISIBLE
                   VisibleRange:
                     PercentRange:
-                      From: 64.19294990723563
+                      From: 64.19294990723564
                       To: 100.0
               CategoryLabelOptions:
                 AxisLabelOptions:
@@ -1488,14 +1538,26 @@ dashboards:
               Visibility: VISIBLE
             VisualId: e9dec707-9ace-4f14-8fb0-93faa323454d
         - PivotTableVisual:
-            Actions: []
+            Actions:
+            - ActionOperations:
+              - FilterOperation:
+                  SelectedFieldsConfiguration:
+                    SelectedFields:
+                    - 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_sku.0.1752164188565
+                  TargetVisualsConfiguration:
+                    SameSheetTargetVisualConfiguration:
+                      TargetVisualOptions: ALL_VISUALS
+              CustomActionId: 08c8e2a9-e3e6-4a53-bd4f-42f033e25b46
+              Name: SKU filter
+              Status: ENABLED
+              Trigger: DATA_POINT_CLICK
             ChartConfiguration:
               FieldOptions:
                 DataPathOptions:
                 - DataPathList:
                   - FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.line_item_line_item_description.6.1752451342698
                     FieldValue: line_item_line_item_description
-                  Width: 470px
+                  Width: 546px
                 - DataPathList:
                   - FieldId: 6593e2c5-c2d0-43d1-990a-2d514efde2e5.product_product_name.1.1752164217428
                     FieldValue: product_product_name
@@ -1722,7 +1784,7 @@ dashboards:
             >\n      <a href=\"https://www.wellarchitectedlabs.com/cloud-intelligence-dashboards/\"\
             \ target=\"_blank\">Pricing Change Analysis</a>\n    </inline>\n  </block>\n\
             \  <br/>\n  <block align=\"center\">\n    <inline font-size=\"40px\">Version\
-            \ 1.0.2</inline>\n  </block>\n  <br/>\n  <br/>\n  <br/>\n  <br/>\n  <block align=\"\
+            \ 1.1.0</inline>\n  </block>\n  <br/>\n  <br/>\n  <br/>\n  <br/>\n  <block align=\"\
             right\">Built and maintained by: Jason Walp, Mohamed Sherif, Hicham Lahlali,\
             \ Prem Chandran</block>\n  <br/>\n  <block align=\"right\">\n    Learn more\
             \ about AWS Cloud Intelligence Dashboards (CID) on\n    <inline color=\"#61d1d6\"\
@@ -1967,7 +2029,7 @@ views:
       FROM
         "count_sku_with_pricing_change"
       WHERE ("count_sku_pricing" > 1)
-      )) AND (NOT ("pricing_public_on_demand_rate" IN ('0.0000000000', ''))) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '24' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)))
+      )) AND (NOT ("pricing_public_on_demand_rate" IN ('0.0000000000', ''))) AND ("line_item_line_item_type" = 'Usage') AND ("line_item_usage_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '24' MONTH)) AND ("line_item_usage_start_date" < "date_trunc"('month', current_timestamp)) AND (NOT ("line_item_unblended_rate" IN (''))))
          GROUP BY 1, "product_product_name", 3, 4, "product_region", "product_sku", "pricing_rate_code", "line_item_line_item_description", "pricing_unit", "line_item_unblended_rate"
       )
       , sku_table AS (
