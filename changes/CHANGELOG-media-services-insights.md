@@ -1,5 +1,10 @@
 # What's new in the Media Services Insights Hub (MSIH)
 
+## Media Services Insights Hub - v2.2.0
+
+- Refine MediaLive Reservations modeling
+- NOTE: this update requires recursive update process. Please run `cid-cmd --recursive --dashboard-id media-services-insights` to update
+
 ## Media Services Insights Hub - v2.1.0
 
 - Added new EMT data transfer visuals

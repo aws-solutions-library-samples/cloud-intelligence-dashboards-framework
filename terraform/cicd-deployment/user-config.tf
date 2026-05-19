@@ -159,3 +159,21 @@ variable "destination_role_arn" {
   type        = string
   default     = null
 }
+
+# =============================================================================
+# LEGACY LOCAL BUCKET CONFIGURATION
+# =============================================================================
+# Controls whether a local S3 bucket is created in the source account.
+# - Existing deployments: keep as "yes" to preserve existing bucket and data
+# - New deployments: set to "no" to skip local S3 bucket creation
+# =============================================================================
+variable "legacy_local_bucket" {
+  description = "Set to 'yes' for existing deployments to preserve local S3 bucket and data. Set to 'no' for new deployments."
+  type        = string
+  default     = "yes"
+
+  validation {
+    condition     = contains(["yes", "no"], var.legacy_local_bucket)
+    error_message = "legacy_local_bucket must be 'yes' or 'no'"
+  }
+}
