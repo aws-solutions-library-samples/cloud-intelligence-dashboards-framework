@@ -3,7 +3,7 @@ import sys
 import os
 from pathlib import Path
 
-def find_duplicates(lines):
+def find_duplicates(lines, min_count=10):
     changes = []
     i = 0
     
@@ -60,7 +60,7 @@ def find_duplicates(lines):
                 while idx < len(col_entries):
                     curr_col = (col_entries[idx][2], col_entries[idx][3])
                     dup_indices = [idx]
-                    
+
                     j = idx + 1
                     while j < len(col_entries):
                         next_col = (col_entries[j][2], col_entries[j][3])
@@ -69,35 +69,35 @@ def find_duplicates(lines):
                             j += 1
                         else:
                             break
-                    
-                    if len(dup_indices) > 1:
+
+                    if len(dup_indices) > 1 and len(dup_indices) >= min_count:
                         to_remove_cols = [(col_entries[i][0], col_entries[i][1]) for i in dup_indices[1:]]
                         to_remove_fields = []
-                        
+
                         # Remove same number of SelectedFields as SelectedColumns
                         if len(field_entries) >= len(dup_indices):
                             to_remove_fields = [(field_entries[i][0], field_entries[i][1]) for i in dup_indices[1:]]
-                        
+
                         changes.append((col_entries[dup_indices[0]][0], to_remove_cols, to_remove_fields, curr_col))
-                    
+
                     idx = j if j > idx else idx + 1
-            
+
             # Handle SelectedFields duplicates when only 1 SelectedColumn
             elif len(col_entries) == 1 and len(field_entries) > 1:
                 idx = 0
                 while idx < len(field_entries):
                     curr_field = field_entries[idx][2]
                     dup_indices = [idx]
-                    
+
                     j = idx + 1
                     while j < len(field_entries) and field_entries[j][2] == curr_field:
                         dup_indices.append(j)
                         j += 1
-                    
-                    if len(dup_indices) > 1:
+
+                    if len(dup_indices) > 1 and len(dup_indices) >= min_count:
                         to_remove_fields = [(field_entries[i][0], field_entries[i][1]) for i in dup_indices[1:]]
                         changes.append((col_entries[0][0], [], to_remove_fields, (col_entries[0][2], col_entries[0][3])))
-                    
+
                     idx = j if j > idx else idx + 1
             
             i = k
@@ -124,7 +124,7 @@ def show_diff(lines, keep_line, remove_cols, remove_fields):
             for line_num in range(start, end):
                 print(f"  Line {line_num}: {lines[line_num].rstrip()}")
 
-def process_file(yaml_file, fix_mode, force_mode):
+def process_file(yaml_file, fix_mode, force_mode, min_count=10):
     """Process a single YAML file"""
     if fix_mode:
         print(f"\n{'='*60}")
@@ -143,7 +143,7 @@ def process_file(yaml_file, fix_mode, force_mode):
             with open(yaml_file, 'r') as f:
                 lines = f.readlines()
             
-            changes = find_duplicates(lines)
+            changes = find_duplicates(lines, min_count)
             
             if not changes:
                 if fixed_count > 0:
@@ -203,16 +203,26 @@ def process_file(yaml_file, fix_mode, force_mode):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("Usage: python3 find_duplicate_selected_columns.py <yaml_file_or_folder> [--fix] [--force]")
+        print("Usage: python3 find_duplicate_selected_columns.py <yaml_file_or_folder> [--fix] [--force] [--min-count N]")
         print("  <yaml_file_or_folder>: Path to a YAML file or folder containing YAML files")
         print("  --fix: Apply fixes (prompts for confirmation unless --force is used)")
         print("  --force: Apply all fixes without confirmation (requires --fix)")
+        print("  --min-count N: Minimum number of duplicate elements to trigger a fix (default: 10)")
         sys.exit(1)
-    
+
     path = sys.argv[1]
     fix_mode = '--fix' in sys.argv
     force_mode = '--force' in sys.argv
-    
+
+    min_count = 10
+    if '--min-count' in sys.argv:
+        idx = sys.argv.index('--min-count')
+        if idx + 1 < len(sys.argv):
+            min_count = int(sys.argv[idx + 1])
+        else:
+            print("Error: --min-count requires a value")
+            sys.exit(1)
+
     if force_mode and not fix_mode:
         print("Error: --force requires --fix")
         sys.exit(1)
@@ -231,14 +241,15 @@ if __name__ == '__main__':
         sys.exit(1)
     
     if fix_mode:
-        print(f"Running in FIX mode{' (no confirmation)' if force_mode else ' - will prompt for each change'}\n")
+        print(f"Running in FIX mode{' (no confirmation)' if force_mode else ' - will prompt for each change'}")
     else:
-        print("Running in DRY RUN mode\n")
+        print("Running in DRY RUN mode")
+    print(f"Minimum duplicate count threshold: {min_count}\n")
     
     files_with_issues = 0
     for yaml_file in yaml_files:
         try:
-            has_issues = process_file(yaml_file, fix_mode, force_mode)
+            has_issues = process_file(yaml_file, fix_mode, force_mode, min_count)
             if has_issues:
                 files_with_issues += 1
             if not fix_mode and not has_issues:

@@ -2,6 +2,48 @@
 
 # CUDOS v5
 
+# CUDOS - 5.8.0
+
+**Important:** This update requires cid-cmd v4.5.0 or later. Quick Sight datasets will be migrated to the new data preparation experience — if you have custom dataset modifications, make a copy before updating. To update, run in CloudShell (recommended) or your terminal:
+
+```
+pip3 install --upgrade cid-cmd
+cid-cmd update --dashboard-id cudos-v5 --recursive
+```
+
+**Highlights:**
+* Up to 5x faster dataset refresh with new Quick Sight data preparation experience
+* Amazon Bedrock cost per token visuals and cost per IAM Principal Tags
+* Database Savings Plans support across DynamoDB and Databases and RI/SP tabs
+* New Kiro and AWS DevOps Agent visuals including tracking of idle Kiro users
+* Extended Databases coverage: Keyspaces, DMS, Aurora DSQL, Timestream
+
+**AI/ML**
+* **Amazon Bedrock**: Added 'Cost per 1000 Tokens by Usage Type Group' visual. Added Group By control (Account, Region, Pricing Model, Usage Type Group, Model, IAM Principal Tags)
+* **Kiro and Amazon Q Developer** [new section]: Subscription tracking, idle user identification, and per-user cost details. Tiers: Enterprise Power, Pro, Pro Plus
+* **Amazon Q Business**: Renamed from 'Amazon Q Summary', excluding Q Developer
+* **SageMaker**: Added Group By control (Account, Region, Compute Type, Usage Type Group, Instance Type, Tags, Taxonomy)
+
+**Monitoring and Observability**
+* **AWS DevOps Agent** [new section]: Usage per task type, SRE tasks (Chat), incident prevention/response, per-account usage, and detailed view
+
+**DynamoDB**
+* Added Database Savings Plans support with new section 'On-Demand Capacity - Savings Plans Coverage & Usage Monitoring' and visuals 'On-Demand Capacity - Savings Plans Coverage' and 'Provisioned Capacity - Reservations and Savings Plans Coverage'
+* Added 'Show Infrequent Access Tables' filter control and improved commitment eligibility logic to exclude IA tables from Reserved Capacity eligibility when applicable
+
+**Databases**
+* Extended RI/SP coverage to Keyspaces, DMS, Aurora DSQL, Timestream. Coverage visuals now in Cost with SP coverable usage
+* Added Summary Group By (Account, Charge Type Group, Database Engine, Region, Service, Tags, Taxonomy)
+* Elasticity extended to Redshift. Hourly cost now includes serverless. Added 'Daily Serverless Compute Cost'
+* Improved 'Daily Storage Cost' with detailed storage breakdowns
+* Extended Support now covers RDS, ElastiCache, OpenSearch, DocumentDB
+
+**Executive: RI/SP Summary**
+* Database Savings Plans support on all applicable visuals with Eligible Spend tracking
+
+**Data Transfer & Networking**
+* Fix: 'Idle Resources with no traffic Last 30 Days' excludes VPC Endpoint Services
+
 # CUDOS - 5.7.3
 
 * **General**: Added new services to Product Code calculated field and Service Category calculated field
