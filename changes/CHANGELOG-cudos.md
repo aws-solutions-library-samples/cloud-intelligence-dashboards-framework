@@ -4,7 +4,7 @@
 
 # CUDOS - 5.8.0
 
-**Important:** This update requires cid-cmd v4.5.0 or later. Quick Sight datasets will be migrated to the new data preparation experience — if you have custom dataset modifications, make a copy before updating. To update, run in CloudShell (recommended) or your terminal:
+**Important:** This update requires cid-cmd v4.4.12 or later. Quick Sight datasets will be migrated to the new data preparation experience — if you have custom dataset modifications, make a copy before updating. To update, run in CloudShell (recommended) or your terminal:
 
 ```
 pip3 install --upgrade cid-cmd
