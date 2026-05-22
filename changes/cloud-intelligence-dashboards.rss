@@ -20,7 +20,7 @@
       <content:encoded><![CDATA[
 <div>
   <p>
-    <strong>Important:</strong> This update requires cid-cmd v4.5.0 or later. Quick Sight datasets will be migrated to the new data preparation experience — if you have custom dataset modifications, make a copy before updating.
+    <strong>Important:</strong> This update requires cid-cmd v4.4.12 or later. Quick Sight datasets will be migrated to the new data preparation experience — if you have custom dataset modifications, make a copy before updating.
   </p>
   <pre>
 pip3 install --upgrade cid-cmd
