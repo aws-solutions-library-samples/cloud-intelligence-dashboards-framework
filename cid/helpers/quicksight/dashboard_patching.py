@@ -57,10 +57,17 @@ def format_field_name(field_name: str, ignore_prefix: bool=False) -> str:
             i += 1
     title = ' '.join(result)
     title = title.replace('Aws ', 'AWS ')
+    # replace prefixes to make filter titles shorter on the dashboards. We don't do the same replacement for group by patching to avoid name overlap there 
     if ignore_prefix:
         new_title = title
         if title.startswith('Cost Category '):
             new_title = title.replace('Cost Category ', '')
+        elif title.startswith('Account Tag '):
+            new_title = title.replace('Account Tag ', '')
+        elif title.startswith('User Attribute '):
+            new_title = title.replace('User Attribute ', '')
+        elif title.startswith('Iam Principal '):
+            new_title = title.replace('Iam Principal ', '')
         elif title.startswith('Tag '):
             new_title = title.replace('Tag ', '')
         if title.lower() not in ('service', 'region', 'account'): # leave prefix for special terms
@@ -135,7 +142,7 @@ def delete_parameter_control(dashboard_definition: Dict[str, Any], parameter_nam
 
     return dashboard_definition
 
-def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], field_names: List[str]) -> Dict[str, Any]:
+def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], field_names: List[str], taxonomy_dataset: str=None ) -> Dict[str, Any]:
     """ Add a filter on the specified fields to all datasets in a QuickSight definition
 
     param dashboard_definition (dict): The QuickSight definition JSON
@@ -154,7 +161,8 @@ def add_filter_to_dashboard_definition(dashboard_definition: Dict[str, Any], fie
         for alternative in mapping.get(field_name.lower(), []):
             dashboard_definition = delete_parameter_control(dashboard_definition, alternative)
 
-    dataset_identifier = get_most_used_dataset(dashboard_definition)
+    dataset_identifier = taxonomy_dataset or get_most_used_dataset(dashboard_definition)
+    logger.debug(f'leading dataset = {taxonomy_dataset}')
     filter_ids = []
     # FIXME: try to do linked filter controls
     for field_name in reversed(field_names):

@@ -96,29 +96,32 @@ CFN deployment is only available in a limited number of regions, while CLI deplo
 
 | Region Name | Region Code | Support CLI  | Support CFN |
 |:------------ | :-------------| :-------------| :------------- |
-| Africa (Cape Town) | af-south-1 | :heavy_check_mark: |   |
+| Africa (Cape Town) | af-south-1 | :heavy_check_mark: | :heavy_check_mark: |
 | Asia Pacific (Tokyo) | ap-northeast-1 | :heavy_check_mark: | :heavy_check_mark: |
 | Asia Pacific (Seoul) | ap-northeast-2 | :heavy_check_mark: | :heavy_check_mark: |
 | Asia Pacific (Mumbai) | ap-south-1 | :heavy_check_mark: | :heavy_check_mark: |
 | Asia Pacific (Singapore) | ap-southeast-1 | :heavy_check_mark: | :heavy_check_mark: |
 | Asia Pacific (Sydney) | ap-southeast-2 | :heavy_check_mark: | :heavy_check_mark: |
-| Asia Pacific (Jakarta) | ap-southeast-3 | :heavy_check_mark: |   |
+| Asia Pacific (Jakarta) | ap-southeast-3 | :heavy_check_mark: | :heavy_check_mark: |
 | Canada (Central) | ca-central-1 | :heavy_check_mark: | :heavy_check_mark: |
-| China (Beijing) | cn-north-1 | :heavy_check_mark: |   |
+| China (Beijing) | cn-north-1 | :heavy_check_mark: | :heavy_check_mark: |
 | Europe (Frankfurt) | eu-central-1 | :heavy_check_mark: | :heavy_check_mark: |
-| Europe (Zurich) | eu-central-2 | :heavy_check_mark: |   |
+| Europe (Zurich) | eu-central-2 | :heavy_check_mark: | :heavy_check_mark: |
 | Europe (Stockholm) | eu-north-1 | :heavy_check_mark: | :heavy_check_mark: |
-| Europe (Milan) | eu-south-1 | :heavy_check_mark: |   |
-| Europe (Spain) | eu-south-2 | :heavy_check_mark: |   |
+| Europe (Milan) | eu-south-1 | :heavy_check_mark: | :heavy_check_mark: |
+| Europe (Spain) | eu-south-2 | :heavy_check_mark: | :heavy_check_mark: |
 | Europe (Ireland) | eu-west-1 | :heavy_check_mark: | :heavy_check_mark: |
 | Europe (London) | eu-west-2 | :heavy_check_mark: | :heavy_check_mark: |
 | Europe (Paris) | eu-west-3 | :heavy_check_mark: | :heavy_check_mark: |
+| Israel (Tel Aviv) | il-central-1 | :heavy_check_mark: | :heavy_check_mark: |
+| Middle East (UAE) | me-central-1 | :heavy_check_mark: | :heavy_check_mark: |
 | South America (São Paulo) | sa-east-1 | :heavy_check_mark: | :heavy_check_mark: |
 | US East (N. Virginia) | us-east-1 | :heavy_check_mark: | :heavy_check_mark: |
 | US East (Ohio) | us-east-2 | :heavy_check_mark: | :heavy_check_mark: |
-| AWS GovCloud (US-East) | us-gov-east-1 | :heavy_check_mark: |   |
-| AWS GovCloud (US-West) | us-gov-west-1 | :heavy_check_mark: |   |
+| US West (N. California) | us-west-1 | :heavy_check_mark: | :heavy_check_mark: |
 | US West (Oregon) | us-west-2 | :heavy_check_mark: | :heavy_check_mark: |
+| AWS GovCloud (US-East) | us-gov-east-1 | :heavy_check_mark: | :heavy_check_mark: |
+| AWS GovCloud (US-West) | us-gov-west-1 | :heavy_check_mark: | :heavy_check_mark: |
 
 
 ## Deployment Steps
@@ -139,7 +142,7 @@ Please refer to the documentation [here](https://docs.aws.amazon.com/guidance/la
 
 ## Changelogs
 For dashboards please check change log [here](changes/)
-For CID deployment tool, including CLI and CFN please check [Releases](/releases)
+For CID deployment tool, including CLI and CFN please check [Releases](https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/releases)
 
 ## Feedback
 Please reference to [this page](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/feedback-support.html)

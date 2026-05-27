@@ -8,7 +8,7 @@ dashboards:
     dashboardId: ta-organizational-view
     category: Advanced
     theme: MIDNIGHT
-    version: v4.0.0
+    version: v4.0.1
     file: ./tao-definition.yaml
 datasets:
   ta_priority_org_view:

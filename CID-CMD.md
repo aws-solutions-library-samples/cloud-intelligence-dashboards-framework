@@ -50,6 +50,15 @@ cid-cmd status
 ```
 [<img width="558" alt="status" src="https://github.com/aws-samples/aws-cudos-framework-deployment/assets/82834333/cae2015f-0f81-4593-80b3-c67ec1200fcd">](https://www.youtube.com/watch?v=ivr1MoGaApM)
 
+#### Refresh Dashboard Datasets
+Refresh datasets for a specific dashboard to pull the latest data from Athena into QuickSight SPICE
+
+```bash
+cid-cmd refresh --dashboard-id <dashboard-id>
+```
+
+If no dashboard ID is provided, you will be prompted to select from available dashboards.
+
 
 ####  Share QuickSight resources
 ```bash

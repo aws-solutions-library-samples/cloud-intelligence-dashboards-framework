@@ -7583,8 +7583,8 @@ Sheets:
   - Content: |-
       <text-box>
         <br/>
-        <inline font-size="54.88px"/>
-        <inline font-size="54.88px">&lt;-- Select check to see resources below</inline>
+        <inline font-size="40px"/>
+        <inline font-size="40px">&lt;-- Select check to see resources below</inline>
       </text-box>
     SheetTextBoxId: e4f9f5ae-d980-4573-9a41-21d9e963db41
   Visuals:
@@ -7665,13 +7665,11 @@ Sheets:
       Actions:
       - ActionOperations:
         - FilterOperation:
-            SelectedFieldsConfiguration: {}
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
             TargetVisualsConfiguration:
               SameSheetTargetVisualConfiguration:
-                TargetVisuals:
-                - 74ae69db-87b0-43fb-b44a-6f64a7b46727
-                - 149bd763-8ebf-4c02-9800-0f0114a085c8
-                - 1e00a7f2-edda-473b-b9d0-d289a6543a77
+                TargetVisualOptions: ALL_VISUALS
         CustomActionId: 1a052581-a80b-49c2-b138-373cfb33670b
         Name: Action 1
         Status: ENABLED
@@ -17188,7 +17186,7 @@ Sheets:
       \      </a>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n\
       \    <inline font-size=\"60px\">Trusted Advisor Organizational View\_</inline>\n\
       \  </block>\n  <br/>\n  <block align=\"center\">\n    <inline font-size=\"54.88px\"\
-      >\n      <b>v4.0.0</b>\n    </inline>\n  </block>\n  <br/>\n  <br/>\n  <block\
+      >\n      <b>v4.0.1</b>\n    </inline>\n  </block>\n  <br/>\n  <br/>\n  <block\
       \ align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n  <block\
       \ align=\"right\">Built by: Yuriy Prykhodko, Timur Tulyaganov, Sumit Dhuwalia\_\
       </block>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"\

@@ -407,6 +407,13 @@ Resources:
           - !Sub arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/cid_data_export
           - !Sub arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/cid_data_export/*
 
+        - Sid: QuickSightGroup
+          Action:
+          - quicksight:DescribeGroup
+          - quicksight:ListGroups
+          Effect: Allow
+          Resource: '*'
+
         - Sid: QuickSightDashboard
           Action:
           - quicksight:CreateDashboard
@@ -467,7 +474,9 @@ Resources:
           Action:
           - s3:CreateBucket
           - s3:DeleteBucket
+          - s3:DeleteBucketPolicy
           - s3:GetBucketLocation
+          - s3:GetBucketPolicy
           - s3:GetObject
           - s3:ListBucket
           - s3:PutBucketAcl

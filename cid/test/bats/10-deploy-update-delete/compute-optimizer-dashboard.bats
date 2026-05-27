@@ -1,12 +1,17 @@
 #!/bin/bats
 
 account_id=$(aws sts get-caller-identity --query "Account" --output text )
+quicksight_group="${quicksight_group:-cid-owners}" # If variable not set or null, use default
+quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If variable not set or null, use default
 
 @test "Install" {
   run cid-cmd -vv deploy  \
     --dashboard-id compute-optimizer-dashboard \
     --share-with-account \
     --athena-database 'optimization_data' \
+    --athena-workgroup primary\
+    --quicksight-group $quicksight_group \
+    --quicksight-datasource-id $quicksight_datasource_id \
     --view-compute-optimizer-lambda-lines-s3FolderPath       's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_ec2_lambda' \
     --view-compute-optimizer-ebs-volume-lines-s3FolderPath   's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_ebs_volume' \
     --view-compute-optimizer-auto-scale-lines-s3FolderPath   's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_auto_scale' \
@@ -43,6 +48,9 @@ account_id=$(aws sts get-caller-identity --query "Account" --output text )
 @test "Update works" {
   run cid-cmd -vv --yes update --force --recursive  \
     --dashboard-id compute-optimizer-dashboard \
+    --athena-workgroup primary\
+    --quicksight-group $quicksight_group \
+    --quicksight-datasource-id $quicksight_datasource_id \
     --view-compute-optimizer-lambda-lines-s3FolderPath       's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_ec2_lambda' \
     --view-compute-optimizer-ebs-volume-lines-s3FolderPath   's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_ebs_volume' \
     --view-compute-optimizer-auto-scale-lines-s3FolderPath   's3://cid-data-{account_id}/compute_optimizer/compute_optimizer_auto_scale' \

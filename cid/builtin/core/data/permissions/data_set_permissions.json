@@ -10,6 +10,11 @@
     "quicksight:UpdateDataSet",
     "quicksight:DeleteDataSet",
     "quicksight:CreateIngestion",
-    "quicksight:CancelIngestion"
+    "quicksight:CancelIngestion",
+    "quicksight:CreateRefreshSchedule",
+    "quicksight:UpdateRefreshSchedule",
+    "quicksight:DeleteRefreshSchedule",
+    "quicksight:ListRefreshSchedules",
+    "quicksight:PutDataSetRefreshProperties"
   ]
 }

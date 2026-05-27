@@ -1,332 +1,356 @@
 {
-    "DataSetId": "07c385e2-a43c-401c-abf4-fd54baed26a2",
-    "Name": "kpi_s3_storage_all",
-    "PhysicalTableMap": {
-        "99dd8380-97f3-4a26-b32c-79446aafb95e": {
-            "RelationalTable": {
-                "DataSourceArn": "${athena_datasource_arn}",
-                "Schema": "${athena_database_name}",
-                "Name": "kpi_s3_storage_all",
-                "InputColumns": [
-                    {
-                        "Name": "billing_period",
-                        "Type": "DATETIME"
-                    },
-                    {
-                        "Name": "usage_date",
-                        "Type": "DATETIME"
-                    },
-                    {
-                        "Name": "payer_account_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "linked_account_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "resource_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "bucket_name_keywords",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "last_requests",
-                        "Type": "DATETIME"
-                    },
-                    {
-                        "Name": "s3_standard_underutilized_optimization",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "s3_replication_bucket_optimization",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "s3_standard_only_bucket",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "s3_archive_in_use",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "s3_inventory_in_use",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "s3_analytics_in_use",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "s3_int_in_use",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "s3_standard_storage_potential_savings",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_all_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_all_storage_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_all_storage_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_standard_storage_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_standard_storage_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_intelligent-tiering_storage_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_intelligent-tiering_storage_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_standard-ia_storage_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_standard-ia_storage_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_standard-ia_tier1_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_standard-ia_tier2_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_standard-ia_retrieval_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_onezone-ia_storage_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_onezone-ia_storage_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_reduced_redundancy_storage_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_reduced_redundancy_storage_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_glacier_instant_retrieval_storage_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_glacier_instant_retrieval_storage_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_glacier_instant_retrieval_tier1_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_glacier_instant_retrieval_tier2_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_glacier_instant_retrieval_retrieval_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_glacier_flexible_retrieval_storage_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_glacier_flexible_retrieval_storage_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_glacier_deep_archive_storage_storage_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_glacier_deep_archive_storage_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_early_delete_cost",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_transition_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_put_object_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_put_object_replication_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_get_object_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    },
-                    {
-                        "Name": "s3_copy_object_usage_quantity",
-                        "Type": "DECIMAL",
-                        "SubType": "FLOAT"
-                    }
-                ]
-            }
-        },
-        "a6f3d2ae-e474-4b5a-9bd2-ab3787318351": {
-            "RelationalTable": {
-                "DataSourceArn": "${athena_datasource_arn}",
-                "Catalog": "AwsDataCatalog",
-                "Schema": "${athena_database_name}",
-                "Name": "account_map",
-                "InputColumns": [
-                    {
-                        "Name": "account_id",
-                        "Type": "STRING"
-                    },
-                    {
-                        "Name": "account_name",
-                        "Type": "STRING"
-                    }
-                ]
-            }
-        }
+  "DataSetId": "07c385e2-a43c-401c-abf4-fd54baed26a2",
+  "Name": "kpi_s3_storage_all",
+  "PhysicalTableMap": {
+    "99dd8380-97f3-4a26-b32c-79446aafb95e": {
+      "RelationalTable": {
+        "DataSourceArn": "${athena_datasource_arn}",
+        "Schema": "${athena_database_name}",
+        "Name": "kpi_s3_storage_all",
+        "InputColumns": [
+          {
+            "Name": "billing_period",
+            "Type": "DATETIME",
+            "Id": "kssa-billing-period"
+          },
+          {
+            "Name": "usage_date",
+            "Type": "DATETIME",
+            "Id": "kssa-usage-date"
+          },
+          {
+            "Name": "payer_account_id",
+            "Type": "STRING",
+            "Id": "kssa-payer-account-id"
+          },
+          {
+            "Name": "linked_account_id",
+            "Type": "STRING",
+            "Id": "kssa-linked-account-id"
+          },
+          {
+            "Name": "resource_id",
+            "Type": "STRING",
+            "Id": "kssa-resource-id"
+          },
+          {
+            "Name": "bucket_name_keywords",
+            "Type": "STRING",
+            "Id": "kssa-bucket-name-keywords"
+          },
+          {
+            "Name": "last_requests",
+            "Type": "DATETIME",
+            "Id": "kssa-last-requests"
+          },
+          {
+            "Name": "s3_standard_underutilized_optimization",
+            "Type": "STRING",
+            "Id": "kssa-s3-standard-underutilized-optimization"
+          },
+          {
+            "Name": "s3_replication_bucket_optimization",
+            "Type": "STRING",
+            "Id": "kssa-s3-replication-bucket-optimization"
+          },
+          {
+            "Name": "s3_standard_only_bucket",
+            "Type": "STRING",
+            "Id": "kssa-s3-standard-only-bucket"
+          },
+          {
+            "Name": "s3_archive_in_use",
+            "Type": "STRING",
+            "Id": "kssa-s3-archive-in-use"
+          },
+          {
+            "Name": "s3_inventory_in_use",
+            "Type": "STRING",
+            "Id": "kssa-s3-inventory-in-use"
+          },
+          {
+            "Name": "s3_analytics_in_use",
+            "Type": "STRING",
+            "Id": "kssa-s3-analytics-in-use"
+          },
+          {
+            "Name": "s3_int_in_use",
+            "Type": "STRING",
+            "Id": "kssa-s3-int-in-use"
+          },
+          {
+            "Name": "s3_standard_storage_potential_savings",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-standard-storage-potential-savings"
+          },
+          {
+            "Name": "s3_all_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-all-cost"
+          },
+          {
+            "Name": "s3_all_storage_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-all-storage-cost"
+          },
+          {
+            "Name": "s3_all_storage_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-all-storage-usage-quantity"
+          },
+          {
+            "Name": "s3_standard_storage_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-standard-storage-cost"
+          },
+          {
+            "Name": "s3_standard_storage_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-standard-storage-usage-quantity"
+          },
+          {
+            "Name": "s3_intelligent-tiering_storage_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-intelligent-tiering-storage-cost"
+          },
+          {
+            "Name": "s3_intelligent-tiering_storage_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-intelligent-tiering-storage-usage-quantity"
+          },
+          {
+            "Name": "s3_standard-ia_storage_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-standard-ia-storage-cost"
+          },
+          {
+            "Name": "s3_standard-ia_storage_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-standard-ia-storage-usage-quantity"
+          },
+          {
+            "Name": "s3_standard-ia_tier1_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-standard-ia-tier1-cost"
+          },
+          {
+            "Name": "s3_standard-ia_tier2_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-standard-ia-tier2-cost"
+          },
+          {
+            "Name": "s3_standard-ia_retrieval_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-standard-ia-retrieval-cost"
+          },
+          {
+            "Name": "s3_onezone-ia_storage_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-onezone-ia-storage-cost"
+          },
+          {
+            "Name": "s3_onezone-ia_storage_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-onezone-ia-storage-usage-quantity"
+          },
+          {
+            "Name": "s3_reduced_redundancy_storage_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-reduced-redundancy-storage-cost"
+          },
+          {
+            "Name": "s3_reduced_redundancy_storage_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-reduced-redundancy-storage-usage-quantity"
+          },
+          {
+            "Name": "s3_glacier_instant_retrieval_storage_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-glacier-instant-retrieval-storage-cost"
+          },
+          {
+            "Name": "s3_glacier_instant_retrieval_storage_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-glacier-instant-retrieval-storage-usage-quantity"
+          },
+          {
+            "Name": "s3_glacier_instant_retrieval_tier1_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-glacier-instant-retrieval-tier1-cost"
+          },
+          {
+            "Name": "s3_glacier_instant_retrieval_tier2_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-glacier-instant-retrieval-tier2-cost"
+          },
+          {
+            "Name": "s3_glacier_instant_retrieval_retrieval_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-glacier-instant-retrieval-retrieval-cost"
+          },
+          {
+            "Name": "s3_glacier_flexible_retrieval_storage_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-glacier-flexible-retrieval-storage-cost"
+          },
+          {
+            "Name": "s3_glacier_flexible_retrieval_storage_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-glacier-flexible-retrieval-storage-usage-quantity"
+          },
+          {
+            "Name": "s3_glacier_deep_archive_storage_storage_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-glacier-deep-archive-storage-storage-cost"
+          },
+          {
+            "Name": "s3_glacier_deep_archive_storage_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-glacier-deep-archive-storage-usage-quantity"
+          },
+          {
+            "Name": "s3_early_delete_cost",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-early-delete-cost"
+          },
+          {
+            "Name": "s3_transition_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-transition-usage-quantity"
+          },
+          {
+            "Name": "s3_put_object_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-put-object-usage-quantity"
+          },
+          {
+            "Name": "s3_put_object_replication_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-put-object-replication-usage-quantity"
+          },
+          {
+            "Name": "s3_get_object_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-get-object-usage-quantity"
+          },
+          {
+            "Name": "s3_copy_object_usage_quantity",
+            "Type": "DECIMAL",
+            "SubType": "FLOAT",
+            "Id": "kssa-s3-copy-object-usage-quantity"
+          }
+        ]
+      }
     },
-    "LogicalTableMap": {
-        "1538482f-e4d7-499d-b960-d0de2ad36293": {
-            "Alias": "Intermediate Table",
-            "DataTransforms": [
-                {
-                    "ProjectOperation": {
-                        "ProjectedColumns": [
-                            "billing_period",
-                            "usage_date",
-                            "payer_account_id",
-                            "linked_account_id",
-                            "resource_id",
-                            "bucket_name_keywords",
-                            "last_requests",
-                            "s3_standard_underutilized_optimization",
-                            "s3_replication_bucket_optimization",
-                            "s3_standard_only_bucket",
-                            "s3_archive_in_use",
-                            "s3_inventory_in_use",
-                            "s3_analytics_in_use",
-                            "s3_int_in_use",
-                            "s3_standard_storage_potential_savings",
-                            "s3_all_cost",
-                            "s3_all_storage_cost",
-                            "s3_all_storage_usage_quantity",
-                            "s3_standard_storage_cost",
-                            "s3_standard_storage_usage_quantity",
-                            "s3_intelligent-tiering_storage_cost",
-                            "s3_intelligent-tiering_storage_usage_quantity",
-                            "s3_standard-ia_storage_cost",
-                            "s3_standard-ia_storage_usage_quantity",
-                            "s3_standard-ia_tier1_cost",
-                            "s3_standard-ia_tier2_cost",
-                            "s3_standard-ia_retrieval_cost",
-                            "s3_onezone-ia_storage_cost",
-                            "s3_onezone-ia_storage_usage_quantity",
-                            "s3_reduced_redundancy_storage_cost",
-                            "s3_reduced_redundancy_storage_usage_quantity",
-                            "s3_glacier_instant_retrieval_storage_cost",
-                            "s3_glacier_instant_retrieval_storage_usage_quantity",
-                            "s3_glacier_instant_retrieval_tier1_cost",
-                            "s3_glacier_instant_retrieval_tier2_cost",
-                            "s3_glacier_instant_retrieval_retrieval_cost",
-                            "s3_glacier_flexible_retrieval_storage_cost",
-                            "s3_glacier_flexible_retrieval_storage_usage_quantity",
-                            "s3_glacier_deep_archive_storage_storage_cost",
-                            "s3_glacier_deep_archive_storage_usage_quantity",
-                            "s3_early_delete_cost",
-                            "s3_transition_usage_quantity",
-                            "s3_put_object_usage_quantity",
-                            "s3_put_object_replication_usage_quantity",
-                            "s3_get_object_usage_quantity",
-                            "s3_copy_object_usage_quantity",
-                            "account_id",
-                            "account_name"
-                        ]
-                    }
-                }
-            ],
-            "Source": {
-                "JoinInstruction": {
-                    "LeftOperand": "99dd8380-97f3-4a26-b32c-79446aafb95e",
-                    "RightOperand": "33527e6a-4aa0-4e44-abff-3d4974ad382b",
-                    "Type": "LEFT",
-                    "OnClause": "{linked_account_id} = {account_id}"
-                }
-            }
-        },
-        "33527e6a-4aa0-4e44-abff-3d4974ad382b": {
-            "Alias": "account_map",
-            "Source": {
-                "PhysicalTableId": "a6f3d2ae-e474-4b5a-9bd2-ab3787318351"
-            }
-        },
-        "99dd8380-97f3-4a26-b32c-79446aafb95e": {
-            "Alias": "kpi_s3_storage_all",
-            "Source": {
-                "PhysicalTableId": "99dd8380-97f3-4a26-b32c-79446aafb95e"
-            }
-        }
+    "a6f3d2ae-e474-4b5a-9bd2-ab3787318351": {
+      "RelationalTable": {
+        "DataSourceArn": "${athena_datasource_arn}",
+        "Catalog": "AwsDataCatalog",
+        "Schema": "${athena_database_name}",
+        "Name": "account_map",
+        "InputColumns": [
+          {
+            "Name": "account_id",
+            "Type": "STRING",
+            "Id": "am-account-id"
+          },
+          {
+            "Name": "account_name",
+            "Type": "STRING",
+            "Id": "am-account-name"
+          }
+        ]
+      }
+    }
+  },
+  "ImportMode": "SPICE",
+  "Permissions": [],
+  "DataPrepConfiguration": {
+    "SourceTableMap": {
+      "src-kpi-s3-storage-all": {
+        "PhysicalTableId": "99dd8380-97f3-4a26-b32c-79446aafb95e"
+      },
+      "src-account-map": {
+        "PhysicalTableId": "a6f3d2ae-e474-4b5a-9bd2-ab3787318351"
+      }
     },
-    "ImportMode": "SPICE",
-    "Permissions": []
+    "TransformStepMap": {
+      "import-kpi-s3-storage-all": {
+        "ImportTableStep": {
+          "Alias": "kpi_s3_storage_all",
+          "Source": {
+            "SourceTableId": "src-kpi-s3-storage-all"
+          }
+        }
+      },
+      "import-account-map": {
+        "ImportTableStep": {
+          "Alias": "account_map",
+          "Source": {
+            "SourceTableId": "src-account-map"
+          }
+        }
+      },
+      "join-account-map": {
+        "JoinStep": {
+          "Alias": "Join with account_map",
+          "Type": "LEFT",
+          "OnClause": "{linked_account_id} = {account_id}",
+          "LeftOperand": {
+            "TransformOperationId": "import-kpi-s3-storage-all"
+          },
+          "RightOperand": {
+            "TransformOperationId": "import-account-map"
+          }
+        }
+      }
+    },
+    "DestinationTableMap": {
+      "destination-kpi-s3-storage-all": {
+        "Alias": "kpi_s3_storage_all",
+        "Source": {
+          "TransformOperationId": "join-account-map"
+        }
+      }
+    }
+  },
+  "SemanticModelConfiguration": {
+    "TableMap": {
+      "semantic-kpi-s3-storage-all": {
+        "Alias": "kpi_s3_storage_all",
+        "DestinationTableId": "destination-kpi-s3-storage-all"
+      }
+    }
+  }
 }

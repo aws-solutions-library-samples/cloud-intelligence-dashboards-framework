@@ -1,5 +1,8 @@
 # What's new in TAO Dashboard
 
+## TAO Dashboard v4.0.1:
+**Security Hub Checks tab:** Fixed action filter on Security Hub Checks focus area visual to apply to all visuals on the sheet
+
 ## TAO Dashboard v4.0.0:
 **Important:** Update to this version requires [CID Data Collection](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection.html) **v3.14.1** or above. Manual data collection is no longer supported. Before updating TAO dashboard to v4 make sure you [deployed](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection-deployment.html) or [updated](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-collection-update.html) Data Collection stacks. Once Data Collection is deployed you can update TAO dashboard to v4 by running these commands in your CloudShell (recommended) or other terminal:
 

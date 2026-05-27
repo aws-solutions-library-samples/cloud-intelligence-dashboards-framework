@@ -153,9 +153,16 @@ def export_analysis(qs, athena, glue):
             "DataSetId": dataset.raw['DataSetId'],
             "Name": dataset.raw['Name'],
             "PhysicalTableMap": dataset.raw['PhysicalTableMap'],
-            "LogicalTableMap": dataset.raw['LogicalTableMap'],
             "ImportMode": dataset.raw['ImportMode'],
         }
+
+        if dataset.raw.get('LogicalTableMap'):
+            dataset_data["LogicalTableMap"] = dataset.raw['LogicalTableMap']
+
+        if dataset.raw.get('DataPrepConfiguration'):
+            dataset_data["DataPrepConfiguration"] = dataset.raw['DataPrepConfiguration']
+        if dataset.raw.get('SemanticModelConfiguration'):
+            dataset_data["SemanticModelConfiguration"] = dataset.raw['SemanticModelConfiguration']
 
         for key, value in dataset_data['PhysicalTableMap'].items(): # iterate all sub tables
             if 'RelationalTable' in value \
@@ -216,7 +223,7 @@ def export_analysis(qs, athena, glue):
 
     all_views =     [view_and_database[0] for view_and_database in all_views_and_databases]
     all_databases = [view_and_database[1] for view_and_database in all_views_and_databases]
-    if len(all_databases) > 1:
+    if len(set(all_databases)) > 1:
         logger.warning(f'CID only supports one database. Multiple used: {all_databases}')
 
     if all_databases:

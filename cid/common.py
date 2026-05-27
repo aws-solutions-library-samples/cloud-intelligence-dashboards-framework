@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import urllib
 import logging
 import functools
@@ -58,8 +59,8 @@ class Cid():
             'profile_name': None,
             'region_name': None,
             'aws_access_key_id': None,
-            'aws_secret_access_key': None,
-            'aws_session_token': None
+            'aws_secret_access_key': None,  #nosec B105
+            'aws_session_token': None  #nosec B105
         }
         for key in params.keys():
             value = get_parameters().get(key.replace('_', '-'), '<NO VALUE>')
@@ -406,8 +407,12 @@ class Cid():
                     choices=self.cur.tag_and_cost_category_fields + ["'none'"],
                 )
             elif isinstance(value, dict) and value.get('type') == 'tags_json': # a json
-                if get_parameters().get(prefix + key): # priority to user input
-                    params[key] = get_parameters().get(prefix + key)
+                # Reuse already rendered SQL from a previous resolution
+                cache_key = f'_tags_json_sql_{prefix}{key}'
+                if hasattr(self, cache_key):
+                    params[key] = getattr(self, cache_key)
+                elif get_parameters().get((prefix + key).replace('_', '-')): # priority to user input
+                    params[key] = get_parameters().get((prefix + key).replace('_', '-'))
                     if isinstance(params[key], str):
                         params[key] = params[key].split(',')
                 elif not utils.isatty():
@@ -425,6 +430,9 @@ class Cid():
                         param_name=key,
                         options=options,
                     )
+                # Cache rendered SQL for reuse by subsequent views
+                if isinstance(params.get(key), str):
+                    setattr(self, cache_key, params[key])
             elif isinstance(value, dict) and value.get('type') == 'athena':
                 if get_parameters().get(prefix + key): # priority to user input
                     params[key] = get_parameters().get(prefix + key)
@@ -523,6 +531,8 @@ class Cid():
         self.qs.pre_discover()
 
         dashboard_id = dashboard_id or get_parameters().get('dashboard-id')
+        if dashboard_id and not get_parameters().get('dashboard-id'):
+            set_parameters({'dashboard-id': dashboard_id})
         category_filter = [cat for cat in get_parameters().get('category', '').upper().split(',') if cat]
         if not dashboard_id:
             standard_categories = ['Foundational', 'Advanced', 'Additional'] # Show these categories first
@@ -771,6 +781,27 @@ class Cid():
         logger.info('healthy, opening...')
         webbrowser.open(self.qs_url.format(dashboard_id=dashboard_id, **self.qs_url_params))
 
+        return dashboard_id
+
+    @command
+    def refresh_datasets(self, dashboard_id, **kwargs):
+        """Refresh datasets for a dashboard"""
+        
+        if not dashboard_id:
+            dashboard_id = self.qs.select_dashboard(force=True)
+            if not dashboard_id:
+                print('No dashboard selected')
+                return None
+
+        dashboard = self.qs.discover_dashboard(dashboard_id)
+        
+        if not dashboard:
+            logger.error(f'Dashboard {dashboard_id} is not deployed.')
+            return None
+            
+        logger.info(f'Refreshing datasets for dashboard: {dashboard_id}')
+        dashboard.refresh_datasets()
+        
         return dashboard_id
 
     @command
@@ -1272,9 +1303,10 @@ class Cid():
                     logger.critical(e, exc_info=True)
                     raise
                 try:
-                    if self.create_or_update_dataset(dataset_definition, dataset_id, recursive=recursive, update=update):
+                    result = self.create_or_update_dataset(dataset_definition, dataset_id, recursive=recursive, update=update)
+                    if result and result != 'skipped':
                         print(f'Updated dataset: "{dataset_name}"')
-                    else:
+                    elif not result:
                         print(f'Dataset "{dataset_name}" update failed, collect debug log for more info')
                 except self.qs.client.exceptions.AccessDeniedException as exc:
                     print(f'Unable to update, missing permissions: {exc}')
@@ -1674,10 +1706,10 @@ class Cid():
             logger.debug('deleting rls')
             if "RowLevelPermissionDataSet" in compiled_dataset:
                 del compiled_dataset["RowLevelPermissionDataSet"]
-            if "RowLevelPermissionDataSet" in found_dataset:
-                del found_dataset["RowLevelPermissionDataSet"]
+            if isinstance(found_dataset, Dataset) and "RowLevelPermissionDataSet" in found_dataset.raw:
+                del found_dataset.raw["RowLevelPermissionDataSet"]
 
-        if rls_dataset_id or rls_dataset_status:
+        elif rls_dataset_id or rls_dataset_status:
             if not rls_dataset_id:
                 for ds in self.qs.list_data_sets():
                     print(ds)
@@ -1755,7 +1787,44 @@ class Cid():
 
             if update_dataset and not identical:
                 merged_dataset = Dataset.merge_datasets(compiled_dataset, found_dataset)
-                self.qs.update_dataset(merged_dataset)
+                # Cannot update a legacy dataset to new experience in-place — must delete and recreate
+                if Dataset._is_new_experience(compiled_dataset) and not Dataset._is_new_experience(found_dataset.raw):
+                    cid_print(f'<BOLD><YELLOW>Important!<END> <BOLD>Dataset <YELLOW>{found_dataset.name}<END> <BOLD>will be updated to new QuickSight Data Preparation Experience as a part of this update.<END>')
+                    proceed_with_migration = self._confirm_dataset_experience_migration(found_dataset)
+                    if proceed_with_migration:
+                        logger.info(f'Dataset {found_dataset.name} is legacy but template uses new experience. Recreating.')
+                        existing_permissions = self.qs.describe_data_set_permissions(found_dataset.id)
+                        self.qs.delete_dataset(found_dataset.id)
+                        # Wait for deletion to complete before creating — API is async
+                        for attempt in range(30):
+                            try:
+                                self.qs.create_dataset(merged_dataset)
+                                break
+                            except self.qs.client.exceptions.ConflictException:
+                                logger.debug(f'Dataset deletion still in progress, waiting... (attempt {attempt + 1}/30)')
+                                time.sleep(2)
+                        else:
+                            raise CidError(f'Timed out waiting for dataset {found_dataset.id} deletion to complete.')
+
+                        if existing_permissions:
+                            cid_print(f'Reapplying {len(existing_permissions)} permission entries to dataset {found_dataset.name}')
+                            try:
+                                self.qs.update_data_set_permissions(
+                                    DataSetId=found_dataset.id,
+                                    GrantPermissions=existing_permissions
+                                )
+                            except Exception as e:
+                                logger.warning(f'Failed to reapply permissions for dataset {found_dataset.name} ({found_dataset.id}): {e}')
+                                cid_print(f"<BOLD><YELLOW>Note:<END> Couldn't transfer existing dataset permissions to the new dataset experience for <BOLD>{found_dataset.name}<END>. If your datasets were shared with someone else, re-share them manually after update.")
+                                cid_print(f'Previous permissions were:\n{json.dumps(existing_permissions, indent=2)}')
+                        else:
+                            cid_print(f"<BOLD><YELLOW>Note:<END> Couldn't read existing dataset permissions for <BOLD>{found_dataset.name}<END>. If your datasets were shared with someone else, re-share them manually after update.")
+                    else:
+                        logger.info(f'User chose to skip new experience migration for dataset {found_dataset.name}. Skipping dataset update.')
+                        cid_print(f'Skipping dataset <BOLD>{found_dataset.name}<END> update.')
+                        return 'skipped'  # Dataset exists and is usable, just not migrated
+                else:
+                    self.qs.update_dataset(merged_dataset)
                 if compiled_dataset.get("ImportMode") == "SPICE":
                     dataset_id = compiled_dataset.get('DataSetId')
                     schedules_definitions = []
@@ -1802,6 +1871,19 @@ class Cid():
             logger.info(f"Definition is unavailable {view_name}")
             return
         logger.debug(f'View definition: {view_definition}')
+
+        # Dynamic FOCUS consolidation view: discover tables and generate SQL dynamically
+        if view_definition.get('type') == 'dynamic_focus_consolidation':
+            from cid.helpers.focus_consolidation import FocusConsolidationView
+            columns = view_definition.get('columns')
+            focus_view = FocusConsolidationView(athena=self.athena, columns=columns)
+            if focus_view.create_or_update_view():
+                assert self.athena.wait_for_view(view_name), f"Failed to create/update {view_name}"
+                logger.info(f'Dynamic view "{view_name}" created/updated')
+            else:
+                logger.warning(f'Dynamic view "{view_name}" was not created (no FOCUS tables found)')
+            return
+
         dependencies = view_definition.get('dependsOn', {})
 
         # Process CUR columns
@@ -1867,6 +1949,39 @@ class Cid():
             location = self.glue.get_table(name=view_name, catalog=self.base.account_id, database=self.athena.DatabaseName).get('StorageDescriptor', {}).get('Location')
             self.create_or_update_crawler(crawler_name=view_definition['crawler'], location=location)
 
+    def _confirm_dataset_experience_migration(self, found_dataset) -> bool:
+        """Check if other dashboards use this dataset and ask the user whether to proceed
+        with the new experience migration (delete/recreate). Returns True to proceed, False to skip."""
+        current_dashboard_id = get_parameters().get('dashboard-id')
+        other_dashboards = self.qs.find_dashboards_using_dataset(
+            dataset_id=found_dataset.id,
+            exclude_dashboard_ids=[current_dashboard_id] if current_dashboard_id else [],
+        )
+
+        if other_dashboards:
+            dashboard_list = '\n'.join(
+                f'  - {d["Name"]} ({d["DashboardId"]})'
+                for d in other_dashboards
+            )
+            current_dashboard = get_parameters().get('dashboard-id', 'this dashboard')
+            cid_print(
+                f'<BOLD><RED>Warning:<END> <BOLD><RED>The following dashboards also use dataset '
+                f'{found_dataset.name}:<END>\n{dashboard_list}\n\n'
+                f'<BOLD><RED>Migrating to the new QuickSight Data Preparation Experience will delete and recreate '
+                f'this dataset, temporarily breaking the dashboards listed above.<END>\n'
+                f'We recommend proceeding, but update those dashboards immediately after updating <BOLD>{current_dashboard}<END>.\n'
+                f'If you choose <BOLD>No<END>, the dataset will not be updated.'
+            )
+            return get_yesno_parameter(
+                param_name=f'migrate-{found_dataset.name.replace("_", "-")}-new-experience',
+                message=f'Proceed with new experience migration for {found_dataset.name}?',
+                default='no',
+            )
+        else:
+            return True
+
+
+
     def create_or_update_crawler(self, crawler_name, location):
         """ Create or Update Crawler """
         crawler_definition = self.get_definition("crawler", name=crawler_name)
@@ -1911,17 +2026,26 @@ class Cid():
                 .replace('resource_tags_', '')
                 .replace('cost_category_', '')
                 .replace("'user_","'tag_")
+                .replace('accountTag/', '')
+                .replace('userAttribute/', '')
+                .replace('iamPrincipal/', '')
                 .replace("'aws_","'tag_aws_")
                 .split("['")[-1].split("']")[0]
             )
             if not tag_name.startswith('tag_'):
                 if tag.startswith('cost_category'):
                     tag_name = 'cost_category_' + tag_name
+                elif "userAttribute/" in tag:
+                    tag_name = 'user_attribute_' + tag_name
+                elif "iamPrincipal/" in tag:
+                    tag_name = 'iam_principal_' + tag_name
+                elif tag.startswith('tags'):
+                    tag_name = 'account_tag_' + tag_name
                 else:
                     tag_name = 'tag_' + tag_name
-            return tag_name.replace(':', '_')
+            return re.sub(r'\W', '_', tag_name)
 
-        resource_tags = get_parameters().get(param_name, None)
+        resource_tags = get_parameters().get(param_name, None) or get_parameters().get(param_name.replace('_', '-'), None)
         tags_and_names = {_tag_to_name(tag):tag  for tag in sorted(options)}
         logger.info(f'tags_and_names = {tags_and_names}')
         logger.info(f'resource_tags = {resource_tags}')
@@ -1930,7 +2054,7 @@ class Cid():
         if resource_tags is None:
             resource_tags = get_parameter(
                 param_name,
-                message='Enter Cost Allocation Tags to be added to datasets(WARNING: this can affect performance. Choose only the strict minimum)',
+                message='Select Cost Allocation Tags to be added to datasets(WARNING: this can affect performance. Choose only the strict minimum)',
                 multi=True,
                 choices=sorted(list(set(tags_and_names.keys()))),
                 default=resource_tags or [],

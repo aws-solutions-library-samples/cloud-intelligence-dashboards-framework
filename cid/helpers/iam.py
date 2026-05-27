@@ -212,6 +212,7 @@ class IAM(CidBase):
                                 "athena:StartQueryExecution",
                                 "athena:GetQueryResultsStream",
                                 "athena:GetTableMetadata",
+                                "athena:GetWorkGroup"
                             ],
                             "Resource": [
                                 f"arn:{self.partition}:athena:{self.region}:{self.account_id}:datacatalog/AwsDataCatalog", # TODO: check if this can be variable?
