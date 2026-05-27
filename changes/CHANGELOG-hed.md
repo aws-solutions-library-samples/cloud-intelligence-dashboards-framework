@@ -1,5 +1,9 @@
 # What's new in Health Events Dashboard (HED)
 
+## v3.1.0 (May 2026)
+
+- Address the possibility that Glue creates type `array<string>` or just `string` for the personas field.
+
 ## v3.0.0 (April 2026) -- NOTE: This requires updating the Data Collection Framework beyond version 3.14.4
 
 - New Health fields for Actionability and Personas added
