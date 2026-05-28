@@ -7,7 +7,7 @@ dashboards:
     dashboardId: health-events-dashboard
     category: Advanced
     theme: MIDNIGHT
-    version: v3.0.0
+    version: v3.1.0
     file: ./health-events-definition.yaml
 datasets:
   health_events_view:
