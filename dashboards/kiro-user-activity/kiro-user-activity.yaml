@@ -1,0 +1,128 @@
+dashboards:
+  KIRO USER ACTIVITY:
+    dependsOn:
+      datasets:
+      - kiro_user_activity
+    name: Kiro User Activity Dashboard
+    dashboardId: kiro-user-activity
+    category: Advanced
+    theme: MIDNIGHT
+    version: v1.0.0
+    file: ./kiro-user-activity-definition.yaml
+    nonTaxonomyColumns:
+    - date
+    - userid
+    - user
+    - client_type
+    - subscription_tier
+    - profileid
+datasets:
+  kiro_user_activity:
+    data:
+      DataSetId: 6ec4cfba-7ad1-43e2-9485-c2e027855025
+      Name: kiro_user_activity
+      ImportMode: SPICE
+      PhysicalTableMap:
+        90eb30a0-71b0-4338-b0a0-b8ca792d820a:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: kiro_user_activity_kiro
+            InputColumns:
+            - Name: date
+              Type: STRING
+            - Name: userid
+              Type: STRING
+            - Name: client_type
+              Type: STRING
+            - Name: subscription_tier
+              Type: STRING
+            - Name: profileid
+              Type: STRING
+            - Name: total_messages
+              Type: INTEGER
+            - Name: chat_conversations
+              Type: INTEGER
+            - Name: credits_used
+              Type: DECIMAL
+            - Name: overage_enabled
+              Type: BOOLEAN
+            - Name: overage_cap
+              Type: DECIMAL
+            - Name: overage_credits_used
+              Type: DECIMAL
+      LogicalTableMap:
+        143318b6-a4fb-4a0d-9a98-e510a387c36c:
+          Alias: kiro_user_activity
+          Source:
+            PhysicalTableId: 90eb30a0-71b0-4338-b0a0-b8ca792d820a
+          DataTransforms:
+          # Parse the date string into a proper date column for time-series visuals
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: report_date
+                ColumnId: col-report-date
+                Expression: parseDate({date}, "yyyy-MM-dd")
+          # Clean user IDs - strip surrounding quotes for display readability
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: user
+                ColumnId: col-userid-clean
+                Expression: replace(replace({userid}, '"', ''), "'", "")
+          # Subscription tier credit allocation (source: https://kiro.dev/pricing/)
+          # Free: 50, Pro: 1000, Pro+: 2000, Power: 10000
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: plan_credits
+                ColumnId: col-plan-credits
+                Expression: ifelse(toLower({subscription_tier}) = 'power', 10000, toLower({subscription_tier}) = 'proplus', 2000, toLower({subscription_tier}) = 'pro', 1000, toLower({subscription_tier}) = 'free', 50, 0)
+          # Plan utilization ratio (credits used / plan allocation) per row.
+          # For aggregates, use visual-level calculations like sum(credits_used)/max(plan_credits) instead.
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: plan_utilization_pct
+                ColumnId: col-plan-utilization-pct
+                Expression: ifelse({plan_credits} > 0, {credits_used} / {plan_credits}, 0)
+          # Overage utilization ratio (overage credits used / overage cap) per row.
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: overage_utilization_pct
+                ColumnId: col-overage-utilization-pct
+                Expression: ifelse({overage_cap} > 0, {overage_credits_used} / {overage_cap}, 0)
+          # Flag: user was in overage on this day (for counting)
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: in_overage_flag
+                ColumnId: col-in-overage-flag
+                Expression: ifelse({overage_credits_used} > 0, 1, 0)
+          # Efficiency: credits consumed per message sent. Lower = more efficient model usage.
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: credits_per_message
+                ColumnId: col-credits-per-message
+                Expression: ifelse({total_messages} > 0, {credits_used} / {total_messages}, 0)
+          - ProjectOperation:
+              ProjectedColumns:
+              - date
+              - report_date
+              - userid
+              - user
+              - client_type
+              - subscription_tier
+              - profileid
+              - total_messages
+              - chat_conversations
+              - credits_used
+              - plan_credits
+              - plan_utilization_pct
+              - overage_enabled
+              - overage_cap
+              - overage_credits_used
+              - overage_utilization_pct
+              - in_overage_flag
+              - credits_per_message
+    schedules:
+    - default
+crawlers: {}
+views: {}
