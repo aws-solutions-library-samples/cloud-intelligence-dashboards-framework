@@ -2022,7 +2022,7 @@ class Cid():
         '''
         def _tag_to_name(tag):
             if tag == 'line_item_iam_principal':
-                return 'line_item_iam_principal'
+                return 'iam_principal'
             tag_name = (tag
                 .replace('resource_tags_', '')
                 .replace('cost_category_', '')
@@ -2039,7 +2039,7 @@ class Cid():
                 elif "userAttribute/" in tag:
                     tag_name = 'user_attribute_' + tag_name
                 elif "iamPrincipal/" in tag:
-                    tag_name = 'iam_principal_' + tag_name
+                    tag_name = 'iam_principal_tag_' + tag_name
                 elif tag.startswith('tags'):
                     tag_name = 'account_tag_' + tag_name
                 else:
