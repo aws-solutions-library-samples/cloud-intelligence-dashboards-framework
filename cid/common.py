@@ -2021,6 +2021,8 @@ class Cid():
         ''' returns an sql for json tag
         '''
         def _tag_to_name(tag):
+            if tag == 'line_item_iam_principal':
+                return 'line_item_iam_principal'
             tag_name = (tag
                 .replace('resource_tags_', '')
                 .replace('cost_category_', '')

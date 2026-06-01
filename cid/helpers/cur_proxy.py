@@ -51,6 +51,7 @@ cur1to2_mapping = {
     'line_item_line_item_description': 'line_item_line_item_description',
     'line_item_tax_type': 'line_item_tax_type',
     'line_item_legal_entity': 'line_item_legal_entity',
+    'line_item_iam_principal': 'line_item_iam_principal',
     'product_fee_code': 'product_fee_code',
     'product_fee_description': 'product_fee_description',
     'product_from_location': 'product_from_location',
