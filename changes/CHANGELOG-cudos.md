@@ -2,6 +2,13 @@
 
 # CUDOS v5
 
+# CUDOS - 5.8.1
+
+* **AI/ML**: Switched Amazon Bedrock Unit Cost visuals from cost per 1K Tokens to cost per 1M Tokens
+* **AI/ML**: Added visual 'Amazon Bedrock Cost per Million Tokens by Model (Top 5 Models)'
+* **AI/ML**: Added visual 'Amazon Bedrock Spend per Resource' for last 7 months
+* **AI/ML**: Replaced 'Amazon Bedrock Cost per Legal Entity' with additional Group By control
+
 # CUDOS - 5.8.0
 
 **Important:** This update requires cid-cmd v4.4.12 or later. Quick Sight datasets will be migrated to the new data preparation experience — if you have custom dataset modifications, make a copy before updating. To update, run in CloudShell (recommended) or your terminal:
