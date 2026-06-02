@@ -36,6 +36,7 @@ This creates maintenance burden for customers who need to manually update the vi
 2.3. Column types are cast to match FOCUS 1.2 specification when needed, using a type compatibility system
 2.4. Special handling for `billing_period` column (partition vs computed)
 2.5. Array-type source columns that map to scalar targets produce NULL instead of invalid CAST
+2.6. Known column name aliases are resolved for providers using non-canonical names (e.g. OCI `provider` → `providername`)
 
 ### 3. As a customer running `--recursive` updates
 **I want** `focus_consolidation_view` to be updated automatically
@@ -159,6 +160,19 @@ The YAML uses Athena-friendly type names:
 - All map types are considered compatible with each other
 - Array-type source columns mapping to scalar targets produce `CAST(NULL AS <type>)` instead of invalid CAST
 - Unknown types default to `VARCHAR`
+
+#### Column Name Aliases
+Some providers (e.g. OCI) use non-canonical column names in their FOCUS exports that differ from the FOCUS specification. The view generator supports a `COLUMN_ALIASES` mapping that maps canonical FOCUS column names to known alternative names:
+
+| Canonical FOCUS Name | Known Alias (OCI) |
+|---|---|
+| `providername` | `provider` |
+| `publishername` | `publisher` |
+| `invoiceissuername` | `invoiceissuer` |
+| `regionid` | `region` |
+| `regionname` | `region` |
+
+**Logic**: The canonical column name is always checked first. If not found in the source table, aliases are checked as a fallback. If an alias is found, it is used with a SQL alias to map it to the canonical name (e.g. `provider providername`). Once a provider updates their export to use the canonical FOCUS names, the alias is no longer needed and the direct match takes precedence.
 
 #### NULL Placeholders
 - Use typed NULLs for missing columns via `_resolve_athena_type()`

@@ -178,7 +178,28 @@ For each target column in FOCUS 1.2, and for each source table:
 
 1. **Column exists with matching type**: Use column directly → `billedcost`
 2. **Column exists with different type**: Cast to target type → `CAST(billingperiodstart AS TIMESTAMP)`
-3. **Column missing**: Use typed NULL → `CAST(NULL AS DOUBLE) AS billedcost`
+3. **Column missing by canonical name but alias found**: Use alias with SQL rename → `provider providername`
+4. **Column missing by canonical name, alias found with different type**: Cast alias → `CAST(provider AS VARCHAR) providername`
+5. **Column truly missing**: Use typed NULL → `CAST(NULL AS DOUBLE) AS billedcost`
+
+### Column Name Aliases
+
+Some providers use non-canonical column names in their FOCUS exports. The `COLUMN_ALIASES` dict maps canonical FOCUS column names to known alternative names:
+
+```python
+COLUMN_ALIASES = {
+    'providername': ['provider'],
+    'publishername': ['publisher'],
+    'invoiceissuername': ['invoiceissuer'],
+    'regionid': ['region'],
+    'regionname': ['region'],
+}
+```
+
+The alias lookup occurs after the canonical name check fails, and before the NULL fallback. This means:
+- If a provider ships a conformant column name (e.g. `providername`), it is used directly (step 1/2)
+- If only the alias exists (e.g. `provider`), it is mapped via SQL alias (step 3/4)
+- If neither exists, a typed NULL is emitted (step 5)
 
 ### Special case: `billing_period`
 
@@ -231,9 +252,17 @@ Each SELECT block has exactly the same columns in the same order, ensuring UNION
 *For any* source table column set and *for any* target FOCUS 1.2 column, `generate_select_for_table` should produce:
 - The column name directly if it exists in the source with matching type
 - A `CAST(<column> AS <target_type>)` expression if the column exists but with a different type
-- A `CAST(NULL AS <target_type>)` expression if the column is missing from the source
+- An `<alias> <col_name>` expression if the column is missing but a known alias exists with matching type
+- A `CAST(<alias> AS <target_type>) <col_name>` expression if the column is missing but a known alias exists with a different type
+- A `CAST(NULL AS <target_type>)` expression if neither the column nor any alias exists in the source
 
-**Validates: Requirements 2.2, 2.3**
+**Validates: Requirements 2.2, 2.3, 2.6**
+
+### Property 2a: Alias precedence
+
+*For any* source table that contains BOTH a canonical column name AND an alias for the same target column, the canonical name takes precedence and the alias is never used.
+
+**Validates: Requirement 2.6**
 
 ### Property 3: billing_period special handling
 
@@ -293,5 +322,7 @@ Unit tests cover:
 - Edge case: table with all FOCUS 1.2 columns (no NULLs needed)
 - Edge case: table with only FOCUS 1.0 minimum columns (many NULLs)
 - Edge case: billing_period as partition key vs regular column vs absent
+- Edge case: column alias resolution (e.g. OCI `provider` → `providername`)
+- Edge case: canonical name takes precedence over alias when both exist
 - Integration: `create_or_update_view` in `common.py` delegates to `FocusConsolidationView` when type is `dynamic_focus_consolidation`
 - YAML update: `focus.yaml` has correct type and `columns:` dict (no placeholder SQL)
