@@ -278,6 +278,32 @@ class AbstractCUR(CidBase):
 
                 # Add empty line between sections
                 cid_print('')
+
+            # Check for line_item_iam_principal column (standalone STRING column in CUR2)
+            if self.column_exists('line_item_iam_principal'):
+                cid_print(f'Scanning line_item_iam_principal in {self.table_name}.')
+                try:
+                    res = self.athena.query(
+                        sql=f'''
+                            SELECT
+                                COUNT(DISTINCT line_item_iam_principal) as unique_values
+                            FROM "{self.database}"."{self.table_name}"
+                            WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
+                            AND line_item_usage_start_date > DATE_ADD('day', -60, CURRENT_DATE)
+                            AND line_item_iam_principal IS NOT NULL
+                            AND line_item_iam_principal <> ''
+                            LIMIT {number_of_rows_scanned}
+                        ''',
+                        database=self.database,
+                    )
+                    unique_values = res[0][0] if res else 0
+                    cid_print(f' <BOLD>line_item_iam_principal<END> | {unique_values} distinct values')
+                    if int(unique_values) > 0:
+                        self._tag_and_cost_category.append('line_item_iam_principal')
+                except (self.athena.client.exceptions.ClientError, CidCritical, ValueError) as exc:
+                    cid_print(f'Failed to read line_item_iam_principal from {self.table_name}: "{exc}". Will continue without.')
+                cid_print('')
+
             return self._tag_and_cost_category
         else:
             raise NotImplemented('cur version not known')
