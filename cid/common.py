@@ -2037,7 +2037,7 @@ class Cid():
                 if tag.startswith('cost_category'):
                     tag_name = 'cost_category_' + tag_name
                 elif "userAttribute/" in tag:
-                    tag_name = 'user_attribute_' + tag_name
+                    tag_name = 'user_attribute_tag_' + tag_name
                 elif "iamPrincipal/" in tag:
                     tag_name = 'iam_principal_tag_' + tag_name
                 elif tag.startswith('tags'):
