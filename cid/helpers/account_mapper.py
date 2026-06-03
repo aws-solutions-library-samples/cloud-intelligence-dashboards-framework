@@ -45,7 +45,7 @@ class AccountMapper:
             print("\n" + "="*60)
             print("✅ Account Mapping Complete")
             print("="*60)
-            print(f"\nCreated views:")
+            print(f"\nCreated/Updated views:")
 
             # Collect all created views from the results
             created_views = []

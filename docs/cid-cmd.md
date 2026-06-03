@@ -237,6 +237,8 @@ account_id,business_unit,team
 234567890123,Platform,Data
 ```
 
+**OU hierarchy level** — Extracts the organizational unit name at a given level in the account's OU hierarchy. The tool discovers available levels from your data and shows sample values. For example, if an account's hierarchy is `ROOT > Pegasus > Team-A`, selecting level 2 produces `Pegasus`. Generates SQL like `TRY(org.hierarchy[2].name)`.
+
 **Split account name** — Extracts dimensions by splitting the `account_name` string on a separator character. You specify the separator and the positional index to extract. For example, for account name `aws-retail-prod`, splitting by `-` at index 1 yields `retail`, and at index 2 yields `prod`.
 
 #### Configuration Persistence

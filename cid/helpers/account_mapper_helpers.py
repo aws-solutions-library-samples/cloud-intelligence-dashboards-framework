@@ -36,18 +36,27 @@ def _is_null(value) -> bool:
     return value is None or (isinstance(value, str) and value.strip() == '') or (isinstance(value, float) and value != value)
 
 
-def _format_table(rows: List[Dict], max_rows: Optional[int] = None) -> str:
-    """Format list of dicts as an aligned text table."""
+def _format_table(rows: List[Dict], max_rows: Optional[int] = None, max_col_width: int = 30) -> str:
+    """Format list of dicts as an aligned text table with all columns visible."""
     if not rows:
         return "(empty)"
     display = rows[:max_rows] if max_rows else rows
     columns = list(display[0].keys())
-    col_widths = {col: max(len(str(col)), max((len(str(r.get(col, ''))) for r in display), default=0)) for col in columns}
-    header = ' | '.join(str(col).ljust(col_widths[col]) for col in columns)
+
+    def _truncate(val, width):
+        s = str(val)
+        return s[:width - 1] + '~' if len(s) > width else s
+
+    col_widths = {}
+    for col in columns:
+        data_width = max((len(str(r.get(col, ''))) for r in display), default=0)
+        col_widths[col] = min(max(len(str(col)), data_width), max_col_width)
+
+    header = ' | '.join(str(col).ljust(col_widths[col])[:col_widths[col]] for col in columns)
     separator = '-+-'.join('-' * col_widths[col] for col in columns)
     lines = [header, separator]
     for row in display:
-        lines.append(' | '.join(str(row.get(col, '')).ljust(col_widths[col]) for col in columns))
+        lines.append(' | '.join(_truncate(row.get(col, ''), col_widths[col]).ljust(col_widths[col]) for col in columns))
     return '\n'.join(lines)
 
 
@@ -224,7 +233,7 @@ class Account:
         else:
             raise TypeError('Payer Account ID must be a string or integer')
 
-        self._registry.set(self._account_id, "payer_id", self._payer_account_id)
+        self._registry.set(self._account_id, "parent_account_id", self._payer_account_id)
 
     def get_payer_id(self) -> str:
         return self._payer_account_id
@@ -430,22 +439,27 @@ class TransformEngine:
                         account_id_column
                     )
                 
+                elif source_type == 'ou_level':
+                    # Extract OU name at a given hierarchy level
+                    index = source_value if isinstance(source_value, int) else int(source_value)
+                    return extract_from_hierarchy(self.org_data, account_id, index)
+
                 elif source_type == 'name_split':
                     # Extract from account name by splitting
                     separator = source_value.get('separator')
                     index = source_value.get('index')
-                    
+
                     if separator is None or index is None:
                         logger.error("name_split source requires 'separator' and 'index' in source_value")
                         return None
-                    
+
                     return extract_from_account_name(
                         self.org_data,
                         account_id,
                         separator,
                         int(index)
                     )
-                
+
                 else:
                     logger.error("Unknown source_type: %s", source_type)
                     return None
@@ -529,6 +543,15 @@ class DataLoader:
             data = results[1:]
             rows = [dict(zip(header, row)) for row in data]
             
+            # Parse hierarchy column from string format to list of dicts
+            if rows and 'hierarchy' in rows[0]:
+                logger.info("Parsing hierarchy column from Athena string format")
+                for row in rows:
+                    if 'hierarchy' in row and not _is_null(row['hierarchy']):
+                        row['hierarchy'] = parse_athena_tags(row['hierarchy'])
+                    else:
+                        row['hierarchy'] = []
+
             # Parse hierarchytags column from string format to list of dicts
             if rows and 'hierarchytags' in rows[0]:
                 logger.info("Parsing hierarchytags column from Athena string format")
@@ -537,7 +560,7 @@ class DataLoader:
                         row['hierarchytags'] = parse_athena_tags(row['hierarchytags'])
                     else:
                         row['hierarchytags'] = []
-            
+
             # Parse parenttags column if present
             if rows and 'parenttags' in rows[0]:
                 logger.info("Parsing parenttags column from Athena string format")
@@ -852,13 +875,19 @@ class ConfigManager:
                 # Store metadata fields
                 config['metadata'][key_name] = source_value
             elif config_type == 'dimension':
-                # Parse source_value for name_split type
+                # Parse source_value based on source_type
                 parsed_value = source_value
                 if source_type == 'name_split':
                     try:
                         parsed_value = json.loads(source_value)
                     except (json.JSONDecodeError, TypeError):
                         logger.warning("Failed to parse name_split source_value for %s: %s", key_name, source_value)
+                        parsed_value = source_value
+                elif source_type == 'ou_level':
+                    try:
+                        parsed_value = int(source_value)
+                    except (ValueError, TypeError):
+                        logger.warning("Failed to parse ou_level source_value for %s: %s", key_name, source_value)
                         parsed_value = source_value
                 
                 # Store taxonomy dimension
@@ -1267,6 +1296,7 @@ class AutoDiscovery:
         # If we found exactly one in the priority set, skip the full scan
         if len(matches) == 1:
             logger.info("Found 'organization_data' in database '%s' — auto-selected", matches[0])
+            cid_print(f"\n📍 Source: {matches[0]}.organization_data")
             self._source_cache = (matches[0], 'organization_data')
             return self._source_cache
 
@@ -1282,6 +1312,7 @@ class AutoDiscovery:
 
         if len(matches) == 1:
             logger.info("Found 'organization_data' in database '%s' — auto-selected", matches[0])
+            cid_print(f"\n📍 Source: {matches[0]}.organization_data")
             self._source_cache = (matches[0], 'organization_data')
             return self._source_cache
         elif len(matches) > 1:
@@ -1346,20 +1377,23 @@ class AutoDiscovery:
         else:
             suggested = databases[0]
 
-        cid_print(f"\n📦 Choose target database for account_map, suggesting {suggested}")
+        cid_print(f"\n📦 Choose target database for account_map view, suggesting {suggested}")
         confirm = inquirer.confirm(
-            message=f"Use the suggested database '{suggested}' to write account_map to?",
+            message=f"Use the suggested database '{suggested}' for updating account_map view?",
             default=True
         ).execute()
 
         if confirm:
+            cid_print(f"📍 Target database: {suggested}")
             return suggested
 
-        return inquirer.select(
+        selected = inquirer.select(
             message="Select target database for account_map deployment:",
             choices=databases,
             default=suggested
         ).execute()
+        cid_print(f"📍 Target database: {selected}")
+        return selected
 
     def discover_databases(self, preferred: Optional[str] = None) -> str:
         """
@@ -1826,15 +1860,15 @@ class UnifiedWorkflow:
 
         # Add payer_name column to preview if payer names are configured
         payer_names = config.get('payer_names', {})
-        if payer_names and transformed_data and 'payer_id' in transformed_data[0]:
+        if payer_names and transformed_data and 'parent_account_id' in transformed_data[0]:
             for row in transformed_data:
-                pid = row.get('payer_id')
+                pid = row.get('parent_account_id')
                 if not _is_null(pid):
-                    row['payer_name'] = payer_names.get(str(pid).zfill(12), str(pid))
+                    row['parent_account_name'] = payer_names.get(str(pid).zfill(12), str(pid))
 
         # Reorder columns: fixed prefix, then remaining sorted alphabetically
         if transformed_data:
-            fixed_cols = ['account_id', 'account_name', 'payer_id', 'payer_name']
+            fixed_cols = ['account_id', 'account_name', 'parent_account_id', 'parent_account_name']
             all_cols = list(transformed_data[0].keys())
             prefix = [c for c in fixed_cols if c in all_cols]
             rest = sorted([c for c in all_cols if c not in fixed_cols], key=str.lower)
@@ -1904,6 +1938,8 @@ class UnifiedWorkflow:
 
                 if source_type == 'name_split' and isinstance(source_value, dict):
                     created_from = f"Account name split by \"{source_value.get('separator')}\" at index {source_value.get('index')}"
+                elif source_type == 'ou_level':
+                    created_from = f"OU hierarchy level {source_value}"
                 elif source_type == 'file':
                     created_from = f"File column \"{source_value}\""
                 elif source_type == 'tag':
@@ -2082,7 +2118,7 @@ class UnifiedWorkflow:
         }
 
         # Build data source choices — only include file option if --file was provided
-        data_source_choices = ["Tags from source table"]
+        data_source_choices = ["Tags from source table", "OU hierarchy level"]
         if source_file:
             data_source_choices.append("Additional file")
         data_source_choices.append("Split account name column")
@@ -2095,6 +2131,7 @@ class UnifiedWorkflow:
         )
 
         use_tags = "Tags from source table" in data_sources
+        use_ou_level = "OU hierarchy level" in data_sources
         use_file = "Additional file" in data_sources and source_file
         use_name_split = "Split account name column" in data_sources
 
@@ -2166,6 +2203,54 @@ class UnifiedWorkflow:
                             'source_type': 'file',
                             'source_value': col
                         })
+
+        # Configure OU hierarchy level if selected
+        if use_ou_level:
+            cid_print("\n" + "="*70)
+            cid_print("🏢 OU HIERARCHY LEVEL CONFIGURATION")
+            cid_print("="*70)
+            cid_print("Extract taxonomy dimensions from the organizational unit hierarchy.")
+            cid_print("Each level represents a position in the OU path.\n")
+
+            # Discover levels with real sample data
+            hierarchy_levels = self._discover_hierarchy_levels(database, table)
+
+            if not hierarchy_levels:
+                cid_print("⚠️  No hierarchy data found in the source table.\n")
+            else:
+                cid_print("Discovered hierarchy levels:")
+                for lvl in hierarchy_levels:
+                    samples_str = ', '.join(lvl['samples'][:4])
+                    cid_print(f"  - Level {lvl['level']}: {samples_str}")
+                cid_print("\nEach dimension you create will become a column in the output.\n")
+
+            choices = [
+                {"name": f"Level {lvl['level']} ({', '.join(lvl['samples'][:3])})", "value": lvl['level']}
+                for lvl in hierarchy_levels
+            ]
+            selected_levels = self._checkbox_with_retry(
+                message="Select hierarchy levels to use as taxonomy dimensions (space to select, Enter to confirm):",
+                choices=choices
+            )
+
+            if selected_levels:
+                for level in selected_levels:
+                    dim_name = inquirer.text(
+                        message=f"Enter name for OU level {level} dimension:",
+                        default=f"ou_level{level}",
+                        validate=lambda x: self.config_mgr._validate_dimension_name(x)
+                    ).execute()
+
+                    dim_name = self.config_mgr._sanitize_dimension_name(dim_name)
+                    dim_name = self._resolve_dimension_name(dim_name, config)
+
+                    config['taxonomy_dimensions'].append({
+                        'name': dim_name,
+                        'source_type': 'ou_level',
+                        'source_value': level
+                    })
+
+                    logger.info("Added dimension '%s' from OU hierarchy level %d", dim_name, level)
 
         # Configure name splitting if selected
         if use_name_split:
@@ -2290,6 +2375,45 @@ class UnifiedWorkflow:
 
         return config
 
+    def _discover_hierarchy_levels(self, database: str, table: str) -> List[Dict]:
+        """
+        Discover OU hierarchy levels with sample values from the source table.
+
+        Returns a list of dicts: [{'level': 1, 'samples': ['ROOT(r-zd04)']}, {'level': 2, 'samples': ['Pegasus', 'Unicorns']}, ...]
+        """
+        try:
+            query = f"""
+                SELECT MAX(cardinality(hierarchy)) AS max_depth
+                FROM "{database}"."{table}"
+                WHERE hierarchy IS NOT NULL
+            """
+            results = self.athena.query(query)
+            if not results or not results[0] or not results[0][0]:
+                return []
+            max_depth = int(results[0][0])
+        except Exception as e:
+            logger.warning("Failed to discover hierarchy depth: %s", e)
+            return []
+
+        levels = []
+        for i in range(1, max_depth + 1):
+            try:
+                sample_query = f"""
+                    SELECT DISTINCT TRY(hierarchy[{i}].name) AS ou_name
+                    FROM "{database}"."{table}"
+                    WHERE hierarchy IS NOT NULL
+                      AND cardinality(hierarchy) >= {i}
+                    LIMIT 5
+                """
+                sample_results = self.athena.query(sample_query)
+                samples = [row[0] for row in sample_results if row and row[0]]
+                levels.append({'level': i, 'samples': samples})
+            except Exception as e:
+                logger.warning("Failed to get samples for hierarchy level %d: %s", i, e)
+                levels.append({'level': i, 'samples': []})
+
+        return levels
+
     def _prompt_payer_names(self, config: dict, org_data: List[Dict]) -> dict:
         """
         Prompt user to assign friendly names to management account IDs.
@@ -2363,7 +2487,7 @@ class UnifiedWorkflow:
         cid_print("="*60 + "\n")
 
         return inquirer.confirm(
-            message="Create views with this configuration?",
+            message="Update account_map view with this configuration?",
             default=True
         ).execute()
 
@@ -2421,9 +2545,6 @@ class AthenaWriter:
         """
         # Generate column list for the view
         columns = list(rows[0].keys()) if rows else []
-
-        # Drop existing view/table first (since Athena doesn't support CREATE OR REPLACE VIEW)
-        self._safe_drop_view_or_table(view_name, database)
 
         # Try to create a single view first
         sql = self._generate_values_sql(rows, view_name, database, columns)
@@ -2531,9 +2652,7 @@ class AthenaWriter:
         quoted_columns = [f'"{col}"' for col in columns]
         column_list = ', '.join(quoted_columns)
 
-        # Use CREATE VIEW (not CREATE OR REPLACE - Athena doesn't support it)
-        # The caller should handle dropping existing views first
-        sql = f"""CREATE VIEW {database}.{view_name} AS
+        sql = f"""CREATE OR REPLACE VIEW {database}.{view_name} AS
 SELECT * FROM (
   VALUES
   {values_clause}
@@ -2640,7 +2759,7 @@ SELECT * FROM (
             union_parts = [f'SELECT * FROM {database}."{vn}"' for vn in view_names]
             union_query = '\nUNION ALL\n'.join(union_parts)
 
-            sql = f"CREATE VIEW {database}.{union_view_name} AS\n{union_query}"
+            sql = f"CREATE OR REPLACE VIEW {database}.{union_view_name} AS\n{union_query}"
 
             logger.info("Creating UNION view from %d parts", len(view_names))
             self._execute_view_creation(sql, database)
@@ -2726,8 +2845,8 @@ SELECT * FROM (
             'deleted_views': []
         }
 
-        # Step 1: Cleanup old views
-        logger.info("Checking for existing views to cleanup...")
+        # Step 1: Cleanup orphan part views from previous split runs
+        logger.info("Checking for orphan part views to cleanup...")
         old_views = self.identify_related_views(view_name, database)
 
         # If we're keeping the existing file source view, exclude it from deletion
@@ -2739,32 +2858,18 @@ SELECT * FROM (
                 if not v['name'].startswith(file_source_view_name)
             ]
 
-        if old_views:
-            cid_print(f"\nFound {len(old_views)} existing views:")
-            for view_info in old_views:
-                view_display = f"  - {view_info['name']}"
-                if 'timestamp' in view_info:
-                    view_display += f" (created: {view_info['timestamp']})"
-                cid_print(view_display)
-            cid_print("")  # Empty line for readability
-
-            confirm = inquirer.confirm(
-                message=f"Delete {len(old_views)} existing view(s)?",
-                default=True
-            ).execute()
-
-            if confirm:
-                with spinner("Dropping existing views"):
-                    for view_info in old_views:
-                        view_name_to_delete = view_info['name']
-                        try:
-                            self._safe_drop_view_or_table(view_name_to_delete, database)
-                            results['deleted_views'].append(view_name_to_delete)
-                            logger.info("Deleted view: %s", view_name_to_delete)
-                        except Exception as e:
-                            logger.warning("Failed to delete view %s: %s", view_name_to_delete, e)
-            else:
-                logger.info("Skipping view cleanup")
+        # Only drop part/split views — the main view will be replaced via CREATE OR REPLACE
+        part_views = [v for v in old_views if v['name'] != view_name]
+        if part_views:
+            logger.info("Dropping %d orphan part view(s)", len(part_views))
+            for view_info in part_views:
+                view_name_to_delete = view_info['name']
+                try:
+                    self._safe_drop_view_or_table(view_name_to_delete, database)
+                    results['deleted_views'].append(view_name_to_delete)
+                    logger.info("Deleted orphan view: %s", view_name_to_delete)
+                except Exception as e:
+                    logger.warning("Failed to delete view %s: %s", view_name_to_delete, e)
 
         # Step 2: Create file source view if needed
         if config.get('file_source') and not config['file_source'].get('use_existing_view'):
@@ -2815,13 +2920,13 @@ SELECT * FROM (
         # Step 3: Create config view
         logger.info("Creating config view: %s_config", view_name)
         config_mgr = ConfigManager(self.athena_helper, view_name)
-        with spinner("Creating configuration view"):
+        with spinner("Saving selections in the configuration view"):
             success = config_mgr.save_to_view(config, database)
         results['config_view'] = f"{view_name}_config" if success else None
 
         # Step 4: Create account map view
         logger.info("Creating account map view: %s", view_name)
-        with spinner("Creating account map view"):
+        with spinner("Updating account map view"):
             success = self.create_account_map_view(config, rows, view_name, database)
         results['account_map_view'] = view_name if success else None
 
@@ -2997,7 +3102,7 @@ SELECT * FROM (
         select_parts = [
             'org.id AS account_id',
             'org.name AS account_name',
-            'org.managementaccountid AS payer_id'
+            'org.managementaccountid AS parent_account_id'
         ]
         
         # Add payer_name column if payer names are configured
@@ -3009,7 +3114,7 @@ SELECT * FROM (
                 case_parts.append(f"WHEN org.managementaccountid = '{pid}' THEN '{escaped_name}'")
             case_expr = "CASE\n                " + "\n                ".join(case_parts)
             case_expr += "\n                ELSE org.managementaccountid\n            END"
-            select_parts.append(f"{case_expr} AS payer_name")
+            select_parts.append(f"{case_expr} AS parent_account_name")
         
         # Add taxonomy dimension columns
         dimension_parts = []  # Collect as (output_name, sql_expr) for sorting
@@ -3046,6 +3151,11 @@ SELECT * FROM (
                     logger.warning("File source dimension %s specified but no file source view", dim_name)
                     dimension_parts.append((output_name, f"NULL AS {output_name}"))
                     
+            elif source_type == 'ou_level':
+                level_index = int(source_value)
+                ou_expr = f"TRY(org.hierarchy[{level_index}].name)"
+                dimension_parts.append((output_name, f"{ou_expr} AS {output_name}"))
+
             elif source_type == 'name_split':
                 if isinstance(source_value, dict):
                     separator = source_value.get('separator', '-')
@@ -3074,7 +3184,7 @@ SELECT * FROM (
         # Build complete SQL
         select_clause = ',\n    '.join(select_parts)
         
-        sql = f"""CREATE VIEW {database}.{view_name} AS
+        sql = f"""CREATE OR REPLACE VIEW {database}.{view_name} AS
 SELECT
     {select_clause}
 {from_clause}"""
@@ -3205,6 +3315,59 @@ def extract_from_account_name(
         logger.error(
             "Error extracting from account name for account %s: %s",
             account_id, str(e),
+            exc_info=True
+        )
+        return None
+
+
+def extract_from_hierarchy(
+    org_data: List[Dict],
+    account_id: str,
+    level_index: int
+) -> Optional[str]:
+    """
+    Extract OU name from hierarchy at a given level index.
+
+    The hierarchy column contains a list of dicts like:
+    [{id=r-zd04, type=ROOT, name=ROOT(r-zd04)},
+     {id=ou-zd04-p1dmik6m, type=ORGANIZATIONAL_UNIT, name=Pegasus}]
+
+    This function returns the 'name' field at the specified 1-based index.
+
+    Args:
+        org_data: List[Dict] containing organization data with hierarchy column
+        account_id: 12-digit account ID to look up
+        level_index: 1-based index into hierarchy array
+
+    Returns:
+        OU name at that level if found, None otherwise
+    """
+    try:
+        matching = [r for r in org_data if r.get('id') == account_id]
+
+        if not matching:
+            return None
+
+        hierarchy = matching[0].get('hierarchy')
+
+        if not isinstance(hierarchy, list):
+            return None
+
+        # level_index is 1-based (matches Athena array indexing)
+        idx = level_index - 1
+        if idx < 0 or idx >= len(hierarchy):
+            return None
+
+        entry = hierarchy[idx]
+        if isinstance(entry, dict):
+            return entry.get('name')
+
+        return None
+
+    except Exception as e:
+        logger.error(
+            "Error extracting hierarchy level %d for account %s: %s",
+            level_index, account_id, str(e),
             exc_info=True
         )
         return None
