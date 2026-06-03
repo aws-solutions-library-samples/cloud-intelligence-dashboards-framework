@@ -27,7 +27,7 @@ dashboards:
     - account_id
     - account_name
     file: ./CUDOS-v5-definition.yaml
-    version: v5.8.0
+    version: v5.8.1
 datasets: {}
 crawlers: {}
 views: {}

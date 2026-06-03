@@ -5,8 +5,46 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Thu, 22 May 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 02 Jun 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] cid-cmd v4.4.13</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/CHANGELOG.md
+      </link>
+      <pubDate>Mon, 02 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">b2d3f4a5-c6e7-8f9a-0b1c-2d3e4f5a6b7c</guid>
+      <description>cid-cmd v4.4.13</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Taxonomy:</strong> Added support of line_item_iam_principal column as a part of organizational taxonomy feature, allowing to bring IAM principals for Bedrock to the dashboards along with IAM tags and session tags</li>
+    <li><strong>FOCUS:</strong> Fixed focus_consolidation_view generation to support non-canonical column names for some cloud providers</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] CUDOS Dashboard v5.8.1</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---581
+      </link>
+      <pubDate>Mon, 02 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">a1c2e3f4-b5d6-7e8f-9a0b-1c2d3e4f5a6b</guid>
+      <description>CUDOS Dashboard v5.8.1</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>AI/ML:</strong> Switched Amazon Bedrock Unit Cost visuals from cost per 1K Tokens to cost per 1M Tokens</li>
+    <li><strong>AI/ML:</strong> Added visual 'Amazon Bedrock Cost per Million Tokens by Model (Top 5 Models)'</li>
+    <li><strong>AI/ML:</strong> Added visual 'Amazon Bedrock Spend per Resource' for last 7 months</li>
+    <li><strong>AI/ML:</strong> Replaced 'Amazon Bedrock Cost per Legal Entity' with additional Group By control</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Health Events Dashboard - v3.1.0</title>
       <link>
