@@ -62,7 +62,10 @@ class AccountMapper:
             else:
                 print("  (No views were created)")
 
-            print("\n" + "="*60 + "\n")
+            print("\n" + "="*60)
+            print("\nTo add your taxonomy columns from account_map view to the dashboards, run:")
+            print("  cid-cmd update --recursive --force")
+            print("and select the respective dashboard.\n")
         elif results.get('status') == 'cancelled':
             print("\n⚠️  Operation cancelled by user\n")
         else:
