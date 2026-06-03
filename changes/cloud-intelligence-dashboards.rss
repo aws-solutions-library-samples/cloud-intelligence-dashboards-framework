@@ -5,8 +5,31 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Mon, 02 Jun 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 03 Jun 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[New Dashboard] Pricing Change Analysis Dashboard v1.0.0</title>
+      <link>
+        https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/pricing-change-analysis.html
+      </link>
+      <pubDate>Tue, 03 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[New Dashboard]]></category>
+      <guid isPermaLink="false">c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f</guid>
+      <description>Pricing Change Analysis Dashboard v1.0.0 - Initial Release</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    The <strong>Pricing Change Analysis Dashboard</strong> tracks every AWS pricing change across all SKUs you are using and shows the real dollar impact on your spend. Both increases and reductions, all in one place.
+  </p>
+  <h3>Key Benefits:</h3>
+  <ul>
+    <li><strong>Full Visibility:</strong> See every pricing change that affected SKUs in your environment — no more surprises in your monthly invoice.</li>
+    <li><strong>Dollar Impact:</strong> Understand exactly how much each pricing change contributed to your spend, whether an increase or a reduction.</li>
+    <li><strong>Actionable Insights:</strong> Know which pricing changes affected you, how much, and where — enabling informed decisions on cost optimization.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] cid-cmd v4.4.13</title>
       <link>
