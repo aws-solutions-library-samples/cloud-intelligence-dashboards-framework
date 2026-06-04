@@ -10,6 +10,7 @@ from cid.helpers.organizations import Organizations
 from cid.helpers.cur_proxy import ProxyView
 from cid.helpers.cloudformation import CFN
 from cid.helpers.parameter_store import ParametersController
+from cid.helpers.account_mapper import AccountMapper
 
 __all__ = [
     "Athena",
@@ -29,4 +30,5 @@ __all__ = [
     "ProxyView",
     "CFN",
     "ParametersController",
+    "AccountMapper",
 ]

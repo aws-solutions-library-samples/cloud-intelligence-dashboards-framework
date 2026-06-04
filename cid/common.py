@@ -22,6 +22,7 @@ from cid.base import CidBase
 from cid.plugin import Plugin
 from cid.utils import get_parameter, get_parameters, set_parameters, unset_parameter, get_yesno_parameter, cid_print, isatty, merge_objects, IsolatedParameters, set_defaults
 from cid.helpers.account_map import AccountMap
+from cid.helpers.account_mapper import AccountMapper
 from cid.helpers.parameter_store import ParametersController
 from cid.helpers import Athena, S3, IAM, CUR, ProxyCUR, Glue, QuickSight, Dashboard, Dataset, Datasource, csv2view, Organizations, CFN
 from cid.helpers.quicksight.template import Template as CidQsTemplate
@@ -2157,8 +2158,25 @@ class Cid():
     @command
     def map(self, **kwargs):
         """Create account mapping Athena views"""
-        for v in ['account_map', 'aws_accounts']:
-            self.create_or_update_account_map(v)
+        view_name = kwargs.get('view_name', 'account_map')
+        
+        # Use simple/legacy mode if --simple flag is provided
+        if kwargs.get('simple'):
+            print("\n🔄 Using simple account mapping (legacy mode)\n")
+            return self.create_or_update_account_map(view_name)
+        
+        # Use advanced interactive mode (default)
+        mapper = AccountMapper(athena=self.athena, view_name=view_name)
+        
+        try:
+            mapper.create_mapping(
+                source_file=kwargs.get('source_file'),
+                source_database=kwargs.get('source_database'),
+            )
+        except Exception as e:
+            logger.error(f"Account mapping failed: {e}", exc_info=True)
+            print(f"\n❌ Error: {e}\n")
+            raise
 
     @command
     def teardown(self, **kwargs):

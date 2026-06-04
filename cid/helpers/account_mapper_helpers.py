@@ -1,0 +1,3445 @@
+import json
+import logging
+import sys
+import threading
+import time
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Optional, Tuple, List, Dict, Any
+import csv
+
+from InquirerPy import inquirer
+
+from cid.helpers import Athena
+from cid.exceptions import CidCritical
+from cid.utils import cid_print, isatty
+
+logger = logging.getLogger(__name__)
+
+# Allowed separator characters for account name splitting.
+# Restricted to common delimiters to prevent SQL injection via the separator field.
+ALLOWED_SEPARATORS = set('-_./|:@# ')
+
+
+def _validate_separator(sep: str) -> bool:
+    """Validate that a separator is safe for use in SQL split_part()."""
+    return bool(sep) and len(sep) <= 2 and all(c in ALLOWED_SEPARATORS for c in sep)
+
+
+def _sanitize_separator_for_sql(sep: str) -> str:
+    """Escape single quotes in separator for safe SQL interpolation."""
+    return sep.replace("'", "''")
+
+
+def _is_null(value) -> bool:
+    """Check if a value is null/empty (replaces pd.isna)."""
+    return value is None or (isinstance(value, str) and value.strip() == '') or (isinstance(value, float) and value != value)
+
+
+def _format_table(rows: List[Dict], max_rows: Optional[int] = None, max_col_width: int = 30) -> str:
+    """Format list of dicts as an aligned text table with all columns visible."""
+    if not rows:
+        return "(empty)"
+    display = rows[:max_rows] if max_rows else rows
+    columns = list(display[0].keys())
+
+    def _truncate(val, width):
+        s = str(val)
+        return s[:width - 1] + '~' if len(s) > width else s
+
+    col_widths = {}
+    for col in columns:
+        data_width = max((len(str(r.get(col, ''))) for r in display), default=0)
+        col_widths[col] = min(max(len(str(col)), data_width), max_col_width)
+
+    header = ' | '.join(str(col).ljust(col_widths[col])[:col_widths[col]] for col in columns)
+    separator = '-+-'.join('-' * col_widths[col] for col in columns)
+    lines = [header, separator]
+    for row in display:
+        lines.append(' | '.join(_truncate(row.get(col, ''), col_widths[col]).ljust(col_widths[col]) for col in columns))
+    return '\n'.join(lines)
+
+
+@contextmanager
+def spinner(message: str = "Processing..."):
+    """Context manager that shows a spinning indicator while work is in progress."""
+    stop_event = threading.Event()
+    frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+
+    def _spin():
+        i = 1  # Start from frame 1 since frame 0 is written by main thread
+        while not stop_event.is_set():
+            sys.stdout.write(f"\r{frames[i % len(frames)]} {message}")
+            sys.stdout.flush()
+            i += 1
+            stop_event.wait(0.1)
+
+    # Write first frame immediately on main thread to guarantee visibility
+    sys.stdout.write(f"\r{frames[0]} {message}")
+    sys.stdout.flush()
+
+    t = threading.Thread(target=_spin, daemon=True)
+    t.start()
+    try:
+        yield
+    finally:
+        stop_event.set()
+        t.join()
+        # Clear spinner line and write completion on the main thread
+        sys.stdout.write("\r" + " " * (len(message) + 4) + "\r")
+        sys.stdout.write(f"✅ {message} done\n")
+        sys.stdout.flush()
+
+
+def parse_athena_tags(tags_string: str) -> List[Dict[str, str]]:
+    """
+    Parse Athena tags from string format to list of dicts.
+    
+    Athena returns tags in a string format like:
+    "[{key=Environment, value=Production}, {key=Team, value=Engineering}]"
+    
+    This function parses that format into a list of dictionaries:
+    [{'key': 'Environment', 'value': 'Production'}, {'key': 'Team', 'value': 'Engineering'}]
+    
+    Args:
+        tags_string: String representation of tags from Athena
+        
+    Returns:
+        List of dictionaries with 'key' and 'value' fields
+    """
+    if not tags_string or _is_null(tags_string) or tags_string == '[]':
+        return []
+    
+    try:
+        # Remove outer brackets
+        tags_string = tags_string.strip()
+        if tags_string.startswith('[') and tags_string.endswith(']'):
+            tags_string = tags_string[1:-1]
+        
+        if not tags_string:
+            return []
+        
+        # Parse individual tag items
+        tags = []
+        # Split by '}, {' to separate individual tags
+        tag_items = tags_string.split('}, {')
+        
+        for item in tag_items:
+            # Clean up the item
+            item = item.strip().strip('{}')
+            if not item:
+                continue
+            
+            # Parse key=value pairs
+            tag_dict = {}
+            parts = item.split(', ')
+            for part in parts:
+                if '=' in part:
+                    key, value = part.split('=', 1)
+                    key = key.strip()
+                    value = value.strip()
+                    tag_dict[key] = value
+            
+            if tag_dict:
+                tags.append(tag_dict)
+        
+        return tags
+        
+    except Exception as e:
+        logger.warning("Failed to parse Athena tags string '%s': %s", tags_string, str(e))
+        return []
+
+
+class AccountRegistry:
+    """
+    Instance-scoped storage for Account data during a transformation run.
+
+    Each TransformEngine creates its own registry, so concurrent or
+    sequential runs never share mutable state.
+    """
+
+    def __init__(self):
+        self._accounts: Dict[str, Dict] = {}
+
+    def ensure(self, account_id: str) -> None:
+        if account_id not in self._accounts:
+            self._accounts[account_id] = {}
+
+    def set(self, account_id: str, key: str, value) -> None:
+        self._accounts[account_id][key] = value
+
+    def get_all(self) -> Dict[str, Dict]:
+        return self._accounts
+
+    def to_rows(self) -> List[Dict]:
+        if not self._accounts:
+            return []
+        return [{'account_id': aid, **meta} for aid, meta in self._accounts.items()]
+
+
+class Account:
+    """
+    Represents an AWS account with metadata and business taxonomy information.
+
+    Account IDs are validated and zero-padded to 12 digits. All data is stored
+    in the provided AccountRegistry rather than class-level state.
+
+    Args:
+        account_id: AWS account ID (will be zero-padded to 12 digits)
+        registry: AccountRegistry instance that owns this account's data
+    """
+
+    def __init__(self, account_id: str, registry: AccountRegistry):
+        self._account_name = ""
+        self._business_unit = {}
+        self._payer_account_id = ""
+        self._registry = registry
+
+        self.set_account_id(account_id)
+
+    def set_account_id(self, account_id: str) -> None:
+        if isinstance(account_id, int):
+            self._account_id = str(account_id).zfill(12)
+        elif isinstance(account_id, str):
+            try:
+                [int(x) for x in account_id]
+                self._account_id = account_id.zfill(12)
+            except ValueError as e:
+                raise TypeError('Account ID must consist of 12 digits from 0-9.') from e
+        else:
+            raise TypeError('Account ID must be a string or integer')
+
+        self._registry.ensure(self._account_id)
+
+    def get_account_id(self) -> str:
+        return self._account_id
+
+    def set_account_name(self, account_name: str) -> None:
+        self._account_name = str(account_name)
+        self._registry.set(self._account_id, "account_name", self._account_name)
+
+    def get_account_name(self) -> str:
+        return self._account_name
+
+    def set_payer_id(self, payer_id: str) -> None:
+        if isinstance(payer_id, int):
+            self._payer_account_id = str(payer_id).zfill(12)
+        elif isinstance(payer_id, str):
+            try:
+                [int(x) for x in payer_id]
+                self._payer_account_id = payer_id.zfill(12)
+            except ValueError as e:
+                raise TypeError('Payer Account ID must consist of 12 digits from 0-9.') from e
+        else:
+            raise TypeError('Payer Account ID must be a string or integer')
+
+        self._registry.set(self._account_id, "parent_account_id", self._payer_account_id)
+
+    def get_payer_id(self) -> str:
+        return self._payer_account_id
+
+    def set_business_unit(self, bu_name: str, bu_value: str) -> None:
+        self._business_unit[bu_name] = bu_value
+        self._registry.set(self._account_id, bu_name, bu_value)
+
+    # Properties for convenient access
+    account_id = property(get_account_id, set_account_id)
+    account_name = property(get_account_name, set_account_name)
+    payer_id = property(get_payer_id, set_payer_id)
+
+
+class TransformEngine:
+    """
+    Orchestrates data transformation according to configured rules.
+    
+    The TransformEngine applies taxonomy rules to organization data, creating
+    Account instances with business unit information and converting them to a
+    List[Dict] for output.
+    
+    Attributes:
+        config: Configuration dictionary containing transformation rules
+        org_data: List[Dict] containing organization data from Athena
+        file_data: Optional List[Dict] containing external file data
+    """
+    
+    def __init__(self, config: dict, org_data: List[Dict], file_data: Optional[List[Dict]] = None):
+        """
+        Initialize TransformEngine with configuration and data.
+        
+        Args:
+            config: Configuration dictionary with rules section
+            org_data: List[Dict] containing organization data
+            file_data: Optional List[Dict] containing external file data for file-based rules
+        """
+        self.config = config
+        self.org_data = org_data
+        self.file_data = file_data
+        self.registry = AccountRegistry()
+        
+        logger.info("Initialized TransformEngine with %d accounts", len(org_data))
+    
+    def transform(self) -> List[Dict]:
+        """
+        Execute all transformation rules and return account map.
+        
+        This method orchestrates the complete transformation process:
+        1. Create Account instances for each account in org_data
+        2. Set basic account information (name, payer)
+        3. Apply all taxonomy rules
+        4. Convert to List[Dict]
+        
+        Returns:
+            List[Dict] containing account map with all taxonomy dimensions
+            
+        Raises:
+            ValueError: If configuration is invalid or required data is missing
+        """
+        logger.info("Starting transformation process")
+        
+        # Validate that we have organization data
+        if not self.org_data:
+            logger.warning("Organization data is empty")
+            return []
+        
+        # Process each account
+        account_count = 0
+        for row in self.org_data:
+            account_id = str(row.get('id', '')).zfill(12)
+            
+            if not account_id or account_id == '000000000000':
+                logger.warning("Skipping row with invalid account ID")
+                continue
+            
+            try:
+                # Create Account instance with this run's registry
+                account = Account(account_id, self.registry)
+                
+                # Set basic account information
+                account_name = row.get('name', '')
+                if account_name:
+                    account.set_account_name(str(account_name))
+                
+                # Set payer information
+                payer_id = row.get('payer_id', '')
+                if payer_id:
+                    account.set_payer_id(str(payer_id))
+                
+                account_count += 1
+                
+            except Exception as e:
+                logger.error(
+                    "Error creating account %s: %s",
+                    account_id, str(e),
+                    exc_info=True
+                )
+                continue
+        
+        logger.info("Created %d Account instances", account_count)
+        
+        # Apply taxonomy rules
+        self.apply_taxonomy_rules()
+        
+        # Convert to List[Dict]
+        result_df = self.registry.to_rows()
+        logger.info("Transformation complete. Generated %d rows", len(result_df))
+        
+        return result_df
+    
+    def apply_taxonomy_rules(self) -> None:
+        """
+        Apply all configured taxonomy dimension rules.
+        
+        This method iterates through all configured taxonomy dimensions and applies
+        the appropriate extraction rule for each account.
+        """
+        taxonomy_dimensions = self.config.get('taxonomy_dimensions', [])
+        
+        if not taxonomy_dimensions:
+            logger.warning("No taxonomy dimensions configured")
+            return
+        
+        logger.info("Applying %d taxonomy rules", len(taxonomy_dimensions))
+        
+        # Sort dimensions by level number to ensure correct order (if level exists)
+        sorted_dimensions = sorted(taxonomy_dimensions, key=lambda x: x.get('level', 0))
+        
+        # Get all accounts from this run's registry
+        all_accounts = self.registry.get_all()
+        
+        # Apply each rule to each account
+        for dimension_config in sorted_dimensions:
+            dimension_num = dimension_config.get('level')
+            dimension_name = dimension_config.get('name', f'level_{dimension_num}')
+            
+            logger.debug("Applying rule for %s", dimension_name)
+            
+            success_count = 0
+            for account_id in list(all_accounts.keys()):
+                try:
+                    # Apply the rule for this dimension
+                    value = self.apply_single_rule(dimension_config, account_id)
+                    
+                    if value is not None:
+                        self.registry.set(account_id, dimension_name, value)
+                        success_count += 1
+                    
+                except Exception as e:
+                    logger.error(
+                        "Error applying rule %s to account %s: %s",
+                        dimension_name, account_id, str(e),
+                        exc_info=True
+                    )
+            
+            logger.info(
+                "Applied rule %s: %d/%d accounts successful",
+                dimension_name, success_count, len(all_accounts)
+            )
+    
+    def apply_single_rule(self, rule: Dict[str, Any], account_id: str) -> Optional[str]:
+        """
+        Apply a single transformation rule to an account.
+        
+        This method determines the rule source type and calls the appropriate
+        extraction function with the configured parameters.
+        
+        Config structure: {'name': 'BU', 'source_type': 'tag', 'source_value': 'BU'}
+        
+        Args:
+            rule: Rule configuration dictionary containing source_type and source_value
+            account_id: 12-digit account ID to apply rule to
+            
+        Returns:
+            Extracted value if successful, None otherwise
+            
+        Raises:
+            ValueError: If rule source type is unknown or required parameters are missing
+        """
+        # Support new config structure
+        source_type = rule.get('source_type')
+        source_value = rule.get('source_value')
+        
+        if source_type:
+            # New config structure
+            try:
+                if source_type == 'tag':
+                    return extract_from_tag(self.org_data, account_id, source_value)
+                
+                elif source_type == 'file':
+                    if self.file_data is None:
+                        logger.error("File source specified but no file data loaded")
+                        return None
+                    
+                    # In new structure, source_value is the column name in the file
+                    # and we need to get the account_id_column from config
+                    account_id_column = self.config.get('file_source', {}).get('account_column', 'account_id')
+                    return extract_from_file(
+                        self.file_data,
+                        account_id,
+                        source_value,
+                        account_id_column
+                    )
+                
+                elif source_type == 'ou_level':
+                    # Extract OU name at a given hierarchy level
+                    index = source_value if isinstance(source_value, int) else int(source_value)
+                    return extract_from_hierarchy(self.org_data, account_id, index)
+
+                elif source_type == 'name_split':
+                    # Extract from account name by splitting
+                    separator = source_value.get('separator')
+                    index = source_value.get('index')
+
+                    if separator is None or index is None:
+                        logger.error("name_split source requires 'separator' and 'index' in source_value")
+                        return None
+
+                    return extract_from_account_name(
+                        self.org_data,
+                        account_id,
+                        separator,
+                        int(index)
+                    )
+
+                else:
+                    logger.error("Unknown source_type: %s", source_type)
+                    return None
+                    
+            except Exception as e:
+                logger.error(
+                    "Error applying rule with source_type %s to account %s: %s",
+                    source_type, account_id, str(e),
+                    exc_info=True
+                )
+                return None
+        
+        # No valid source_type found
+        logger.error("Rule missing 'source_type' field: %s", rule)
+        return None
+
+class DataLoader:
+    """Loads organization data from Athena or file sources."""
+    
+    def __init__(self, athena: Athena, config: dict):
+        """
+        Initialize DataLoader with Athena helper and configuration.
+        
+        Args:
+            athena: Athena helper instance
+            config: Configuration dictionary containing data source settings
+        """
+        self.athena = athena
+        self.config = config
+        logger.info("Initialized DataLoader")
+    
+    def load_from_athena(self) -> List[Dict]:
+        """
+        Load organization data from Athena using CID helper.
+        
+        Returns:
+            List[Dict] containing organization data with columns:
+            id, name, hierarchy, hierarchytags, payer_id, parenttags
+            
+        Raises:
+            ValueError: If Athena configuration is missing or invalid
+            RuntimeError: If Athena query fails
+        """
+        athena_config = self.config.get('athena', {})
+        database = athena_config.get('database')
+        table = athena_config.get('table')
+        
+        if not database or not table:
+            raise ValueError("Athena database and table must be configured")
+        
+        logger.info("Loading organization data from Athena: %s.%s", database, table)
+        
+        try:
+            # Build query to select organization data
+            query = f"""
+                SELECT 
+                    id,
+                    name,
+                    hierarchy,
+                    hierarchytags,
+                    managementaccountid AS payer_id,
+                    parenttags
+                FROM "{database}"."{table}"
+            """
+            
+            # Execute query using CID Athena helper
+            # The query method returns a list of rows with header as first row
+            results = self.athena.query(
+                sql=query,
+                database=database,
+                include_header=True
+            )
+            
+            # Convert results to list of dicts
+            if not results or len(results) < 2:
+                logger.warning("No data returned from Athena query")
+                return []
+            
+            # First row is header, rest are data
+            header = results[0]
+            data = results[1:]
+            rows = [dict(zip(header, row)) for row in data]
+            
+            # Parse hierarchy column from string format to list of dicts
+            if rows and 'hierarchy' in rows[0]:
+                logger.info("Parsing hierarchy column from Athena string format")
+                for row in rows:
+                    if 'hierarchy' in row and not _is_null(row['hierarchy']):
+                        row['hierarchy'] = parse_athena_tags(row['hierarchy'])
+                    else:
+                        row['hierarchy'] = []
+
+            # Parse hierarchytags column from string format to list of dicts
+            if rows and 'hierarchytags' in rows[0]:
+                logger.info("Parsing hierarchytags column from Athena string format")
+                for row in rows:
+                    if 'hierarchytags' in row and not _is_null(row['hierarchytags']):
+                        row['hierarchytags'] = parse_athena_tags(row['hierarchytags'])
+                    else:
+                        row['hierarchytags'] = []
+
+            # Parse parenttags column if present
+            if rows and 'parenttags' in rows[0]:
+                logger.info("Parsing parenttags column from Athena string format")
+                for row in rows:
+                    if 'parenttags' in row and not _is_null(row['parenttags']):
+                        row['parenttags'] = parse_athena_tags(row['parenttags'])
+                    else:
+                        row['parenttags'] = []
+            
+            logger.info("Successfully loaded %d accounts from Athena", len(rows))
+            return rows
+            
+        except Exception as e:
+            logger.error("Failed to load data from Athena: %s", str(e), exc_info=True)
+            raise RuntimeError(f"Athena query failed: {e}") from e
+    
+    def load_from_file(self, file_path: Optional[str] = None) -> List[Dict]:
+        """
+        Load data from CSV file.
+        
+        Args:
+            file_path: Path to file. If None, uses path from configuration.
+            
+        Returns:
+            List[Dict] containing file data
+            
+        Raises:
+            ValueError: If file path is not provided or configured
+            FileNotFoundError: If file does not exist
+            ValueError: If file format is not supported
+        """
+        # Use provided path or get from configuration
+        if file_path is None:
+            file_source_config = self.config.get('file_source', {})
+            file_path = file_source_config.get('file_path')
+        
+        if not file_path:
+            raise ValueError("File path must be provided or configured in file_source.file_path")
+        
+        file_path_obj = Path(file_path)
+        
+        if not file_path_obj.exists():
+            raise FileNotFoundError(f"File not found: {file_path}")
+        
+        logger.info("Loading data from file: %s", file_path)
+        
+        # Determine file format from extension
+        suffix = file_path_obj.suffix.lower()
+        
+        try:
+            if suffix != '.csv':
+                raise ValueError(f"Unsupported file format: {suffix}. Only .csv is supported.")
+            with open(file_path, newline='', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+            logger.info("Loaded %d records from CSV file", len(rows))
+            return rows
+            
+        except Exception as e:
+            logger.error("Failed to load file %s: %s", file_path, str(e), exc_info=True)
+            raise
+    
+    def get_available_tag_keys(self, org_data: Optional[List[Dict]] = None, tag_column: str = 'hierarchytags') -> list:
+        """
+        Extract available tag keys from hierarchytags column.
+        
+        Args:
+            org_data: List[Dict] containing organization data with hierarchytags column.
+                     If None, loads data from Athena.
+            tag_column: Name of the column containing tags (default: 'hierarchytags')
+        
+        Returns:
+            List of unique tag keys found in hierarchytags
+            
+        Raises:
+            ValueError: If tag column is not present
+        """
+        # Load data if not provided
+        if org_data is None:
+            logger.info("Loading organization data to extract tag keys")
+            org_data = self.load_from_athena()
+        
+        if not org_data or tag_column not in org_data[0]:
+            raise ValueError(f"{tag_column} column not found in organization data")
+        
+        logger.info("Extracting available tag keys from %s", tag_column)
+        
+        # Extract unique keys from hierarchytags
+        tag_keys = set()
+        
+        for tags_value in [row[tag_column] for row in org_data if not _is_null(row.get(tag_column))]:
+            # Handle different formats
+            if isinstance(tags_value, str):
+                # Parse Athena string format
+                parsed_tags = parse_athena_tags(tags_value)
+                for tag_item in parsed_tags:
+                    if 'key' in tag_item:
+                        tag_keys.add(tag_item['key'])
+            elif isinstance(tags_value, list):
+                # Already a list of dicts
+                for tag_item in tags_value:
+                    if isinstance(tag_item, dict) and 'key' in tag_item:
+                        tag_keys.add(tag_item['key'])
+        
+        tag_keys_list = sorted(list(tag_keys))
+        logger.info("Found %d unique tag keys", len(tag_keys_list))
+        
+        return tag_keys_list
+
+class ConfigManager:
+    """
+    Manages account mapper configuration storage and retrieval from Athena views.
+    
+    The ConfigManager handles reading and writing configuration to Athena views
+    instead of files. Configuration is stored in a view named {view_name}_config
+    using a two-row-type structure with metadata and dimension rows.
+    
+    Attributes:
+        athena (Athena): CID Athena helper instance
+        view_name (str): Base view name (default: "account_map")
+    """
+    
+    def __init__(self, athena: Athena, view_name: str = "account_map"):
+        """
+        Initialize configuration manager with Athena helper and view name.
+        
+        Args:
+            athena: CID Athena helper instance
+            view_name: Base view name for configuration (default: "account_map")
+        """
+        self.athena = athena
+        self.view_name = view_name
+        self.config_view_name = f"{view_name}_config"
+        logger.info("ConfigManager initialized for view: %s", self.config_view_name)
+    
+    def load_from_view(self, database: str) -> Optional[dict]:
+        """
+        Load configuration from Athena config view.
+        
+        Args:
+            database: Database containing the config view
+            
+        Returns:
+            Configuration dictionary if view exists, None otherwise
+            
+        Example:
+            >>> config_mgr = ConfigManager(athena, "account_map")
+            >>> config = config_mgr.load_from_view("my_database")
+            >>> if config:
+            ...     print(config['metadata']['source_table'])
+        """
+        if not self.config_view_exists(database):
+            logger.info("Config view %s.%s does not exist", database, self.config_view_name)
+            return None
+        
+        try:
+            logger.info("Loading configuration from %s.%s", database, self.config_view_name)
+            
+            # Query the config view
+            query = f'SELECT * FROM "{database}"."{self.config_view_name}"'
+            results = self.athena.query(
+                sql=query,
+                database=database,
+                include_header=True
+            )
+            
+            if not results or len(results) < 2:
+                logger.warning("Config view is empty")
+                return None
+            
+            # Convert results to list of dicts
+            header = results[0]
+            rows = []
+            for row in results[1:]:
+                row_dict = dict(zip(header, row))
+                rows.append(row_dict)
+            
+            # Parse rows into config structure
+            config = self.parse_config_rows(rows)
+            logger.info("Successfully loaded configuration with %d taxonomy dimensions", 
+                       len(config.get('taxonomy_dimensions', [])))
+            
+            return config
+            
+        except BaseException as e:
+            logger.error("Failed to load configuration from view: %s", str(e), exc_info=True)
+            return None
+    
+    def save_to_view(self, config: dict, database: str) -> bool:
+        """
+        Save configuration to Athena config view.
+        
+        Args:
+            config: Configuration dictionary to save
+            database: Target database for the config view
+            
+        Returns:
+            True if save was successful, False otherwise
+            
+        Example:
+            >>> config = {
+            ...     'metadata': {
+            ...         'source_table': 'organization_data',
+            ...         'source_database': 'cur_database'
+            ...     },
+            ...     'taxonomy_dimensions': [
+            ...         {'name': 'business_unit', 'source_type': 'tag', 'source_value': 'BusinessUnit'}
+            ...     ]
+            ... }
+            >>> config_mgr.save_to_view(config, "my_database")
+            True
+        """
+        try:
+            logger.info("Saving configuration to %s.%s", database, self.config_view_name)
+            
+            # Generate config rows from config dict
+            rows = self.generate_config_rows(config)
+            
+            # Generate SQL for config view
+            sql = self._generate_config_view_sql(rows, database)
+            sql_size = len(sql.encode('utf-8'))
+            
+            logger.info("Generated config view SQL (%d bytes)", sql_size)
+            
+            # Check if we need to split the view
+            if sql_size > 262144:  # Athena's max SQL size
+                logger.info("Config view SQL exceeds Athena size limit, creating separate views due to size limits")
+                return self._create_split_config_view(rows, database)
+            else:
+                # Create single config view
+                self.athena.query(sql=sql, database=database)
+                logger.info("Successfully created config view")
+                return True
+                
+        except Exception as e:
+            logger.error("Failed to save configuration to view: %s", str(e), exc_info=True)
+            return False
+    
+    def config_view_exists(self, database: str) -> bool:
+        """
+        Check if configuration view exists in the database.
+        
+        Args:
+            database: Database to check
+            
+        Returns:
+            True if config view exists, False otherwise
+        """
+        try:
+            # Try to query the view directly - most reliable method
+            check_sql = f'SELECT * FROM "{database}"."{self.config_view_name}" LIMIT 1'
+            results = self.athena.query(
+                sql=check_sql,
+                database=database,
+                include_header=False
+            )
+            
+            # If query succeeds, view exists (even if empty)
+            logger.info("Config view %s.%s exists", database, self.config_view_name)
+            return True
+            
+        except BaseException as e:
+            # CidCritical extends BaseException, so we must catch BaseException
+            error_msg = str(e).lower()
+            if 'does not exist' in error_msg or 'not found' in error_msg or 'table_not_found' in error_msg:
+                logger.info("Config view %s.%s does not exist", database, self.config_view_name)
+                return False
+            else:
+                logger.warning("Could not check if config view exists: %s", str(e))
+                return False
+    
+    def parse_config_rows(self, rows: List[dict]) -> dict:
+        """
+        Parse config rows from view into structured configuration dictionary.
+        
+        The config view uses a two-row-type structure:
+        - Metadata rows: config_type='metadata', stores file_source_view, source_table, source_database
+        - Dimension rows: config_type='dimension', stores key_name, source_type, source_value
+        
+        For name_split dimensions, source_value is JSON-encoded dict with separator and index.
+        
+        Args:
+            rows: List of row dictionaries from config view
+            
+        Returns:
+            Structured configuration dictionary
+            
+        Example:
+            >>> rows = [
+            ...     {'config_type': 'metadata', 'key_name': 'source_table', 
+            ...      'source_type': 'source', 'source_value': 'organization_data'},
+            ...     {'config_type': 'dimension', 'key_name': 'business_unit',
+            ...      'source_type': 'tag', 'source_value': 'BusinessUnit'}
+            ... ]
+            >>> config = config_mgr.parse_config_rows(rows)
+            >>> config['metadata']['source_table']
+            'organization_data'
+        """
+        
+        config = {
+            'metadata': {},
+            'taxonomy_dimensions': []
+        }
+        
+        for row in rows:
+            config_type = row.get('config_type', '')
+            key_name = row.get('key_name', '')
+            source_type = row.get('source_type', '')
+            source_value = row.get('source_value', '')
+            
+            if config_type == 'metadata':
+                # Store metadata fields
+                config['metadata'][key_name] = source_value
+            elif config_type == 'dimension':
+                # Parse source_value based on source_type
+                parsed_value = source_value
+                if source_type == 'name_split':
+                    try:
+                        parsed_value = json.loads(source_value)
+                    except (json.JSONDecodeError, TypeError):
+                        logger.warning("Failed to parse name_split source_value for %s: %s", key_name, source_value)
+                        parsed_value = source_value
+                elif source_type == 'ou_level':
+                    try:
+                        parsed_value = int(source_value)
+                    except (ValueError, TypeError):
+                        logger.warning("Failed to parse ou_level source_value for %s: %s", key_name, source_value)
+                        parsed_value = source_value
+                
+                # Store taxonomy dimension
+                dimension = {
+                    'name': key_name,
+                    'source_type': source_type,
+                    'source_value': parsed_value
+                }
+                config['taxonomy_dimensions'].append(dimension)
+            elif config_type == 'payer_name':
+                # Reconstruct payer_names mapping
+                if 'payer_names' not in config:
+                    config['payer_names'] = {}
+                config['payer_names'][key_name] = source_value
+        
+        # Reconstruct file_source from metadata if file_source_view exists
+        if config['metadata'].get('file_source_view'):
+            has_file_dimensions = any(
+                d['source_type'] == 'file' for d in config['taxonomy_dimensions']
+            )
+            if has_file_dimensions:
+                config['file_source'] = {
+                    'use_existing_view': True
+                }
+            else:
+                # file_source_view in metadata but no file dimensions — still reconstruct
+                # This can happen if dimensions were removed but metadata wasn't cleaned up
+                logger.info("file_source_view found in metadata but no file dimensions")
+                config['file_source'] = {
+                    'use_existing_view': True
+                }
+        elif any(d['source_type'] == 'file' for d in config['taxonomy_dimensions']):
+            # No file_source_view in metadata but file dimensions exist
+            # Reconstruct with default view name
+            logger.info("File dimensions found but no file_source_view in metadata, reconstructing")
+            config['file_source'] = {
+                'use_existing_view': True
+            }
+        
+        return config
+    
+    def generate_config_rows(self, config: dict) -> List[dict]:
+        """
+        Generate config rows from structured configuration dictionary.
+        
+        For name_split dimensions, source_value dict is JSON-encoded.
+        
+        Args:
+            config: Configuration dictionary with metadata and taxonomy_dimensions
+            
+        Returns:
+            List of row dictionaries for config view
+            
+        Example:
+            >>> config = {
+            ...     'metadata': {'source_table': 'organization_data'},
+            ...     'taxonomy_dimensions': [
+            ...         {'name': 'business_unit', 'source_type': 'tag', 'source_value': 'BusinessUnit'}
+            ...     ]
+            ... }
+            >>> rows = config_mgr.generate_config_rows(config)
+            >>> rows[0]['config_type']
+            'metadata'
+        """
+        
+        rows = []
+        
+        # Generate metadata rows
+        metadata = config.get('metadata', {})
+        for key_name, source_value in metadata.items():
+            rows.append({
+                'config_type': 'metadata',
+                'key_name': key_name,
+                'source_type': 'source',
+                'source_value': str(source_value)
+            })
+        
+        # Generate dimension rows
+        taxonomy_dimensions = config.get('taxonomy_dimensions', [])
+        for dimension in taxonomy_dimensions:
+            source_value = dimension.get('source_value', '')
+            source_type = dimension.get('source_type', '')
+            
+            # JSON-encode dict values (for name_split)
+            if isinstance(source_value, dict):
+                source_value = json.dumps(source_value)
+            else:
+                source_value = str(source_value)
+            
+            rows.append({
+                'config_type': 'dimension',
+                'key_name': dimension.get('name', ''),
+                'source_type': source_type,
+                'source_value': source_value
+            })
+        
+        # Generate payer_name rows
+        payer_names = config.get('payer_names', {})
+        for payer_id, payer_name in payer_names.items():
+            rows.append({
+                'config_type': 'payer_name',
+                'key_name': str(payer_id),
+                'source_type': 'name',
+                'source_value': str(payer_name)
+            })
+        
+        return rows
+    
+    def _generate_config_view_sql(self, rows: List[dict], database: str) -> str:
+        """
+        Generate CREATE OR REPLACE VIEW SQL for config view using VALUES clause.
+        
+        Args:
+            rows: List of row dictionaries
+            database: Target database
+            
+        Returns:
+            Complete SQL statement
+        """
+        # Generate VALUES rows
+        values_rows = []
+        for row in rows:
+            config_type = row['config_type'].replace("'", "''")
+            key_name = row['key_name'].replace("'", "''")
+            source_type = row['source_type'].replace("'", "''")
+            source_value = row['source_value'].replace("'", "''")
+            
+            values_rows.append(
+                f"('{config_type}', '{key_name}', '{source_type}', '{source_value}')"
+            )
+        
+        values_clause = ',\n  '.join(values_rows)
+        
+        # Build complete SQL
+        sql = f"""CREATE OR REPLACE VIEW {database}.{self.config_view_name} AS
+SELECT * FROM (
+  VALUES
+  {values_clause}
+) AS t (config_type, key_name, source_type, source_value)"""
+        
+        return sql
+    
+    def _create_split_config_view(self, rows: List[dict], database: str) -> bool:
+        """
+        Create split config views when SQL exceeds size limit.
+        
+        Args:
+            rows: List of row dictionaries
+            database: Target database
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Calculate how many rows per part
+            chunk_size = len(rows) // 2
+            part_num = 1
+            part_views = []
+            
+            while chunk_size > 0:
+                # Try splitting with current chunk size
+                chunks = [rows[i:i + chunk_size] for i in range(0, len(rows), chunk_size)]
+                
+                # Check if all chunks fit
+                all_fit = True
+                for chunk in chunks:
+                    part_view_name = f"{self.config_view_name}_part{part_num}"
+                    sql = self._generate_config_view_sql(chunk, database)
+                    sql_size = len(sql.encode('utf-8'))
+                    
+                    if sql_size > 262144:
+                        all_fit = False
+                        chunk_size = chunk_size // 2
+                        break
+                
+                if all_fit:
+                    # Create all part views
+                    part_num = 1
+                    for chunk in chunks:
+                        part_view_name = f"{self.config_view_name}_part{part_num}"
+                        sql = self._generate_config_view_sql(chunk, database)
+                        self.athena.query(sql=sql, database=database)
+                        part_views.append(part_view_name)
+                        logger.info("Created config view part %d", part_num)
+                        part_num += 1
+                    
+                    # Create UNION view
+                    union_parts = [f'SELECT * FROM {database}."{vn}"' for vn in part_views]
+                    union_query = '\nUNION ALL\n'.join(union_parts)
+                    union_sql = f"CREATE OR REPLACE VIEW {database}.{self.config_view_name} AS\n{union_query}"
+                    
+                    self.athena.query(sql=union_sql, database=database)
+                    logger.info("Created UNION config view from %d parts", len(part_views))
+                    
+                    return True
+            
+            logger.error("Could not split config view into small enough parts")
+            return False
+            
+        except Exception as e:
+            logger.error("Failed to create split config view: %s", str(e), exc_info=True)
+            return False
+    
+    def validate_config(self, config: dict) -> Tuple[bool, List[str]]:
+        """
+        Validate configuration completeness and correctness.
+        
+        Args:
+            config: Configuration dictionary to validate
+            
+        Returns:
+            Tuple of (is_valid, list_of_errors)
+            
+        Example:
+            >>> config = {'metadata': {}, 'taxonomy_dimensions': []}
+            >>> is_valid, errors = config_mgr.validate_config(config)
+            >>> if not is_valid:
+            ...     print("Errors:", errors)
+        """
+        errors = []
+        
+        # Check required metadata fields
+        metadata = config.get('metadata', {})
+        required_metadata = ['source_table', 'source_database']
+        
+        for field in required_metadata:
+            if field not in metadata or not metadata[field]:
+                errors.append(f"Missing required metadata field: {field}")
+        
+        # Check taxonomy dimensions
+        taxonomy_dimensions = config.get('taxonomy_dimensions', [])
+        
+        if not taxonomy_dimensions:
+            errors.append("No taxonomy dimensions configured")
+        
+        # Validate dimension names are valid SQL identifiers
+        dimension_names = set()
+        for dimension in taxonomy_dimensions:
+            name = dimension.get('name', '')
+            
+            if not name:
+                errors.append("Taxonomy dimension missing name")
+                continue
+            
+            # Check for valid SQL identifier
+            if not self._is_valid_sql_identifier(name):
+                errors.append(f"Invalid SQL identifier for dimension name: {name}")
+            
+            # Check for duplicates
+            if name in dimension_names:
+                errors.append(f"Duplicate taxonomy dimension name: {name}")
+            dimension_names.add(name)
+            
+            # Check required fields
+            if not dimension.get('source_type'):
+                errors.append(f"Dimension {name} missing source_type")
+            if not dimension.get('source_value'):
+                errors.append(f"Dimension {name} missing source_value")
+        
+        is_valid = len(errors) == 0
+        return is_valid, errors
+    
+    def _is_valid_sql_identifier(self, name: str) -> bool:
+        """
+        Check if a name is a valid SQL identifier.
+        
+        Args:
+            name: Name to validate
+            
+        Returns:
+            True if valid, False otherwise
+        """
+        import re
+        
+        # SQL identifier rules:
+        # - Must start with letter or underscore
+        # - Can contain letters, digits, underscores
+        # - Cannot be a SQL reserved word
+        
+        if not name:
+            return False
+        
+        # Check pattern
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
+            return False
+        
+        # Check against common SQL reserved words
+        reserved_words = {
+            'select', 'from', 'where', 'insert', 'update', 'delete', 'create',
+            'drop', 'alter', 'table', 'view', 'index', 'database', 'schema',
+            'grant', 'revoke', 'union', 'join', 'inner', 'outer', 'left', 'right',
+            'on', 'as', 'and', 'or', 'not', 'null', 'true', 'false', 'order',
+            'group', 'by', 'having', 'limit', 'offset', 'distinct', 'all', 'any',
+            'exists', 'in', 'between', 'like', 'is', 'case', 'when', 'then', 'else',
+            'end', 'cast', 'convert'
+        }
+        
+        if name.lower() in reserved_words:
+            return False
+        
+        return True
+    
+    def _validate_dimension_name(self, name: str) -> bool:
+        """
+        Validation function for dimension names in inquirer prompts.
+        
+        Args:
+            name: Name to validate
+            
+        Returns:
+            True if valid, or error message string if invalid
+        """
+        if not name or len(name.strip()) == 0:
+            return "Dimension name cannot be empty"
+        
+        name = name.strip()
+        
+        if not self._is_valid_sql_identifier(name):
+            return "Invalid SQL identifier. Must start with letter/underscore, contain only letters/digits/underscores, no spaces or special characters"
+        
+        return True
+    
+    def _sanitize_dimension_name(self, name: str) -> str:
+        """
+        Sanitize a dimension name by replacing spaces with underscores.
+        
+        Args:
+            name: Name to sanitize
+            
+        Returns:
+            Sanitized name with spaces replaced by underscores
+        """
+        if not name:
+            return name
+        
+        # Replace spaces with underscores
+        sanitized = name.strip().replace(' ', '_')
+        
+        return sanitized
+
+
+class AutoDiscovery:
+    """
+    Handles automatic discovery of databases, tables, tag keys, and file columns.
+    
+    The AutoDiscovery class provides intelligent auto-selection logic that automatically
+    chooses resources when only one option exists, and presents interactive prompts
+    when multiple options are available.
+    
+    Attributes:
+        athena (Athena): CID Athena helper instance for querying metadata
+    """
+    
+    def __init__(self, athena: Athena):
+        """
+        Initialize AutoDiscovery with Athena helper.
+        
+        Args:
+            athena: CID Athena helper instance
+        """
+        self.athena = athena
+        self._source_cache = None
+    
+    def discover_source(self) -> Tuple[str, str]:
+        """
+        Scan Athena databases for an 'organization_data' table.
+
+        Checks common database names first (optimization_data, organization_data,
+        cur) before falling back to a full catalog scan. This avoids N API calls
+        in accounts with many Glue databases.
+
+        If exactly one database contains the table, auto-selects it.
+        If multiple databases contain it, prompts the user to choose.
+        If none found, falls back to manual database + table selection.
+
+        Returns:
+            Tuple of (database, table)
+        """
+
+        logger.info("Scanning databases for 'organization_data' table...")
+
+        if self._source_cache:
+            logger.info("Using cached source: %s.%s", self._source_cache[0], self._source_cache[1])
+            return self._source_cache
+
+        databases = self.athena.list_databases()
+
+        if not databases:
+            raise CidCritical("No databases found in Athena")
+
+        # Short-circuit: check common database names first to avoid full scan
+        common_names = ['optimization_data', 'organization_data', 'cur', 'default']
+        priority_dbs = [db for db in databases if db.lower() in common_names]
+        remaining_dbs = [db for db in databases if db.lower() not in common_names]
+
+        matches = []
+        with spinner("Scanning databases for organization_data table"):
+            for db in priority_dbs:
+                try:
+                    metadata = self.athena.get_table_metadata('organization_data', db)
+                    if metadata:
+                        matches.append(db)
+                except Exception:
+                    continue
+
+        # If we found exactly one in the priority set, skip the full scan
+        if len(matches) == 1:
+            logger.info("Found 'organization_data' in database '%s' — auto-selected", matches[0])
+            cid_print(f"\n📍 Source: {matches[0]}.organization_data")
+            self._source_cache = (matches[0], 'organization_data')
+            return self._source_cache
+
+        # Otherwise scan remaining databases
+        with spinner("Scanning remaining databases"):
+            for db in remaining_dbs:
+                try:
+                    metadata = self.athena.get_table_metadata('organization_data', db)
+                    if metadata:
+                        matches.append(db)
+                except Exception:
+                    continue
+
+        if len(matches) == 1:
+            logger.info("Found 'organization_data' in database '%s' — auto-selected", matches[0])
+            cid_print(f"\n📍 Source: {matches[0]}.organization_data")
+            self._source_cache = (matches[0], 'organization_data')
+            return self._source_cache
+        elif len(matches) > 1:
+            logger.info("Found 'organization_data' in %d databases: %s", len(matches), matches)
+            db = inquirer.select(
+                message="Multiple databases contain 'organization_data'. Select source database:",
+                choices=matches
+            ).execute()
+            self._source_cache = (db, 'organization_data')
+            return self._source_cache
+        else:
+            # Not found anywhere — fall back to manual selection
+            logger.warning("'organization_data' table not found in any database")
+            db = self.discover_databases()
+            table = self.discover_tables(db)
+            self._source_cache = (db, table)
+            return self._source_cache
+
+    def discover_target_database(self, databases: Optional[List[str]] = None,
+                                  source_database: Optional[str] = None) -> str:
+        """
+        Discover and confirm the target database for storing views.
+
+        Suggests a database with 'cur' in the name if one exists.
+        Otherwise suggests the source database. Lets the user confirm or pick another.
+
+        Args:
+            databases: Optional pre-fetched list of databases
+            source_database: The source database (used as fallback suggestion)
+
+        Returns:
+            Selected target database name
+        """
+
+        if databases is None:
+            databases = self.athena.list_databases()
+
+        if not databases:
+            raise CidCritical("No databases found in Athena")
+
+        # Find a database with 'cur' in the name
+        cur_dbs = [db for db in databases if 'cur' in db.lower()]
+
+        # Priority 1: find a database that already has an account_map view
+        account_map_db = None
+        with spinner("Discovering target database"):
+            for db in databases:
+                try:
+                    metadata = self.athena.get_table_metadata('account_map', db)
+                    if metadata:
+                        account_map_db = db
+                        break
+                except Exception:
+                    continue
+
+        if account_map_db:
+            suggested = account_map_db
+        elif cur_dbs:
+            suggested = cur_dbs[0]
+        elif source_database and source_database in databases:
+            suggested = source_database
+        else:
+            suggested = databases[0]
+
+        cid_print(f"\n📦 Choose target database for account_map view, suggesting {suggested}")
+        confirm = inquirer.confirm(
+            message=f"Use the suggested database '{suggested}' for updating account_map view?",
+            default=True
+        ).execute()
+
+        if confirm:
+            cid_print(f"📍 Target database: {suggested}")
+            return suggested
+
+        selected = inquirer.select(
+            message="Select target database for account_map deployment:",
+            choices=databases,
+            default=suggested
+        ).execute()
+        cid_print(f"📍 Target database: {selected}")
+        return selected
+
+    def discover_databases(self, preferred: Optional[str] = None) -> str:
+        """
+        Discover and select database with auto-selection logic.
+        
+        If a preferred database is provided and exists, it will be used.
+        If only one database exists, it will be auto-selected.
+        If multiple databases exist, an interactive prompt will be shown.
+        
+        Args:
+            preferred: Optional preferred database name to validate and use
+            
+        Returns:
+            Selected database name
+            
+        Raises:
+            Exception: If no databases are found
+        """
+        # Validate preferred database if provided
+        if preferred:
+            if self.athena.get_database(preferred):
+                logger.info("Using preferred database: %s", preferred)
+                return preferred
+            else:
+                logger.warning("Preferred database '%s' not found, discovering alternatives...", preferred)
+        
+        # Get list of available databases
+        databases = self.athena.list_databases()
+        
+        if len(databases) == 0:
+            raise Exception("No databases found in Athena")
+        elif len(databases) == 1:
+            logger.info("Auto-selected database: %s", databases[0])
+            return databases[0]
+        else:
+            # Multiple databases - prompt user to select
+            # Set default to "optimization_data" if it exists, otherwise first database
+            default_db = "optimization_data" if "optimization_data" in databases else databases[0]
+            return inquirer.select(
+                message="Select source database:",
+                choices=databases,
+                default=default_db
+            ).execute()
+    
+    def discover_tables(self, database: str, preferred: Optional[str] = None) -> str:
+        """
+        Discover and select table with auto-selection logic.
+        
+        If a preferred table is provided and exists, it will be used.
+        If only one table exists in the database, it will be auto-selected.
+        If multiple tables exist, an interactive prompt will be shown.
+        
+        Args:
+            database: Database name to search for tables
+            preferred: Optional preferred table name to validate and use
+            
+        Returns:
+            Selected table name
+            
+        Raises:
+            Exception: If no tables are found in the database
+        """
+        # Validate preferred table if provided
+        if preferred:
+            metadata = self.athena.get_table_metadata(preferred, database)
+            if metadata:
+                logger.info("Using preferred table: %s", preferred)
+                return preferred
+            else:
+                logger.warning("Preferred table '%s' not found in database '%s', discovering alternatives...", preferred, database)
+        
+        # Get list of available tables
+        table_metadata = self.athena.list_table_metadata(database)
+        
+        if not table_metadata or len(table_metadata) == 0:
+            raise Exception(f"No tables found in database '{database}'")
+        
+        # Extract table names from metadata
+        tables = [table['Name'] for table in table_metadata]
+        
+        if len(tables) == 1:
+            logger.info("Auto-selected table: %s", tables[0])
+            return tables[0]
+        else:
+            # Multiple tables - prompt user to select
+            # Set default to "organization_data" if it exists, otherwise first table
+            default_table = "organization_data" if "organization_data" in tables else tables[0]
+            return inquirer.select(
+                message=f"Select source table from database '{database}':",
+                choices=tables,
+                default=default_table
+            ).execute()
+    
+    def discover_tag_keys(self, database: str, table: str, tag_column: str = 'hierarchytags') -> List[str]:
+        """
+        Discover available tag keys from the source table.
+        
+        Queries sample rows from the table and parses the tag column to extract
+        all unique tag keys.
+        
+        Args:
+            database: Database name containing the table
+            table: Table name to query
+            tag_column: Name of the column containing tags (default: 'hierarchytags')
+            
+        Returns:
+            Sorted list of unique tag keys
+            
+        Raises:
+            Exception: If unable to query the table or parse tags
+        """
+        logger.info("Discovering tag keys from %s.%s.%s", database, table, tag_column)
+        
+        try:
+            # Query sample rows to extract tag keys
+            query = f"""
+                SELECT {tag_column}
+                FROM "{database}"."{table}"
+                WHERE {tag_column} IS NOT NULL
+                LIMIT 100
+            """
+            
+            results = self.athena.query(query)
+            
+            if not results:
+                logger.warning("No data found in %s column", tag_column)
+                return []
+            
+            # Extract unique tag keys
+            tag_keys = set()
+            
+            for row in results:
+                tags_value = row[0] if row else None
+                
+                if not tags_value:
+                    continue
+                
+                # Parse tags - handle both string and list formats
+                if isinstance(tags_value, str):
+                    parsed_tags = parse_athena_tags(tags_value)
+                    for tag_item in parsed_tags:
+                        if 'key' in tag_item:
+                            tag_keys.add(tag_item['key'])
+                elif isinstance(tags_value, list):
+                    for tag_item in tags_value:
+                        if isinstance(tag_item, dict) and 'key' in tag_item:
+                            tag_keys.add(tag_item['key'])
+            
+            tag_keys_list = sorted(list(tag_keys))
+            logger.info("Found %d unique tag keys", len(tag_keys_list))
+            
+            return tag_keys_list
+            
+        except Exception as e:
+            logger.error("Failed to discover tag keys: %s", str(e))
+            raise
+    
+    def discover_account_id_column(self, data: List[Dict]) -> Optional[str]:
+        """
+        Auto-detect account ID column in data using pattern matching.
+        
+        Checks for common account ID column name patterns (case-insensitive):
+        - account_id
+        - accountid
+        - account
+        - id
+        - aws_account_id
+        
+        Args:
+            data: List[Dict] to search for account ID column
+            
+        Returns:
+            Name of the detected account ID column, or None if not found
+        """
+        # Common account ID column patterns (case-insensitive)
+        patterns = [
+            'account_id',
+            'accountid', 
+            'account',
+            'id',
+            'aws_account_id'
+        ]
+        
+        # Get lowercase column names for comparison
+        columns_lower = {col.lower(): col for col in (data[0].keys() if data else [])}
+        
+        # Check each pattern in order
+        for pattern in patterns:
+            if pattern in columns_lower:
+                detected_column = columns_lower[pattern]
+                logger.info("Auto-detected account ID column: %s", detected_column)
+                return detected_column
+        
+        logger.warning("No account ID column auto-detected")
+        return None
+    
+    def prompt_file_selection(self, extensions: Optional[List[str]] = None) -> str:
+        """
+        Present file selection using glob search and selection list.
+        
+        Searches for files with specified extensions and presents them as a list.
+        Defaults to common data file formats: .json, .csv, .xlsx, .xls
+        
+        Args:
+            extensions: List of file extensions to filter (e.g., ['.json', '.csv'])
+                       If None, defaults to ['.json', '.csv', '.xlsx', '.xls']
+            
+        Returns:
+            Selected file path
+        """
+        import glob
+        
+        if extensions is None:
+            extensions = ['.csv']
+        
+        # Ensure extensions start with dot
+        extensions = [ext if ext.startswith('.') else f'.{ext}' for ext in extensions]
+        
+        logger.info("Searching for files with extensions: %s", extensions)
+        
+        # Search for files with specified extensions
+        matching_files = []
+        for ext in extensions:
+            # Search in current directory and subdirectories
+            pattern = f"**/*{ext}"
+            files = glob.glob(pattern, recursive=True)
+            matching_files.extend(files)
+        
+        # Remove duplicates and sort
+        matching_files = sorted(set(matching_files))
+        
+        if not matching_files:
+            logger.warning("No files found with extensions: %s", ', '.join(extensions))
+            # Fall back to manual entry
+            selected_file = inquirer.text(
+                message="No files found. Enter file path manually:",
+                validate=lambda path: Path(path).is_file() or "File does not exist"
+            ).execute()
+        else:
+            # Add option to enter path manually
+            choices = matching_files + ["[Enter path manually]"]
+            
+            selected = inquirer.select(
+                message=f"Select file ({', '.join(extensions)}):",
+                choices=choices,
+                default=choices[0] if matching_files else None
+            ).execute()
+            
+            if selected == "[Enter path manually]":
+                selected_file = inquirer.text(
+                    message="Enter file path:",
+                    validate=lambda path: Path(path).is_file() or "File does not exist"
+                ).execute()
+            else:
+                selected_file = selected
+        
+        logger.info("Selected file: %s", selected_file)
+        return str(selected_file)
+
+
+class UnifiedWorkflow:
+    """
+    Orchestrates the complete account mapping workflow from discovery through execution.
+
+    This class integrates AutoDiscovery, ConfigManager, DataLoader, TransformEngine,
+    and AthenaWriter to provide a streamlined workflow for creating and updating
+    account mapping views.
+    """
+
+    def __init__(self, athena: Athena, view_name: str = "account_map"):
+        """
+        Initialize the unified workflow controller.
+
+        Args:
+            athena: Athena helper instance for database operations
+            view_name: Base name for the account map view (default: "account_map")
+        """
+        self.athena = athena
+        self.view_name = view_name
+        self.discovery = AutoDiscovery(athena)
+        self.config_mgr = ConfigManager(athena, view_name)
+        self.data_loader = None  # Initialized after config is determined
+        self.writer = None  # Initialized after config is determined
+
+    @staticmethod
+    def _checkbox_with_retry(message: str, choices: list, **kwargs) -> list:
+        """
+        Wrapper around inquirer.checkbox that confirms empty selection.
+
+        InquirerPy checkboxes require Space to toggle items and Enter to confirm.
+        Users often press Enter without selecting anything. This helper detects
+        that and asks if they want to try again.
+
+        Args:
+            message: Prompt message
+            choices: List of choices
+            **kwargs: Additional kwargs passed to inquirer.checkbox
+
+        Returns:
+            list: Selected items (may be empty if user confirms)
+        """
+
+        while True:
+            result = inquirer.checkbox(
+                message=message,
+                choices=choices,
+                **kwargs
+            ).execute()
+
+            if result:
+                return result
+
+            # Empty selection — confirm intent
+            cid_print("\n💡 Tip: Use Space to select items, then Enter to confirm.")
+            retry = inquirer.confirm(
+                message="Nothing was selected. Try again?",
+                default=True
+            ).execute()
+
+            if not retry:
+                return result
+
+    def _resolve_dimension_name(self, name: str, config: dict) -> str:
+        """
+        Check if a dimension name already exists and prompt for a new name if so.
+
+        Args:
+            name: Proposed dimension name
+            config: Current configuration dict with taxonomy_dimensions
+
+        Returns:
+            Unique dimension name (original or user-provided replacement)
+        """
+
+        existing_names = {d['name'] for d in config.get('taxonomy_dimensions', [])}
+
+        while name in existing_names:
+            cid_print(f"\n⚠️  Dimension name '{name}' already exists.")
+            name = inquirer.text(
+                message="Enter a different name for this dimension:",
+                default=f"{name}_2",
+                validate=lambda x: (len(x.strip()) > 0) or "Name cannot be empty"
+            ).execute()
+            name = self.config_mgr._sanitize_dimension_name(name)
+
+        return name
+
+    def execute(self, source_file: str = None, source_database: str = None) -> dict:
+        """
+        Execute the complete workflow with auto-discovery.
+
+        This method orchestrates the entire account mapping process:
+        1. Discover source (organization_data table) and target database
+        2. Check for existing configuration
+        3. Prompt for configuration reuse or create new configuration
+        4. Load data from Athena and optionally from file
+        5. Transform data according to configuration
+        6. Preview and confirm SQL
+        7. Write views to Athena
+
+        Args:
+            source_file: Optional path to file for file-based taxonomy dimensions
+            source_database: Optional source database name (skips discovery if provided)
+
+        Returns:
+            dict: Results containing created view names and status
+        """
+        # Phase 1: Discovery — find source (organization_data) and target database
+        if not isatty():
+            raise CidCritical(
+                "Interactive mode requires a TTY. "
+                "Use 'cid-cmd map --simple' for non-interactive environments."
+            )
+
+        if source_database:
+            logger.info("Using provided source database: %s", source_database)
+            table = 'organization_data'
+        else:
+            source_database, table = self.discovery.discover_source()
+        target_database = self.discovery.discover_target_database(
+            source_database=source_database
+        )
+
+        logger.info("Source: %s.%s", source_database, table)
+        logger.info("Target database for views: %s", target_database)
+
+        # Pre-set Athena parameters BEFORE any queries to avoid prompts
+        from cid.utils import set_parameters, get_parameters
+        params = get_parameters()
+        params['athena-database'] = target_database
+        
+        # Auto-select workgroup if only one real workgroup exists (excluding "create new" options)
+        workgroups = [wg['Name'] for wg in self.athena.list_work_groups()]
+        # Filter out any that might be added by the UI as "create new" options
+        real_workgroups = [wg for wg in workgroups if not wg.endswith('(create new)')]
+        
+        if len(real_workgroups) == 1:
+            logger.info("Auto-selected workgroup: %s", real_workgroups[0])
+            params['athena-workgroup'] = real_workgroups[0]
+        elif len(real_workgroups) == 0:
+            # No workgroups exist, use default 'primary'
+            logger.info("No workgroups found, using default 'primary'")
+            params['athena-workgroup'] = 'primary'
+        
+        set_parameters(params)
+
+        # Phase 2: Configuration — load/save config from target database
+        with spinner("Checking for existing configuration"):
+            existing_config = self._check_existing_config(target_database)
+
+        if existing_config:
+            if self._prompt_config_reuse(existing_config):
+                config = existing_config
+                # If config has file source, ask if user wants to update it
+                if config.get('file_source'):
+                    config = self._handle_existing_file_source(config, target_database, table, source_file=source_file)
+            else:
+                config = self._interactive_configuration(source_database, table, source_file=source_file)
+        else:
+            config = self._interactive_configuration(source_database, table, source_file=source_file)
+
+        # Store source and target in config for later use
+        config['metadata']['source_database'] = source_database
+        config['metadata']['source_table'] = table
+        config['metadata']['target_database'] = target_database
+        
+        # Also store in athena section for DataLoader compatibility
+        if 'athena' not in config:
+            config['athena'] = {}
+        config['athena']['database'] = source_database
+        config['athena']['table'] = table
+
+        # Initialize data loader and writer with config
+        self.data_loader = DataLoader(self.athena, config)
+        self.writer = AthenaWriter(config, self.athena)
+
+        # Phase 3: Data Loading
+        logger.info("Loading organization data from Athena...")
+        with spinner("Loading organization data from Athena"):
+            org_data = self.data_loader.load_from_athena()
+
+        # Payer naming: prompt user to name management account IDs
+        if not config.get('payer_names'):
+            config = self._prompt_payer_names(config, org_data)
+
+        file_data = None
+        if config.get('file_source'):
+            # Check if file data is already loaded (from interactive config)
+            if 'data' in config['file_source']:
+                logger.info("Using file data from configuration")
+                file_data = config['file_source']['data']
+            elif 'path' in config['file_source']:
+                logger.info("Loading file data from %s...", config['file_source']['path'])
+                file_data = self.data_loader.load_from_file(config['file_source']['path'])
+            else:
+                # File source exists but no data - using existing view
+                logger.info("File source configured to use existing Athena view")
+                file_data = None
+
+        # Phase 4: Transformation
+        logger.info("Transforming data according to configuration...")
+        transform_engine = TransformEngine(config, org_data, file_data)
+        transformed_data = transform_engine.transform()
+
+        # Add payer_name column to preview if payer names are configured
+        payer_names = config.get('payer_names', {})
+        if payer_names and transformed_data and 'parent_account_id' in transformed_data[0]:
+            for row in transformed_data:
+                pid = row.get('parent_account_id')
+                if not _is_null(pid):
+                    row['parent_account_name'] = payer_names.get(str(pid).zfill(12), str(pid))
+
+        # Reorder columns: fixed prefix, then remaining sorted alphabetically
+        if transformed_data:
+            fixed_cols = ['account_id', 'account_name', 'parent_account_id', 'parent_account_name']
+            all_cols = list(transformed_data[0].keys())
+            prefix = [c for c in fixed_cols if c in all_cols]
+            rest = sorted([c for c in all_cols if c not in fixed_cols], key=str.lower)
+            ordered_cols = prefix + rest
+            transformed_data = [{col: row.get(col, '') for col in ordered_cols} for row in transformed_data]
+
+        # Phase 5: Preview and Confirmation
+        with spinner("Generating preview"):
+            sql = self.writer._generate_account_map_transformation_sql(config, self.view_name, target_database)
+            sample = transformed_data[:10]
+
+        if not self._preview_and_confirm(sql, sample):
+            return {"status": "cancelled", "message": "User cancelled operation"}
+
+        # Phase 6: Write Views
+        logger.info("Writing views to Athena...")
+        results = self.writer.write_complete_mapping(config, transformed_data, target_database, self.view_name)
+        results['status'] = 'success'
+
+        return results
+
+    def _check_existing_config(self, database: str) -> Optional[dict]:
+        """
+        Check for existing configuration view.
+
+        Args:
+            database: Database name to check in
+
+        Returns:
+            Optional[dict]: Existing configuration or None if not found
+        """
+        return self.config_mgr.load_from_view(database)
+
+    def _prompt_config_reuse(self, config: dict) -> bool:
+        """
+        Display config summary and prompt for reuse.
+
+        Args:
+            config: Existing configuration to display
+
+        Returns:
+            bool: True if user wants to reuse config, False otherwise
+        """
+
+        cid_print("\n" + "="*60)
+        cid_print("📋 Existing Configuration Found")
+        cid_print("="*60)
+
+        source_db = config['metadata'].get('source_database')
+        source_tbl = config['metadata'].get('source_table')
+        target_db = config['metadata'].get('target_database')
+
+        cid_print(f"\n  Source table : {source_db}.{source_tbl}")
+        if target_db:
+            cid_print(f"  Target database : {target_db}")
+
+        if config.get('file_source'):
+            cid_print(f"  File source view: {config['metadata'].get('file_source_view')}")
+
+        dims = config.get('taxonomy_dimensions', [])
+        if dims:
+            cid_print(f"\n  Taxonomy Dimensions ({len(dims)}):")
+            cid_print("  " + "-"*56)
+            for i, dim in enumerate(dims, 1):
+                source_type = dim['source_type']
+                source_value = dim['source_value']
+
+                if source_type == 'name_split' and isinstance(source_value, dict):
+                    created_from = f"Account name split by \"{source_value.get('separator')}\" at index {source_value.get('index')}"
+                elif source_type == 'ou_level':
+                    created_from = f"OU hierarchy level {source_value}"
+                elif source_type == 'file':
+                    created_from = f"File column \"{source_value}\""
+                elif source_type == 'tag':
+                    created_from = f"Tag with key \"{source_value}\""
+                else:
+                    created_from = f"{source_type}: {source_value}"
+
+                cid_print(f"    Dimension {i}:")
+                cid_print(f"      Column name  : {dim['name']}")
+                cid_print(f"      Created from : {created_from}")
+
+        payer_names = config.get('payer_names', {})
+        if payer_names:
+            cid_print(f"\n  Payer Account Names ({len(payer_names)}):")
+            cid_print("  " + "-"*56)
+            for pid, pname in payer_names.items():
+                cid_print(f"    {pid} → {pname}")
+
+        cid_print("\n" + "="*60 + "\n")
+
+        return inquirer.confirm(
+            message="Use existing configuration?",
+            default=True
+        ).execute()
+
+    def _handle_existing_file_source(self, config: dict, database: str, table: str,
+                                     source_file: str = None) -> dict:
+        """
+        Handle existing file source configuration - ask if user wants to update it.
+
+        Args:
+            config: Existing configuration with file source
+            database: Database name
+            table: Table name
+            source_file: Optional path to file provided via --file parameter
+
+        Returns:
+            dict: Updated configuration
+        """
+
+        file_source_view = config['metadata'].get('file_source_view', f"{self.view_name}_file_source")
+        
+        # Check if the file source view actually exists in Athena
+        view_exists = False
+        try:
+            check_sql = f'SELECT * FROM "{database}"."{file_source_view}" LIMIT 1'
+            self.athena.query(sql=check_sql, database=database, include_header=False, fail=False)
+            view_exists = True
+        except BaseException:
+            view_exists = False
+        
+        if not view_exists:
+            cid_print(f"\n⚠️  File source view '{file_source_view}' no longer exists in Athena.")
+            cid_print("You need to provide the file again to recreate it.\n")
+            update_file = True
+        else:
+            logger.info("\nThis configuration uses a file source view: %s", file_source_view)
+            
+            update_file = inquirer.confirm(
+                message="Do you want to update the file source with new data?",
+                default=False
+            ).execute()
+
+        if update_file:
+            # Run file selection workflow
+            logger.info("Updating file source...")
+            
+            # Use --file parameter if provided, otherwise prompt
+            if source_file:
+                file_path = source_file
+                cid_print(f"Using file: {source_file}")
+            else:
+                file_path = self.discovery.prompt_file_selection()
+
+            # Load file to get columns
+            temp_loader = DataLoader(self.athena, config)
+            file_df = temp_loader.load_from_file(file_path)
+
+            # Auto-detect or prompt for account ID column
+            account_col = self.discovery.discover_account_id_column(file_df)
+            if not account_col:
+                account_col = inquirer.select(
+                    message="Select the account ID column:",
+                    choices=list(file_df[0].keys()) if file_df else []
+                ).execute()
+            else:
+                logger.info("Auto-detected account ID column: %s", account_col)
+
+            # Get file columns for dimensions (excluding account ID column)
+            file_columns = [col for col in (file_df[0].keys() if file_df else []) if col != account_col]
+
+            # Ask which columns to use as taxonomy dimensions
+            if file_columns:
+                selected_columns = self._checkbox_with_retry(
+                    message="Select which columns to use as taxonomy dimensions (space to select, Enter to confirm):",
+                    choices=file_columns
+                )
+
+                if selected_columns:
+                    # Prompt for dimension name customization
+                    customize = inquirer.confirm(
+                        message="Do you want to rename any taxonomy dimensions from the file?",
+                        default=False
+                    ).execute()
+
+                    dimension_names = {}
+                    if customize:
+                        for col in selected_columns:
+                            new_name = inquirer.text(
+                                message=f"Name for dimension '{col}' (press Enter to keep):",
+                                default=col,
+                                validate=lambda x: self.config_mgr._validate_dimension_name(x) if x and x.strip() else True
+                            ).execute()
+                            # Sanitize the dimension name (replace spaces with underscores)
+                            new_name = self.config_mgr._sanitize_dimension_name(new_name)
+                            dimension_names[col] = new_name
+                    else:
+                        dimension_names = {col: col for col in selected_columns}
+
+                    # Remove old file dimensions from config
+                    config['taxonomy_dimensions'] = [
+                        dim for dim in config['taxonomy_dimensions']
+                        if dim['source_type'] != 'file'
+                    ]
+
+                    # Add new file dimensions to config
+                    for col, name in dimension_names.items():
+                        name = self._resolve_dimension_name(name, config)
+                        config['taxonomy_dimensions'].append({
+                            'name': name,
+                            'source_type': 'file',
+                            'source_value': col
+                        })
+
+            # Update file source info
+            config['file_source'] = {
+                'path': file_path,
+                'account_column': account_col,
+                'data': file_df
+            }
+            config['metadata']['file_source_view'] = file_source_view
+        else:
+            # Keep existing file source view - remove path/data so we don't try to reload
+            logger.info("Keeping existing file source view: %s", file_source_view)
+            config['file_source'] = {
+                'use_existing_view': True
+            }
+            config['metadata']['file_source_view'] = file_source_view
+
+        return config
+
+    def _interactive_configuration(self, database: str, table: str,
+                                    source_file: str = None) -> dict:
+        """
+        Run interactive configuration workflow.
+
+        Args:
+            database: Database name
+            table: Table name
+            source_file: Optional path to file for file-based dimensions
+
+        Returns:
+            dict: New configuration
+        """
+
+        config = {
+            'metadata': {
+                'source_database': database,
+                'source_table': table
+            },
+            'athena': {
+                'database': database,
+                'table': table
+            },
+            'taxonomy_dimensions': []
+        }
+
+        # Build data source choices — only include file option if --file was provided
+        data_source_choices = ["Tags from source table", "OU hierarchy level"]
+        if source_file:
+            data_source_choices.append("Additional file")
+        data_source_choices.append("Split account name column")
+
+        # Single multi-select for all data source options
+        data_sources = self._checkbox_with_retry(
+            message="Select data sources for taxonomy dimensions (space to select, Enter to confirm):",
+            choices=data_source_choices,
+            default=["Tags from source table"]
+        )
+
+        use_tags = "Tags from source table" in data_sources
+        use_ou_level = "OU hierarchy level" in data_sources
+        use_file = "Additional file" in data_sources and source_file
+        use_name_split = "Split account name column" in data_sources
+
+        # Configure file source if selected
+        if use_file:
+            cid_print("\n" + "="*70)
+            cid_print("📁 FILE SOURCE CONFIGURATION")
+            cid_print("="*70)
+            cid_print(f"Using file: {source_file}\n")
+            
+            # Use the provided file path directly
+            file_path = source_file
+
+            # Load file to get columns
+            temp_loader = DataLoader(self.athena, config)
+            file_df = temp_loader.load_from_file(file_path)
+
+            # Auto-detect or prompt for account ID column
+            account_col = self.discovery.discover_account_id_column(file_df)
+            if not account_col:
+                account_col = inquirer.select(
+                    message="Select the account ID column:",
+                    choices=list(file_df[0].keys()) if file_df else []
+                ).execute()
+            else:
+                logger.info("Auto-detected account ID column: %s", account_col)
+
+            # Store file source info
+            config['file_source'] = {
+                'path': file_path,
+                'account_column': account_col,
+                'data': file_df
+            }
+            config['metadata']['file_source_view'] = f"{self.view_name}_file_source"
+
+            # Get file columns for dimensions (excluding account ID column)
+            file_columns = [col for col in (file_df[0].keys() if file_df else []) if col != account_col]
+
+            # Ask which columns to use as taxonomy dimensions
+            if file_columns:
+                selected_columns = self._checkbox_with_retry(
+                    message="Select which columns to use as taxonomy dimensions (space to select, Enter to confirm):",
+                    choices=file_columns
+                )
+
+                if selected_columns:
+                    # Prompt for dimension name customization
+                    customize = inquirer.confirm(
+                        message="Do you want to rename any taxonomy dimensions from the file?",
+                        default=False
+                    ).execute()
+
+                    dimension_names = {}
+                    if customize:
+                        for col in selected_columns:
+                            new_name = inquirer.text(
+                                message=f"Name for dimension '{col}' (press Enter to keep):",
+                                default=col
+                            ).execute()
+                            dimension_names[col] = new_name
+                    else:
+                        dimension_names = {col: col for col in selected_columns}
+
+                    # Add file dimensions to config
+                    for col, name in dimension_names.items():
+                        name = self._resolve_dimension_name(name, config)
+                        config['taxonomy_dimensions'].append({
+                            'name': name,
+                            'source_type': 'file',
+                            'source_value': col
+                        })
+
+        # Configure OU hierarchy level if selected
+        if use_ou_level:
+            cid_print("\n" + "="*70)
+            cid_print("🏢 OU HIERARCHY LEVEL CONFIGURATION")
+            cid_print("="*70)
+            cid_print("Extract taxonomy dimensions from the organizational unit hierarchy.")
+            cid_print("Each level represents a position in the OU path.\n")
+
+            # Discover levels with real sample data
+            hierarchy_levels = self._discover_hierarchy_levels(database, table)
+
+            if not hierarchy_levels:
+                cid_print("⚠️  No hierarchy data found in the source table.\n")
+            else:
+                cid_print("Discovered hierarchy levels:")
+                for lvl in hierarchy_levels:
+                    samples_str = ', '.join(lvl['samples'][:4])
+                    cid_print(f"  - Level {lvl['level']}: {samples_str}")
+                cid_print("\nEach dimension you create will become a column in the output.\n")
+
+            choices = [
+                {"name": f"Level {lvl['level']} ({', '.join(lvl['samples'][:3])})", "value": lvl['level']}
+                for lvl in hierarchy_levels
+            ]
+            selected_levels = self._checkbox_with_retry(
+                message="Select hierarchy levels to use as taxonomy dimensions (space to select, Enter to confirm):",
+                choices=choices
+            )
+
+            if selected_levels:
+                for level in selected_levels:
+                    dim_name = inquirer.text(
+                        message=f"Enter name for OU level {level} dimension:",
+                        default=f"ou_level{level}",
+                        validate=lambda x: self.config_mgr._validate_dimension_name(x)
+                    ).execute()
+
+                    dim_name = self.config_mgr._sanitize_dimension_name(dim_name)
+                    dim_name = self._resolve_dimension_name(dim_name, config)
+
+                    config['taxonomy_dimensions'].append({
+                        'name': dim_name,
+                        'source_type': 'ou_level',
+                        'source_value': level
+                    })
+
+                    logger.info("Added dimension '%s' from OU hierarchy level %d", dim_name, level)
+
+        # Configure name splitting if selected
+        if use_name_split:
+            cid_print("\n" + "="*70)
+            cid_print("✂️  ACCOUNT NAME SPLIT CONFIGURATION")
+            cid_print("="*70)
+            cid_print("Extract taxonomy dimensions by splitting the account name.")
+            cid_print("Example: 'aws-account-awesomeproduct-prod'")
+            cid_print("  - Separator: '-'")
+            cid_print("  - Index 0: 'aws'")
+            cid_print("  - Index 1: 'account'")
+            cid_print("  - Index 2: 'awesomeproduct'")
+            cid_print("  - Index 3: 'prod'")
+            cid_print("\nEach dimension you create will become a column in the output.\n")
+            
+            # Keep adding split dimensions until user is done
+            while True:
+                separator = inquirer.select(
+                    message="Select separator character to split account names by:",
+                    choices=[
+                        {"name": "- (hyphen)", "value": "-"},
+                        {"name": "_ (underscore)", "value": "_"},
+                        {"name": ". (dot)", "value": "."},
+                        {"name": "/ (slash)", "value": "/"},
+                        {"name": "| (pipe)", "value": "|"},
+                        {"name": ": (colon)", "value": ":"},
+                        {"name": "@ (at)", "value": "@"},
+                        {"name": "# (hash)", "value": "#"},
+                        {"name": "  (space)", "value": " "},
+                    ],
+                ).execute()
+
+                index = inquirer.number(
+                    message="Enter index to extract (0-based, e.g., 0 for first part, 1 for second):",
+                    min_allowed=0
+                ).execute()
+
+                dim_name = inquirer.text(
+                    message="Enter name for this taxonomy dimension:",
+                    validate=lambda x: self.config_mgr._validate_dimension_name(x)
+                ).execute()
+                
+                # Sanitize the dimension name (replace spaces with underscores)
+                dim_name = self.config_mgr._sanitize_dimension_name(dim_name)
+                dim_name = self._resolve_dimension_name(dim_name, config)
+
+                config['taxonomy_dimensions'].append({
+                    'name': dim_name,
+                    'source_type': 'name_split',
+                    'source_value': {
+                        'separator': separator,
+                        'index': int(index)
+                    }
+                })
+
+                logger.info("Added dimension '%s' from name split by '%s' at index %d", dim_name, separator, index)
+
+                add_more = inquirer.confirm(
+                    message="Add another name split dimension? (Each dimension = one output column)",
+                    default=False
+                ).execute()
+
+                if not add_more:
+                    break
+
+        # Configure tags if selected
+        if use_tags:
+            cid_print("\n" + "="*70)
+            cid_print("🏷️  TAG-BASED DIMENSIONS CONFIGURATION")
+            cid_print("="*70)
+            cid_print("Extract taxonomy dimensions from AWS resource tags in the source table.")
+            cid_print("Each selected tag will become a column in the output.\n")
+            
+            # Discover available tag keys
+            logger.info("Discovering available tag keys...")
+            tag_keys = self.discovery.discover_tag_keys(database, table)
+
+            if tag_keys:
+                logger.info("Found %d tag keys", len(tag_keys))
+
+                # Prompt for tag-based dimensions
+                selected_tags = self._checkbox_with_retry(
+                    message="Select tag keys to use as taxonomy dimensions (space to select, Enter to confirm):",
+                    choices=tag_keys
+                )
+
+                if selected_tags:
+                    # Prompt for dimension name customization
+                    customize = inquirer.confirm(
+                        message="Do you want to customize taxonomy dimension names for tags?",
+                        default=False
+                    ).execute()
+
+                    for tag in selected_tags:
+                        if customize:
+                            dim_name = inquirer.text(
+                                message=f"Name for tag '{tag}' (press Enter to keep):",
+                                default=tag,
+                                validate=lambda x: self.config_mgr._validate_dimension_name(x) if x and x.strip() else True
+                            ).execute()
+                            # Sanitize the dimension name (replace spaces with underscores)
+                            dim_name = self.config_mgr._sanitize_dimension_name(dim_name)
+                        else:
+                            dim_name = tag
+
+                        dim_name = self._resolve_dimension_name(dim_name, config)
+                        config['taxonomy_dimensions'].append({
+                            'name': dim_name,
+                            'source_type': 'tag',
+                            'source_value': tag
+                        })
+            else:
+                logger.warning("No tag keys found in the source table")
+
+        # Validate configuration
+        is_valid, errors = self.config_mgr.validate_config(config)
+        if not is_valid:
+            logger.error("Configuration validation failed:")
+            for error in errors:
+                logger.error("  - %s", error)
+            raise CidCritical("Invalid configuration")
+
+        return config
+
+    def _discover_hierarchy_levels(self, database: str, table: str) -> List[Dict]:
+        """
+        Discover OU hierarchy levels with sample values from the source table.
+
+        Returns a list of dicts: [{'level': 1, 'samples': ['ROOT(r-zd04)']}, {'level': 2, 'samples': ['Pegasus', 'Unicorns']}, ...]
+        """
+        try:
+            query = f"""
+                SELECT MAX(cardinality(hierarchy)) AS max_depth
+                FROM "{database}"."{table}"
+                WHERE hierarchy IS NOT NULL
+            """
+            results = self.athena.query(query)
+            if not results or not results[0] or not results[0][0]:
+                return []
+            max_depth = int(results[0][0])
+        except Exception as e:
+            logger.warning("Failed to discover hierarchy depth: %s", e)
+            return []
+
+        levels = []
+        for i in range(1, max_depth + 1):
+            try:
+                sample_query = f"""
+                    SELECT DISTINCT TRY(hierarchy[{i}].name) AS ou_name
+                    FROM "{database}"."{table}"
+                    WHERE hierarchy IS NOT NULL
+                      AND cardinality(hierarchy) >= {i}
+                    LIMIT 5
+                """
+                sample_results = self.athena.query(sample_query)
+                samples = [row[0] for row in sample_results if row and row[0]]
+                levels.append({'level': i, 'samples': samples})
+            except Exception as e:
+                logger.warning("Failed to get samples for hierarchy level %d: %s", i, e)
+                levels.append({'level': i, 'samples': []})
+
+        return levels
+
+    def _prompt_payer_names(self, config: dict, org_data: List[Dict]) -> dict:
+        """
+        Prompt user to assign friendly names to management account IDs.
+
+        Discovers distinct payer IDs from org data and asks if the user wants
+        to provide custom names. Stores the mapping in config['payer_names'].
+
+        Args:
+            config: Current configuration dictionary
+            org_data: Organization List[Dict] with payer_id column
+
+        Returns:
+            dict: Updated configuration with optional payer_names
+        """
+
+        if not org_data or 'payer_id' not in org_data[0]:
+            logger.debug("No payer_id column in org data, skipping payer naming")
+            return config
+
+        # Get distinct payer IDs
+        unique_payers = set(str(r.get('payer_id', '')).zfill(12) for r in org_data if not _is_null(r.get('payer_id')))
+        unique_payers = sorted(unique_payers)
+
+        if not unique_payers:
+            return config
+
+        cid_print(f"\nFound {len(unique_payers)} management account(s): {', '.join(unique_payers)}")
+
+        name_payers = inquirer.confirm(
+            message="Do you want to assign friendly names to management accounts?",
+            default=False
+        ).execute()
+
+        if name_payers:
+            payer_names = {}
+            for payer_id in unique_payers:
+                name = inquirer.text(
+                    message=f"Name for management account '{payer_id}' (Enter to skip):",
+                    default=""
+                ).execute()
+                if name and name.strip():
+                    payer_names[payer_id] = name.strip()
+
+            if payer_names:
+                config['payer_names'] = payer_names
+                logger.info("Configured %d payer name(s)", len(payer_names))
+
+        return config
+
+    def _preview_and_confirm(self, sql: str, sample_data: List[Dict]) -> bool:
+        """
+        Display SQL and sample output for user confirmation.
+
+        Args:
+            sql: SQL query to display
+            sample_data: Sample data to display
+
+        Returns:
+            bool: True if user confirms, False otherwise
+        """
+
+        cid_print("\n" + "="*60)
+        cid_print("🔍 Preview: Account Map View SQL")
+        cid_print("="*60)
+        cid_print(sql)
+
+        cid_print("\n" + "="*60)
+        cid_print("📊 Preview: Sample Output (first 10 rows)")
+        cid_print("="*60)
+        cid_print(_format_table(sample_data))
+        cid_print("="*60 + "\n")
+
+        return inquirer.confirm(
+            message="Update account_map view with this configuration?",
+            default=True
+        ).execute()
+
+
+class AthenaWriter:
+    """
+    Writes account map data to Athena as views.
+    
+    The AthenaWriter handles creating Athena views from List[Dict] data, with automatic
+    splitting when SQL statements exceed Athena's size limits. It uses the CID
+    Athena helper for all Athena operations.
+    
+    Attributes:
+        config (dict): Application configuration
+        athena_helper (Athena): CID Athena helper instance
+        MAX_SQL_SIZE (int): Maximum SQL statement size in bytes (262144)
+    """
+    
+    MAX_SQL_SIZE = 262144  # Athena's maximum SQL statement size in bytes
+    
+    def __init__(self, config: dict, athena_helper: Athena):
+        """
+        Initialize AthenaWriter with configuration and Athena helper.
+        
+        Args:
+            config: Application configuration dictionary
+            athena_helper: Athena helper instance from cid-cmd
+        """
+        self.config = config
+        self.athena_helper = athena_helper
+    
+    def create_view_from_values(
+        self,
+        rows: List[Dict],
+        view_name: str,
+        database: str
+    ) -> List[str]:
+        """
+        Create Athena view(s) using VALUES clause, splitting if needed.
+
+        This method generates SQL CREATE VIEW statements using the VALUES clause.
+        If the SQL exceeds MAX_SQL_SIZE, it splits the data into chunks
+        and creates multiple views with numeric suffixes.
+
+        Args:
+            rows: List[Dict] to convert to view
+            view_name: Base name for the view(s)
+            database: Target database name
+
+        Returns:
+            List of created view names (single item if no split, multiple if split)
+
+        Raises:
+            Exception: If view creation fails
+        """
+        # Generate column list for the view
+        columns = list(rows[0].keys()) if rows else []
+
+        # Try to create a single view first
+        sql = self._generate_values_sql(rows, view_name, database, columns)
+        sql_size = self.calculate_sql_size(sql)
+
+        if sql_size <= self.MAX_SQL_SIZE:
+            # SQL fits in single view
+            logger.info("Creating single view (SQL size: %d bytes)", sql_size)
+            # Don't log SQL on error if it's large (file source views)
+            log_sql = sql_size < 10000  # Only log if less than 10KB
+            self._execute_view_creation(sql, database, log_sql_on_error=log_sql)
+            return [view_name]
+        else:
+            # Need to split into multiple views
+            logger.info("SQL size (%d bytes) exceeds limit (%d bytes), creating separate views due to size limits", sql_size, self.MAX_SQL_SIZE)
+            logger.info("Splitting data into multiple views")
+
+            return self._create_split_views(rows, view_name, database, columns)
+
+    def _safe_drop_view_or_table(self, name: str, database: str) -> None:
+        """
+        Safely drop a view or table if it exists.
+
+        Args:
+            name: Name of the view/table to drop
+            database: Database name
+        """
+        # Try dropping as view first
+        try:
+            self._drop_view(name, database)
+            logger.info("Dropped existing view %s.%s", database, name)
+            return
+        except Exception as e:
+            logger.debug("No view to drop or drop failed: %s", str(e))
+
+        # Try dropping as table
+        try:
+            self._drop_table(name, database)
+            logger.info("Dropped existing table %s.%s", database, name)
+        except Exception as e:
+            logger.debug("No table to drop or drop failed: %s", str(e))
+    
+    def _drop_view(self, name: str, database: str) -> None:
+        """
+        Drop a view.
+        
+        Args:
+            name: View name
+            database: Database name
+        """
+        sql = f"DROP VIEW IF EXISTS {database}.{name}"
+        self.athena_helper.query(sql=sql, database=database)
+    
+    def _drop_table(self, name: str, database: str) -> None:
+        """
+        Drop a table.
+        
+        Args:
+            name: Table name
+            database: Database name
+        """
+        sql = f"DROP TABLE IF EXISTS {database}.{name}"
+        self.athena_helper.query(sql=sql, database=database)
+    
+    def _generate_values_sql(
+        self,
+        rows: List[Dict],
+        view_name: str,
+        database: str,
+        columns: List[str]
+    ) -> str:
+        """
+        Generate CREATE VIEW SQL with VALUES clause.
+
+        All values are treated as VARCHAR strings for consistency with Athena.
+        Column names are quoted to handle special characters and reserved words.
+
+        Args:
+            rows: List[Dict] to convert
+            view_name: Name for the view
+            database: Target database
+            columns: List of column names
+
+        Returns:
+            Complete SQL statement as string
+        """
+        # Generate VALUES rows - treat all values as strings for Athena compatibility
+        values_rows = []
+        for row in rows:
+            values = []
+            for col in columns:
+                value = row[col]
+                if _is_null(value) or value is None or str(value).strip() == '':
+                    values.append('NULL')
+                else:
+                    # Convert everything to string and escape single quotes
+                    escaped_value = str(value).replace("'", "''")
+                    values.append(f"'{escaped_value}'")
+
+            values_rows.append(f"({', '.join(values)})")
+
+        values_clause = ',\n  '.join(values_rows)
+
+        # Quote column names to handle spaces, special chars, and reserved words
+        quoted_columns = [f'"{col}"' for col in columns]
+        column_list = ', '.join(quoted_columns)
+
+        sql = f"""CREATE OR REPLACE VIEW {database}.{view_name} AS
+SELECT * FROM (
+  VALUES
+  {values_clause}
+) AS t ({column_list})"""
+
+        return sql
+    
+    def _create_split_views(
+        self,
+        rows: List[Dict],
+        view_name: str,
+        database: str,
+        columns: List[str]
+    ) -> List[str]:
+        """
+        Split data and create multiple views with progress indicators.
+        
+        Args:
+            rows: List[Dict] to split
+            view_name: Base name for views
+            database: Target database
+            columns: List of column names
+            
+        Returns:
+            List of created view names
+        """
+        view_names = []
+        chunk_size = len(rows) // 2  # Start by splitting in half
+
+        # Keep splitting until all chunks fit
+        while chunk_size > 0:
+            view_names = []
+            chunks = [rows[i:i + chunk_size] for i in range(0, len(rows), chunk_size)]
+
+            all_fit = True
+            for i, chunk in enumerate(chunks):
+                chunk_view_name = f"{view_name}_part{i + 1}"
+                sql = self._generate_values_sql(chunk, chunk_view_name, database, columns)
+                sql_size = self.calculate_sql_size(sql)
+
+                if sql_size > self.MAX_SQL_SIZE:
+                    # This chunk is still too large, reduce chunk size
+                    all_fit = False
+                    chunk_size = chunk_size // 2
+                    logger.info("Chunk still too large, reducing chunk size to %d", chunk_size)
+                    break
+
+            if all_fit:
+                # All chunks fit, create the views with progress indicators
+                total_parts = len(chunks)
+                logger.info("Creating %d view parts...", total_parts)
+                
+                for i, chunk in enumerate(chunks):
+                    chunk_view_name = f"{view_name}_part{i + 1}"
+                    # Drop existing view/table before creating
+                    self._safe_drop_view_or_table(chunk_view_name, database)
+                    sql = self._generate_values_sql(chunk, chunk_view_name, database, columns)
+                    
+                    # Display progress
+                    logger.info("Creating part %d of %d: %s (%d rows)", i + 1, total_parts, chunk_view_name, len(chunk))
+                    
+                    # Don't log SQL on error for split views (they're large)
+                    self._execute_view_creation(sql, database, log_sql_on_error=False)
+                    view_names.append(chunk_view_name)
+
+                break
+
+        return view_names
+    
+    def calculate_sql_size(self, sql: str) -> int:
+        """
+        Calculate SQL statement size in bytes.
+        
+        Args:
+            sql: SQL statement string
+            
+        Returns:
+            Size in bytes (UTF-8 encoding)
+        """
+        return len(sql.encode('utf-8'))
+    
+    def create_union_view(
+        self,
+        view_names: List[str],
+        union_view_name: str,
+        database: str
+    ) -> bool:
+        """
+        Create a UNION view combining multiple split views.
+        
+        Args:
+            view_names: List of view names to union
+            union_view_name: Name for the combined view
+            database: Target database name
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Drop existing union view first
+            self._safe_drop_view_or_table(union_view_name, database)
+
+            # Build UNION ALL query
+            union_parts = [f'SELECT * FROM {database}."{vn}"' for vn in view_names]
+            union_query = '\nUNION ALL\n'.join(union_parts)
+
+            sql = f"CREATE OR REPLACE VIEW {database}.{union_view_name} AS\n{union_query}"
+
+            logger.info("Creating UNION view from %d parts", len(view_names))
+            self._execute_view_creation(sql, database)
+
+            # Verify the view is queryable
+            logger.info("Verifying UNION view is queryable...")
+            try:
+                test_query = f"SELECT COUNT(*) FROM {database}.{union_view_name}"
+                result = self.athena_helper.query(sql=test_query, database=database)
+                logger.info("UNION view verified: %s total rows", result[0][0])
+            except Exception as e:
+                logger.warning("Could not verify UNION view: %s", e)
+
+            return True
+
+        except Exception as e:
+            logger.error("Failed to create UNION view: %s", str(e), exc_info=True)
+            return False
+    
+    def _execute_view_creation(self, sql: str, database: str, log_sql_on_error: bool = True) -> None:
+        """
+        Execute view creation SQL using CID Athena helper.
+        
+        Args:
+            sql: SQL statement to execute
+            database: Database context for execution
+            log_sql_on_error: Whether to log SQL in error messages (default True)
+            
+        Raises:
+            Exception: If query execution fails
+        """
+        try:
+            # Execute the query using CID Athena helper
+            self.athena_helper.query(
+                sql=sql,
+                database=database
+            )
+            logger.debug("Successfully executed view creation in %s", database)
+            
+        except Exception as e:
+            # Extract just the error message without SQL
+            error_msg = str(e)
+            
+            if log_sql_on_error:
+                logger.error("Failed to execute view creation: %s", error_msg)
+                # Only log SQL if it's reasonably sized
+                if len(sql) < 5000:
+                    logger.error("Query:\n%s", sql)
+                else:
+                    logger.debug("Query was too large to log (%d bytes)", len(sql.encode('utf-8')))
+            else:
+                logger.error("Failed to execute view creation: %s", error_msg)
+                logger.debug("Query was suppressed (too large for logging)")
+            
+            # Re-raise with clean error message (without SQL)
+            raise RuntimeError(f"View creation failed: {error_msg}") from None
+
+    def write_complete_mapping(self, config: dict, rows: List[Dict],
+                              database: str, view_name: str = 'account_map') -> dict:
+        """
+        Write all views: file source, config, and account map.
+
+        This method orchestrates the complete view creation process:
+        1. Cleanup old views with user confirmation
+        2. Create file source view if needed
+        3. Create config view
+        4. Create account map view
+
+        Args:
+            config: Configuration dictionary
+            rows: Transformed account map List[Dict]
+            database: Target database name
+            view_name: Name for the account map view (default: 'account_map')
+
+        Returns:
+            dict: Results containing created view names and status
+        """
+
+        results = {
+            'file_source_view': None,
+            'config_view': None,
+            'account_map_view': None,
+            'deleted_views': []
+        }
+
+        # Step 1: Cleanup orphan part views from previous split runs
+        logger.info("Checking for orphan part views to cleanup...")
+        old_views = self.identify_related_views(view_name, database)
+
+        # If we're keeping the existing file source view, exclude it from deletion
+        keep_file_source = config.get('file_source', {}).get('use_existing_view', False)
+        if keep_file_source and old_views:
+            file_source_view_name = config.get('metadata', {}).get('file_source_view', f"{view_name}_file_source")
+            old_views = [
+                v for v in old_views
+                if not v['name'].startswith(file_source_view_name)
+            ]
+
+        # Only drop part/split views — the main view will be replaced via CREATE OR REPLACE
+        part_views = [v for v in old_views if v['name'] != view_name]
+        if part_views:
+            logger.info("Dropping %d orphan part view(s)", len(part_views))
+            for view_info in part_views:
+                view_name_to_delete = view_info['name']
+                try:
+                    self._safe_drop_view_or_table(view_name_to_delete, database)
+                    results['deleted_views'].append(view_name_to_delete)
+                    logger.info("Deleted orphan view: %s", view_name_to_delete)
+                except Exception as e:
+                    logger.warning("Failed to delete view %s: %s", view_name_to_delete, e)
+
+        # Step 2: Create file source view if needed
+        if config.get('file_source') and not config['file_source'].get('use_existing_view'):
+            file_view_name = config['metadata'].get('file_source_view', f"{view_name}_file_source")
+            logger.info("Creating file source view: %s", file_view_name)
+
+            try:
+                if 'data' not in config['file_source']:
+                    raise RuntimeError("File source specified but no file data loaded")
+                
+                file_df = list(config['file_source']['data'])
+                account_col = config['file_source']['account_column']
+                
+                # Rename account column to account_id for JOIN compatibility
+                if account_col != 'account_id':
+                    file_df = [{('account_id' if k == account_col else k): v for k, v in row.items()} for row in file_df]
+                    logger.info("Renamed column '%s' to 'account_id' for file source view", account_col)
+                
+                with spinner("Creating file source view"):
+                    success = self.create_file_source_view(file_df, file_view_name, database)
+                results['file_source_view'] = file_view_name if success else None
+            except Exception as e:
+                logger.error("Failed to create file source view: %s", e)
+                results['file_source_view'] = None
+        elif config.get('file_source') and config['file_source'].get('use_existing_view'):
+            # Using existing file source view - just record it
+            file_view_name = config['metadata'].get('file_source_view', f"{view_name}_file_source")
+            logger.info("Using existing file source view: %s", file_view_name)
+            results['file_source_view'] = file_view_name
+        else:
+            # No file source in config — check if stale file_source_view metadata needs cleanup
+            stale_view = config.get('metadata', {}).get('file_source_view')
+            has_file_dims = any(
+                d['source_type'] == 'file' for d in config.get('taxonomy_dimensions', [])
+            )
+            if stale_view and not has_file_dims:
+                logger.info("Cleaning up stale file source view: %s", stale_view)
+                try:
+                    self._safe_drop_view_or_table(stale_view, database)
+                    results['deleted_views'].append(stale_view)
+                    logger.info("Dropped stale file source view: %s", stale_view)
+                except BaseException:
+                    logger.debug("Stale file source view %s may not exist, skipping drop", stale_view)
+                # Remove stale metadata entries
+                config['metadata'].pop('file_source_view', None)
+                config.pop('file_source', None)
+
+        # Step 3: Create config view
+        logger.info("Creating config view: %s_config", view_name)
+        config_mgr = ConfigManager(self.athena_helper, view_name)
+        with spinner("Saving selections in the configuration view"):
+            success = config_mgr.save_to_view(config, database)
+        results['config_view'] = f"{view_name}_config" if success else None
+
+        # Step 4: Create account map view
+        logger.info("Creating account map view: %s", view_name)
+        with spinner("Updating account map view"):
+            success = self.create_account_map_view(config, rows, view_name, database)
+        results['account_map_view'] = view_name if success else None
+
+        return results
+
+    def identify_related_views(self, view_name: str, database: str) -> List[dict]:
+        """
+        Identify views matching account_map pattern for deletion.
+
+        This method finds all views related to the specified view name that should be deleted:
+        - Exact match: view_name
+        - Part views: view_name_part1, view_name_part2, etc.
+        - File source: view_name_file_source
+        - File source parts: view_name_file_source_part1, etc.
+
+        Excludes config views (they will be recreated separately):
+        - Config view: view_name_config
+        - Config parts: view_name_config_part1, etc.
+
+        Args:
+            view_name: Base view name to search for
+            database: Database name
+
+        Returns:
+            List of dicts with 'name' and optional 'timestamp' keys (sorted alphabetically by name)
+        """
+        import re
+
+        try:
+            # Get all tables/views in the database
+            all_tables = self.athena_helper.list_table_metadata(database)
+
+            related_views = []
+            for table in all_tables:
+                name = table['Name']
+                
+                # Check if this view matches our patterns
+                is_match = False
+                
+                # Explicitly exclude config views first (they will be recreated)
+                if name == f"{view_name}_config":
+                    is_match = False
+                elif re.match(f"^{re.escape(view_name)}_config_part\\d+$", name):
+                    is_match = False
+                # Match exact name
+                elif name == view_name:
+                    is_match = True
+                # Match name_partN pattern
+                elif re.match(f"^{re.escape(view_name)}_part\\d+$", name):
+                    is_match = True
+                # Match name_file_source
+                elif name == f"{view_name}_file_source":
+                    is_match = True
+                # Match name_file_source_partN pattern
+                elif re.match(f"^{re.escape(view_name)}_file_source_part\\d+$", name):
+                    is_match = True
+                
+                if is_match:
+                    view_info = {'name': name}
+                    # Add timestamp if available
+                    if 'CreateTime' in table:
+                        view_info['timestamp'] = table['CreateTime']
+                    related_views.append(view_info)
+
+            # Sort by name
+            return sorted(related_views, key=lambda x: x['name'])
+
+        except Exception as e:
+            logger.error("Failed to identify related views: %s", e)
+            return []
+
+    def create_file_source_view(self, rows: List[Dict], view_name: str,
+                               database: str) -> bool:
+        """
+        Create view from file data using VALUES clause.
+
+        Args:
+            rows: File data List[Dict]
+            view_name: Name for the file source view
+            database: Target database name
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            view_names = self.create_view_from_values(rows, view_name, database)
+
+            if len(view_names) == 1:
+                logger.info("Created file source view: %s", view_name)
+                return True
+            else:
+                # Multiple views created, need UNION view
+                logger.info("Created %d file source parts, creating UNION view", len(view_names))
+                success = self.create_union_view(view_names, view_name, database)
+                return success
+
+        except Exception as e:
+            logger.error("Failed to create file source view: %s", e)
+            return False
+
+    def create_account_map_view(self, config: dict, rows: List[Dict],
+                               view_name: str, database: str) -> bool:
+        """
+        Create account map transformation view.
+
+        This method creates the main account map view as a transformation view
+        that queries the source table directly. If file sources are used, it
+        creates a view that JOINs with the file source view.
+
+        The transformed data is only used as a fallback if the SQL
+        generation fails or exceeds size limits.
+
+        Args:
+            config: Configuration dictionary
+            rows: Transformed account map List[Dict] (used as fallback only)
+            view_name: Name for the account map view
+            database: Target database name
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Always try transformation view approach first
+            logger.info("Creating account map transformation view")
+            sql = self._generate_account_map_transformation_sql(config, view_name, database)
+            
+            # Check size and split if needed
+            if len(sql.encode('utf-8')) > self.MAX_SQL_SIZE:
+                logger.info("Account map SQL exceeds Athena size limit, creating separate views due to size limits")
+                view_names = self.create_view_from_values(rows, view_name, database)
+                if len(view_names) > 1:
+                    return self.create_union_view(view_names, view_name, database)
+                return True
+            else:
+                self._execute_view_creation(sql, database)
+                return True
+
+        except Exception as e:
+            logger.error("Failed to create account map view: %s", e)
+            return False
+
+    def _generate_account_map_transformation_sql(self, config: dict, view_name: str, database: str) -> str:
+        """
+        Generate SQL for account map transformation view.
+
+        This creates a SELECT statement that transforms the source table
+        according to the configured taxonomy dimensions, with support for:
+        - Tag-based dimensions using json_extract_scalar
+        - File-based dimensions with COALESCE for precedence
+        - Joining with file source view when file is used
+
+        Args:
+            config: Configuration dictionary with metadata and taxonomy_dimensions
+            view_name: Name for the view
+            database: Target database name
+
+        Returns:
+            Complete CREATE VIEW SQL statement
+        """
+        # Extract metadata
+        metadata = config.get('metadata', {})
+        source_database = metadata.get('source_database', database)
+        source_table = metadata.get('source_table')
+        file_source_view = metadata.get('file_source_view')
+        
+        # Get taxonomy dimensions
+        taxonomy_dimensions = config.get('taxonomy_dimensions', [])
+        
+        # Track dimension names to detect duplicates
+        dimension_names_used = set()
+        
+        # Build SELECT clause with base columns
+        select_parts = [
+            'org.id AS account_id',
+            'org.name AS account_name',
+            'org.managementaccountid AS parent_account_id'
+        ]
+        
+        # Add payer_name column if payer names are configured
+        payer_names = config.get('payer_names', {})
+        if payer_names:
+            case_parts = []
+            for pid, pname in payer_names.items():
+                escaped_name = pname.replace("'", "''")
+                case_parts.append(f"WHEN org.managementaccountid = '{pid}' THEN '{escaped_name}'")
+            case_expr = "CASE\n                " + "\n                ".join(case_parts)
+            case_expr += "\n                ELSE org.managementaccountid\n            END"
+            select_parts.append(f"{case_expr} AS parent_account_name")
+        
+        # Add taxonomy dimension columns
+        dimension_parts = []  # Collect as (output_name, sql_expr) for sorting
+        for dimension in taxonomy_dimensions:
+            dim_name = dimension['name']
+            source_type = dimension['source_type']
+            source_value = dimension['source_value']
+            
+            # Check for duplicate dimension names
+            output_name = dim_name
+            if dim_name in dimension_names_used:
+                # Duplicate name - append suffix based on source type
+                if source_type == 'tag':
+                    output_name = f"{dim_name}_tag"
+                elif source_type == 'file':
+                    output_name = f"{dim_name}_file"
+                elif source_type == 'name_split':
+                    output_name = f"{dim_name}_split"
+                logger.warning("Duplicate dimension name '%s' detected. Using '%s' for %s source.", dim_name, output_name, source_type)
+            
+            dimension_names_used.add(output_name)
+            
+            if source_type == 'tag':
+                tag_expr = f"""element_at(
+                    filter(org.hierarchytags, x -> x.key = '{source_value}'),
+                    1
+                ).value"""
+                dimension_parts.append((output_name, f"{tag_expr} AS {output_name}"))
+                    
+            elif source_type == 'file':
+                if file_source_view:
+                    dimension_parts.append((output_name, f"file.{source_value} AS {output_name}"))
+                else:
+                    logger.warning("File source dimension %s specified but no file source view", dim_name)
+                    dimension_parts.append((output_name, f"NULL AS {output_name}"))
+                    
+            elif source_type == 'ou_level':
+                level_index = int(source_value)
+                ou_expr = f"TRY(org.hierarchy[{level_index}].name)"
+                dimension_parts.append((output_name, f"{ou_expr} AS {output_name}"))
+
+            elif source_type == 'name_split':
+                if isinstance(source_value, dict):
+                    separator = source_value.get('separator', '-')
+                    if not _validate_separator(separator):
+                        logger.warning("Invalid separator '%s' for dimension %s, falling back to '-'", separator, dim_name)
+                        separator = '-'
+                    safe_separator = _sanitize_separator_for_sql(separator)
+                    index = source_value.get('index', 0)
+                    split_expr = f"split_part(org.name, '{safe_separator}', {index + 1})"
+                    dimension_parts.append((output_name, f"{split_expr} AS {output_name}"))
+                else:
+                    logger.warning("Name split dimension %s has invalid source_value format", dim_name)
+                    dimension_parts.append((output_name, f"NULL AS {output_name}"))
+        
+        # Sort taxonomy dimensions alphabetically by output name
+        dimension_parts.sort(key=lambda x: x[0].lower())
+        select_parts.extend(expr for _, expr in dimension_parts)
+        
+        # Build FROM clause
+        from_clause = f'FROM {source_database}.{source_table} org'
+        
+        # Add LEFT JOIN for file source if present
+        if file_source_view:
+            from_clause += f'\nLEFT JOIN {database}.{file_source_view} file ON org.id = file.account_id'
+        
+        # Build complete SQL
+        select_clause = ',\n    '.join(select_parts)
+        
+        sql = f"""CREATE OR REPLACE VIEW {database}.{view_name} AS
+SELECT
+    {select_clause}
+{from_clause}"""
+        
+        return sql
+
+
+
+
+def extract_from_tag(
+    org_data: List[Dict],
+    account_id: str,
+    tag_key: str
+) -> Optional[str]:
+    """
+    Extract value from hierarchytags by key.
+    
+    The hierarchytags column contains a list of dictionaries with 'key' and 'value'
+    fields. This function searches for the specified tag_key and returns its value.
+    
+    Args:
+        org_data: List[Dict] containing organization data with hierarchytags column
+        account_id: 12-digit account ID to look up
+        tag_key: Tag key to search for in hierarchytags
+        
+    Returns:
+        Tag value if found, None otherwise
+        
+    Example:
+        >>> org_data = [{'id': '123456789012', 'hierarchytags': [{'key': 'Environment', 'value': 'Production'}]}]
+        >>> extract_from_tag(org_data, '123456789012', 'Environment')
+        'Production'
+    """
+    try:
+        # Find the row matching the account ID
+        matching = [r for r in org_data if r.get('id') == account_id]
+        
+        if not matching:
+            logger.warning("Account ID %s not found in organization data", account_id)
+            return None
+        
+        # Get the hierarchytags list for this account
+        tags_list = matching[0].get('hierarchytags')
+        
+        if not isinstance(tags_list, list):
+            logger.warning("hierarchytags for account %s is not a list", account_id)
+            return None
+        
+        # Search for the tag key
+        for tag_item in tags_list:
+            if isinstance(tag_item, dict) and tag_item.get('key') == tag_key:
+                value = tag_item.get('value')
+                logger.debug("Found tag %s=%s for account %s", tag_key, value, account_id)
+                return value
+        
+        logger.debug("Tag key %s not found for account %s", tag_key, account_id)
+        return None
+        
+    except Exception as e:
+        logger.error(
+            "Error extracting tag %s for account %s: %s",
+            tag_key, account_id, str(e),
+            exc_info=True
+        )
+        return None
+
+
+def extract_from_account_name(
+    org_data: List[Dict],
+    account_id: str,
+    separator: str,
+    index: int
+) -> Optional[str]:
+    """
+    Split account name by separator and extract value at specified index.
+    
+    This function splits the account name using the provided separator and returns
+    the part at the specified index position (0-based).
+    
+    Args:
+        org_data: List[Dict] containing organization data with name column
+        account_id: 12-digit account ID to look up
+        separator: Character(s) to split the account name by
+        index: Zero-based index of the part to extract
+        
+    Returns:
+        Extracted part of account name if found, None otherwise
+        
+    Example:
+        >>> org_data = [{'id': '123456789012', 'name': 'dev-company-team-01'}]
+        >>> extract_from_account_name(org_data, '123456789012', '-', 1)
+        'company'
+    """
+    try:
+        # Find the row matching the account ID
+        matching = [r for r in org_data if r.get('id') == account_id]
+        
+        if not matching:
+            logger.warning("Account ID %s not found in organization data", account_id)
+            return None
+        
+        # Get the account name
+        account_name = matching[0].get('name')
+        
+        if not account_name or _is_null(account_name):
+            logger.warning("Account name is empty for account %s", account_id)
+            return None
+        
+        # Split the account name
+        parts = str(account_name).split(separator)
+        
+        # Check if index is valid
+        if index < 0 or index >= len(parts):
+            logger.debug(
+                "Index %d out of range for account %s (name: %s, parts: %d)",
+                index, account_id, account_name, len(parts)
+            )
+            return None
+        
+        value = parts[index]
+        logger.debug(
+            "Extracted '%s' from account name '%s' (separator: '%s', index: %d)",
+            value, account_name, separator, index
+        )
+        return value
+        
+    except Exception as e:
+        logger.error(
+            "Error extracting from account name for account %s: %s",
+            account_id, str(e),
+            exc_info=True
+        )
+        return None
+
+
+def extract_from_hierarchy(
+    org_data: List[Dict],
+    account_id: str,
+    level_index: int
+) -> Optional[str]:
+    """
+    Extract OU name from hierarchy at a given level index.
+
+    The hierarchy column contains a list of dicts like:
+    [{id=r-zd04, type=ROOT, name=ROOT(r-zd04)},
+     {id=ou-zd04-p1dmik6m, type=ORGANIZATIONAL_UNIT, name=Pegasus}]
+
+    This function returns the 'name' field at the specified 1-based index.
+
+    Args:
+        org_data: List[Dict] containing organization data with hierarchy column
+        account_id: 12-digit account ID to look up
+        level_index: 1-based index into hierarchy array
+
+    Returns:
+        OU name at that level if found, None otherwise
+    """
+    try:
+        matching = [r for r in org_data if r.get('id') == account_id]
+
+        if not matching:
+            return None
+
+        hierarchy = matching[0].get('hierarchy')
+
+        if not isinstance(hierarchy, list):
+            return None
+
+        # level_index is 1-based (matches Athena array indexing)
+        idx = level_index - 1
+        if idx < 0 or idx >= len(hierarchy):
+            return None
+
+        entry = hierarchy[idx]
+        if isinstance(entry, dict):
+            return entry.get('name')
+
+        return None
+
+    except Exception as e:
+        logger.error(
+            "Error extracting hierarchy level %d for account %s: %s",
+            level_index, account_id, str(e),
+            exc_info=True
+        )
+        return None
+
+
+def extract_from_file(
+    file_data: List[Dict],
+    account_id: str,
+    column_name: str,
+    account_id_column: str
+) -> Optional[str]:
+    """
+    Extract value from external file by joining on account ID.
+    
+    This function looks up the account ID in the file data and returns the value
+    from the specified column.
+    
+    Args:
+        file_data: List[Dict] containing external file data
+        account_id: 12-digit account ID to look up
+        column_name: Name of column to extract value from
+        account_id_column: Name of column containing account IDs in file_data
+        
+    Returns:
+        Value from specified column if found, None otherwise
+        
+    Example:
+        >>> file_data = [{'AccountID': '123456789012', 'Department': 'Engineering'}]
+        >>> extract_from_file(file_data, '123456789012', 'Department', 'AccountID')
+        'Engineering'
+    """
+    try:
+        # Validate that required columns exist
+        if not file_data or account_id_column not in file_data[0]:
+            logger.error(
+                "Account ID column '%s' not found in file data. Available columns: %s",
+                account_id_column, list(file_data[0].keys()) if file_data else []
+            )
+            return None
+        
+        if column_name not in file_data[0]:
+            logger.error(
+                "Column '%s' not found in file data. Available columns: %s",
+                column_name, list(file_data[0].keys())
+            )
+            return None
+        
+        # Find the row matching the account ID
+        matching = [r for r in file_data if str(r.get(account_id_column, '')).zfill(12) == account_id]
+        
+        if not matching:
+            logger.debug("Account ID %s not found in file data", account_id)
+            return None
+        
+        # Get the value from the specified column
+        value = matching[0].get(column_name)
+        
+        if _is_null(value):
+            logger.debug("Value is null for account %s in column %s", account_id, column_name)
+            return None
+        
+        logger.debug(
+            "Extracted '%s' from file column '%s' for account %s",
+            value, column_name, account_id
+        )
+        return str(value)
+        
+    except Exception as e:
+        logger.error(
+            "Error extracting from file for account %s: %s",
+            account_id, str(e),
+            exc_info=True
+        )
+        return None
+
