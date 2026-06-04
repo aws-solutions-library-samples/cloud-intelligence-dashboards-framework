@@ -614,8 +614,15 @@ class DataLoader:
             if suffix != '.csv':
                 raise ValueError(f"Unsupported file format: {suffix}. Only .csv is supported.")
             with open(file_path, newline='', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
+                reader = csv.DictReader(f, skipinitialspace=True)
                 rows = list(reader)
+            # Strip whitespace from column names and values, skip None keys
+            if rows:
+                rows = [
+                    {k.strip(): v.strip() if isinstance(v, str) else v
+                     for k, v in row.items() if k is not None}
+                    for row in rows
+                ]
             logger.info("Loaded %d records from CSV file", len(rows))
             return rows
             
@@ -1746,13 +1753,14 @@ class UnifiedWorkflow:
         Execute the complete workflow with auto-discovery.
 
         This method orchestrates the entire account mapping process:
-        1. Discover source (organization_data table) and target database
-        2. Check for existing configuration
-        3. Prompt for configuration reuse or create new configuration
-        4. Load data from Athena and optionally from file
-        5. Transform data according to configuration
-        6. Preview and confirm SQL
-        7. Write views to Athena
+        1. Ask user for data source type (organization_data, CSV, or both)
+        2. Discover source and target database (if using organization_data)
+        3. Check for existing configuration
+        4. Prompt for configuration reuse or create new configuration
+        5. Load data from Athena and/or file
+        6. Transform data according to configuration
+        7. Preview and confirm SQL
+        8. Write views to Athena
 
         Args:
             source_file: Optional path to file for file-based taxonomy dimensions
@@ -1761,13 +1769,19 @@ class UnifiedWorkflow:
         Returns:
             dict: Results containing created view names and status
         """
-        # Phase 1: Discovery — find source (organization_data) and target database
         if not isatty():
             raise CidCritical(
                 "Interactive mode requires a TTY. "
                 "Use 'cid-cmd map --simple' for non-interactive environments."
             )
 
+        # Phase 0: Ask user for data source type
+        data_source_mode = self._prompt_data_source_mode(source_file)
+
+        if data_source_mode == 'csv_only':
+            return self._execute_csv_only(source_file)
+
+        # Phase 1: Discovery — find source (organization_data) and target database
         if source_database:
             logger.info("Using provided source database: %s", source_database)
             table = 'organization_data'
@@ -1784,12 +1798,12 @@ class UnifiedWorkflow:
         from cid.utils import set_parameters, get_parameters
         params = get_parameters()
         params['athena-database'] = target_database
-        
+
         # Auto-select workgroup if only one real workgroup exists (excluding "create new" options)
         workgroups = [wg['Name'] for wg in self.athena.list_work_groups()]
         # Filter out any that might be added by the UI as "create new" options
         real_workgroups = [wg for wg in workgroups if not wg.endswith('(create new)')]
-        
+
         if len(real_workgroups) == 1:
             logger.info("Auto-selected workgroup: %s", real_workgroups[0])
             params['athena-workgroup'] = real_workgroups[0]
@@ -1797,29 +1811,37 @@ class UnifiedWorkflow:
             # No workgroups exist, use default 'primary'
             logger.info("No workgroups found, using default 'primary'")
             params['athena-workgroup'] = 'primary'
-        
+
         set_parameters(params)
 
         # Phase 2: Configuration — load/save config from target database
         with spinner("Checking for existing configuration"):
             existing_config = self._check_existing_config(target_database)
 
+        # For 'both' mode, ensure a file is available for interactive config
+        if data_source_mode == 'both' and not source_file:
+            source_file = inquirer.filepath(
+                message="Enter path to CSV file:",
+                validate=lambda x: Path(x).is_file() or "File not found"
+            ).execute()
+        effective_source_file = source_file
+
         if existing_config:
             if self._prompt_config_reuse(existing_config):
                 config = existing_config
                 # If config has file source, ask if user wants to update it
                 if config.get('file_source'):
-                    config = self._handle_existing_file_source(config, target_database, table, source_file=source_file)
+                    config = self._handle_existing_file_source(config, target_database, table, source_file=effective_source_file)
             else:
-                config = self._interactive_configuration(source_database, table, source_file=source_file)
+                config = self._interactive_configuration(source_database, table, source_file=effective_source_file)
         else:
-            config = self._interactive_configuration(source_database, table, source_file=source_file)
+            config = self._interactive_configuration(source_database, table, source_file=effective_source_file)
 
         # Store source and target in config for later use
         config['metadata']['source_database'] = source_database
         config['metadata']['source_table'] = table
         config['metadata']['target_database'] = target_database
-        
+
         # Also store in athena section for DataLoader compatibility
         if 'athena' not in config:
             config['athena'] = {}
@@ -1889,6 +1911,223 @@ class UnifiedWorkflow:
         results['status'] = 'success'
 
         return results
+
+    def _prompt_data_source_mode(self, source_file: str = None) -> str:
+        """
+        Ask user which data source to use for taxonomy dimensions.
+
+        Returns:
+            One of 'athena', 'csv_only', or 'both'
+        """
+        from InquirerPy.base.control import Choice
+
+        choices = [
+            Choice(
+                value='athena',
+                name='organization_data table (collected with CID Data Collection)'
+            ),
+            Choice(
+                value='csv_only',
+                name='CSV file only'
+            ),
+            Choice(
+                value='both',
+                name='Both (organization_data table + CSV file for additional taxonomy)'
+            ),
+        ]
+
+        mode = inquirer.select(
+            message="Select account data source for taxonomy:",
+            choices=choices,
+            default='athena'
+        ).execute()
+
+        # If CSV is needed but no file was provided via --file, prompt for it
+        if mode in ('csv_only', 'both') and not source_file:
+            cid_print("\n💡 Tip: You can pass --file <path> to skip this prompt next time.\n")
+
+        return mode
+
+    def _execute_csv_only(self, source_file: str = None) -> dict:
+        """
+        Execute workflow using only a CSV file as the account data source.
+
+        The CSV must contain at minimum an account_id column.
+        All other columns become taxonomy dimensions in the account_map view.
+
+        Args:
+            source_file: Path to CSV file (will prompt if not provided)
+
+        Returns:
+            dict: Results containing created view names and status
+        """
+        from cid.utils import set_parameters, get_parameters
+
+        # Get file path
+        if not source_file:
+            source_file = inquirer.filepath(
+                message="Enter path to CSV file:",
+                validate=lambda x: Path(x).is_file() or "File not found"
+            ).execute()
+
+        file_path = Path(source_file)
+        if not file_path.is_file():
+            raise CidCritical(f"File not found: {source_file}")
+
+        cid_print(f"\n📁 Reading CSV file: {source_file}")
+
+        # Load CSV data
+        with open(file_path, newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f, skipinitialspace=True)
+            csv_data = list(reader)
+
+        if not csv_data:
+            raise CidCritical("CSV file is empty")
+
+        # Strip whitespace from column names and values, skip None keys
+        csv_data = [
+            {k.strip(): v.strip() if isinstance(v, str) else v
+             for k, v in row.items() if k is not None}
+            for row in csv_data
+        ]
+
+        cid_print(f"   {len(csv_data)} accounts loaded\n")
+
+        # Auto-detect account_id column
+        account_col = self.discovery.discover_account_id_column(csv_data)
+        if not account_col:
+            columns = list(csv_data[0].keys())
+            account_col = inquirer.select(
+                message="Select the account ID column:",
+                choices=columns
+            ).execute()
+        else:
+            cid_print(f"   Auto-detected account ID column: {account_col}")
+
+        # Discover target database
+        target_database = self.discovery.discover_target_database()
+
+        # Pre-set Athena parameters
+        params = get_parameters()
+        params['athena-database'] = target_database
+
+        workgroups = [wg['Name'] for wg in self.athena.list_work_groups()]
+        real_workgroups = [wg for wg in workgroups if not wg.endswith('(create new)')]
+
+        if len(real_workgroups) == 1:
+            params['athena-workgroup'] = real_workgroups[0]
+        elif len(real_workgroups) == 0:
+            params['athena-workgroup'] = 'primary'
+
+        set_parameters(params)
+
+        # Determine columns: account_id + account_name (if present) + taxonomy dimensions
+        all_columns = list(csv_data[0].keys())
+        name_col = None
+        for candidate in ['account_name', 'name', 'Name', 'Account Name', 'AccountName']:
+            if candidate in all_columns and candidate != account_col:
+                name_col = candidate
+                break
+
+        # Taxonomy columns = everything except account_id and account_name
+        skip_cols = {account_col}
+        if name_col:
+            skip_cols.add(name_col)
+        taxonomy_columns = [c for c in all_columns if c not in skip_cols]
+
+        if taxonomy_columns:
+            cid_print(f"\n   Detected taxonomy columns: {', '.join(taxonomy_columns)}")
+            selected_columns = self._checkbox_with_retry(
+                message="Select columns to include as taxonomy dimensions (space to select, Enter to confirm):",
+                choices=taxonomy_columns
+            )
+        else:
+            selected_columns = []
+
+        # Build transformed rows for the VALUES-based view
+        # Include parent_account_id and parent_account_name to match the default
+        # account_map schema expected by dashboards
+        transformed_data = []
+        for row in csv_data:
+            account_id = str(row.get(account_col, '')).strip().zfill(12)
+            if not account_id or account_id == '000000000000':
+                continue
+            out_row = {'account_id': account_id}
+            out_row['account_name'] = str(row.get(name_col, account_id)) if name_col else account_id
+            out_row['parent_account_id'] = ''
+            out_row['parent_account_name'] = ''
+            for col in selected_columns:
+                out_row[col] = str(row.get(col, ''))
+            transformed_data.append(out_row)
+
+        if not transformed_data:
+            raise CidCritical("No valid account rows found in CSV")
+
+        # Build config for persistence
+        config = {
+            'metadata': {
+                'source_database': None,
+                'source_table': None,
+                'target_database': target_database,
+                'data_source_mode': 'csv_only',
+            },
+            'taxonomy_dimensions': [
+                {'name': col, 'source_type': 'file', 'source_value': col}
+                for col in selected_columns
+            ],
+            'file_source': {
+                'path': str(source_file),
+                'account_column': account_col,
+                'data': csv_data,
+            },
+        }
+
+        # Preview
+        cid_print(f"\n📋 Preview ({min(10, len(transformed_data))} of {len(transformed_data)} rows):\n")
+        sample = transformed_data[:10]
+        if sample:
+            headers = list(sample[0].keys())
+            col_widths = {h: max(len(h), max(len(str(row.get(h, ''))) for row in sample)) for h in headers}
+            header_line = ' | '.join(h.ljust(col_widths[h]) for h in headers)
+            cid_print(f"  {header_line}")
+            cid_print(f"  {'-+-'.join('-' * col_widths[h] for h in headers)}")
+            for row in sample:
+                row_line = ' | '.join(str(row.get(h, '')).ljust(col_widths[h]) for h in headers)
+                cid_print(f"  {row_line}")
+
+        cid_print("")
+        confirm = inquirer.confirm(
+            message=f"Create account_map view with {len(transformed_data)} accounts in database '{target_database}'?",
+            default=True
+        ).execute()
+
+        if not confirm:
+            return {"status": "cancelled", "message": "User cancelled operation"}
+
+        # Write the view using VALUES clause
+        writer = AthenaWriter(config, self.athena)
+        with spinner("Creating account_map view"):
+            view_names = writer.create_view_from_values(
+                transformed_data, self.view_name, target_database
+            )
+
+        # Create union view if split
+        if len(view_names) > 1:
+            with spinner("Creating union view"):
+                writer.create_union_view(view_names, self.view_name, target_database)
+
+        # Save config view
+        config_mgr = ConfigManager(self.athena, self.view_name)
+        with spinner("Saving configuration"):
+            config_mgr.save_to_view(config, target_database)
+
+        return {
+            'status': 'success',
+            'account_map_view': self.view_name,
+            'config_view': f"{self.view_name}_config",
+            'file_source_view': None,
+            'deleted_views': [],
+        }
 
     def _check_existing_config(self, database: str) -> Optional[dict]:
         """
@@ -2117,11 +2356,13 @@ class UnifiedWorkflow:
             'taxonomy_dimensions': []
         }
 
-        # Build data source choices — only include file option if --file was provided
-        data_source_choices = ["Tags from source table", "OU hierarchy level"]
-        if source_file:
-            data_source_choices.append("Additional file")
-        data_source_choices.append("Split account name column")
+        # Build data source choices — always include file option
+        data_source_choices = [
+            "Tags from source table",
+            "OU hierarchy level",
+            "Additional file (CSV)",
+            "Split account name column",
+        ]
 
         # Single multi-select for all data source options
         data_sources = self._checkbox_with_retry(
@@ -2132,8 +2373,15 @@ class UnifiedWorkflow:
 
         use_tags = "Tags from source table" in data_sources
         use_ou_level = "OU hierarchy level" in data_sources
-        use_file = "Additional file" in data_sources and source_file
+        use_file = "Additional file (CSV)" in data_sources
         use_name_split = "Split account name column" in data_sources
+
+        # If file selected but no path provided, prompt for it
+        if use_file and not source_file:
+            source_file = inquirer.filepath(
+                message="Enter path to CSV file:",
+                validate=lambda x: Path(x).is_file() or "File not found"
+            ).execute()
 
         # Configure file source if selected
         if use_file:
@@ -2637,8 +2885,8 @@ class AthenaWriter:
             values = []
             for col in columns:
                 value = row[col]
-                if _is_null(value) or value is None or str(value).strip() == '':
-                    values.append('NULL')
+                if value is None or _is_null(value) or str(value).strip() == '':
+                    values.append("NULL")
                 else:
                     # Convert everything to string and escape single quotes
                     escaped_value = str(value).replace("'", "''")
@@ -2652,8 +2900,13 @@ class AthenaWriter:
         quoted_columns = [f'"{col}"' for col in columns]
         column_list = ', '.join(quoted_columns)
 
+        # Explicitly CAST each column to VARCHAR in the outer SELECT to handle
+        # columns that are all-NULL (Athena cannot infer type from NULL alone)
+        select_parts = [f'CAST("{col}" AS VARCHAR) AS "{col}"' for col in columns]
+        select_clause = ', '.join(select_parts)
+
         sql = f"""CREATE OR REPLACE VIEW {database}.{view_name} AS
-SELECT * FROM (
+SELECT {select_clause} FROM (
   VALUES
   {values_clause}
 ) AS t ({column_list})"""
@@ -2707,8 +2960,6 @@ SELECT * FROM (
                 
                 for i, chunk in enumerate(chunks):
                     chunk_view_name = f"{view_name}_part{i + 1}"
-                    # Drop existing view/table before creating
-                    self._safe_drop_view_or_table(chunk_view_name, database)
                     sql = self._generate_values_sql(chunk, chunk_view_name, database, columns)
                     
                     # Display progress
@@ -2742,19 +2993,16 @@ SELECT * FROM (
     ) -> bool:
         """
         Create a UNION view combining multiple split views.
-        
+
         Args:
             view_names: List of view names to union
             union_view_name: Name for the combined view
             database: Target database name
-            
+
         Returns:
             True if successful, False otherwise
         """
         try:
-            # Drop existing union view first
-            self._safe_drop_view_or_table(union_view_name, database)
-
             # Build UNION ALL query
             union_parts = [f'SELECT * FROM {database}."{vn}"' for vn in view_names]
             union_query = '\nUNION ALL\n'.join(union_parts)

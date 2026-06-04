@@ -14,7 +14,10 @@ flowchart TD
     B -->|Yes| C[Legacy AccountMap class]
     B -->|No| D[AccountMapper]
     D --> E[UnifiedWorkflow.execute]
-    E --> F[Phase 1: Discovery]
+    E --> P0[Phase 0: Data Source Selection]
+    P0 -->|organization_data| F[Phase 1: Discovery]
+    P0 -->|CSV only| CSV[_execute_csv_only]
+    P0 -->|Both| F
     E --> G[Phase 2: Configuration]
     E --> H[Phase 3: Data Loading]
     E --> I[Phase 4: Transformation]
@@ -28,6 +31,13 @@ flowchart TD
     H --> H2[DataLoader.load_from_file]
     I --> I1[TransformEngine.transform]
     K --> K1[AthenaWriter.write_complete_mapping]
+
+    CSV --> CSV1[Load CSV file]
+    CSV --> CSV2[Auto-detect columns]
+    CSV --> CSV3[Select taxonomy dimensions]
+    CSV --> CSV4[Preview & confirm]
+    CSV --> CSV5[AthenaWriter.create_view_from_values]
+    CSV5 -->|exceeds 262KB| CSV6[Split into part views + UNION]
 ```
 
 ## Components and Interfaces
@@ -45,9 +55,11 @@ class AccountMapper:
 
 ### 2. `UnifiedWorkflow` class (`cid/helpers/account_mapper_helpers.py`)
 
-Orchestrates the six-phase workflow. Key methods:
+Orchestrates the workflow. Key methods:
 
 - `execute(source_file, source_database)` — main entry point
+- `_prompt_data_source_mode(source_file)` — asks user to choose data source: `athena`, `csv_only`, or `both`
+- `_execute_csv_only(source_file)` — complete CSV-only workflow (no Athena source table required)
 - `_interactive_configuration(database, table, source_file)` — builds config from user choices
 - `_discover_hierarchy_levels(database, table)` — queries OU depth and sample names
 - `_prompt_payer_names(config, org_data)` — assigns friendly names to management accounts
@@ -109,7 +121,10 @@ Applies taxonomy rules to org data for preview output:
 
 - `write_complete_mapping(config, rows, database, view_name)` — orchestrates view creation
 - `create_account_map_view(config, rows, view_name, database)` — generates transformation SQL
-- `create_view_from_values(rows, view_name, database)` — fallback for large datasets
+- `create_view_from_values(rows, view_name, database)` — creates VALUES-based views, auto-splits if > 262KB
+- `create_union_view(view_names, union_view_name, database)` — creates UNION ALL view over split parts
+- `_generate_values_sql(rows, view_name, database, columns)` — generates SQL with explicit CAST to VARCHAR
+- `_create_split_views(rows, view_name, database, columns)` — splits rows into chunks that fit under Athena's SQL size limit
 
 ### 8. Extraction functions (module-level)
 
@@ -160,13 +175,39 @@ FROM optimization_data.organization_data org
 
 The output columns are compatible with the legacy `account_map_cur2.sql` template:
 
-| Column | Source |
-|---|---|
-| `account_id` | `org.id` |
-| `account_name` | `org.name` |
-| `parent_account_id` | `org.managementaccountid` |
-| `parent_account_name` | CASE expression from `payer_names` config |
-| (taxonomy dimensions) | Configured by user |
+| Column | Source (org_data mode) | Source (CSV-only mode) |
+|---|---|---|
+| `account_id` | `org.id` | CSV account_id column |
+| `account_name` | `org.name` | CSV account_name column (or account_id) |
+| `parent_account_id` | `org.managementaccountid` | NULL |
+| `parent_account_name` | CASE expression from `payer_names` config | NULL |
+| (taxonomy dimensions) | Configured by user | Selected CSV columns |
+
+## Data Source Modes
+
+The workflow begins by asking the user which data source to use:
+
+| Mode | Description | Athena table required? |
+|---|---|---|
+| `organization_data table` | Uses organization_data collected via CID Data Collection | Yes |
+| `CSV file only` | Uses a CSV file as the sole account source | No |
+| `Both` | Uses organization_data + CSV for additional taxonomy columns | Yes |
+
+### CSV-only mode (`_execute_csv_only`)
+
+When the user selects "CSV file only":
+1. Prompts for file path (or uses `--file` if provided)
+2. Auto-detects `account_id` and `account_name` columns
+3. Remaining columns are offered as taxonomy dimensions
+4. Output includes `parent_account_id` and `parent_account_name` (NULL) for dashboard compatibility
+5. Creates a VALUES-based view (splits into multiple parts + UNION if > 262KB)
+
+### Both mode
+
+When the user selects "Both":
+1. Discovers `organization_data` table in Athena (base account list)
+2. Prompts for CSV file path if `--file` not provided
+3. CSV columns are available as "Additional file" taxonomy dimensions alongside tags, OU levels, etc.
 
 ## CLI Interface
 
@@ -174,15 +215,44 @@ The output columns are compatible with the legacy `account_map_cur2.sql` templat
 cid-cmd map [--simple] [--file PATH] [--database TEXT] [--view-name TEXT]
 ```
 
-- No flags: interactive advanced mode
+- No flags: interactive advanced mode (prompts for data source mode)
 - `--simple`: legacy mode (AccountMap class)
-- `--file`: enables "Additional file" data source option
+- `--file`: path to CSV file; used in "CSV only" or "Both" modes
 - `--database`: skips auto-discovery of source database
 - `--view-name`: custom output view name (default: `account_map`)
 
 ## Integration with Dashboard Flows
 
 The advanced mapper is ONLY invoked via `cid-cmd map`. Dashboard `deploy`/`update` commands continue using the legacy `AccountMap` class via `create_or_update_account_map()`. This ensures no impact on existing deployment workflows.
+
+## SQL Generation Details
+
+### VALUES-based views (CSV-only and file source)
+
+Generated SQL wraps the VALUES clause with explicit CAST to handle all-NULL columns:
+
+```sql
+CREATE OR REPLACE VIEW database.view_name AS
+SELECT CAST("account_id" AS VARCHAR) AS "account_id",
+       CAST("account_name" AS VARCHAR) AS "account_name",
+       CAST("parent_account_id" AS VARCHAR) AS "parent_account_id",
+       CAST("parent_account_name" AS VARCHAR) AS "parent_account_name",
+       CAST("business_unit" AS VARCHAR) AS "business_unit"
+FROM (
+  VALUES
+  ('123456789012', 'Account 1', NULL, NULL, 'Engineering'),
+  ('987654321098', 'Account 2', NULL, NULL, 'Operations')
+) AS t ("account_id", "account_name", "parent_account_id", "parent_account_name", "business_unit")
+```
+
+### Splitting for large datasets
+
+Athena has a 262,144 byte SQL statement limit. When the generated SQL exceeds this:
+1. Data is split into chunks (halving until each fits)
+2. Part views are created: `account_map_part1`, `account_map_part2`, etc.
+3. A union view combines them: `CREATE OR REPLACE VIEW account_map AS SELECT * FROM part1 UNION ALL SELECT * FROM part2`
+
+All view creation uses `CREATE OR REPLACE VIEW` — no `DROP VIEW` is issued, avoiding the need for `glue:DeleteTable` permissions.
 
 ## Security Considerations
 
