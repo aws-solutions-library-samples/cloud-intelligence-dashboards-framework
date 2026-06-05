@@ -1297,7 +1297,7 @@ class AutoDiscovery:
                     metadata = self.athena.get_table_metadata('organization_data', db)
                     if metadata:
                         matches.append(db)
-                except Exception:
+                except Exception:  # nosec B112
                     continue
 
         # If we found exactly one in the priority set, skip the full scan
@@ -1314,7 +1314,7 @@ class AutoDiscovery:
                     metadata = self.athena.get_table_metadata('organization_data', db)
                     if metadata:
                         matches.append(db)
-                except Exception:
+                except Exception:  # nosec B112
                     continue
 
         if len(matches) == 1:
@@ -1372,7 +1372,7 @@ class AutoDiscovery:
                     if metadata:
                         account_map_db = db
                         break
-                except Exception:
+                except Exception:  # nosec B112
                     continue
 
         if account_map_db:
