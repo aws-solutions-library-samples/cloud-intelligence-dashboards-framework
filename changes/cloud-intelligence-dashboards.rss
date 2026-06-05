@@ -5,8 +5,25 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Tue, 03 Jun 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 04 Jun 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] cid-cmd v4.4.14</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/CHANGELOG.md
+      </link>
+      <pubDate>Wed, 04 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a</guid>
+      <description>cid-cmd v4.4.14</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Account Mapping:</strong> <code>cid-cmd map</code> command allows you to automatically create an account_map view with your organizational taxonomy columns either from a provided CSV file or from organizational units and account tags collected with CID Data Collection framework</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[New Dashboard] Pricing Change Analysis Dashboard v1.0.0</title>
       <link>
