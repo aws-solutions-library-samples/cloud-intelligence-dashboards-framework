@@ -15655,7 +15655,7 @@ Sheets:
       ChartConfiguration:
         FieldOptions:
           SelectedFieldOptions:
-          - CustomLabel: Cusrrent Usage
+          - CustomLabel: Current Usage
             FieldId: b5de237f-b599-407f-87ec-32024624ba65.current usage.4.1672874975381
           - CustomLabel: Limit Amount
             FieldId: b5de237f-b599-407f-87ec-32024624ba65.limit amount.5.1672874978914
