@@ -11,7 +11,7 @@ dashboards:
     dashboardId: graviton-savings
     category: Advanced
     theme: MIDNIGHT
-    version: v3.0.0
+    version: v3.0.1
     file: ./graviton_savings_dashboard-definition.yaml
     nonTaxonomyDatasets:
     - graviton_mapping
@@ -938,6 +938,7 @@ views:
       , describe_domains AS (
          SELECT DISTINCT
            domainname
+         , accountid
          , engineversion
          , SPLIT_PART(engineversion, '_', 1) engine
          , SPLIT_PART(engineversion, '_', 2) version
@@ -973,7 +974,7 @@ views:
       , ((PL2.effective_priceperunit * cur.line_item_usage_amount) - cur.amortized_cost) existing_savings
       FROM
         (((cur_data cur
-      LEFT JOIN describe_domains ON (cur.line_item_resource_id = describe_domains.domainname))
+      LEFT JOIN describe_domains ON (cur.line_item_resource_id = describe_domains.domainname AND cur.line_item_usage_account_id = describe_domains.accountid))
       LEFT JOIN pricing PL1 ON ((PL1."instance type" = cur.graviton_instance) AND (PL1.location = cur.product_location) AND (PL1.termtype = (CASE WHEN (cur.pricing_term = 'Reserved') THEN 'Reserved Instance' ELSE cur.pricing_term END)) AND (COALESCE(PL1.leasecontractlength, '') = COALESCE(cur.pricing_lease_contract_length, '')) AND (COALESCE(PL1.purchaseoption, '') = COALESCE(cur.pricing_purchase_option, '')) AND (COALESCE(PL1.offeringclass, '') = COALESCE(cur.pricing_offering_class, '')) AND (cur.pricing_unit = PL1.unit)))
       LEFT JOIN pricing PL2 ON ((PL2."instance type" = cur.previous_intel_instance) AND (PL2.location = cur.product_location) AND (PL2.termtype = (CASE WHEN (cur.pricing_term = 'Reserved') THEN 'Reserved Instance' ELSE cur.pricing_term END)) AND (COALESCE(PL2.leasecontractlength, '') = COALESCE(cur.pricing_lease_contract_length, '')) AND (COALESCE(PL2.purchaseoption, '') = COALESCE(cur.pricing_purchase_option, '')) AND (COALESCE(PL2.offeringclass, '') = COALESCE(cur.pricing_offering_class, '')) AND (cur.pricing_unit = PL2.unit)))
   graviton_elasticache_view:
@@ -1051,6 +1052,7 @@ views:
       , elasticache_engineversion AS (
          SELECT DISTINCT
            cacheclusterid
+         , accountid
          , engineversion
          , engine
          , SPLIT_PART(engineversion, '.', 1) major
@@ -1077,7 +1079,7 @@ views:
          FROM
            (${data_collection_database_name}.pricing_elasticache_data od
          LEFT JOIN ${data_collection_database_name}.pricing_elasticache_data fee ON ((od.sku = fee.sku) AND (od."region code" = fee."region code") AND (fee.purchaseoption = od.purchaseoption) AND (fee.leasecontractlength = od.leasecontractlength) AND (fee.unit = 'Quantity') AND (od.offeringclass = fee.offeringclass)))
-         WHERE ((od."location type" = 'AWS Region') AND (od."product family" = 'Cache Instance'))
+         WHERE ((od."location type" = 'AWS Region') AND (od."product family" = 'Cache Instance') AND (od.usagetype NOT LIKE '%ExtendedSupport%'))
       )
       SELECT
         elasticache_spend.*
@@ -1089,7 +1091,7 @@ views:
       , (PL2.odri_priceperunit * elasticache_spend.sum_line_item_usage_amount) intel_equivilant_price
       FROM
         (((elasticache_spend
-      LEFT JOIN elasticache_engineversion ev ON (elasticache_spend.split_line_item_resource_id = ev.cacheclusterid))
+      LEFT JOIN elasticache_engineversion ev ON (elasticache_spend.split_line_item_resource_id = ev.cacheclusterid AND elasticache_spend.line_item_usage_account_id = ev.accountid))
       LEFT JOIN elasticache_pricedata PL1 ON ((elasticache_spend.graviton_instance = PL1."instance type") AND (elasticache_spend.product_location = PL1.location) AND (elasticache_spend.product_cache_engine = PL1."cache engine") AND (elasticache_spend.case_purchase_option = PL1.TermType) AND (COALESCE(elasticache_spend.pricing_lease_contract_length, '') = COALESCE(PL1.leasecontractlength, '')) AND (COALESCE(elasticache_spend.pricing_purchase_option, '') = COALESCE(PL1.purchaseoption, '')) AND (COALESCE(elasticache_spend.pricing_offering_class, '') = COALESCE(PL1.offeringclass, '')) AND (elasticache_spend.pricing_unit = PL1.unit)))
       LEFT JOIN elasticache_pricedata PL2 ON ((elasticache_spend.previous_intel = PL2."instance type") AND (elasticache_spend.product_location = PL2.location) AND (elasticache_spend.product_cache_engine = PL2."cache engine") AND (elasticache_spend.case_purchase_option = PL2.TermType) AND (COALESCE(elasticache_spend.pricing_lease_contract_length, '') = COALESCE(PL2.leasecontractlength, '')) AND (COALESCE(elasticache_spend.pricing_purchase_option, '') = COALESCE(PL2.purchaseoption, '')) AND (COALESCE(elasticache_spend.pricing_offering_class, '') = COALESCE(PL2.offeringclass, '')) AND (elasticache_spend.pricing_unit = PL2.unit)))
   graviton_mapping:
@@ -1455,7 +1457,7 @@ views:
       , (cur_data.sum_amortized_cost - (CAST(PL1.odri_priceperunit AS double) * cur_data.line_item_usage_amount)) graviton_unblended_savings
       , CAST(PL2.odri_priceperunit AS double) previous_intel_unit_cost
       , (CAST(PL2.odri_priceperunit AS double) * cur_data.line_item_usage_amount) previous_intel_cost
-      , ((CAST(PL2.odri_priceperunit AS double) * cur_data.line_item_usage_amount) - cur_data.line_item_unblended_cost) previous_intel_unblended_savings
+      , ((CAST(PL2.odri_priceperunit AS double) * cur_data.line_item_usage_amount) - cur_data.sum_amortized_cost) previous_intel_unblended_savings
       FROM
         ((((cur_data
       LEFT JOIN describe_db_data ON ((cur_data.line_item_resource_id = describe_db_data.dbinstanceidentifier) AND (cur_data.line_item_usage_account_id = describe_db_data.accountid) AND (cur_data.line_item_availability_zone = describe_db_data.region)))
