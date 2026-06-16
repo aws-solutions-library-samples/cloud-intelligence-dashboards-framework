@@ -1,5 +1,13 @@
 # What's new in the Graviton Savings Dashboard
 
+## Graviton Savings Dashboard v3.0.1:
+```
+cid-cmd update --dashboard-id graviton-savings --force --recursive
+```
+* Fix ElastiCache pricing to exclude ExtendedSupport usage types
+* Fix ElastiCache and OpenSearch cross-account resource matching by adding accountid to JOINs
+* Fix RDS previous_intel_unblended_savings to use sum_amortized_cost instead of line_item_unblended_cost
+
 ## Graviton Savings Dashboard v3.0.0:
 ```
 cid-cmd update --dashboard-id graviton-savings --force --recursive
