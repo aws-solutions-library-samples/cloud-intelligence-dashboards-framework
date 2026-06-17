@@ -539,6 +539,18 @@ class ProxyView():
                 if field.startswith(tag_type + '_'):
                     short_field_name = field[len(tag_type + '_'):]
                     return f"{tag_type}['{short_field_name}']"
+            # CUR1 fields with known CUR2 equivalents via cur1to2_mapping
+            cur2to1_mapping = {value: key for key, value in cur1to2_mapping.items()}
+            if field in cur2to1_mapping:
+                cur2_equivalent = cur2to1_mapping[field]
+                if self.cur.column_exists(cur2_equivalent):
+                    return cur2_equivalent
+                # CUR2 equivalent uses product MAP access
+                if cur2_equivalent.startswith("product["):
+                    if self.cur.column_exists('product'):
+                        return cur2_equivalent
+            # Field has no CUR2 equivalent or equivalent missing — return typed NULL
+            return empty.get(field_type.lower(), 'CAST(NULL AS varchar)')
 
 
     def column_surely_exist(self, field_to_expose):
