@@ -21,7 +21,7 @@ dashboards:
     - line_item_product_code
     - tags_json
     file: ./extended-support-cost-projection-definition.yaml
-    version: v5.2.1
+    version: v5.2.2
 datasets:
   elasticache_extended_support_view:
     data:
@@ -649,6 +649,7 @@ views:
         - product_servicecode
         - product['region']
         - pricing_public_on_demand_rate
+        - product['cache_engine']
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".elasticache_extended_support_view AS
       WITH
