@@ -539,6 +539,11 @@ class ProxyView():
                 if field.startswith(tag_type + '_'):
                     short_field_name = field[len(tag_type + '_'):]
                     return f"{tag_type}['{short_field_name}']"
+            # Non-tag fields: look up the CUR1→CUR2 mapping for the SQL expression
+            if field in cur1to2_mapping:
+                return cur1to2_mapping[field]
+            # Field has no known CUR2 equivalent — return typed NULL
+            return empty.get(field_type.lower(), 'CAST(NULL AS varchar)')
 
 
     def column_surely_exist(self, field_to_expose):
