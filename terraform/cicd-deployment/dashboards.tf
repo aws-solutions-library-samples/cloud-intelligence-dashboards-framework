@@ -116,3 +116,14 @@ module "cora_dashboard" {
   config     = local.additional_dashboards.cora
   depends_on = [module.focus_dashboard]
 }
+
+# 8. Extended Support Cost Projection Dashboard - EKS, RDS, OpenSearch, ElastiCache extended support cost analysis
+module "extended_support_dashboard" {
+  source = "./modules/cloudformation_stack"
+  providers = {
+    aws = aws.datacollection
+  }
+
+  config     = local.additional_dashboards.extended_support
+  depends_on = [module.cora_dashboard]
+}
