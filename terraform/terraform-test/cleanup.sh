@@ -190,6 +190,16 @@ fi
 terraform destroy "${TFVARS_FILES[@]}" -auto-approve
 cd "$SCRIPT_DIR"
 
+# Post-destroy safety check: ensure CID buckets are truly gone
+echo "Post-destroy safety check: verifying CID buckets are deleted..."
+for bucket in "${CID_DATA_BUCKETS[@]}"; do
+  if aws s3api head-bucket --bucket $bucket 2>/dev/null; then
+    echo "WARNING: Bucket $bucket still exists after destroy. Force deleting..."
+    aws s3 rm s3://$bucket --recursive || true
+    aws s3 rb s3://$bucket --force || true
+  fi
+done
+
 # Clean up temporary directory if created for standalone execution
 if [[ "$TEMP_DIR" == /tmp/* ]]; then
   echo "Cleaning up temporary Terraform directory"
