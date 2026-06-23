@@ -42,6 +42,8 @@ datatransfer="no"
 marketplace="no"
 connect="no"
 containers="no"
+focus="no"
+cora="no"
 
 # Check user-config.tf first, then fall back to terraform.tfvars
 CONFIG_FILE=""
@@ -81,6 +83,12 @@ if [ -n "$CONFIG_FILE" ]; then
   if grep -q "containers" "$CONFIG_FILE"; then
     containers=$(grep "containers" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
+  if grep -q "focus" "$CONFIG_FILE"; then
+    focus=$(grep "focus" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  if grep -q "cora" "$CONFIG_FILE"; then
+    cora=$(grep "cora" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
 fi
 
 # Export all variables
@@ -92,6 +100,8 @@ export datatransfer
 export marketplace
 export connect
 export containers
+export focus
+export cora
 
 # Echo the dashboard settings
 echo "Dashboard settings from Terraform configuration:"
@@ -105,6 +115,8 @@ echo "- datatransfer: $datatransfer"
 echo "- marketplace: $marketplace"
 echo "- connect: $connect"
 echo "- containers: $containers"
+echo "- focus: $focus"
+echo "- cora: $cora"
 
 cd "$PROJECT_ROOT"
 
