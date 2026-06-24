@@ -1554,23 +1554,36 @@ class QuickSight(CidBase):
         logger.info(f'Created topic: {name} ({topic_id})')
         return response
 
-    def create_agent(self, agent_id: str, name: str, spaces: list = None,
+    def create_agent(self, agent_id: str, name: str, spaces: list = None,  # pylint: disable=too-many-arguments,too-many-positional-arguments
                      description: str = '', starter_prompts: list = None,
-                     welcome_message: str = '') -> dict:
-        """Create a QuickSight Agent."""
+                     welcome_message: str = '', custom_instructions: str = '') -> dict:
+        """Create a QuickSight Agent.
+
+        Field limits are enforced to match the CreateAgent API contract:
+        Name <= 50, Description <= 1000, WelcomeMessage <= 300, up to 3
+        StarterPrompts of <= 100 chars each, and custom_instructions (>= 5
+        chars) is carried in CustomPromptInput.NewPrompt.CustomInstructions.
+        """
         params = {
             'AwsAccountId': self.account_id,
             'AgentId': agent_id,
-            'Name': name,
+            'Name': name[:50],  # API max 50
         }
         if description:
-            params['Description'] = description
+            params['Description'] = description[:1000]  # API max 1000
         if spaces:
-            params['Spaces'] = spaces
+            params['Spaces'] = spaces[:10]  # API max 10
         if starter_prompts:
-            params['StarterPrompts'] = starter_prompts[:3]  # API max 3
+            # API: max 3 prompts, each max 100 chars
+            params['StarterPrompts'] = [p[:100] for p in starter_prompts[:3]]
         if welcome_message:
-            params['WelcomeMessage'] = welcome_message
+            params['WelcomeMessage'] = welcome_message[:300]  # API max 300
+        # Custom instructions are carried in the CustomPromptInput union via
+        # its NewPrompt member; the API rejects strings shorter than 5 chars.
+        if custom_instructions and len(custom_instructions) >= 5:
+            params['CustomPromptInput'] = {
+                'NewPrompt': {'CustomInstructions': custom_instructions}
+            }
         response = self.client.create_agent(**params)
         logger.info(f'Created agent: {name} ({agent_id}), status={response.get("AgentStatus")}')
         return response
@@ -1615,8 +1628,40 @@ class QuickSight(CidBase):
             }],
         )
 
+    def delete_agent(self, agent_id: str) -> dict:
+        """Delete a QuickSight Agent."""
+        response = self.client.delete_agent(AwsAccountId=self.account_id, AgentId=agent_id)
+        logger.info(f'Deleted agent: {agent_id}')
+        return response
+
+    def delete_topic(self, topic_id: str) -> dict:
+        """Delete a Q Topic."""
+        response = self.client.delete_topic(AwsAccountId=self.account_id, TopicId=topic_id)
+        logger.info(f'Deleted topic: {topic_id}')
+        return response
+
+    def delete_space(self, space_id: str) -> dict:
+        """Delete a QuickSight Space."""
+        response = self.client.delete_space(AwsAccountId=self.account_id, SpaceId=space_id)
+        logger.info(f'Deleted space: {space_id}')
+        return response
+
+    # Integer/decimal columns whose name looks like an identifier, code or
+    # year are dimensions, not additive measures - summing an account id is
+    # meaningless for Q&A. Used to refine the measure/dimension heuristic.
+    _NON_MEASURE_HINTS = ('id', 'key', 'code', 'number', 'num', 'year',
+                          'month', 'day', 'quarter', 'arn', 'account', 'zip')
+
     def build_topic_columns(self, dataset_id: str) -> list:
-        """Build topic column definitions from a dataset's OutputColumns."""
+        """Build topic column definitions from a dataset's OutputColumns.
+
+        Maps QuickSight column types to Q Topic ``TopicColumn`` definitions.
+        Numeric columns become additive ``MEASURE`` columns unless their name
+        looks like an identifier/code/date-part (then ``DIMENSION``). Date and
+        datetime columns get a ``TimeGranularity`` (the correct field for
+        date precision; ``SemanticType.TypeName='Date'`` is not an engine-
+        recognized value).
+        """
         dataset = self.describe_dataset(dataset_id)
         if not dataset or not dataset.columns:
             return []
@@ -1624,7 +1669,9 @@ class QuickSight(CidBase):
         for col in dataset.columns:
             col_name = col.get('Name', '')
             col_type = col.get('Type', 'STRING')
-            is_measure = col_type in ('INTEGER', 'DECIMAL')
+            name_lc = col_name.lower()
+            looks_like_id = any(hint in name_lc for hint in self._NON_MEASURE_HINTS)
+            is_measure = col_type in ('INTEGER', 'DECIMAL') and not looks_like_id
             column_def = {
                 'ColumnName': col_name,
                 'ColumnFriendlyName': col_name.replace('_', ' ').title(),
@@ -1633,6 +1680,8 @@ class QuickSight(CidBase):
                 'IsIncludedInTopic': True,
             }
             if col_type == 'DATETIME':
-                column_def['SemanticType'] = {'TypeName': 'Date'}
+                # TimeGranularity is the correct date-precision field on a
+                # TopicColumn (valid values SECOND..YEAR).
+                column_def['TimeGranularity'] = 'DAY'
             columns.append(column_def)
         return columns
