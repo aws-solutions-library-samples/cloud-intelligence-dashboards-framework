@@ -317,6 +317,28 @@ def teardown(ctx, **kwargs):
 
     ctx.obj.teardown(**kwargs)
 
+@click.option('--dashboard-id', help='QuickSight dashboard id', default=None)
+@click.option('--agent-template', help='Agent template name (cudos, cost_intelligence_dashboard, etc.)', default=None)
+@click.option('-v', '--verbose', count=True)
+@click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
+@cid_command
+def create_agent(ctx, dashboard_id, agent_template, **kwargs):
+    """Create a QuickSight Agent with Space and Topic for a CID dashboard
+
+    \b
+    This command:
+    1. Shows list of available agent templates
+    2. Creates a Space containing the dashboard and its datasets
+    3. Creates a Q Topic with auto-detected column definitions
+    4. Creates an Agent linked to the Space with curated prompts
+
+    \b
+    Available templates: cudos, cost_intelligence_dashboard, kpi_dashboard,
+    ta-organizational-view, compute_optimizer
+    """
+    ctx.obj.create_agent(dashboard_id=dashboard_id, agent_template=agent_template, **kwargs)
+
+
 if __name__ == '__main__':
     main()
 

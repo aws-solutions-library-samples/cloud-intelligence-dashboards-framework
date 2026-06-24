@@ -2259,3 +2259,179 @@ class Cid():
         self.create_or_update_view(view_name='cur')
         cid_print('Please check crawler in a few minutes https://console.aws.amazon.com/glue/home?#/v2/data-catalog/crawlers')
         set_parameters({'cur-table-name': path_fragments[-1].lower().replace('-', '_')})
+
+    @command
+    def create_agent(self, dashboard_id=None, agent_template=None, **kwargs):
+        """Create a QuickSight Agent with Space and Topic for a CID dashboard."""
+        from uuid import uuid4
+
+        # Load agent templates
+        templates = self._load_agent_templates()
+
+        # 1. Select agent template or dashboard
+        if not agent_template and not dashboard_id:
+            # Show available agent templates
+            choices = {}
+            for key, tmpl in templates.items():
+                choices[f"{tmpl['name']} ({key})"] = key
+            choices['[Custom] Select any deployed dashboard'] = '__custom__'
+
+            agent_template = get_parameter(
+                param_name='agent-template',
+                message='Select an agent to create',
+                choices=choices,
+            )
+
+        # Resolve template config
+        if agent_template and agent_template != '__custom__':
+            tmpl = templates.get(agent_template)
+            if not tmpl:
+                cid_print(f'Unknown agent template: {agent_template}')
+                cid_print(f'Available: {", ".join(templates.keys())}')
+                return
+            dashboard_id = dashboard_id or tmpl['dashboard_id']
+            agent_name = tmpl['name']
+            description = tmpl['description']
+            starter_prompts = tmpl.get('starter_prompts', [])
+            welcome_message = tmpl.get('welcome_message', '')
+            custom_instructions = tmpl.get('custom_instructions', '')
+        else:
+            # Custom: select from deployed dashboards
+            if not dashboard_id:
+                if not self.qs.dashboards:
+                    cid_print('No deployed dashboards found')
+                    return
+                dashboard_id = self.qs.select_dashboard(force=True)
+                if not dashboard_id:
+                    cid_print('No dashboard selected')
+                    return
+            agent_name = None  # will be set from dashboard name
+            description = ''
+            starter_prompts = [
+                'What are my top cost drivers this month?',
+                'Show cost trends by service over the last 90 days',
+                'Which accounts have the highest month-over-month increase?',
+            ]
+            welcome_message = ''
+            custom_instructions = ''
+
+        # 2. Discover dashboard
+        dashboard = self.qs.dashboards.get(dashboard_id) if self.qs.dashboards else None
+        if not dashboard:
+            dashboard = self.qs.discover_dashboard(dashboard_id)
+        if not dashboard:
+            cid_print(f'Dashboard {dashboard_id} not found. Is it deployed?')
+            return
+
+        dashboard_name = dashboard.name
+        if not agent_name:
+            agent_name = f'CID - {dashboard_name}'
+        if not description:
+            description = f'AI agent for {dashboard_name}'
+        if not welcome_message:
+            welcome_message = f'Hi! I can help you explore your {dashboard_name} data. Ask me anything.'
+
+        cid_print(f'Creating agent: {agent_name}')
+
+        # 3. Create Space
+        space_id = f'cid-{dashboard_id}'
+        space_name = f'CID - {dashboard_name}'
+        try:
+            self.qs.create_space(space_id, space_name, f'Auto-created space for {dashboard_name}')
+            cid_print(f'  ✓ Space: {space_name}')
+        except self.qs.client.exceptions.ResourceExistsException:
+            cid_print(f'  · Space already exists: {space_name}')
+        except Exception as exc:
+            logger.error(f'Failed to create space: {exc}')
+            raise CidError(f'Failed to create space: {exc}')
+
+        # 4. Add dashboard and datasets to space
+        space_arn = f'arn:{self.base.partition}:quicksight:{self.qs.session.region_name}:{self.qs.account_id}:space/{space_id}'
+        resources_to_add = [{'ResourceDetails': {'Dashboard': {'DashboardId': dashboard_id}}, 'ResourceType': 'DASHBOARD'}]
+        dataset_ids = dashboard.get_dataset_ids()
+        for ds_id in dataset_ids:
+            resources_to_add.append({'ResourceDetails': {'DataSet': {'DataSetId': ds_id}}, 'ResourceType': 'DATASET'})
+
+        try:
+            self.qs.update_space_resources(space_id, add_resources=resources_to_add)
+            cid_print(f'  ✓ Added {len(resources_to_add)} resources to space')
+        except Exception as exc:
+            logger.warning(f'  ! Failed to add resources to space: {exc}')
+
+        # 5. Create Topic with column definitions from datasets
+        topic_id = f'cid-topic-{dashboard_id}'
+        datasets_config = []
+        for ds_id in dataset_ids:
+            dataset = self.qs.describe_dataset(ds_id)
+            if not dataset:
+                continue
+            columns = self.qs.build_topic_columns(ds_id)
+            if not columns:
+                continue
+            dataset_arn = f'arn:{self.base.partition}:quicksight:{self.qs.session.region_name}:{self.qs.account_id}:dataset/{ds_id}'
+            datasets_config.append({
+                'DatasetArn': dataset_arn,
+                'DatasetName': dataset.name,
+                'DatasetDescription': f'Dataset: {dataset.name}',
+                'Columns': columns,
+                'CalculatedFields': [],
+                'NamedEntities': [],
+                'Filters': [],
+            })
+
+        if datasets_config:
+            try:
+                topic_params = {
+                    'topic_id': topic_id,
+                    'name': f'CID - {dashboard_name}',
+                    'description': f'Q Topic for natural language queries on {dashboard_name}',
+                    'datasets_config': datasets_config,
+                }
+                self.qs.create_topic(**topic_params)
+                cid_print(f'  ✓ Topic: {sum(len(d["Columns"]) for d in datasets_config)} columns across {len(datasets_config)} dataset(s)')
+            except self.qs.client.exceptions.ResourceExistsException:
+                cid_print(f'  · Topic already exists')
+            except Exception as exc:
+                logger.warning(f'  ! Failed to create topic: {exc}')
+        else:
+            cid_print('  ! No datasets found, skipping topic creation')
+
+        # 6. Create Agent
+        agent_id = f'cid-agent-{dashboard_id}'
+        try:
+            agent_params = {
+                'agent_id': agent_id,
+                'name': agent_name,
+                'spaces': [space_arn],
+                'description': description,
+                'starter_prompts': starter_prompts,
+                'welcome_message': welcome_message,
+            }
+            response = self.qs.create_agent(**agent_params)
+            cid_print(f'  ✓ Agent: {agent_name} (status: {response.get("AgentStatus", "UNKNOWN")})')
+        except self.qs.client.exceptions.ResourceExistsException:
+            cid_print(f'  · Agent already exists: {agent_id}')
+        except Exception as exc:
+            logger.error(f'Failed to create agent: {exc}')
+            raise CidError(f'Failed to create agent: {exc}')
+
+        # 7. Grant permissions to current user
+        if self.qs.user:
+            user_arn = self.qs.user.get('Arn', '')
+            if user_arn:
+                try:
+                    if datasets_config:
+                        self.qs.update_topic_permissions(topic_id, user_arn)
+                    self.qs.update_agent_permissions(agent_id, user_arn)
+                    cid_print(f'  ✓ Permissions granted to: {self.qs.user.get("UserName", "")}')
+                except Exception as exc:
+                    logger.warning(f'  ! Failed to grant permissions: {exc}')
+
+        cid_print(f'\n✓ Done! Open QuickSight to interact with your new agent.')
+
+    def _load_agent_templates(self) -> dict:
+        """Load agent templates from bundled YAML."""
+        import yaml as _yaml
+        templates_path = resources.files('cid').joinpath('data/agent_templates.yaml')
+        with resources.as_file(templates_path) as f:
+            return _yaml.safe_load(f.read_text())
