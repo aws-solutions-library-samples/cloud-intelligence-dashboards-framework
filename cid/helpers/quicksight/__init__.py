@@ -1511,3 +1511,128 @@ class QuickSight(CidBase):
             Dataset(raw1).to_diffable_structure(),
             Dataset(raw2).to_diffable_structure(),
         )
+
+
+    # ─── Agent / Space / Topic APIs ────────────────────────────────────
+
+    def create_space(self, space_id: str, name: str, description: str = '') -> dict:
+        """Create a QuickSight Space."""
+        response = self.client.create_space(
+            AwsAccountId=self.account_id,
+            SpaceId=space_id,
+            Name=name,
+            Description=description,
+        )
+        logger.info(f'Created space: {name} ({space_id})')
+        return response
+
+    def update_space_resources(self, space_id: str, add_resources: list = None, remove_resources: list = None) -> dict:
+        """Add or remove resources from a Space."""
+        params = {'AwsAccountId': self.account_id, 'SpaceId': space_id}
+        if add_resources:
+            params['AddResources'] = add_resources
+        if remove_resources:
+            params['RemoveResources'] = remove_resources
+        response = self.client.update_space_resources(**params)
+        failed = response.get('FailedResourceOperations', [])
+        if failed:
+            logger.warning(f'Some resources failed to add to space: {failed}')
+        return response
+
+    def create_topic(self, topic_id: str, name: str, description: str, datasets_config: list) -> dict:
+        """Create a Q Topic with dataset column definitions."""
+        response = self.client.create_topic(
+            AwsAccountId=self.account_id,
+            TopicId=topic_id,
+            Topic={
+                'Name': name,
+                'Description': description,
+                'DataSets': datasets_config,
+                'UserExperienceVersion': 'NEW_READER_EXPERIENCE',
+            },
+        )
+        logger.info(f'Created topic: {name} ({topic_id})')
+        return response
+
+    def create_agent(self, agent_id: str, name: str, spaces: list = None,
+                     description: str = '', starter_prompts: list = None,
+                     welcome_message: str = '') -> dict:
+        """Create a QuickSight Agent."""
+        params = {
+            'AwsAccountId': self.account_id,
+            'AgentId': agent_id,
+            'Name': name,
+        }
+        if description:
+            params['Description'] = description
+        if spaces:
+            params['Spaces'] = spaces
+        if starter_prompts:
+            params['StarterPrompts'] = starter_prompts[:3]  # API max 3
+        if welcome_message:
+            params['WelcomeMessage'] = welcome_message
+        response = self.client.create_agent(**params)
+        logger.info(f'Created agent: {name} ({agent_id}), status={response.get("AgentStatus")}')
+        return response
+
+    def update_topic_permissions(self, topic_id: str, principal_arn: str) -> dict:
+        """Grant full topic permissions to a principal."""
+        return self.client.update_topic_permissions(
+            AwsAccountId=self.account_id,
+            TopicId=topic_id,
+            GrantPermissions=[{
+                'Principal': principal_arn,
+                'Actions': [
+                    'quicksight:DescribeTopic',
+                    'quicksight:DescribeTopicRefresh',
+                    'quicksight:ListTopicRefreshSchedules',
+                    'quicksight:DescribeTopicRefreshSchedule',
+                    'quicksight:DeleteTopic',
+                    'quicksight:UpdateTopic',
+                    'quicksight:CreateTopicRefreshSchedule',
+                    'quicksight:DeleteTopicRefreshSchedule',
+                    'quicksight:UpdateTopicRefreshSchedule',
+                    'quicksight:DescribeTopicPermissions',
+                    'quicksight:UpdateTopicPermissions',
+                ],
+            }],
+        )
+
+    def update_agent_permissions(self, agent_id: str, principal_arn: str) -> dict:
+        """Grant agent permissions to a principal."""
+        return self.client.update_agent_permissions(
+            AwsAccountId=self.account_id,
+            AgentId=agent_id,
+            GrantPermissions=[{
+                'Principal': principal_arn,
+                'Actions': [
+                    'quicksight:DescribeAgent',
+                    'quicksight:UpdateAgent',
+                    'quicksight:DeleteAgent',
+                    'quicksight:DescribeAgentPermissions',
+                    'quicksight:UpdateAgentPermissions',
+                ],
+            }],
+        )
+
+    def build_topic_columns(self, dataset_id: str) -> list:
+        """Build topic column definitions from a dataset's OutputColumns."""
+        dataset = self.describe_dataset(dataset_id)
+        if not dataset or not dataset.columns:
+            return []
+        columns = []
+        for col in dataset.columns:
+            col_name = col.get('Name', '')
+            col_type = col.get('Type', 'STRING')
+            is_measure = col_type in ('INTEGER', 'DECIMAL')
+            column_def = {
+                'ColumnName': col_name,
+                'ColumnFriendlyName': col_name.replace('_', ' ').title(),
+                'ColumnDataRole': 'MEASURE' if is_measure else 'DIMENSION',
+                'Aggregation': 'SUM' if is_measure else 'COUNT',
+                'IsIncludedInTopic': True,
+            }
+            if col_type == 'DATETIME':
+                column_def['SemanticType'] = {'TypeName': 'Date'}
+            columns.append(column_def)
+        return columns
