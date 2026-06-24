@@ -2262,8 +2262,20 @@ class Cid():
 
     @command
     def create_agent(self, dashboard_id=None, agent_template=None, **kwargs):
-        """Create a QuickSight Agent with Space and Topic for a CID dashboard."""
-        from uuid import uuid4
+        """Create a QuickSight Agent with Space and Topic for a CID dashboard.
+
+        Builds the full Generative Q&A stack for a deployed dashboard: a Space
+        containing the dashboard, its datasets and a Q Topic, plus an Agent
+        bound to the Space. Requires QuickSight Enterprise with Amazon Q
+        enabled in a supported Region.
+        """
+        # Verify the running SDK actually exposes the Spaces/Agents APIs
+        # (added in boto3/botocore 1.43.19) before doing any work.
+        if 'CreateAgent' not in self.qs.client.meta.service_model.operation_names:
+            raise CidCritical(
+                'The installed boto3/botocore is too old for QuickSight Agents. '
+                'Please upgrade to boto3>=1.43.19 (pip install -U boto3).'
+            )
 
         # Load agent templates
         templates = self._load_agent_templates()
@@ -2286,9 +2298,10 @@ class Cid():
         if agent_template and agent_template != '__custom__':
             tmpl = templates.get(agent_template)
             if not tmpl:
-                cid_print(f'Unknown agent template: {agent_template}')
-                cid_print(f'Available: {", ".join(templates.keys())}')
-                return
+                raise CidCritical(
+                    f'Unknown agent template: {agent_template}. '
+                    f'Available: {", ".join(templates.keys())}'
+                )
             dashboard_id = dashboard_id or tmpl['dashboard_id']
             agent_name = tmpl['name']
             description = tmpl['description']
@@ -2299,12 +2312,10 @@ class Cid():
             # Custom: select from deployed dashboards
             if not dashboard_id:
                 if not self.qs.dashboards:
-                    cid_print('No deployed dashboards found')
-                    return
+                    raise CidCritical('No deployed dashboards found')
                 dashboard_id = self.qs.select_dashboard(force=True)
                 if not dashboard_id:
-                    cid_print('No dashboard selected')
-                    return
+                    raise CidCritical('No dashboard selected')
             agent_name = None  # will be set from dashboard name
             description = ''
             starter_prompts = [
@@ -2313,15 +2324,20 @@ class Cid():
                 'Which accounts have the highest month-over-month increase?',
             ]
             welcome_message = ''
-            custom_instructions = ''
+            # Let the user supply custom instructions for the [Custom] path;
+            # empty (or <5 chars) is fine and is simply not sent to the API.
+            custom_instructions = get_parameter(
+                param_name='agent-custom-instructions',
+                message='Custom instructions for the agent (optional, press Enter to skip)',
+                default='',
+            )
 
         # 2. Discover dashboard
         dashboard = self.qs.dashboards.get(dashboard_id) if self.qs.dashboards else None
         if not dashboard:
             dashboard = self.qs.discover_dashboard(dashboard_id)
         if not dashboard:
-            cid_print(f'Dashboard {dashboard_id} not found. Is it deployed?')
-            return
+            raise CidCritical(f'Dashboard {dashboard_id} not found. Is it deployed?')
 
         dashboard_name = dashboard.name
         if not agent_name:
@@ -2331,35 +2347,45 @@ class Cid():
         if not welcome_message:
             welcome_message = f'Hi! I can help you explore your {dashboard_name} data. Ask me anything.'
 
-        cid_print(f'Creating agent: {agent_name}')
+        cid_print(f'Creating agent: <BOLD>{agent_name}<END>')
+
+        partition = self.base.partition
+        region = self.qs.session.region_name
+        account_id = self.qs.account_id
 
         # 3. Create Space
         space_id = f'cid-{dashboard_id}'
         space_name = f'CID - {dashboard_name}'
+        # Fall back to a constructed ARN; overwritten with the real one below.
+        space_arn = f'arn:{partition}:quicksight:{region}:{account_id}:space/{space_id}'
         try:
-            self.qs.create_space(space_id, space_name, f'Auto-created space for {dashboard_name}')
-            cid_print(f'  ✓ Space: {space_name}')
+            response = self.qs.create_space(space_id, space_name, f'Auto-created space for {dashboard_name}')
+            # CreateSpace returns the ARN as lowercase 'spaceArn'.
+            space_arn = response.get('spaceArn', space_arn)
+            cid_print(f'  <GREEN>OK<END> Space: {space_name}')
         except self.qs.client.exceptions.ResourceExistsException:
-            cid_print(f'  · Space already exists: {space_name}')
-        except Exception as exc:
-            logger.error(f'Failed to create space: {exc}')
-            raise CidError(f'Failed to create space: {exc}')
+            cid_print(f'  Space already exists: {space_name}')
+        except self.qs.client.exceptions.AccessDeniedException as exc:
+            raise CidCritical(f'Access denied creating space (is Amazon Q enabled?): {exc}') from exc
+        except ClientError as exc:
+            raise CidCritical(f'Failed to create space: {exc}') from exc
 
-        # 4. Add dashboard and datasets to space
-        space_arn = f'arn:{self.base.partition}:quicksight:{self.qs.session.region_name}:{self.qs.account_id}:space/{space_id}'
-        resources_to_add = [{'ResourceDetails': {'Dashboard': {'DashboardId': dashboard_id}}, 'ResourceType': 'DASHBOARD'}]
+        # 4. Add dashboard and datasets to the space. SpaceQuickSightResourceDetails
+        # is a union taking a single 'resourceArn'; ResourceType uses 'DATA_SET'.
         dataset_ids = dashboard.get_dataset_ids()
+        resources_to_add = [{
+            'ResourceType': 'DASHBOARD',
+            'ResourceDetails': {'resourceArn': f'arn:{partition}:quicksight:{region}:{account_id}:dashboard/{dashboard_id}'},
+        }]
         for ds_id in dataset_ids:
-            resources_to_add.append({'ResourceDetails': {'DataSet': {'DataSetId': ds_id}}, 'ResourceType': 'DATASET'})
-
-        try:
-            self.qs.update_space_resources(space_id, add_resources=resources_to_add)
-            cid_print(f'  ✓ Added {len(resources_to_add)} resources to space')
-        except Exception as exc:
-            logger.warning(f'  ! Failed to add resources to space: {exc}')
+            resources_to_add.append({
+                'ResourceType': 'DATA_SET',
+                'ResourceDetails': {'resourceArn': f'arn:{partition}:quicksight:{region}:{account_id}:dataset/{ds_id}'},
+            })
 
         # 5. Create Topic with column definitions from datasets
         topic_id = f'cid-topic-{dashboard_id}'
+        topic_arn = f'arn:{partition}:quicksight:{region}:{account_id}:topic/{topic_id}'
         datasets_config = []
         for ds_id in dataset_ids:
             dataset = self.qs.describe_dataset(ds_id)
@@ -2368,70 +2394,132 @@ class Cid():
             columns = self.qs.build_topic_columns(ds_id)
             if not columns:
                 continue
-            dataset_arn = f'arn:{self.base.partition}:quicksight:{self.qs.session.region_name}:{self.qs.account_id}:dataset/{ds_id}'
+            dataset_arn = f'arn:{partition}:quicksight:{region}:{account_id}:dataset/{ds_id}'
             datasets_config.append({
                 'DatasetArn': dataset_arn,
                 'DatasetName': dataset.name,
                 'DatasetDescription': f'Dataset: {dataset.name}',
                 'Columns': columns,
-                'CalculatedFields': [],
-                'NamedEntities': [],
-                'Filters': [],
             })
 
+        topic_created = False
         if datasets_config:
             try:
-                topic_params = {
-                    'topic_id': topic_id,
-                    'name': f'CID - {dashboard_name}',
-                    'description': f'Q Topic for natural language queries on {dashboard_name}',
-                    'datasets_config': datasets_config,
-                }
-                self.qs.create_topic(**topic_params)
-                cid_print(f'  ✓ Topic: {sum(len(d["Columns"]) for d in datasets_config)} columns across {len(datasets_config)} dataset(s)')
+                self.qs.create_topic(
+                    topic_id=topic_id,
+                    name=f'CID - {dashboard_name}',
+                    description=f'Q Topic for natural language queries on {dashboard_name}',
+                    datasets_config=datasets_config,
+                )
+                topic_created = True
+                cid_print(f'  <GREEN>OK<END> Topic: {sum(len(d["Columns"]) for d in datasets_config)} '
+                          f'columns across {len(datasets_config)} dataset(s)')
             except self.qs.client.exceptions.ResourceExistsException:
-                cid_print(f'  · Topic already exists')
-            except Exception as exc:
+                topic_created = True
+                cid_print('  Topic already exists')
+            except ClientError as exc:
                 logger.warning(f'  ! Failed to create topic: {exc}')
         else:
             cid_print('  ! No datasets found, skipping topic creation')
 
+        # Attach the topic to the space so the agent can use it for Q&A.
+        if topic_created:
+            resources_to_add.append({
+                'ResourceType': 'TOPIC',
+                'ResourceDetails': {'resourceArn': topic_arn},
+            })
+
+        try:
+            resp = self.qs.update_space_resources(space_id, add_resources=resources_to_add)
+            failed = resp.get('FailedResourceOperations', [])
+            ok_count = len(resources_to_add) - len(failed)
+            cid_print(f'  <GREEN>OK<END> Added {ok_count} resource(s) to space')
+            for failure in failed:
+                logger.warning(f'  ! Resource not added to space: {failure}')
+        except ClientError as exc:
+            logger.warning(f'  ! Failed to add resources to space: {exc}')
+
         # 6. Create Agent
         agent_id = f'cid-agent-{dashboard_id}'
         try:
-            agent_params = {
-                'agent_id': agent_id,
-                'name': agent_name,
-                'spaces': [space_arn],
-                'description': description,
-                'starter_prompts': starter_prompts,
-                'welcome_message': welcome_message,
-            }
-            response = self.qs.create_agent(**agent_params)
-            cid_print(f'  ✓ Agent: {agent_name} (status: {response.get("AgentStatus", "UNKNOWN")})')
+            response = self.qs.create_agent(
+                agent_id=agent_id,
+                name=agent_name,
+                spaces=[space_arn],
+                description=description,
+                starter_prompts=starter_prompts,
+                welcome_message=welcome_message,
+                custom_instructions=custom_instructions,
+            )
+            cid_print(f'  <GREEN>OK<END> Agent: {agent_name} (status: {response.get("AgentStatus", "UNKNOWN")})')
         except self.qs.client.exceptions.ResourceExistsException:
-            cid_print(f'  · Agent already exists: {agent_id}')
-        except Exception as exc:
-            logger.error(f'Failed to create agent: {exc}')
-            raise CidError(f'Failed to create agent: {exc}')
+            cid_print(f'  Agent already exists: {agent_id}')
+        except ClientError as exc:
+            raise CidCritical(f'Failed to create agent: {exc}') from exc
 
         # 7. Grant permissions to current user
         if self.qs.user:
             user_arn = self.qs.user.get('Arn', '')
             if user_arn:
                 try:
-                    if datasets_config:
+                    if topic_created:
                         self.qs.update_topic_permissions(topic_id, user_arn)
                     self.qs.update_agent_permissions(agent_id, user_arn)
-                    cid_print(f'  ✓ Permissions granted to: {self.qs.user.get("UserName", "")}')
-                except Exception as exc:
+                    cid_print(f'  <GREEN>OK<END> Permissions granted to: {self.qs.user.get("UserName", "")}')
+                except ClientError as exc:
                     logger.warning(f'  ! Failed to grant permissions: {exc}')
 
-        cid_print(f'\n✓ Done! Open QuickSight to interact with your new agent.')
+        cid_print('\n<GREEN>Done!<END> Open QuickSight to interact with your new agent.')
+
+    @command
+    def delete_agent(self, dashboard_id=None, **kwargs):
+        """Delete the QuickSight Agent, Topic and Space created for a dashboard."""
+        if 'DeleteAgent' not in self.qs.client.meta.service_model.operation_names:
+            raise CidCritical(
+                'The installed boto3/botocore is too old for QuickSight Agents. '
+                'Please upgrade to boto3>=1.43.19 (pip install -U boto3).'
+            )
+        if not dashboard_id:
+            if not self.qs.dashboards:
+                raise CidCritical('No deployed dashboards found')
+            dashboard_id = self.qs.select_dashboard(force=True)
+            if not dashboard_id:
+                raise CidCritical('No dashboard selected')
+
+        agent_id = f'cid-agent-{dashboard_id}'
+        topic_id = f'cid-topic-{dashboard_id}'
+        space_id = f'cid-{dashboard_id}'
+
+        if not get_yesno_parameter(
+                param_name='confirm',
+                message=f'Delete agent <BOLD>{agent_id}<END>, topic {topic_id} and space {space_id}?',
+                default='no'):
+            cid_print('Cancelled')
+            return
+
+        # Delete in reverse order of creation; ignore already-absent resources.
+        for label, deleter, resource_id in (
+            ('Agent', self.qs.delete_agent, agent_id),
+            ('Topic', self.qs.delete_topic, topic_id),
+            ('Space', self.qs.delete_space, space_id),
+        ):
+            try:
+                deleter(resource_id)
+                cid_print(f'  <GREEN>OK<END> Deleted {label.lower()}: {resource_id}')
+            except self.qs.client.exceptions.ResourceNotFoundException:
+                cid_print(f'  {label} not found (already deleted): {resource_id}')
+            except self.qs.client.exceptions.ConflictException:
+                # A freshly created agent may still be UPDATING; it cannot be
+                # deleted until ACTIVE. Tell the user to retry rather than fail.
+                cid_print(f'  ! {label} {resource_id} is busy (still updating) - '
+                          f'wait for it to become ACTIVE and re-run delete-agent')
+            except ClientError as exc:
+                logger.warning(f'  ! Failed to delete {label.lower()} {resource_id}: {exc}')
+
+        cid_print('\n<GREEN>Done!<END>')
 
     def _load_agent_templates(self) -> dict:
         """Load agent templates from bundled YAML."""
-        import yaml as _yaml
         templates_path = resources.files('cid').joinpath('data/agent_templates.yaml')
         with resources.as_file(templates_path) as f:
-            return _yaml.safe_load(f.read_text())
+            return yaml.safe_load(f.read_text(encoding='utf-8'))
