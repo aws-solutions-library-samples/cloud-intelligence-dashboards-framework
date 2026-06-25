@@ -2457,15 +2457,21 @@ class Cid():
         except ClientError as exc:
             raise CidCritical(f'Failed to create agent: {exc}') from exc
 
-        # 7. Grant permissions to current user
+        # 7. Grant permissions to current user. A freshly created agent is
+        # transiently UPDATING and rejects permission calls with
+        # ConflictException, so wait for it to settle first.
         if self.qs.user:
             user_arn = self.qs.user.get('Arn', '')
             if user_arn:
                 try:
                     if topic_created:
                         self.qs.update_topic_permissions(topic_id, user_arn)
+                    self.qs.wait_for_agent_active(agent_id)
                     self.qs.update_agent_permissions(agent_id, user_arn)
                     cid_print(f'  <GREEN>OK<END> Permissions granted to: {self.qs.user.get("UserName", "")}')
+                except self.qs.client.exceptions.ConflictException:
+                    cid_print('  ! Agent still updating; re-run create-agent once it is ACTIVE '
+                              'to grant permissions (resources were created successfully)')
                 except ClientError as exc:
                     logger.warning(f'  ! Failed to grant permissions: {exc}')
 
@@ -2496,6 +2502,10 @@ class Cid():
                 default='no'):
             cid_print('Cancelled')
             return
+
+        # An agent that is still CREATING/UPDATING rejects delete with
+        # ConflictException, so wait for it to settle first.
+        self.qs.wait_for_agent_active(agent_id)
 
         # Delete in reverse order of creation; ignore already-absent resources.
         for label, deleter, resource_id in (

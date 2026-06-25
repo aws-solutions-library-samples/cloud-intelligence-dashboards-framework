@@ -80,6 +80,29 @@ def test_build_topic_columns_measure_dimension_and_time():
     assert 'SemanticType' not in cols['usage_date']
 
 
+def test_measure_heuristic_word_boundaries_and_flags():
+    """Regression: substring matching mis-classified real columns (found in a
+    live run). 'Forecasted Monthly Revenue' must stay a MEASURE (the 'month'
+    token only matches whole words), and an 'IsLatest' flag must be a DIMENSION.
+    """
+    qs = _qs()
+    qs.describe_dataset = MagicMock(return_value=SimpleNamespace(columns=[
+        {'Name': 'Forecasted Monthly Revenue', 'Type': 'INTEGER'},
+        {'Name': 'Weighted Revenue', 'Type': 'INTEGER'},
+        {'Name': 'IsLatest', 'Type': 'INTEGER'},
+        {'Name': 'has_discount', 'Type': 'INTEGER'},
+        {'Name': 'year', 'Type': 'INTEGER'},
+        {'Name': 'order_count', 'Type': 'INTEGER'},
+    ]))
+    cols = {c['ColumnName']: c for c in qs.build_topic_columns('ds-1')}
+    assert cols['Forecasted Monthly Revenue']['ColumnDataRole'] == 'MEASURE'
+    assert cols['Weighted Revenue']['ColumnDataRole'] == 'MEASURE'
+    assert cols['order_count']['ColumnDataRole'] == 'MEASURE'
+    assert cols['IsLatest']['ColumnDataRole'] == 'DIMENSION'
+    assert cols['has_discount']['ColumnDataRole'] == 'DIMENSION'
+    assert cols['year']['ColumnDataRole'] == 'DIMENSION'
+
+
 def test_update_space_resources_payload_shape():
     """ResourceDetails must be the resourceArn union; enum is DATA_SET / TOPIC."""
     qs = _qs()

@@ -1628,6 +1628,28 @@ class QuickSight(CidBase):
             }],
         )
 
+    def describe_agent(self, agent_id: str) -> dict:
+        """Describe a QuickSight Agent (returns the Agent structure or {})."""
+        resp = self.client.describe_agent(AwsAccountId=self.account_id, AgentId=agent_id)
+        return resp.get('Agent', resp)
+
+    def wait_for_agent_active(self, agent_id: str, attempts: int = 12, delay: int = 5) -> str:
+        """Poll until an Agent leaves CREATING/UPDATING. Returns final status.
+
+        A freshly created agent is transiently UPDATING and rejects permission
+        or delete calls with ConflictException until it settles to ACTIVE.
+        """
+        status = 'UNKNOWN'
+        for _ in range(attempts):
+            try:
+                status = self.describe_agent(agent_id).get('AgentStatus', 'UNKNOWN')
+            except self.client.exceptions.ResourceNotFoundException:
+                return 'NOT_FOUND'
+            if status not in ('CREATING', 'UPDATING'):
+                return status
+            time.sleep(delay)
+        return status
+
     def delete_agent(self, agent_id: str) -> dict:
         """Delete a QuickSight Agent."""
         response = self.client.delete_agent(AwsAccountId=self.account_id, AgentId=agent_id)
@@ -1646,19 +1668,42 @@ class QuickSight(CidBase):
         logger.info(f'Deleted space: {space_id}')
         return response
 
-    # Integer/decimal columns whose name looks like an identifier, code or
-    # year are dimensions, not additive measures - summing an account id is
-    # meaningless for Q&A. Used to refine the measure/dimension heuristic.
-    _NON_MEASURE_HINTS = ('id', 'key', 'code', 'number', 'num', 'year',
-                          'month', 'day', 'quarter', 'arn', 'account', 'zip')
+    # Whole-word tokens that mark a numeric column as an identifier/key/flag
+    # rather than an additive measure (summing an id or a boolean is
+    # meaningless for Q&A). Matched against word tokens, not substrings, so
+    # 'Monthly Revenue' is NOT caught by 'month'.
+    _NON_MEASURE_TOKENS = frozenset((
+        'id', 'ids', 'key', 'keys', 'code', 'codes', 'arn', 'arns',
+        'uuid', 'guid', 'account', 'zip', 'zipcode', 'postal',
+        'year', 'month', 'day', 'quarter', 'week', 'hour',
+    ))
+
+    @staticmethod
+    def _is_additive_measure(col_name: str, col_type: str) -> bool:
+        """Heuristic: is a numeric column an additive measure (SUM) or a
+        dimension (an id/key/flag/date-part that should not be summed)?"""
+        if col_type not in ('INTEGER', 'DECIMAL'):
+            return False
+        name_lc = col_name.lower()
+        # Boolean-style flags (is_active, has_x, isLatest) are dimensions.
+        if re.match(r'(is|has|are|was|flag)([_\s]|[A-Z])', col_name) or name_lc.startswith(('is', 'has')):
+            # be conservative: only treat as flag when it's a short prefix word
+            first = re.split(r'[_\s]|(?<=[a-z])(?=[A-Z])', col_name)[0].lower()
+            if first in ('is', 'has', 'are', 'was', 'flag'):
+                return False
+        # Whole-word token match (split on _, space, and camelCase boundaries).
+        tokens = {t.lower() for t in re.split(r'[_\s]+|(?<=[a-z])(?=[A-Z])', col_name) if t}
+        if tokens & QuickSight._NON_MEASURE_TOKENS:
+            return False
+        return True
 
     def build_topic_columns(self, dataset_id: str) -> list:
         """Build topic column definitions from a dataset's OutputColumns.
 
         Maps QuickSight column types to Q Topic ``TopicColumn`` definitions.
         Numeric columns become additive ``MEASURE`` columns unless their name
-        looks like an identifier/code/date-part (then ``DIMENSION``). Date and
-        datetime columns get a ``TimeGranularity`` (the correct field for
+        is an identifier/key/flag/date-part token (then ``DIMENSION``). Date
+        and datetime columns get a ``TimeGranularity`` (the correct field for
         date precision; ``SemanticType.TypeName='Date'`` is not an engine-
         recognized value).
         """
@@ -1669,9 +1714,7 @@ class QuickSight(CidBase):
         for col in dataset.columns:
             col_name = col.get('Name', '')
             col_type = col.get('Type', 'STRING')
-            name_lc = col_name.lower()
-            looks_like_id = any(hint in name_lc for hint in self._NON_MEASURE_HINTS)
-            is_measure = col_type in ('INTEGER', 'DECIMAL') and not looks_like_id
+            is_measure = self._is_additive_measure(col_name, col_type)
             column_def = {
                 'ColumnName': col_name,
                 'ColumnFriendlyName': col_name.replace('_', ' ').title(),
