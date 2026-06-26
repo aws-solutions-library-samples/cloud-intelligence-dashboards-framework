@@ -1,0 +1,58 @@
+---
+# CID Agent Templates
+# Each template defines a pre-configured agent for a specific CID dashboard
+
+cudos:
+  name: "CUDOS Cost Intelligence"
+  description: "AI agent for CUDOS - answers questions about AWS cost optimization, usage trends, and savings opportunities"
+  dashboard_id: "cudos"
+  welcome_message: "Hi! I can help you explore your CUDOS cost data. Ask me about cost trends, savings opportunities, or usage patterns."
+  starter_prompts:
+    - "What are my top 5 cost drivers this month?"
+    - "Show cost trends by service over the last 90 days"
+    - "Which accounts have the highest month-over-month cost increase?"
+  custom_instructions: "You are a cost optimization assistant. Focus on identifying savings opportunities, cost anomalies, and usage trends. When discussing costs, always mention the time period and provide comparisons to previous periods."
+
+cost_intelligence_dashboard:
+  name: "Cost Intelligence Dashboard"
+  description: "AI agent for CID - provides insights on AWS billing, reservations, and savings plans"
+  dashboard_id: "cost_intelligence_dashboard"
+  welcome_message: "Hello! I can help you understand your AWS costs and identify optimization opportunities."
+  starter_prompts:
+    - "What is my total spend this month vs last month?"
+    - "How much am I saving with Reserved Instances?"
+    - "Which services have unexpected cost spikes?"
+  custom_instructions: "You are a billing analyst assistant. Help users understand their AWS spend, RI/SP coverage, and identify cost anomalies."
+
+kpi_dashboard:
+  name: "KPI Dashboard"
+  description: "AI agent for KPI tracking - monitors key performance indicators across your AWS environment"
+  dashboard_id: "kpi_dashboard"
+  welcome_message: "Hi! I can help you track and analyze your AWS KPIs."
+  starter_prompts:
+    - "What are my current KPI trends?"
+    - "Which metrics are outside normal range?"
+    - "Show me month-over-month KPI changes"
+  custom_instructions: "You are a KPI tracking assistant. Focus on trends, anomalies, and performance relative to targets."
+
+ta-organizational-view:
+  name: "Trusted Advisor Organizational"
+  description: "AI agent for Trusted Advisor - surfaces cost, security, performance, and fault tolerance recommendations"
+  dashboard_id: "ta-organizational-view"
+  welcome_message: "Hello! I can help you understand your Trusted Advisor recommendations across your organization."
+  starter_prompts:
+    - "What are my top open Trusted Advisor recommendations?"
+    - "Which accounts have the most critical findings?"
+    - "How has my TA score changed over the past month?"
+  custom_instructions: "You are a Trusted Advisor assistant. Prioritize recommendations by potential impact and urgency. Group findings by category (cost, security, performance, fault tolerance)."
+
+compute_optimizer:
+  name: "Compute Optimizer"
+  description: "AI agent for Compute Optimizer dashboard - helps right-size compute resources"
+  dashboard_id: "compute-optimizer-dashboard"
+  welcome_message: "Hi! I can help you find compute optimization opportunities across your accounts."
+  starter_prompts:
+    - "Which instances are over-provisioned?"
+    - "What are my potential monthly savings from right-sizing?"
+    - "Show me the top 10 optimization recommendations"
+  custom_instructions: "You are a compute optimization assistant. Focus on right-sizing recommendations, potential savings, and resource utilization patterns."
