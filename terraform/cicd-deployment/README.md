@@ -308,7 +308,7 @@ If you're upgrading from the previous non-modular Terraform configuration, pleas
 <details>
 <summary><b>How do I backfill historical cost data?</b></summary>
 
-To backfill historical data for the Data Export, follow the instructions in the [CID Documentation Backfill Data Export section](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html#backfill-data-export).
+To backfill historical data for the Data Export, follow the instructions in the [CID Documentation Backfill Data Export section](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/deployment-in-global-regions.html#deployment-global-backfill-data-export).
 
 This process allows you to populate your dashboards with historical cost and usage data, ensuring you have a complete view of your AWS spending over time.
 
