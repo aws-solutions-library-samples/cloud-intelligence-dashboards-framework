@@ -115,6 +115,33 @@ Delete Command Options:
  --athena-database TEXT Athena database
 ```
 
+#### Create a QuickSight Agent
+Create an Amazon QuickSight Generative Q&A Agent for a deployed CID dashboard. The command creates a Space containing the dashboard, its datasets and an auto-generated Q Topic, then creates an Agent bound to that Space. Pre-configured templates supply curated descriptions, starter prompts and custom instructions for the common CID dashboards.
+
+```bash
+cid-cmd create-agent
+```
+
+Or target a specific template / dashboard non-interactively:
+```bash
+cid-cmd create-agent --agent-template cudos
+cid-cmd create-agent --dashboard-id cost_intelligence_dashboard
+```
+
+Create Agent Command Options:
+```
+ --agent-template TEXT  Agent template: cudos, cost_intelligence_dashboard,
+                        kpi_dashboard, ta-organizational-view, compute_optimizer
+ --dashboard-id TEXT    QuickSight dashboard id (for the [Custom] path)
+```
+
+Prerequisites: QuickSight **Enterprise** edition with **Amazon Q** enabled in a supported Region, and `boto3>=1.43.19` (the release that introduced the QuickSight Spaces/Agents APIs). The command grants the calling QuickSight user permissions on the new topic and agent.
+
+To remove the agent, topic and space created for a dashboard:
+```bash
+cid-cmd delete-agent --dashboard-id cudos
+```
+
 #### Export
 The command `export` lets you download or share a customized dashboard with another AWS Account. It takes the QuickSight Analysis as an input and generates all the assets needed to deploy your Analysis into another AWS Account. This command will generate a yaml file with a description of the Dashboard and all required Datasets. Also this command generates a QuickSight Template in the current AWS Account that can be used for Dashboard deployment in other accounts. The resource file can be used with all other cid commands. Both accounts must have relevant Athena Views and Tables.
 
