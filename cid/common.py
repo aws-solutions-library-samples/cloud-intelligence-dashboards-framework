@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import urllib
 import logging
 import functools
@@ -21,6 +22,7 @@ from cid.base import CidBase
 from cid.plugin import Plugin
 from cid.utils import get_parameter, get_parameters, set_parameters, unset_parameter, get_yesno_parameter, cid_print, isatty, merge_objects, IsolatedParameters, set_defaults
 from cid.helpers.account_map import AccountMap
+from cid.helpers.account_mapper import AccountMapper
 from cid.helpers.parameter_store import ParametersController
 from cid.helpers import Athena, S3, IAM, CUR, ProxyCUR, Glue, QuickSight, Dashboard, Dataset, Datasource, csv2view, Organizations, CFN
 from cid.helpers.quicksight.template import Template as CidQsTemplate
@@ -529,6 +531,8 @@ class Cid():
         self.qs.pre_discover()
 
         dashboard_id = dashboard_id or get_parameters().get('dashboard-id')
+        if dashboard_id and not get_parameters().get('dashboard-id'):
+            set_parameters({'dashboard-id': dashboard_id})
         category_filter = [cat for cat in get_parameters().get('category', '').upper().split(',') if cat]
         if not dashboard_id:
             standard_categories = ['Foundational', 'Advanced', 'Additional'] # Show these categories first
@@ -1299,9 +1303,10 @@ class Cid():
                     logger.critical(e, exc_info=True)
                     raise
                 try:
-                    if self.create_or_update_dataset(dataset_definition, dataset_id, recursive=recursive, update=update):
+                    result = self.create_or_update_dataset(dataset_definition, dataset_id, recursive=recursive, update=update)
+                    if result and result != 'skipped':
                         print(f'Updated dataset: "{dataset_name}"')
-                    else:
+                    elif not result:
                         print(f'Dataset "{dataset_name}" update failed, collect debug log for more info')
                 except self.qs.client.exceptions.AccessDeniedException as exc:
                     print(f'Unable to update, missing permissions: {exc}')
@@ -1782,7 +1787,44 @@ class Cid():
 
             if update_dataset and not identical:
                 merged_dataset = Dataset.merge_datasets(compiled_dataset, found_dataset)
-                self.qs.update_dataset(merged_dataset)
+                # Cannot update a legacy dataset to new experience in-place — must delete and recreate
+                if Dataset._is_new_experience(compiled_dataset) and not Dataset._is_new_experience(found_dataset.raw):
+                    cid_print(f'<BOLD><YELLOW>Important!<END> <BOLD>Dataset <YELLOW>{found_dataset.name}<END> <BOLD>will be updated to new QuickSight Data Preparation Experience as a part of this update.<END>')
+                    proceed_with_migration = self._confirm_dataset_experience_migration(found_dataset)
+                    if proceed_with_migration:
+                        logger.info(f'Dataset {found_dataset.name} is legacy but template uses new experience. Recreating.')
+                        existing_permissions = self.qs.describe_data_set_permissions(found_dataset.id)
+                        self.qs.delete_dataset(found_dataset.id)
+                        # Wait for deletion to complete before creating — API is async
+                        for attempt in range(30):
+                            try:
+                                self.qs.create_dataset(merged_dataset)
+                                break
+                            except self.qs.client.exceptions.ConflictException:
+                                logger.debug(f'Dataset deletion still in progress, waiting... (attempt {attempt + 1}/30)')
+                                time.sleep(2)
+                        else:
+                            raise CidError(f'Timed out waiting for dataset {found_dataset.id} deletion to complete.')
+
+                        if existing_permissions:
+                            cid_print(f'Reapplying {len(existing_permissions)} permission entries to dataset {found_dataset.name}')
+                            try:
+                                self.qs.update_data_set_permissions(
+                                    DataSetId=found_dataset.id,
+                                    GrantPermissions=existing_permissions
+                                )
+                            except Exception as e:
+                                logger.warning(f'Failed to reapply permissions for dataset {found_dataset.name} ({found_dataset.id}): {e}')
+                                cid_print(f"<BOLD><YELLOW>Note:<END> Couldn't transfer existing dataset permissions to the new dataset experience for <BOLD>{found_dataset.name}<END>. If your datasets were shared with someone else, re-share them manually after update.")
+                                cid_print(f'Previous permissions were:\n{json.dumps(existing_permissions, indent=2)}')
+                        else:
+                            cid_print(f"<BOLD><YELLOW>Note:<END> Couldn't read existing dataset permissions for <BOLD>{found_dataset.name}<END>. If your datasets were shared with someone else, re-share them manually after update.")
+                    else:
+                        logger.info(f'User chose to skip new experience migration for dataset {found_dataset.name}. Skipping dataset update.')
+                        cid_print(f'Skipping dataset <BOLD>{found_dataset.name}<END> update.')
+                        return 'skipped'  # Dataset exists and is usable, just not migrated
+                else:
+                    self.qs.update_dataset(merged_dataset)
                 if compiled_dataset.get("ImportMode") == "SPICE":
                     dataset_id = compiled_dataset.get('DataSetId')
                     schedules_definitions = []
@@ -1845,8 +1887,8 @@ class Cid():
         dependencies = view_definition.get('dependsOn', {})
 
         # Process CUR columns
-        if dependencies.get('cur'):
-            self.cur1.ensure_columns(dependencies.get('cur'))
+        if dependencies.get('cur') or dependencies.get('cur1'):
+            self.cur1.ensure_columns(dependencies.get('cur') or dependencies.get('cur1'))
         if dependencies.get('cur2'):
             self.cur2.ensure_columns(dependencies.get('cur2'))
 
@@ -1907,6 +1949,39 @@ class Cid():
             location = self.glue.get_table(name=view_name, catalog=self.base.account_id, database=self.athena.DatabaseName).get('StorageDescriptor', {}).get('Location')
             self.create_or_update_crawler(crawler_name=view_definition['crawler'], location=location)
 
+    def _confirm_dataset_experience_migration(self, found_dataset) -> bool:
+        """Check if other dashboards use this dataset and ask the user whether to proceed
+        with the new experience migration (delete/recreate). Returns True to proceed, False to skip."""
+        current_dashboard_id = get_parameters().get('dashboard-id')
+        other_dashboards = self.qs.find_dashboards_using_dataset(
+            dataset_id=found_dataset.id,
+            exclude_dashboard_ids=[current_dashboard_id] if current_dashboard_id else [],
+        )
+
+        if other_dashboards:
+            dashboard_list = '\n'.join(
+                f'  - {d["Name"]} ({d["DashboardId"]})'
+                for d in other_dashboards
+            )
+            current_dashboard = get_parameters().get('dashboard-id', 'this dashboard')
+            cid_print(
+                f'<BOLD><RED>Warning:<END> <BOLD><RED>The following dashboards also use dataset '
+                f'{found_dataset.name}:<END>\n{dashboard_list}\n\n'
+                f'<BOLD><RED>Migrating to the new QuickSight Data Preparation Experience will delete and recreate '
+                f'this dataset, temporarily breaking the dashboards listed above.<END>\n'
+                f'We recommend proceeding, but update those dashboards immediately after updating <BOLD>{current_dashboard}<END>.\n'
+                f'If you choose <BOLD>No<END>, the dataset will not be updated.'
+            )
+            return get_yesno_parameter(
+                param_name=f'migrate-{found_dataset.name.replace("_", "-")}-new-experience',
+                message=f'Proceed with new experience migration for {found_dataset.name}?',
+                default='no',
+            )
+        else:
+            return True
+
+
+
     def create_or_update_crawler(self, crawler_name, location):
         """ Create or Update Crawler """
         crawler_definition = self.get_definition("crawler", name=crawler_name)
@@ -1947,6 +2022,8 @@ class Cid():
         ''' returns an sql for json tag
         '''
         def _tag_to_name(tag):
+            if tag == 'line_item_iam_principal':
+                return 'iam_principal'
             tag_name = (tag
                 .replace('resource_tags_', '')
                 .replace('cost_category_', '')
@@ -1961,9 +2038,9 @@ class Cid():
                 if tag.startswith('cost_category'):
                     tag_name = 'cost_category_' + tag_name
                 elif "userAttribute/" in tag:
-                    tag_name = 'user_attribute_' + tag_name
+                    tag_name = 'user_attribute_tag_' + tag_name
                 elif "iamPrincipal/" in tag:
-                    tag_name = 'iam_principal_' + tag_name
+                    tag_name = 'iam_principal_tag_' + tag_name
                 elif tag.startswith('tags'):
                     tag_name = 'account_tag_' + tag_name
                 else:
@@ -2081,8 +2158,25 @@ class Cid():
     @command
     def map(self, **kwargs):
         """Create account mapping Athena views"""
-        for v in ['account_map', 'aws_accounts']:
-            self.create_or_update_account_map(v)
+        view_name = kwargs.get('view_name', 'account_map')
+        
+        # Use simple/legacy mode if --simple flag is provided
+        if kwargs.get('simple'):
+            print("\n🔄 Using simple account mapping (legacy mode)\n")
+            return self.create_or_update_account_map(view_name)
+        
+        # Use advanced interactive mode (default)
+        mapper = AccountMapper(athena=self.athena, view_name=view_name)
+        
+        try:
+            mapper.create_mapping(
+                source_file=kwargs.get('source_file'),
+                source_database=kwargs.get('source_database'),
+            )
+        except Exception as e:
+            logger.error(f"Account mapping failed: {e}", exc_info=True)
+            print(f"\n❌ Error: {e}\n")
+            raise
 
     @command
     def teardown(self, **kwargs):

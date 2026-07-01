@@ -222,6 +222,10 @@
                     "Type": "string"
                 },
                 {
+                    "Name": "rootVolume",
+                    "Type": "string"
+                },
+                {
                     "Name": "tags",
                     "Type": "string"
                 }

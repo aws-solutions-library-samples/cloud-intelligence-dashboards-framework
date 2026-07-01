@@ -1,6 +1,6 @@
 # https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/cfn-templates/cid-cfn.yml
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deployment of Cloud Intelligence Dashboards v4.4.11 - AWS Solution SO9011
+Description: Deployment of Cloud Intelligence Dashboards v4.4.15 - AWS Solution SO9011
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -1975,6 +1975,8 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
+      Path: !Ref RolePath
+      PermissionsBoundary: !If [NeedPermissionsBoundary, !Ref PermissionsBoundary, !Ref 'AWS::NoValue']
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
       Policies:
@@ -2115,7 +2117,7 @@ Resources:
       SourceBucket: !Ref ReferenceAssetsBucket
       DestinationBucket: !Ref LocalAssetsBucket
       Keys:
-        - 'cid-resource-lambda-layer/cid-4.4.11.zip' #replace version here if needed
+        - 'cid-resource-lambda-layer/cid-4.4.15.zip' #replace version here if needed
 
   CidResourceLambdaLayer:
     Type: AWS::Lambda::LayerVersion
@@ -2130,7 +2132,7 @@ Resources:
             - LambdaLayerBucketPrefixIsManaged
             - !FindInMap [RegionMap, !Ref 'AWS::Region', BucketName]
             - !Sub '${LambdaLayerBucketPrefix}-${AWS::Region}' # Region added for backward compatibility
-        S3Key: 'cid-resource-lambda-layer/cid-4.4.11.zip' #replace version here if needed
+        S3Key: 'cid-resource-lambda-layer/cid-4.4.15.zip' #replace version here if needed
       CompatibleRuntimes:
         - python3.10
         - python3.11

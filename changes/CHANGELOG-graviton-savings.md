@@ -1,5 +1,24 @@
 # What's new in the Graviton Savings Dashboard
 
+## Graviton Savings Dashboard v3.0.2:
+```
+cid-cmd update --dashboard-id graviton-savings --force --recursive
+```
+* ElastiCache: Exclude Valkey Sync Durability usage and pricing from savings analysis
+* Compute Savings Plans: Exclude dedicated host (HostBoxUsage) rates from graviton_mapping pricing
+* RDS: Add availability zone matching to engine_logic JOIN; mark instances with no graviton equivalent as 'No equivalent graviton instance'
+* OpenSearch: Add OpenSearch Optimized instance family detection (or1, or2, om2, oi2) and processor type handling
+* OpenSearch: Add eligibility states for Already Graviton, Already Optimized, and instances with no graviton equivalent; make engine matching case-insensitive
+* Modernization mapping: Correct OpenSearch .search family generations and Graviton mappings; fix EC2 instance-store (d) family ARM mappings
+
+## Graviton Savings Dashboard v3.0.1:
+```
+cid-cmd update --dashboard-id graviton-savings --force --recursive
+```
+* Fix ElastiCache pricing to exclude ExtendedSupport usage types
+* Fix ElastiCache and OpenSearch cross-account resource matching by adding accountid to JOINs
+* Fix RDS previous_intel_unblended_savings to use sum_amortized_cost instead of line_item_unblended_cost
+
 ## Graviton Savings Dashboard v3.0.0:
 ```
 cid-cmd update --dashboard-id graviton-savings --force --recursive

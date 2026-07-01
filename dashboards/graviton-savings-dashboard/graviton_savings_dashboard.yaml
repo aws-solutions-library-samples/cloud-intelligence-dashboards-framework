@@ -11,7 +11,7 @@ dashboards:
     dashboardId: graviton-savings
     category: Advanced
     theme: MIDNIGHT
-    version: v3.0.0
+    version: v3.0.2
     file: ./graviton_savings_dashboard-definition.yaml
     nonTaxonomyDatasets:
     - graviton_mapping
@@ -914,7 +914,7 @@ views:
          , SPLIT_PART(cur.line_item_resource_id, '/', 2) line_item_resource_id
          , cur.product_instance_type
          , SPLIT_PART(product_instance_type, '.', 1) instance_family
-         , (CASE WHEN (SPLIT_PART(product_instance_type, '.', 1) LIKE '%g%') THEN 'Graviton' ELSE 'Intel' END) processor_type
+         , (CASE WHEN (SPLIT_PART(product_instance_type, '.', 1) LIKE '%g%') THEN 'Graviton' WHEN (map.generation LIKE 'Graviton%') THEN 'Graviton' WHEN (map.generation = 'OpenSearch Optimized') THEN 'OpenSearch Optimized' ELSE 'Intel' END) processor_type
          , cur.product_location
          , cur.pricing_term
          , COALESCE(cur.pricing_lease_contract_length, '') pricing_lease_contract_length
@@ -938,6 +938,7 @@ views:
       , describe_domains AS (
          SELECT DISTINCT
            domainname
+         , accountid
          , engineversion
          , SPLIT_PART(engineversion, '_', 1) engine
          , SPLIT_PART(engineversion, '_', 2) version
@@ -966,14 +967,14 @@ views:
         cur.*
       , describe_domains.engine
       , describe_domains.version
-      , (CASE WHEN (describe_domains.engine = 'OpenSearch') THEN 'Eligible' WHEN (describe_domains.engine = 'Elasticsearch') THEN (CASE WHEN (describe_domains.major > '7') THEN 'Eligible' WHEN ((describe_domains.major = '7') AND (describe_domains.minor >= '9')) THEN 'Eligible' WHEN ((describe_domains.major = '7') AND (describe_domains.minor < '9')) THEN 'Requires Update' WHEN (describe_domains.major < '7') THEN 'Requires Update' END) END) graviton_eligibility
+      , (CASE WHEN (cur.processor_type = 'Graviton') THEN 'Already Graviton' WHEN (cur.processor_type = 'OpenSearch Optimized') THEN 'Already Optimized' WHEN (cur.graviton_instance = '') THEN 'No equivalent graviton instance' WHEN (PL1.effective_priceperunit IS NULL) THEN 'No equivalent graviton instance' WHEN (LOWER(describe_domains.engine) = 'opensearch') THEN 'Eligible' WHEN (LOWER(describe_domains.engine) = 'elasticsearch') THEN (CASE WHEN (describe_domains.major > '7') THEN 'Eligible' WHEN ((describe_domains.major = '7') AND (describe_domains.minor >= '9')) THEN 'Eligible' WHEN ((describe_domains.major = '7') AND (describe_domains.minor < '9')) THEN 'Requires Update' WHEN (describe_domains.major < '7') THEN 'Requires Update' END) ELSE 'Unknown' END) graviton_eligibility
       , (PL1.effective_priceperunit * cur.line_item_usage_amount) graviton_price
       , (cur.amortized_cost - (PL1.effective_priceperunit * cur.line_item_usage_amount)) graviton_savings
       , (PL2.effective_priceperunit * cur.line_item_usage_amount) intel_equivilant_price
       , ((PL2.effective_priceperunit * cur.line_item_usage_amount) - cur.amortized_cost) existing_savings
       FROM
         (((cur_data cur
-      LEFT JOIN describe_domains ON (cur.line_item_resource_id = describe_domains.domainname))
+      LEFT JOIN describe_domains ON (cur.line_item_resource_id = describe_domains.domainname AND cur.line_item_usage_account_id = describe_domains.accountid))
       LEFT JOIN pricing PL1 ON ((PL1."instance type" = cur.graviton_instance) AND (PL1.location = cur.product_location) AND (PL1.termtype = (CASE WHEN (cur.pricing_term = 'Reserved') THEN 'Reserved Instance' ELSE cur.pricing_term END)) AND (COALESCE(PL1.leasecontractlength, '') = COALESCE(cur.pricing_lease_contract_length, '')) AND (COALESCE(PL1.purchaseoption, '') = COALESCE(cur.pricing_purchase_option, '')) AND (COALESCE(PL1.offeringclass, '') = COALESCE(cur.pricing_offering_class, '')) AND (cur.pricing_unit = PL1.unit)))
       LEFT JOIN pricing PL2 ON ((PL2."instance type" = cur.previous_intel_instance) AND (PL2.location = cur.product_location) AND (PL2.termtype = (CASE WHEN (cur.pricing_term = 'Reserved') THEN 'Reserved Instance' ELSE cur.pricing_term END)) AND (COALESCE(PL2.leasecontractlength, '') = COALESCE(cur.pricing_lease_contract_length, '')) AND (COALESCE(PL2.purchaseoption, '') = COALESCE(cur.pricing_purchase_option, '')) AND (COALESCE(PL2.offeringclass, '') = COALESCE(cur.pricing_offering_class, '')) AND (cur.pricing_unit = PL2.unit)))
   graviton_elasticache_view:
@@ -1045,12 +1046,13 @@ views:
          FROM
            ("${cur2_database}"."${cur2_table_name}"
          LEFT JOIN modernization_mapping map ON (CONCAT('cache.', SPLIT_PART(line_item_usage_type, '.', 2)) = map.family))
-         WHERE ((product['product_name'] = 'Amazon ElastiCache') AND (product_product_family = 'Cache Instance') AND (line_item_line_item_type IN ('DiscountedUsage', 'Usage', 'RIFee', 'Fee')) AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(split_part("billing_period", '-', 1), '-', split_part("billing_period", '-', 2), '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH))))
+         WHERE ((product['product_name'] = 'Amazon ElastiCache') AND (product_product_family = 'Cache Instance') AND (line_item_line_item_type IN ('DiscountedUsage', 'Usage', 'RIFee', 'Fee')) AND (line_item_usage_type NOT LIKE '%SyncDurability%') AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(split_part("billing_period", '-', 1), '-', split_part("billing_period", '-', 2), '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH))))
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
       )
       , elasticache_engineversion AS (
          SELECT DISTINCT
            cacheclusterid
+         , accountid
          , engineversion
          , engine
          , SPLIT_PART(engineversion, '.', 1) major
@@ -1077,7 +1079,7 @@ views:
          FROM
            (${data_collection_database_name}.pricing_elasticache_data od
          LEFT JOIN ${data_collection_database_name}.pricing_elasticache_data fee ON ((od.sku = fee.sku) AND (od."region code" = fee."region code") AND (fee.purchaseoption = od.purchaseoption) AND (fee.leasecontractlength = od.leasecontractlength) AND (fee.unit = 'Quantity') AND (od.offeringclass = fee.offeringclass)))
-         WHERE ((od."location type" = 'AWS Region') AND (od."product family" = 'Cache Instance'))
+         WHERE ((od."location type" = 'AWS Region') AND (od."product family" = 'Cache Instance') AND (od.usagetype NOT LIKE '%ExtendedSupport%') AND (od.usagetype NOT LIKE '%SyncDurability%'))
       )
       SELECT
         elasticache_spend.*
@@ -1089,7 +1091,7 @@ views:
       , (PL2.odri_priceperunit * elasticache_spend.sum_line_item_usage_amount) intel_equivilant_price
       FROM
         (((elasticache_spend
-      LEFT JOIN elasticache_engineversion ev ON (elasticache_spend.split_line_item_resource_id = ev.cacheclusterid))
+      LEFT JOIN elasticache_engineversion ev ON (elasticache_spend.split_line_item_resource_id = ev.cacheclusterid AND elasticache_spend.line_item_usage_account_id = ev.accountid))
       LEFT JOIN elasticache_pricedata PL1 ON ((elasticache_spend.graviton_instance = PL1."instance type") AND (elasticache_spend.product_location = PL1.location) AND (elasticache_spend.product_cache_engine = PL1."cache engine") AND (elasticache_spend.case_purchase_option = PL1.TermType) AND (COALESCE(elasticache_spend.pricing_lease_contract_length, '') = COALESCE(PL1.leasecontractlength, '')) AND (COALESCE(elasticache_spend.pricing_purchase_option, '') = COALESCE(PL1.purchaseoption, '')) AND (COALESCE(elasticache_spend.pricing_offering_class, '') = COALESCE(PL1.offeringclass, '')) AND (elasticache_spend.pricing_unit = PL1.unit)))
       LEFT JOIN elasticache_pricedata PL2 ON ((elasticache_spend.previous_intel = PL2."instance type") AND (elasticache_spend.product_location = PL2.location) AND (elasticache_spend.product_cache_engine = PL2."cache engine") AND (elasticache_spend.case_purchase_option = PL2.TermType) AND (COALESCE(elasticache_spend.pricing_lease_contract_length, '') = COALESCE(PL2.leasecontractlength, '')) AND (COALESCE(elasticache_spend.pricing_purchase_option, '') = COALESCE(PL2.purchaseoption, '')) AND (COALESCE(elasticache_spend.pricing_offering_class, '') = COALESCE(PL2.offeringclass, '')) AND (elasticache_spend.pricing_unit = PL2.unit)))
   graviton_mapping:
@@ -1144,7 +1146,7 @@ views:
             , ROW_NUMBER() OVER (PARTITION BY discountedusagetype, usagetype, DiscountedOperation ORDER BY EffectiveDate DESC) rn
             FROM
               ${data_collection_database_name}.pricing_computesavingsplan_data sp
-            WHERE ((sp.ServiceCode = 'ComputeSavingsPlans') AND (sp.DiscountedUsageType LIKE '%BoxUsage%') AND (sp.Unit = 'Hrs') AND (sp.LeaseContractLengthUnit = 'year'))
+            WHERE ((sp.ServiceCode = 'ComputeSavingsPlans') AND (sp.DiscountedUsageType LIKE '%BoxUsage%') AND (sp.DiscountedUsageType NOT LIKE '%HostBoxUsage%') AND (sp.Unit = 'Hrs') AND (sp.LeaseContractLengthUnit = 'year'))
          )  sp
          WHERE (rn = 1)
       )
@@ -1446,7 +1448,7 @@ views:
       SELECT
         cur_data.*
       , describe_db_data.engineversion
-      , (CASE WHEN (cur_data.product_instance_type LIKE '%g.%') THEN 'Already Graviton' WHEN (cur_data.product_instance_type LIKE '%gd.%') THEN 'Already Graviton' WHEN (cur_data.product_instance_type LIKE '%serverless%') THEN 'Ineligible' ELSE (CASE WHEN (cur_data.rds_type = 'AmazonRDS') THEN (CASE WHEN (cur_data.db_engine = 'MySQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 8) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 8) AND (CAST(engine_logic.minor AS integer) > 0)) THEN 'Eligible' WHEN (((CAST(engine_logic.major AS integer) = 8) AND (CAST(engine_logic.minor AS integer) = 0)) AND (CAST(engine_logic.fix AS integer) >= 17)) THEN 'Eligible' ELSE 'Requires Update' END) WHEN (cur_data.db_engine = 'PostgreSQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 12) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 12) AND (CAST(engine_logic.minor AS integer) >= 3)) THEN 'Eligible' ELSE 'Requires Update' END) WHEN (cur_data.db_engine = 'MariaDB') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 10) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 10) AND (CAST(engine_logic.minor AS integer) > 4)) THEN 'Eligible' WHEN (((CAST(engine_logic.major AS integer) = 10) AND (CAST(engine_logic.minor AS integer) = 4)) AND (CAST(engine_logic.fix AS integer) >= 13)) THEN 'Eligible' ELSE 'Requires Update' END) ELSE 'Ineligible' END) WHEN (cur_data.rds_type = 'Aurora') THEN (CASE WHEN (cur_data.db_engine = 'MySQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 2) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 2) AND (CAST(engine_logic.minor AS integer) > 9)) THEN 'Eligible' WHEN (((CAST(engine_logic.major AS integer) = 2) AND (CAST(engine_logic.minor AS integer) = 9)) AND (CAST(engine_logic.fix AS integer) >= 2)) THEN 'Eligible' ELSE 'Ineligible' END) WHEN (cur_data.db_engine = 'PostgreSQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 12) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 12) AND (CAST(engine_logic.minor AS integer) >= 3)) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 11) AND (CAST(engine_logic.minor AS integer) >= 9)) THEN 'Eligible' ELSE 'Ineligible' END) ELSE 'Ineligible' END) END) END) graviton_eligible
+      , (CASE WHEN (cur_data.product_instance_type LIKE '%g.%') THEN 'Already Graviton' WHEN (cur_data.product_instance_type LIKE '%gd.%') THEN 'Already Graviton' WHEN (cur_data.product_instance_type LIKE '%serverless%') THEN 'Ineligible' WHEN (cur_data.graviton_instance_type = '') THEN 'No equivalent graviton instance' ELSE (CASE WHEN (cur_data.rds_type = 'AmazonRDS') THEN (CASE WHEN (cur_data.db_engine = 'MySQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 8) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 8) AND (CAST(engine_logic.minor AS integer) > 0)) THEN 'Eligible' WHEN (((CAST(engine_logic.major AS integer) = 8) AND (CAST(engine_logic.minor AS integer) = 0)) AND (CAST(engine_logic.fix AS integer) >= 17)) THEN 'Eligible' ELSE 'Requires Update' END) WHEN (cur_data.db_engine = 'PostgreSQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 12) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 12) AND (CAST(engine_logic.minor AS integer) >= 3)) THEN 'Eligible' ELSE 'Requires Update' END) WHEN (cur_data.db_engine = 'MariaDB') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 10) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 10) AND (CAST(engine_logic.minor AS integer) > 4)) THEN 'Eligible' WHEN (((CAST(engine_logic.major AS integer) = 10) AND (CAST(engine_logic.minor AS integer) = 4)) AND (CAST(engine_logic.fix AS integer) >= 13)) THEN 'Eligible' ELSE 'Requires Update' END) ELSE 'Ineligible' END) WHEN (cur_data.rds_type = 'Aurora') THEN (CASE WHEN (cur_data.db_engine = 'MySQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 2) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 2) AND (CAST(engine_logic.minor AS integer) > 9)) THEN 'Eligible' WHEN (((CAST(engine_logic.major AS integer) = 2) AND (CAST(engine_logic.minor AS integer) = 9)) AND (CAST(engine_logic.fix AS integer) >= 2)) THEN 'Eligible' ELSE 'Ineligible' END) WHEN (cur_data.db_engine = 'PostgreSQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 12) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 12) AND (CAST(engine_logic.minor AS integer) >= 3)) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 11) AND (CAST(engine_logic.minor AS integer) >= 9)) THEN 'Eligible' ELSE 'Ineligible' END) ELSE 'Ineligible' END) END) END) graviton_eligible
       , PL1.storage storage
       , PL2.storage new_intel_storage
       , PL1.storage_type storage_type
@@ -1455,11 +1457,11 @@ views:
       , (cur_data.sum_amortized_cost - (CAST(PL1.odri_priceperunit AS double) * cur_data.line_item_usage_amount)) graviton_unblended_savings
       , CAST(PL2.odri_priceperunit AS double) previous_intel_unit_cost
       , (CAST(PL2.odri_priceperunit AS double) * cur_data.line_item_usage_amount) previous_intel_cost
-      , ((CAST(PL2.odri_priceperunit AS double) * cur_data.line_item_usage_amount) - cur_data.line_item_unblended_cost) previous_intel_unblended_savings
+      , ((CAST(PL2.odri_priceperunit AS double) * cur_data.line_item_usage_amount) - cur_data.sum_amortized_cost) previous_intel_unblended_savings
       FROM
         ((((cur_data
       LEFT JOIN describe_db_data ON ((cur_data.line_item_resource_id = describe_db_data.dbinstanceidentifier) AND (cur_data.line_item_usage_account_id = describe_db_data.accountid) AND (cur_data.line_item_availability_zone = describe_db_data.region)))
-      LEFT JOIN engine_logic ON ((cur_data.line_item_resource_id = engine_logic.dbinstanceidentifier) AND (cur_data.line_item_usage_account_id = engine_logic.accountid)))
+      LEFT JOIN engine_logic ON ((cur_data.line_item_resource_id = engine_logic.dbinstanceidentifier) AND (cur_data.line_item_usage_account_id = engine_logic.accountid) AND (cur_data.line_item_availability_zone = engine_logic.region)))
       LEFT JOIN rds_pricedata PL1 ON ((cur_data.rds_type = PL1.rds_type) AND (cur_data.db_engine = PL1.db_engine) AND (cur_data.pricing_lease_contract_length = PL1.leasecontractlength) AND (cur_data.pricing_purchase_option = PL1.purchaseoption) AND (cur_data.product_deployment_option = PL1."deployment option") AND (cur_data.product_location = PL1.location) AND (cur_data.graviton_instance_type = PL1."instance type") AND (cur_data.product_storage_type = PL1.storage_type) AND (cur_data.pricing_unit = PL1.unit) AND (PL1.termtype = cur_data.pricing_term)))
       LEFT JOIN rds_pricedata PL2 ON ((cur_data.rds_type = PL2.rds_type) AND (cur_data.db_engine = PL2.db_engine) AND (cur_data.pricing_lease_contract_length = PL2.leasecontractlength) AND (cur_data.pricing_purchase_option = PL2.purchaseoption) AND (cur_data.product_deployment_option = PL2."deployment option") AND (cur_data.product_location = PL2.location) AND (cur_data.latest_intel_instance_type = PL2."instance type") AND (cur_data.product_storage_type = PL2.storage_type) AND (cur_data.pricing_unit = PL2.unit) AND (PL2.termtype = cur_data.pricing_term)))
   modernization_mapping:
@@ -1497,7 +1499,7 @@ views:
           , ROW ('c6id', 'Latest', '', '', 'c7gd', '', '', 'c6gd', 'c7gd', 'c8g')
           , ROW ('c6in', 'Latest', '', '', 'c7gn', '', '', 'c6gn', 'c7gn', 'c8g')
           , ROW ('c7g', 'Graviton3', 'c6i', '', 'c8g', 'c6i', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c7gd', 'Graviton3', '', '', 'c8g', 'c6id', '', 'c6gd', 'c7gd', 'c8g')
+          , ROW ('c7gd', 'Graviton3', '', '', 'c8gd', 'c6id', '', 'c6gd', 'c7gd', 'c8gd')
           , ROW ('c7gn', 'Graviton3', '', '', 'c8g', 'c6in', '', 'c6gn', 'c7gn', 'c8g')
           , ROW ('c7i', 'Latest', '', '', 'c8g', '', '', 'c6g', 'c7g', 'c8g')
           , ROW ('c8g', 'Graviton4', '', '', 'c8g', 'c7i', '', 'c6g', 'c7g', 'c8g')
@@ -1520,9 +1522,9 @@ views:
           , ROW ('m5d', 'Preceding', 'm6id', 'm6a', 'm6gd', '', '', 'm6gd', '', '')
           , ROW ('m6a', 'Latest', '', '', 'm7g', '', '', 'm6g', 'm7g', 'm8g')
           , ROW ('m6g', 'Graviton2', '', '', 'm7g', 'm5', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m6gd', 'Graviton2', '', '', 'm7g', 'm5d', '', 'm6gd', '', '')
+          , ROW ('m6gd', 'Graviton2', '', '', 'm7gd', 'm5d', '', 'm6gd', '', '')
           , ROW ('m6i', 'Latest', '', '', 'm7g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m6id', 'Latest', '', '', 'm7g', '', '', 'm6gd', 'm7g', 'm8g')
+          , ROW ('m6id', 'Latest', '', '', 'm7gd', '', '', 'm6gd', 'm7gd', 'm8gd')
           , ROW ('m7g', 'Graviton3', '', '', 'm8g', 'm6i', '', 'm6g', 'm7g', 'm8g')
           , ROW ('m7i', 'Latest', '', '', 'm8g', '', '', 'm6g', 'm7g', 'm8g')
           , ROW ('m8g', 'Graviton4', '', '', 'm8g', 'm7i', '', 'm6g', 'm7g', 'm8g')
@@ -1534,9 +1536,9 @@ views:
           , ROW ('r5d', 'Preceding', 'r6id', 'r5ad', 'r6gd', '', '', 'r6gd', '', '')
           , ROW ('r6a', 'Latest', '', '', 'r7g', '', '', 'r6g', 'r7g', 'r8g')
           , ROW ('r6g', 'Graviton2', 'r7i', '', 'r7g', 'r5', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r6gd', 'Graviton2', '', '', 'r7g', 'r5d', '', 'r6gd', '', '')
+          , ROW ('r6gd', 'Graviton2', '', '', 'r7gd', 'r5d', '', 'r6gd', '', '')
           , ROW ('r6i', 'Latest', '', '', 'r7g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r6id', 'Latest', '', '', 'r7g', '', '', 'r6gd', '', '')
+          , ROW ('r6id', 'Latest', '', '', 'r7gd', '', '', 'r6gd', '', '')
           , ROW ('r7g', 'Graviton3', 'r6i', '', 'r8g', 'r6i', '', 'r6g', 'r7g', 'r8g')
           , ROW ('r7i', 'Latest', '', '', 'r8g', '', '', 'r6g', 'r7g', 'r8g')
           , ROW ('r8g', 'Graviton4', '', '', 'r8g', 'r7i', '', 'r6g', 'r7g', 'r8g')
@@ -1723,7 +1725,7 @@ views:
           , ROW ('c5.search', 'Latest', '', '', 'c6g', '', '', '', '', '')
           , ROW ('c6g.search', 'Graviton2', '', '', '', 'c5', '', '', '', '')
           , ROW ('i2.search', 'Preceding', 'i3', '', '', '', '', '', '', '')
-          , ROW ('i3.search', 'Latest', '', '', '', '', '', '', '', '')
+          , ROW ('i3.search', 'Previous', 'i4i', '', 'i4g', '', '', '', 'i4g', '')
           , ROW ('m3.search', 'Previous', 'm5', '', 'm6g', '', '', '', '', '')
           , ROW ('m4.search', 'Preceding', 'm5', '', 'm6g', '', '', '', '', '')
           , ROW ('m5.search', 'Latest', '', '', 'm6g', '', '', '', '', '')
@@ -1740,15 +1742,16 @@ views:
           -- OpenSearch Instances - New Families Added October 2025
           , ROW ('c7g.search', 'Graviton3', '', '', '', 'c5', '', '', 'c7g.search', '')
           , ROW ('c7i.search', 'Latest', 'c7i.search', '', 'c7g.search', '', 'c7i', '', 'c7g.search', '')
-          , ROW ('i4g.search', 'Graviton3', '', '', '', '', '', '', 'i4g.search', '')
+          , ROW ('i4g.search', 'Graviton3', '', '', '', 'i3', '', '', 'i4g', '')
           , ROW ('i4i.search', 'Latest', 'i4i.search', '', 'i4g.search', '', 'i4i', '', 'i4g.search', '')
           , ROW ('i8g.search', 'Graviton4', '', '', '', '', '', '', '', 'i8g.search')
           , ROW ('im4gn.search', 'Graviton2', '', '', '', '', '', 'im4gn.search', '', '')
           , ROW ('m7g.search', 'Graviton3', '', '', '', 'm5', '', '', 'm7g.search', '')
           , ROW ('m7i.search', 'Latest', 'm7i.search', '', 'm7g.search', '', 'm7i', '', 'm7g.search', '')
-          , ROW ('om2.search', 'Latest', 'om2.search', '', '', '', 'om2', '', '', '')
-          , ROW ('or1.search', 'Latest', 'or1.search', '', '', '', 'or1', '', '', '')
-          , ROW ('or2.search', 'Latest', 'or2.search', '', '', '', 'or2', '', '', '')
+          , ROW ('oi2.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '')
+          , ROW ('om2.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '')
+          , ROW ('or1.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '')
+          , ROW ('or2.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '')
           , ROW ('r7g.search', 'Graviton3', '', '', '', 'r5', '', '', 'r7g.search', '')
           , ROW ('r7gd.search', 'Graviton3', '', '', '', 'r5', '', '', 'r7gd.search', '')
           , ROW ('r7i.search', 'Latest', 'r7i.search', '', 'r7g.search', '', 'r7i', '', 'r7g.search', '')

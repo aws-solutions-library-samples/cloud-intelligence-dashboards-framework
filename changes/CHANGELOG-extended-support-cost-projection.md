@@ -1,5 +1,21 @@
 # What's new in Extended Support Cost Projection
 
+## Extended Support Cost Projection - v5.2.2
+
+**Important:** This version updates the definition of the ElastiCache view for the Extended Support dashboard. A forced and recursive update is required to pick up the changes.
+
+If you have modified the Extended Support Cost Projection dashboard visuals, these changes will be overridden when the dashboard is updated. Consider backing-up the existing dashboard by creating an analysis from it if you want to keep a reference to customised visuals so you can re-apply them after the update takes place.
+
+To update run these commands in your CloudShell (recommended) or other terminal:
+
+```
+python3 -m ensurepip --upgrade
+pip3 install --upgrade cid-cmd
+cid-cmd update --dashboard-id extended-support-cost-projection --force --recursive
+```
+
+- Fixed missing `product['cache_engine']` dependency declaration in the `elasticache_extended_support_view`. This ensures CUR1 users have `product_cache_engine` included in the `cur2_proxy` MAP expression, preventing query failures when the view filters on `product['cache_engine'] = 'Redis'`.
+
 ## Extended Support Cost Projection - v5.2.1
 
 **Important:** This version updates the tagging view Athena query and the tagging view dataset definition. A forced and recursive update is required to pick up the changes.

@@ -199,7 +199,18 @@ jobs:
             echo "Clearing Terraform S3 backend state for fresh deployment..."
             aws s3 rm "s3://${S3_BUCKET}/${S3_KEY}" --region "${BACKEND_REGION}" || echo "No state file to clear"
           else
-            echo "No existing stacks found. Proceeding with fresh deployment."
+            echo "No existing stacks found. Checking for orphaned S3 buckets..."
+            ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+            ORPHANED_BUCKETS=("${RESOURCE_PREFIX}-${ACCOUNT_ID}-data-exports" "${RESOURCE_PREFIX}-${ACCOUNT_ID}-data-local")
+            for bucket in "${ORPHANED_BUCKETS[@]}"; do
+              if aws s3api head-bucket --bucket "$bucket" 2>/dev/null; then
+                echo "Found orphaned bucket: $bucket - deleting..."
+                aws s3 rm "s3://${bucket}" --recursive || true
+                aws s3 rb "s3://${bucket}" --force || true
+                echo "Deleted orphaned bucket: $bucket"
+              fi
+            done
+            echo "Proceeding with fresh deployment."
           fi
 
       - name: Run deploy script

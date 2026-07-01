@@ -13,6 +13,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Known column name aliases for providers whose FOCUS exports use non-canonical names.
+# Key: canonical FOCUS column name (lowercased).
+# Value: list of known alternative column names (lowercased) used by providers (e.g. OCI).
+# The canonical name is always checked first; aliases are only used as a fallback.
+COLUMN_ALIASES = {
+    'providername': ['provider'],
+    'publishername': ['publisher'],
+    'invoiceissuername': ['invoiceissuer'],
+    'regionid': ['region'],
+    'regionname': ['region'],
+}
+
 # Minimum columns that identify a table as FOCUS-compliant (FOCUS 1.0 core).
 # A table must have ALL of these columns (case-insensitive) to be considered a FOCUS table.
 # NOTE: Only columns common across ALL providers (AWS, Azure, OCI, GCP) are listed here.
@@ -237,7 +249,7 @@ class FocusConsolidationView:
         if col_name == 'billing_period':
             return f'{self._billing_period_expr(source_columns, partition_keys)} {col_name}'
 
-        # Column exists in source
+        # Column exists in source by canonical name
         if col_name in source_columns:
             source_type = source_columns[col_name]
             if _types_compatible(source_type, target_type):
@@ -248,7 +260,18 @@ class FocusConsolidationView:
             # Types differ — cast
             return f'CAST({col_name} AS {_resolve_athena_type(target_type)}) {col_name}'
 
-        # Column missing — typed NULL placeholder
+        # Column missing by canonical name — check known aliases (e.g. OCI uses
+        # 'provider' instead of 'providername')
+        for alias in COLUMN_ALIASES.get(col_name, []):
+            if alias in source_columns:
+                source_type = source_columns[alias]
+                if _types_compatible(source_type, target_type):
+                    return f'{alias} {col_name}'
+                if _normalize_type(source_type).startswith('array'):
+                    return f'{_null_as(target_type)} {col_name}'
+                return f'CAST({alias} AS {_resolve_athena_type(target_type)}) {col_name}'
+
+        # Column truly missing — typed NULL placeholder
         return f'{_null_as(target_type)} {col_name}'
 
     @staticmethod

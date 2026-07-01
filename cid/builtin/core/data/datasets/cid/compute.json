@@ -10,31 +10,38 @@
         "InputColumns": [
           {
             "Name": "billing_period",
-            "Type": "DATETIME"
+            "Type": "DATETIME",
+            "Id": "cspes-billing-period"
           },
           {
             "Name": "month",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "cspes-month"
           },
           {
             "Name": "year",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "cspes-year"
           },
           {
             "Name": "payer_account_id",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "cspes-payer-account-id"
           },
           {
             "Name": "unblended_cost",
-            "Type": "DECIMAL"
+            "Type": "DECIMAL",
+            "Id": "cspes-unblended-cost"
           },
           {
             "Name": "linked_account_id",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "cspes-linked-account-id"
           },
           {
             "Name": "usage_date",
-            "Type": "DATETIME"
+            "Type": "DATETIME",
+            "Id": "cspes-usage-date"
           }
         ]
       }
@@ -47,58 +54,75 @@
         "InputColumns": [
           {
             "Name": "account_id",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "am-account-id"
           },
           {
             "Name": "account_name",
-            "Type": "STRING"
+            "Type": "STRING",
+            "Id": "am-account-name"
           }
         ]
       }
     }
   },
-  "LogicalTableMap": {
-    "606cb37c-c311-4cbd-96e4-e0b7ac252d3e": {
-      "Alias": "Intermediate Table",
-      "DataTransforms": [
-        {
-          "ProjectOperation": {
-            "ProjectedColumns": [
-              "year",
-              "month",
-              "payer_account_id",
-              "linked_account_id",
-              "billing_period",
-              "usage_date",
-              "unblended_cost",
-              "account_id",
-              "account_name"
-            ]
-          }
-        }
-      ],
-      "Source": {
-        "JoinInstruction": {
-          "LeftOperand": "d8ff07f9-bc56-4b6d-9388-f9e2cdd74d78",
-          "RightOperand": "7d72d7c7-85ae-4349-8b61-610af5393caf",
-          "Type": "LEFT",
-          "OnClause": "{linked_account_id} = {account_id}"
-        }
-      }
-    },
-    "7d72d7c7-85ae-4349-8b61-610af5393caf": {
-      "Alias": "account_map",
-      "Source": {
+  "ImportMode": "SPICE",
+  "Permissions": [],
+  "DataPrepConfiguration": {
+    "SourceTableMap": {
+      "src-compute-savings-plan-eligible-spend": {
+        "PhysicalTableId": "5939aadd-602d-4127-8974-b4ff911eb6c4"
+      },
+      "src-account-map": {
         "PhysicalTableId": "a073386e-83e3-4798-8167-5f5604e48ede"
       }
     },
-    "d8ff07f9-bc56-4b6d-9388-f9e2cdd74d78": {
-      "Alias": "compute_savings_plan_eligible_spend",
-      "Source": {
-        "PhysicalTableId": "5939aadd-602d-4127-8974-b4ff911eb6c4"
+    "TransformStepMap": {
+      "import-compute-savings-plan-eligible-spend": {
+        "ImportTableStep": {
+          "Alias": "compute_savings_plan_eligible_spend",
+          "Source": {
+            "SourceTableId": "src-compute-savings-plan-eligible-spend"
+          }
+        }
+      },
+      "import-account-map": {
+        "ImportTableStep": {
+          "Alias": "account_map",
+          "Source": {
+            "SourceTableId": "src-account-map"
+          }
+        }
+      },
+      "join-account-map": {
+        "JoinStep": {
+          "Alias": "Join with account_map",
+          "Type": "LEFT",
+          "OnClause": "{linked_account_id} = {account_id}",
+          "LeftOperand": {
+            "TransformOperationId": "import-compute-savings-plan-eligible-spend"
+          },
+          "RightOperand": {
+            "TransformOperationId": "import-account-map"
+          }
+        }
+      }
+    },
+    "DestinationTableMap": {
+      "destination-compute-savings-plan-eligible-spend": {
+        "Alias": "compute_savings_plan_eligible_spend",
+        "Source": {
+          "TransformOperationId": "join-account-map"
+        }
       }
     }
   },
-  "ImportMode": "SPICE",
-  "Permissions": []
+  "SemanticModelConfiguration": {
+    "TableMap": {
+      "semantic-compute-savings-plan-eligible-spend": {
+        "Alias": "compute_savings_plan_eligible_spend",
+        "DestinationTableId": "destination-compute-savings-plan-eligible-spend"
+      }
+    }
+  }
 }

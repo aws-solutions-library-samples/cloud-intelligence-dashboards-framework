@@ -23,8 +23,11 @@ dashboards:
     - linked_account_id
     - savings_plan_a_r_n
     - tags_json
+    - payer_account_id
+    - account_id
+    - account_name
     file: ./CUDOS-v5-definition.yaml
-    version: v5.7.3
+    version: v5.8.1
 datasets: {}
 crawlers: {}
 views: {}

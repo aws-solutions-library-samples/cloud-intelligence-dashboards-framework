@@ -5,8 +5,244 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Wed, 29 Apr 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 18 Jun 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] Graviton Savings Dashboard v3.0.2</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-graviton-savings.md
+      </link>
+      <pubDate>Sat, 20 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">f1a2b3c4-d5e6-7f80-9a1b-2c3d4e5f6a7b</guid>
+      <description>Graviton Savings Dashboard v3.0.2</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>ElastiCache:</strong> Excluded Valkey Sync Durability usage and pricing from savings calculations, resolving inflated savings figures.</li>
+    <li><strong>Compute Savings Plans:</strong> Excluded dedicated host rates (HostBoxUsage) from Graviton mapping pricing, which previously matched both shared and dedicated host Savings Plan rates.</li>
+    <li><strong>RDS:</strong> Added Availability Zone matching to engine version logic and flagged instance families with no Graviton equivalent as 'No equivalent graviton instance'.</li>
+    <li><strong>OpenSearch:</strong> Added detection for OpenSearch Optimized instance families (or1, or2, om2, oi2), new eligibility states (Already Graviton, Already Optimized, No equivalent graviton instance), and case-insensitive engine matching.</li>
+    <li><strong>Modernization Mapping:</strong> Corrected OpenSearch .search family generations and Graviton mappings, and fixed EC2 instance-store (d) family ARM mappings.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Extended Support Cost Projection v5.2.2</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-extended-support-cost-projection.md
+      </link>
+      <pubDate>Wed, 18 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">3948f771-907f-4e4a-91d4-4f13c8a83eb2</guid>
+      <description>Extended Support Cost Projection v5.2.2</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>ElastiCache:</strong> Fixed missing <code>product['cache_engine']</code> dependency declaration in the ElastiCache extended support view, resolving query failures for CUR1 users.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] cid-cmd v4.4.14</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/CHANGELOG.md
+      </link>
+      <pubDate>Wed, 04 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a</guid>
+      <description>cid-cmd v4.4.14</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Account Mapping:</strong> <code>cid-cmd map</code> command allows you to automatically create an account_map view with your organizational taxonomy columns either from a provided CSV file or from organizational units and account tags collected with CID Data Collection framework</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[New Dashboard] Pricing Change Analysis Dashboard v1.0.0</title>
+      <link>
+        https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/pricing-change-analysis.html
+      </link>
+      <pubDate>Tue, 03 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[New Dashboard]]></category>
+      <guid isPermaLink="false">c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f</guid>
+      <description>Pricing Change Analysis Dashboard v1.0.0 - Initial Release</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    The <strong>Pricing Change Analysis Dashboard</strong> tracks every AWS pricing change across all SKUs you are using and shows the real dollar impact on your spend. Both increases and reductions, all in one place.
+  </p>
+  <h3>Key Benefits:</h3>
+  <ul>
+    <li><strong>Full Visibility:</strong> See every pricing change that affected SKUs in your environment — no more surprises in your monthly invoice.</li>
+    <li><strong>Dollar Impact:</strong> Understand exactly how much each pricing change contributed to your spend, whether an increase or a reduction.</li>
+    <li><strong>Actionable Insights:</strong> Know which pricing changes affected you, how much, and where — enabling informed decisions on cost optimization.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] cid-cmd v4.4.13</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/CHANGELOG.md
+      </link>
+      <pubDate>Mon, 02 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">b2d3f4a5-c6e7-8f9a-0b1c-2d3e4f5a6b7c</guid>
+      <description>cid-cmd v4.4.13</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Taxonomy:</strong> Added support of line_item_iam_principal column as a part of organizational taxonomy feature, allowing to bring IAM principals for Bedrock to the dashboards along with IAM tags and session tags</li>
+    <li><strong>FOCUS:</strong> Fixed focus_consolidation_view generation to support non-canonical column names for some cloud providers</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] CUDOS Dashboard v5.8.1</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---581
+      </link>
+      <pubDate>Mon, 02 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">a1c2e3f4-b5d6-7e8f-9a0b-1c2d3e4f5a6b</guid>
+      <description>CUDOS Dashboard v5.8.1</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>AI/ML:</strong> Switched Amazon Bedrock Unit Cost visuals from cost per 1K Tokens to cost per 1M Tokens</li>
+    <li><strong>AI/ML:</strong> Added visual 'Amazon Bedrock Cost per Million Tokens by Model (Top 5 Models)'</li>
+    <li><strong>AI/ML:</strong> Added visual 'Amazon Bedrock Spend per Resource' for last 7 months</li>
+    <li><strong>AI/ML:</strong> Replaced 'Amazon Bedrock Cost per Legal Entity' with additional Group By control</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Health Events Dashboard - v3.1.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-hed
+      </link>
+      <pubDate>Fri, 29 May 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">e8b41d2f-6a93-4c57-a1e0-3d9f8b2c7e64</guid>
+      <description>Health Events Dashboard - v3.1.0 </description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>Address the possibility that Glue creates type `array<string>` or just `string` for the personas field.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] CUDOS Dashboard v5.8.0</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---580
+      </link>
+      <pubDate>Thu, 22 May 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e</guid>
+      <description>CUDOS Dashboard v5.8.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    <strong>Important:</strong> This update requires cid-cmd v4.4.12 or later. Quick Sight datasets will be migrated to the new data preparation experience — if you have custom dataset modifications, make a copy before updating.
+  </p>
+  <pre>
+pip3 install --upgrade cid-cmd
+cid-cmd update --dashboard-id cudos-v5 --recursive
+  </pre>
+  <h3>Highlights:</h3>
+  <ul>
+    <li>Up to 5x faster dataset refresh with new Quick Sight data preparation experience</li>
+    <li>Amazon Bedrock cost per token visuals and cost per IAM Principal Tags</li>
+    <li>Database Savings Plans support across DynamoDB and Databases and RI/SP tabs</li>
+    <li>New Kiro and AWS DevOps Agent visuals including tracking of idle Kiro users</li>
+    <li>Extended Databases coverage: Keyspaces, DMS, Aurora DSQL, Timestream</li>
+  </ul>
+  <h3>Details:</h3>
+  <ul>
+    <li><strong>AI/ML:</strong> Amazon Bedrock 'Cost per 1000 Tokens by Usage Type Group' visual with Group By control (Account, Region, Pricing Model, Usage Type Group, Model, IAM Principal Tags)</li>
+    <li><strong>AI/ML:</strong> New Kiro and Amazon Q Developer section with subscription tracking, idle user identification, and per-user cost details</li>
+    <li><strong>Monitoring and Observability:</strong> New AWS DevOps Agent section with usage per task type, SRE tasks, incident prevention/response visuals</li>
+    <li><strong>DynamoDB:</strong> Added Database Savings Plans support with new section 'On-Demand Capacity - Savings Plans Coverage &amp; Usage Monitoring'. Added 'Show Infrequent Access Tables' filter to exclude IA tables from commitment eligibility</li>
+    <li><strong>Databases:</strong> Extended RI/SP coverage to Keyspaces, DMS, Aurora DSQL, Timestream. Elasticity extended to Redshift. Added 'Daily Serverless Compute Cost'</li>
+    <li><strong>Databases:</strong> Extended Support now covers RDS, ElastiCache, OpenSearch, DocumentDB</li>
+    <li><strong>Executive: RI/SP Summary:</strong> Database Savings Plans support on all applicable visuals</li>
+    <li><strong>Data Transfer:</strong> Fix for 'Idle Resources with no traffic Last 30 Days' to exclude VPC Endpoint Services</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] CID Data Exports v0.12.0 - IAM Principal Data Support</title>
+      <link>
+        https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-exports.html
+      </link>
+      <pubDate>Thu, 22 May 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a</guid>
+      <description>CID Data Exports v0.12.0 — Added support for INCLUDE_IAM_PRINCIPAL_DATA parameter</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    CID Data Exports template now supports the <strong>INCLUDE_IAM_PRINCIPAL_DATA</strong> parameter, enabling IAM principal metadata in your Cost and Usage Report data.
+  </p>
+  <h3>What changed:</h3>
+  <ul>
+    <li><strong>New parameter:</strong> <code>INCLUDE_IAM_PRINCIPAL_DATA</code> allows you to include IAM principal information (user, role, account) in your data exports for cost attribution by IAM identity.</li>
+    <li><strong>Use case:</strong> Enables cost analysis by IAM Principal Tags in dashboards such as CUDOS v5.8.0 Amazon Bedrock visuals.</li>
+  </ul>
+  <p>
+    For deployment instructions, refer to the updated documentation: <a href="https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-exports.html">Data Exports Guide</a>
+  </p>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Health Events Dashboard - v3.0.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-hed
+      </link>
+      <pubDate>Mon, 27 Apr 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">a3f7b2c1-9e84-4d6f-b053-8c1e9a7f2d45</guid>
+      <description>Health Events Dashboard - v3.0.0 </description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>** NOTE: requires Data Collection Framework v3.14.5+ **</li>
+    <li>New Health fields for Actionability and Personas added.</li>
+    <li>Significant revision of user interface for landing page.</li>
+    <li>Emphasis for reporting on AWS Planned Lifecycle Events (PLEs), such as servive version deprecations.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Media Services Information Hub - v2.2.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md
+      </link>
+      <pubDate>Fri, 1 May 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">ad90c56a-6b8a-4750-95f6-6fa4d29b1b73</guid>
+      <description>Media Services Information Hub - v2.2.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>Enhancewments to MediaLive reservation modeling.</li>
+    <li>NOTE: requires --force --recursive update process.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Extended Support Cost Projection - v5.2.1</title>
       <link>

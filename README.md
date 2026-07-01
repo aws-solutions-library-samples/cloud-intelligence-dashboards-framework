@@ -142,7 +142,7 @@ Please refer to the documentation [here](https://docs.aws.amazon.com/guidance/la
 
 ## Changelogs
 For dashboards please check change log [here](changes/)
-For CID deployment tool, including CLI and CFN please check [Releases](/releases)
+For CID deployment tool, including CLI and CFN please check [Releases](https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/releases)
 
 ## Feedback
 Please reference to [this page](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/feedback-support.html)
