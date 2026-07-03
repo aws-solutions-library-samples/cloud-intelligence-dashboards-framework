@@ -2293,6 +2293,28 @@ class Cid():
             logger.debug(f'cur.tag_fields_by_dimension = {merge_map}')
             if merge_map and selected is None:
                 keys_to_merge, merge_strategy = self._resolve_merge_config(param_name, merge_map)
+            elif merge_map:
+                # In pre-seeded/non-interactive runs selected tags are already set,
+                # so reuse merge parameters without prompting.
+                merge_strategy = get_parameters().get(f'{param_name}-merge-strategy', 'resource_first')
+
+                raw_keys = (
+                    get_parameters().get(f'{param_name}-merges')
+                    or get_parameters().get(f'{param_name}-merge-keys')
+                    or []
+                )
+                if isinstance(raw_keys, str):
+                    keys_to_merge = {k for k in raw_keys.split(',') if k}
+                else:
+                    keys_to_merge = set(raw_keys)
+
+                # Also infer merge keys from explicit merged_* selections.
+                for name in (selected or []):
+                    if isinstance(name, str) and name.startswith('merged_'):
+                        keys_to_merge.add(name[len('merged_'):])
+
+                # Keep only valid keys present in current merge candidates.
+                keys_to_merge &= set(merge_map.keys())
 
         merged_display = self._build_tag_choices(tags_and_names, keys_to_merge, merge_map)
         all_choices = sorted(list(merged_display) + list(tags_and_names))
