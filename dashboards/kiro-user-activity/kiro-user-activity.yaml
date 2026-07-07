@@ -32,7 +32,7 @@ datasets:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
             Schema: ${athena_database_name}
-            Name: kiro_user_activity
+            Name: kiro_user_activity_view
             InputColumns:
             - Name: date
               Type: STRING
@@ -124,7 +124,7 @@ datasets:
               Columns:
               - ColumnName: plan_credits
                 ColumnId: col-plan-credits
-                Expression: ifelse(toLower({subscription_tier}) = 'power', 10000, toLower({subscription_tier}) = 'proplus', 2000, toLower({subscription_tier}) = 'pro', 1000, toLower({subscription_tier}) = 'free', 50, 0)
+                Expression: ifelse(toLower({subscription_tier}) = 'power', 10000, toLower({subscription_tier}) = 'promax', 5000, toLower({subscription_tier}) = 'proplus', 2000, toLower({subscription_tier}) = 'pro', 1000, toLower({subscription_tier}) = 'free', 50, 0)
           - CreateColumnsOperation:
               Columns:
               - ColumnName: plan_utilization_pct
@@ -185,7 +185,26 @@ datasets:
               - tier_recommendation
               - year
               - month
+    dependsOn:
+      views:
+      - kiro_user_activity_view
     schedules:
     - default
 crawlers: {}
-views: {}
+views:
+  kiro_user_activity_view:
+    # Bounded window over the unbounded Glue table: keeps ~2 years of data so
+    # SPICE refresh and Athena scans stay performant as the table grows. The
+    # underlying kiro_user_activity table remains the full historical record.
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".kiro_user_activity_view AS
+      SELECT *
+      FROM
+        "${athena_database_name}".kiro_user_activity
+      WHERE
+        CAST(
+          date_parse(
+            concat(year, '-', month, '-', day),
+            '%Y-%m-%d'
+          ) AS date
+        ) >= date_add('year', -2, current_date)
