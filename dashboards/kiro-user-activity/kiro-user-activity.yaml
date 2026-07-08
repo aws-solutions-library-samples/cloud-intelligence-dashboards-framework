@@ -150,12 +150,11 @@ datasets:
               - ColumnName: is_new_user
                 ColumnId: col-is-new-user
                 Expression: ifelse(toLower({new_user}) = 'true', 1, 0)
-          # Tier right-sizing recommendation
-          - CreateColumnsOperation:
-              Columns:
-              - ColumnName: tier_recommendation
-                ColumnId: col-tier-recommendation
-                Expression: ifelse({plan_utilization_pct} < 0.3, 'Downgrade Candidate', {in_overage_flag} > 0, 'Upgrade Candidate', 'Right-Sized')
+          # Tier right-sizing is computed in the analysis definition as the
+          # calculated field `tier_recommendation_monthly`, which reasons on
+          # MONTHLY utilization and overage (Kiro bills per calendar month). A
+          # row-level column here could only see a single day's ratio, so it is
+          # intentionally not created at the dataset level.
           - ProjectOperation:
               ProjectedColumns:
               - date
@@ -182,7 +181,6 @@ datasets:
               - in_overage_flag
               - credits_per_message
               - is_new_user
-              - tier_recommendation
               - year
               - month
     dependsOn:

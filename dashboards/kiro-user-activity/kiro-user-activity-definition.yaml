@@ -6,6 +6,28 @@ CalculatedFields:
   Expression: ifelse({plan_credits} > 0, sumOver({credits_used_num}, [userid, truncDate("MM",
     {report_date})], PRE_AGG) / {plan_credits}, 0)
   Name: monthly_plan_utilization_pct
+- DataSetIdentifier: kiro_user_activity
+  Expression: sumOver({overage_credits_used_num}, [userid, truncDate("MM", {report_date})],
+    PRE_AGG)
+  Name: monthly_overage_credits
+# Tier right-sizing based on MONTHLY utilization (Kiro bills per calendar month).
+# Ladder: Pro (1k) < ProPlus (2k) < ProMax (5k) < Power (10k).
+#  - Any overage this month => plan too small. Not on Power => Upgrade Candidate.
+#    Already on Power (top tier, no upgrade path) => Review Overage Settings, since
+#    the only remaining lever is the overage cap, not a bigger plan.
+#  - Consistently low monthly utilization (<30%) and not already on the smallest
+#    plan (Pro) => Downgrade Candidate.
+#  - Otherwise Right-Sized.
+- DataSetIdentifier: kiro_user_activity
+  Expression: >-
+    ifelse(
+      {monthly_overage_credits} > 0,
+        ifelse(toLower({subscription_tier}) = 'power', 'Review Overage Settings', 'Upgrade Candidate'),
+      {monthly_plan_utilization_pct} < 0.3 AND toLower({subscription_tier}) <> 'pro' AND toLower({subscription_tier}) <> 'free',
+        'Downgrade Candidate',
+      'Right-Sized'
+    )
+  Name: tier_recommendation_monthly
 ColumnConfigurations:
 - Column:
     ColumnName: credits_per_message
@@ -1207,7 +1229,7 @@ Sheets:
           DataPathOptions:
           - DataPathList:
             - FieldId: field-rec-t1
-              FieldValue: tier_recommendation
+              FieldValue: tier_recommendation_monthly
             Width: 253px
           - DataPathList:
             - FieldId: field-cpm-t1
@@ -1290,7 +1312,7 @@ Sheets:
                 FieldId: field-tier-t1
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: tier_recommendation
+                  ColumnName: tier_recommendation_monthly
                   DataSetIdentifier: kiro_user_activity
                 FieldId: field-rec-t1
             Values:
@@ -1327,9 +1349,9 @@ Sheets:
                         DecimalPlaces: 0
             - NumericalMeasureField:
                 AggregationFunction:
-                  SimpleNumericalAggregation: AVERAGE
+                  SimpleNumericalAggregation: MIN
                 Column:
-                  ColumnName: plan_utilization_pct
+                  ColumnName: monthly_plan_utilization_pct
                   DataSetIdentifier: kiro_user_activity
                 FieldId: field-util-t1
                 FormatConfiguration:
@@ -1592,7 +1614,7 @@ Sheets:
             Width: 198px
           - DataPathList:
             - FieldId: field-rec-ov1
-              FieldValue: tier_recommendation
+              FieldValue: tier_recommendation_monthly
             Width: 157px
           - DataPathList:
             - FieldId: field-credits-ov2
@@ -1644,7 +1666,7 @@ Sheets:
                 FieldId: field-tier-ov1
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: tier_recommendation
+                  ColumnName: tier_recommendation_monthly
                   DataSetIdentifier: kiro_user_activity
                 FieldId: field-rec-ov1
             Values:
@@ -1674,9 +1696,9 @@ Sheets:
                         DecimalPlaces: 0
             - NumericalMeasureField:
                 AggregationFunction:
-                  SimpleNumericalAggregation: AVERAGE
+                  SimpleNumericalAggregation: MIN
                 Column:
-                  ColumnName: plan_utilization_pct
+                  ColumnName: monthly_plan_utilization_pct
                   DataSetIdentifier: kiro_user_activity
                 FieldId: field-util-ov1
                 FormatConfiguration:
@@ -1718,7 +1740,7 @@ Sheets:
               TextColor:
                 Solid:
                   Color: '#DE3B00'
-                  Expression: AVG({plan_utilization_pct}) > 75
+                  Expression: minOver({monthly_plan_utilization_pct}, [userid, truncDate("MM", {report_date})], PRE_AGG) > 0.75
       Subtitle:
         Visibility: VISIBLE
       Title:
