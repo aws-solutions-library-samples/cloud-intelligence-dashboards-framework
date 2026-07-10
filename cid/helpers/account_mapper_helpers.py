@@ -2178,7 +2178,7 @@ class UnifiedWorkflow:
                 if source_type == 'name_split' and isinstance(source_value, dict):
                     created_from = f"Account name split by \"{source_value.get('separator')}\" at index {source_value.get('index')}"
                 elif source_type == 'ou_level':
-                    created_from = f"OU hierarchy level {source_value}"
+                    created_from = f"OU name (level {source_value})"
                 elif source_type == 'file':
                     created_from = f"File column \"{source_value}\""
                 elif source_type == 'tag':
@@ -2358,8 +2358,8 @@ class UnifiedWorkflow:
 
         # Build data source choices — always include file option
         data_source_choices = [
-            "Tags from source table",
-            "OU hierarchy level",
+            "Account/OU tags",
+            "OU name",
             "Additional file (CSV)",
             "Split account name column",
         ]
@@ -2368,11 +2368,11 @@ class UnifiedWorkflow:
         data_sources = self._checkbox_with_retry(
             message="Select data sources for taxonomy dimensions (space to select, Enter to confirm):",
             choices=data_source_choices,
-            default=["Tags from source table"]
+            default=["Account/OU tags"]
         )
 
-        use_tags = "Tags from source table" in data_sources
-        use_ou_level = "OU hierarchy level" in data_sources
+        use_tags = "Account/OU tags" in data_sources
+        use_ou_level = "OU name" in data_sources
         use_file = "Additional file (CSV)" in data_sources
         use_name_split = "Split account name column" in data_sources
 
@@ -2455,7 +2455,7 @@ class UnifiedWorkflow:
         # Configure OU hierarchy level if selected
         if use_ou_level:
             cid_print("\n" + "="*70)
-            cid_print("🏢 OU HIERARCHY LEVEL CONFIGURATION")
+            cid_print("🏢 OU NAME CONFIGURATION")
             cid_print("="*70)
             cid_print("Extract taxonomy dimensions from the organizational unit hierarchy.")
             cid_print("Each level represents a position in the OU path.\n")
