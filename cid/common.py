@@ -1887,8 +1887,8 @@ class Cid():
         dependencies = view_definition.get('dependsOn', {})
 
         # Process CUR columns
-        if dependencies.get('cur'):
-            self.cur1.ensure_columns(dependencies.get('cur'))
+        if dependencies.get('cur') or dependencies.get('cur1'):
+            self.cur1.ensure_columns(dependencies.get('cur') or dependencies.get('cur1'))
         if dependencies.get('cur2'):
             self.cur2.ensure_columns(dependencies.get('cur2'))
 

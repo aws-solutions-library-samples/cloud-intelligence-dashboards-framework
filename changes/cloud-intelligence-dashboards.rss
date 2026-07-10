@@ -12,7 +12,7 @@
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md
       </link>
-      <pubDate>Wed, 24 Jun 2026 12:00:00 GMT</pubDate>
+      <pubDate>Fri, 10 Jul 2026 12:00:00 GMT</pubDate>
       <category><![CDATA[Dashboard Update]]></category>
       <guid isPermaLink="false">3948f771-907f-4e4a-91d4-4f13c8a83eb2</guid>
       <description>Media Services Information Hub - v2.2.1</description>
@@ -20,6 +20,27 @@
 <div>
   <ul>
     <li><strong>EML Reservations:</strong> Handle savings calculation estimations for EML profiles where there is no OD cost to reference</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Graviton Savings Dashboard v3.0.2</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-graviton-savings.md
+      </link>
+      <pubDate>Sat, 20 Jun 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">f1a2b3c4-d5e6-7f80-9a1b-2c3d4e5f6a7b</guid>
+      <description>Graviton Savings Dashboard v3.0.2</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>ElastiCache:</strong> Excluded Valkey Sync Durability usage and pricing from savings calculations, resolving inflated savings figures.</li>
+    <li><strong>Compute Savings Plans:</strong> Excluded dedicated host rates (HostBoxUsage) from Graviton mapping pricing, which previously matched both shared and dedicated host Savings Plan rates.</li>
+    <li><strong>RDS:</strong> Added Availability Zone matching to engine version logic and flagged instance families with no Graviton equivalent as 'No equivalent graviton instance'.</li>
+    <li><strong>OpenSearch:</strong> Added detection for OpenSearch Optimized instance families (or1, or2, om2, oi2), new eligibility states (Already Graviton, Already Optimized, No equivalent graviton instance), and case-insensitive engine matching.</li>
+    <li><strong>Modernization Mapping:</strong> Corrected OpenSearch .search family generations and Graviton mappings, and fixed EC2 instance-store (d) family ARM mappings.</li>
   </ul>
 </div>
     ]]></content:encoded>
