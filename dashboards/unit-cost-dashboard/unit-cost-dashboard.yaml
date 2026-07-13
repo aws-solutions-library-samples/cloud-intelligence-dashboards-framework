@@ -8,7 +8,7 @@ dashboards:
     category: Custom
     theme: MIDNIGHT
     version: v0.0.0
-    file: ./Unit-Cost-Dashboard-definition.yaml
+    file: ./unit-cost-dashboard-definition.yaml
 datasets:
   unitcost_view:
     data:
