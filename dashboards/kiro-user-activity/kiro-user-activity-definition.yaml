@@ -1,0 +1,2007 @@
+CalculatedFields:
+- DataSetIdentifier: kiro_user_activity
+  Expression: ifelse({monthly_plan_utilization_pct} >= 0.75, 1, 0)
+  Name: at_risk_flag
+- DataSetIdentifier: kiro_user_activity
+  Expression: ifelse({plan_credits} > 0, sumOver({credits_used_num}, [userid, truncDate("MM",
+    {report_date})], PRE_AGG) / {plan_credits}, 0)
+  Name: monthly_plan_utilization_pct
+- DataSetIdentifier: kiro_user_activity
+  Expression: sumOver({overage_credits_used_num}, [userid, truncDate("MM", {report_date})],
+    PRE_AGG)
+  Name: monthly_overage_credits
+# Tier right-sizing based on MONTHLY utilization (Kiro bills per calendar month).
+# Ladder: Pro (1k) < ProPlus (2k) < ProMax (5k) < Power (10k).
+#  - Any overage this month => plan too small. Not on Power => Upgrade Candidate.
+#    Already on Power (top tier, no upgrade path) => Review Overage Settings, since
+#    the only remaining lever is the overage cap, not a bigger plan.
+#  - Consistently low monthly utilization (<30%) and not already on the smallest
+#    plan (Pro) => Downgrade Candidate.
+#  - Otherwise Right-Sized.
+- DataSetIdentifier: kiro_user_activity
+  Expression: >-
+    ifelse(
+      {monthly_overage_credits} > 0,
+        ifelse(toLower({subscription_tier}) = 'power', 'Review Overage Settings', 'Upgrade Candidate'),
+      {monthly_plan_utilization_pct} < 0.3 AND toLower({subscription_tier}) <> 'pro' AND toLower({subscription_tier}) <> 'free',
+        'Downgrade Candidate',
+      'Right-Sized'
+    )
+  Name: tier_recommendation_monthly
+ColumnConfigurations:
+- Column:
+    ColumnName: credits_per_message
+    DataSetIdentifier: kiro_user_activity
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 3
+- Column:
+    ColumnName: credits_used_num
+    DataSetIdentifier: kiro_user_activity
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 2
+- Column:
+    ColumnName: overage_credits_used_num
+    DataSetIdentifier: kiro_user_activity
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 2
+- Column:
+    ColumnName: overage_utilization_pct
+    DataSetIdentifier: kiro_user_activity
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        PercentageDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 1
+          Suffix: '%'
+- Column:
+    ColumnName: plan_credits
+    DataSetIdentifier: kiro_user_activity
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 0
+- Column:
+    ColumnName: plan_utilization_pct
+    DataSetIdentifier: kiro_user_activity
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        PercentageDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 1
+          Suffix: '%'
+DataSetIdentifierDeclarations:
+- DataSetArn: arn:aws:quicksight:::dataset/6ec4cfba-7ad1-43e2-9485-c2e027855025
+  Identifier: kiro_user_activity
+FilterGroups:
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-date-global
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: report_date
+        DataSetIdentifier: kiro_user_activity
+      DefaultFilterControlConfiguration:
+        ControlOptions:
+          DefaultRelativeDateTimeOptions:
+            DisplayOptions:
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+        Title: Lookback period
+      FilterId: filter-date
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: THIS
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    AllSheets: {}
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-account-id
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: account_id
+        DataSetIdentifier: kiro_user_activity
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      DefaultFilterControlConfiguration:
+        ControlOptions:
+          DefaultDropdownOptions:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            Type: MULTI_SELECT
+        Title: AWS Account
+      FilterId: filter-account-id
+  ScopeConfiguration:
+    AllSheets: {}
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-user
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: user_email
+        DataSetIdentifier: kiro_user_activity
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      DefaultFilterControlConfiguration:
+        ControlOptions:
+          DefaultDropdownOptions:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            Type: MULTI_SELECT
+        Title: User
+      FilterId: filter-user
+  ScopeConfiguration:
+    AllSheets: {}
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-model
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: model_name
+        DataSetIdentifier: kiro_user_activity
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      DefaultFilterControlConfiguration:
+        ControlOptions:
+          DefaultDropdownOptions:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            Type: MULTI_SELECT
+        Title: Model
+      FilterId: filter-model
+  ScopeConfiguration:
+    AllSheets: {}
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-client-type
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: client_type
+        DataSetIdentifier: kiro_user_activity
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      DefaultFilterControlConfiguration:
+        ControlOptions:
+          DefaultDropdownOptions:
+            DisplayOptions:
+              SelectAllOptions:
+                Visibility: VISIBLE
+              TitleOptions:
+                FontConfiguration:
+                  FontSize:
+                    Relative: MEDIUM
+                Visibility: VISIBLE
+            Type: MULTI_SELECT
+        Title: Client Type
+      FilterId: filter-client-type
+  ScopeConfiguration:
+    AllSheets: {}
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-users-in-overage
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: in_overage_flag
+        DataSetIdentifier: kiro_user_activity
+      FilterId: filter-in-overage-flag
+      MatchOperator: EQUALS
+      NullOption: NON_NULLS_ONLY
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 40968fcc-5b4e-4e37-990e-0b4d73d00a1d
+        VisualIds:
+        - a50caeef-2e66-4531-b4a1-45dc3647be77
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-users-at-risk
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: at_risk_flag
+        DataSetIdentifier: kiro_user_activity
+      FilterId: filter-at-risk-flag
+      MatchOperator: EQUALS
+      NullOption: NON_NULLS_ONLY
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 40968fcc-5b4e-4e37-990e-0b4d73d00a1d
+        VisualIds:
+        - 4fbadc81-c9c5-4be9-8168-2d1796bead55
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 707f9762-b778-456a-a299-c3e8d31f03eb
+  Filters:
+  - TopBottomFilter:
+      AggregationSortConfigurations:
+      - AggregationFunction:
+          NumericalAggregationFunction:
+            SimpleNumericalAggregation: COUNT
+        Column:
+          ColumnName: total_messages_num
+          DataSetIdentifier: kiro_user_activity
+        SortDirection: DESC
+      Column:
+        ColumnName: user_email
+        DataSetIdentifier: kiro_user_activity
+      FilterId: 0f5feab3-7947-47c3-8347-4bcf31c9edb6
+      Limit: 50
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 6be25593-1f88-4d18-891d-5b8aa3828fa6
+        VisualIds:
+        - 1d7afd39-eec5-40fc-9da3-2f060a0648a8
+  Status: ENABLED
+ParameterDeclarations: []
+Sheets:
+- ContentType: INTERACTIVE
+  FilterControls:
+  - CrossSheet:
+      FilterControlId: fc-date-1
+      SourceFilterId: filter-date
+  - CrossSheet:
+      FilterControlId: fc-account-1
+      SourceFilterId: filter-account-id
+  - CrossSheet:
+      FilterControlId: fc-user-1
+      SourceFilterId: filter-user
+  - CrossSheet:
+      FilterControlId: fc-model-1
+      SourceFilterId: filter-model
+  - CrossSheet:
+      FilterControlId: fc-client-1
+      SourceFilterId: filter-client-type
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: bf7f0bcb-5618-40f2-b256-c858633a5218
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 2
+        - ColumnIndex: 0
+          ColumnSpan: 7
+          ElementId: 50fe68a8-66f8-4c71-965b-faf52256a28b
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 3
+        - ColumnIndex: 7
+          ColumnSpan: 7
+          ElementId: 5ed267ef-42db-4175-ae58-15852829ce13
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 3
+        - ColumnIndex: 14
+          ColumnSpan: 8
+          ElementId: de966e5f-2d57-4931-8e15-dc8bd47cbdea
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 3
+        - ColumnIndex: 22
+          ColumnSpan: 7
+          ElementId: a400ed3d-9038-4a09-a22d-4a9c92a2da12
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 3
+        - ColumnIndex: 29
+          ColumnSpan: 7
+          ElementId: dc09913c-f175-470f-9c14-03b19cdebaf2
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 3
+        - ColumnIndex: 0
+          ColumnSpan: 8
+          ElementId: 7910f186-0b2e-4d42-8ca1-3f61968e7c21
+          ElementType: VISUAL
+          RowIndex: 5
+          RowSpan: 10
+        - ColumnIndex: 8
+          ColumnSpan: 28
+          ElementId: b8f44aa5-2af1-4796-940f-8d7de571b595
+          ElementType: VISUAL
+          RowIndex: 5
+          RowSpan: 10
+        - ColumnIndex: 0
+          ColumnSpan: 8
+          ElementId: f7f9dcd6-2572-4849-a5c8-c037454edbfc
+          ElementType: VISUAL
+          RowIndex: 15
+          RowSpan: 9
+        - ColumnIndex: 8
+          ColumnSpan: 28
+          ElementId: 48b9b262-67d7-4e07-bd1f-5442f1374645
+          ElementType: VISUAL
+          RowIndex: 15
+          RowSpan: 9
+        - ColumnIndex: 0
+          ColumnSpan: 8
+          ElementId: 7a8495fb-ee61-4876-a8e3-39fbaa223aeb
+          ElementType: VISUAL
+          RowIndex: 24
+          RowSpan: 9
+        - ColumnIndex: 8
+          ColumnSpan: 28
+          ElementId: b7ef9535-2a44-404f-92c4-6c17b3b231ab
+          ElementType: VISUAL
+          RowIndex: 24
+          RowSpan: 9
+  Name: Executive Summary
+  SheetId: 8b044d5a-3941-4e30-be58-fa08a3770aba
+  TextBoxes:
+  - Content: "<text-box>\n  &#128197; Kiro billing is calculated per calendar month\
+      \ - plans and credit allowances reset at the start of each month.\n  <br/>\n\
+      \  &#128270; For accurate usage deep-dives, set the Lookback period above to\
+      \ a full calendar month (e.g. \"This month\" or \"Previous month\").\n  <br/>\n\
+      \  \u26A0\uFE0F Partial or rolling date ranges will understate plan utilization\
+      \ and overage.\n</text-box>"
+    SheetTextBoxId: bf7f0bcb-5618-40f2-b256-c858633a5218
+  Visuals:
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - field-model-d1
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: eda1add0-a9ab-4aa3-8152-ddca651aaf13
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: report_date
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: col-report-date.2.1783435216420
+                HierarchyId: 857fc968-acc7-40e9-910b-b225d399ff99
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: model_name
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-model-d1
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: model_messages_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-model-msgs-d1
+        Legend:
+          Width: 64px
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: col-report-date.2.1783435216420
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          ColorSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: field-model-d1
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: field-model-d1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: field-model-msgs-d1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: col-report-date.2.1783435216420
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 857fc968-acc7-40e9-910b-b225d399ff99
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Messages by Model</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: b7ef9535-2a44-404f-92c4-6c17b3b231ab
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 143318b6-a4fb-4a0d-9a98-e510a387c36c.subscription_tier.2.1783435360952
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 371fe24f-19cd-44c9-8b03-6c85f21c6b97
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: report_date
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: col-report-date.1.1783435188825
+                HierarchyId: f4675419-56e3-4f96-a5b8-21fd6df5024d
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: subscription_tier
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: 143318b6-a4fb-4a0d-9a98-e510a387c36c.subscription_tier.2.1783435360952
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: credits_used_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-credits-d1
+        Legend:
+          Width: 64px
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: col-report-date.1.1783435188825
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: field-credits-d1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: col-report-date.1.1783435188825
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 143318b6-a4fb-4a0d-9a98-e510a387c36c.subscription_tier.2.1783435360952
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: f4675419-56e3-4f96-a5b8-21fd6df5024d
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Credits by Subscription Tier</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 48b9b262-67d7-4e07-bd1f-5442f1374645
+  - PieChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - 143318b6-a4fb-4a0d-9a98-e510a387c36c.client_type.1.1783435120807
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 1e93c107-1075-488a-8731-757c413ae7a3
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: MEDIUM
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: client_type
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: 143318b6-a4fb-4a0d-9a98-e510a387c36c.client_type.1.1783435120807
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: DISTINCT_COUNT
+                Column:
+                  ColumnName: userid
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-users-1
+        Legend:
+          Height: 39px
+          Visibility: VISIBLE
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: field-users-1
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: field-users-1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 143318b6-a4fb-4a0d-9a98-e510a387c36c.client_type.1.1783435120807
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Daily Active Users by Client Type</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 7910f186-0b2e-4d42-8ca1-3f61968e7c21
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: userid
+                DataSetIdentifier: kiro_user_activity
+              FieldId: kpi-users-val
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Active Users</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 50fe68a8-66f8-4c71-965b-faf52256a28b
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: SUM
+              Column:
+                ColumnName: total_messages_num
+                DataSetIdentifier: kiro_user_activity
+              FieldId: kpi-msgs-val
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Total Messages</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 5ed267ef-42db-4175-ae58-15852829ce13
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: SUM
+              Column:
+                ColumnName: credits_used_num
+                DataSetIdentifier: kiro_user_activity
+              FieldId: kpi-credits-val
+              FormatConfiguration:
+                FormatConfiguration:
+                  NumberDisplayFormatConfiguration:
+                    DecimalPlacesConfiguration:
+                      DecimalPlaces: 0
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Credits Used</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: de966e5f-2d57-4931-8e15-dc8bd47cbdea
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: SUM
+              Column:
+                ColumnName: overage_credits_used_num
+                DataSetIdentifier: kiro_user_activity
+              FieldId: kpi-overage-val
+              FormatConfiguration:
+                FormatConfiguration:
+                  NumberDisplayFormatConfiguration:
+                    DecimalPlacesConfiguration:
+                      DecimalPlaces: 0
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Overage Credits</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: a400ed3d-9038-4a09-a22d-4a9c92a2da12
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: SUM
+              Column:
+                ColumnName: is_new_user
+                DataSetIdentifier: kiro_user_activity
+              FieldId: kpi-new-users-val
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">New Users</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: dc09913c-f175-470f-9c14-03b19cdebaf2
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - field-client-1
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: baf0cb84-f662-4d87-9e93-bf9e4a80160e
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        CategoryAxis:
+          AxisOffset: 22px
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: report_date
+                  DataSetIdentifier: kiro_user_activity
+                DateGranularity: DAY
+                FieldId: field-date-1
+                HierarchyId: a5ae67bd-2802-46e9-8109-4358d0f193e4
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: client_type
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-client-1
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: DISTINCT_COUNT
+                Column:
+                  ColumnName: userid
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-users-1
+        Legend:
+          Visibility: VISIBLE
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: field-date-1
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: field-date-1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: field-users-1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: field-client-1
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: a5ae67bd-2802-46e9-8109-4358d0f193e4
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Daily Active Users by Client Type</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: b8f44aa5-2af1-4796-940f-8d7de571b595
+  - PieChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: e0140c61-ebb4-434a-93fa-bb4ae86697ae
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: MEDIUM
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: subscription_tier
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-tier-d1
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: credits_used_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-credits-d1
+        Legend:
+          Width: 64px
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: field-credits-d1
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Credits by Subscription Tier</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: f7f9dcd6-2572-4849-a5c8-c037454edbfc
+  - PieChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: e23c4570-a44e-4d3e-84f1-68b92e4924f4
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: MEDIUM
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: model_name
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-model-d1
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: model_messages_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-model-msgs-d1
+        Legend:
+          Width: 64px
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: field-model-msgs-d1
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: field-model-d1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: field-model-msgs-d1
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Messages by Model</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 7a8495fb-ee61-4876-a8e3-39fbaa223aeb
+- ContentType: INTERACTIVE
+  FilterControls:
+  - CrossSheet:
+      FilterControlId: fc-date-2
+      SourceFilterId: filter-date
+  - CrossSheet:
+      FilterControlId: fc-account-2
+      SourceFilterId: filter-account-id
+  - CrossSheet:
+      FilterControlId: fc-user-2
+      SourceFilterId: filter-user
+  - CrossSheet:
+      FilterControlId: fc-model-2
+      SourceFilterId: filter-model
+  - CrossSheet:
+      FilterControlId: fc-client-2
+      SourceFilterId: filter-client-type
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 5182d033-0600-4690-8e0f-1e9579b6f965
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 2
+        - ColumnIndex: 0
+          ColumnSpan: 11
+          ElementId: 1d7afd39-eec5-40fc-9da3-2f060a0648a8
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 14
+        - ColumnIndex: 11
+          ColumnSpan: 25
+          ElementId: 6b84f07f-bbec-4c8b-943b-d44e99e62682
+          ElementType: VISUAL
+          RowIndex: 3
+          RowSpan: 14
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 193498d7-0142-423d-95cc-606c5d86c46f
+          ElementType: VISUAL
+          RowIndex: 17
+          RowSpan: 14
+  Name: User Engagement
+  SheetId: 6be25593-1f88-4d18-891d-5b8aa3828fa6
+  TextBoxes:
+  - Content: "<text-box>\n  &#128197; Kiro billing is calculated per calendar month\
+      \ - plans and credit allowances reset at the start of each month.\n  <br/>\n\
+      \  &#128270; For accurate usage deep-dives, set the Lookback period above to\
+      \ a full calendar month (e.g. \"This month\" or \"Previous month\").\n  <br/>\n\
+      \  \u26A0\uFE0F Partial or rolling date ranges will understate plan utilization\
+      \ and overage.\n</text-box>"
+    SheetTextBoxId: 5182d033-0600-4690-8e0f-1e9579b6f965
+  Visuals:
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - field-user-b1
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 34004f81-3776-44a6-9025-ecf11dcaf57d
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: report_date
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: col-report-date.2.1783423442399
+                HierarchyId: 5046d5c3-2002-4442-a153-42fa8e1e66f8
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: user
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-user-b1
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: model_messages_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-msgs-b1
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: col-report-date.2.1783423442399
+          ColorItemsLimit:
+            ItemsLimit: 10
+            OtherCategories: INCLUDE
+          ColorSort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: field-user-b1
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: field-user-b1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: field-msgs-b1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: col-report-date.2.1783423442399
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 5046d5c3-2002-4442-a153-42fa8e1e66f8
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Users by Message Count</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 6b84f07f-bbec-4c8b-943b-d44e99e62682
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFieldOptions: ALL_FIELDS
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: a4af1553-89b3-44af-bff9-7269d855ecc1
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: user
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-user-b1
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: model_name
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-model-b1
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: model_messages_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-msgs-b1
+        Orientation: HORIZONTAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            ItemsLimit: 20
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: field-msgs-b1
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Top 50 Users by Message Count (by Model)</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 1d7afd39-eec5-40fc-9da3-2f060a0648a8
+  - PivotTableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          DataPathOptions:
+          - DataPathList:
+            - FieldId: field-rec-t1
+              FieldValue: tier_recommendation_monthly
+            Width: 253px
+          - DataPathList:
+            - FieldId: field-cpm-t1
+              FieldValue: credits_per_message
+            Width: 242px
+          - DataPathList:
+            - FieldId: field-user-t1
+              FieldValue: user
+            Width: 228px
+          - DataPathList:
+            - FieldId: field-tier-t1
+              FieldValue: subscription_tier
+            Width: 161px
+          - DataPathList:
+            - FieldId: col-report-date.10.1783423815272
+              FieldValue: report_date
+            Width: 132px
+          - DataPathList:
+            - FieldId: field-util-t1
+              FieldValue: plan_utilization_pct
+            Width: 123px
+          - DataPathList:
+            - FieldId: field-msgs-t1
+              FieldValue: total_messages_num
+            Width: 120px
+          SelectedFieldOptions:
+          - CustomLabel: Report Date
+            FieldId: col-report-date.10.1783423815272
+            Visibility: VISIBLE
+          - CustomLabel: Account ID
+            FieldId: field-acct-t1
+            Visibility: VISIBLE
+          - CustomLabel: User
+            FieldId: field-user-t1
+            Visibility: VISIBLE
+          - CustomLabel: Current Subscription Tier
+            FieldId: field-tier-t1
+            Visibility: VISIBLE
+          - CustomLabel: 'Subscription Tier Recommendation '
+            FieldId: field-rec-t1
+            Visibility: VISIBLE
+          - CustomLabel: Total Messages
+            FieldId: field-msgs-t1
+            Visibility: VISIBLE
+          - CustomLabel: Credits Used
+            FieldId: field-credits-t1
+            Visibility: VISIBLE
+          - CustomLabel: Plan Credits
+            FieldId: field-plan-t1
+            Visibility: VISIBLE
+          - CustomLabel: Plan Utilization Percentage
+            FieldId: field-util-t1
+            Visibility: VISIBLE
+          - CustomLabel: Credits per Message
+            FieldId: field-cpm-t1
+            Visibility: VISIBLE
+        FieldWells:
+          PivotTableAggregatedFieldWells:
+            Columns: []
+            Rows:
+            - DateDimensionField:
+                Column:
+                  ColumnName: report_date
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: col-report-date.10.1783423815272
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-acct-t1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: user
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-user-t1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: subscription_tier
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-tier-t1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: tier_recommendation_monthly
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-rec-t1
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: total_messages_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-msgs-t1
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: credits_used_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-credits-t1
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: plan_credits
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-plan-t1
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MIN
+                Column:
+                  ColumnName: monthly_plan_utilization_pct
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-util-t1
+                FormatConfiguration:
+                  FormatConfiguration:
+                    PercentageDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 1
+                      Suffix: '%'
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: AVERAGE
+                Column:
+                  ColumnName: credits_per_message
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-cpm-t1
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 3
+        SortConfiguration:
+          FieldSortOptions:
+          - FieldId: field-user-t1
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: field-msgs-t1
+        TableOptions:
+          CellStyle: {}
+          ColumnHeaderStyle: {}
+          RowFieldNamesStyle: {}
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Select Current Month or Previous Month in the
+            lookback period to monitor Usage Patterns</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"14px\">User Summary \u2014\
+            \ with Tier Recommendation for specified lookback period</inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 193498d7-0142-423d-95cc-606c5d86c46f
+- ContentType: INTERACTIVE
+  FilterControls:
+  - CrossSheet:
+      FilterControlId: fc-date-3
+      SourceFilterId: filter-date
+  - CrossSheet:
+      FilterControlId: fc-account-3
+      SourceFilterId: filter-account-id
+  - CrossSheet:
+      FilterControlId: fc-user-3
+      SourceFilterId: filter-user
+  - CrossSheet:
+      FilterControlId: fc-model-3
+      SourceFilterId: filter-model
+  - CrossSheet:
+      FilterControlId: fc-client-3
+      SourceFilterId: filter-client-type
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 47013b01-0973-4e30-be88-dd75a4fdd124
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 2
+        - ColumnIndex: 0
+          ColumnSpan: 9
+          ElementId: 4fbadc81-c9c5-4be9-8168-2d1796bead55
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 4
+        - ColumnIndex: 9
+          ColumnSpan: 9
+          ElementId: a50caeef-2e66-4531-b4a1-45dc3647be77
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 61ed25c6-9005-4783-903b-752e45e5088f
+          ElementType: VISUAL
+          RowIndex: 6
+          RowSpan: 12
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 22528667-6480-4481-ae54-de69ed4bf936
+          ElementType: VISUAL
+          RowIndex: 18
+          RowSpan: 14
+  Name: Credit & Overage Tracking
+  SheetId: 40968fcc-5b4e-4e37-990e-0b4d73d00a1d
+  TextBoxes:
+  - Content: "<text-box>\n  &#128197; Kiro billing is calculated per calendar month\
+      \ - plans and credit allowances reset at the start of each month.\n  <br/>\n\
+      \  \_&#128270; For accurate usage deep-dives, set the Lookback period above\
+      \ to a full calendar month (e.g. \"This month\" or \"Previous month\").\n  <br/>\n\
+      \  \u26A0\uFE0F Partial or rolling date ranges will understate plan utilization\
+      \ and overage.\n</text-box>"
+    SheetTextBoxId: 47013b01-0973-4e30-be88-dd75a4fdd124
+  Visuals:
+  - BarChartVisual:
+      Actions: []
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: report_date
+                  DataSetIdentifier: kiro_user_activity
+                DateGranularity: DAY
+                FieldId: field-date-ov1
+                HierarchyId: 923517c8-7645-497a-ad01-fa0ce4539a56
+            Colors: []
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: credits_used_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-credits-ov1
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: overage_credits_used_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-overage-ov1
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: field-date-ov1
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: field-date-ov1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: field-credits-ov1
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: field-overage-ov1
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: 923517c8-7645-497a-ad01-fa0ce4539a56
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Daily Credits Used vs Overage</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 61ed25c6-9005-4783-903b-752e45e5088f
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: userid
+                DataSetIdentifier: kiro_user_activity
+              FieldId: kpi-util-val
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"14px\">Users at Risk (\u2265\
+            75% plan)</inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 4fbadc81-c9c5-4be9-8168-2d1796bead55
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: userid
+                DataSetIdentifier: kiro_user_activity
+              FieldId: kpi-overage-val
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Users in Overage</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: a50caeef-2e66-4531-b4a1-45dc3647be77
+  - PivotTableVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - field-user-ov1
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 4b08c439-f66d-4981-bff9-e4eeae8069e9
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        FieldOptions:
+          DataPathOptions:
+          - DataPathList:
+            - FieldId: field-overage-ov2
+              FieldValue: overage_credits_used_num
+            Width: 398px
+          - DataPathList:
+            - FieldId: field-user-ov1
+              FieldValue: user
+            Width: 282px
+          - DataPathList:
+            - FieldId: field-util-ov1
+              FieldValue: plan_utilization_pct
+            Width: 198px
+          - DataPathList:
+            - FieldId: field-rec-ov1
+              FieldValue: tier_recommendation_monthly
+            Width: 157px
+          - DataPathList:
+            - FieldId: field-credits-ov2
+              FieldValue: credits_used_num
+            Width: 124px
+          SelectedFieldOptions:
+          - CustomLabel: Account ID
+            FieldId: field-acct-ov1
+            Visibility: VISIBLE
+          - CustomLabel: User
+            FieldId: field-user-ov1
+            Visibility: VISIBLE
+          - CustomLabel: Subscription Tier
+            FieldId: field-tier-ov1
+            Visibility: VISIBLE
+          - CustomLabel: Tier Recommendation
+            FieldId: field-rec-ov1
+            Visibility: VISIBLE
+          - CustomLabel: Plan Credits
+            FieldId: field-plan-ov1
+            Visibility: VISIBLE
+          - CustomLabel: Credits Used
+            FieldId: field-credits-ov2
+            Visibility: VISIBLE
+          - CustomLabel: Plan Utilization Percentage
+            FieldId: field-util-ov1
+            Visibility: VISIBLE
+          - CustomLabel: Overage Credits Used
+            FieldId: field-overage-ov2
+            Visibility: VISIBLE
+        FieldWells:
+          PivotTableAggregatedFieldWells:
+            Columns: []
+            Rows:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-acct-ov1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: user
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-user-ov1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: subscription_tier
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-tier-ov1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: tier_recommendation_monthly
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-rec-ov1
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: plan_credits
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-plan-ov1
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: credits_used_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-credits-ov2
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MIN
+                Column:
+                  ColumnName: monthly_plan_utilization_pct
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-util-ov1
+                FormatConfiguration:
+                  FormatConfiguration:
+                    PercentageDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 1
+                      Suffix: '%'
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: overage_credits_used_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-overage-ov2
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+        SortConfiguration:
+          FieldSortOptions:
+          - FieldId: field-user-ov1
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: field-util-ov1
+        TableOptions:
+          CellStyle: {}
+          ColumnHeaderStyle: {}
+          RowFieldNamesStyle: {}
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - Cell:
+            FieldId: field-util-ov1
+            Scopes:
+            - Role: FIELD
+            TextFormat:
+              TextColor:
+                Solid:
+                  Color: '#DE3B00'
+                  Expression: minOver({monthly_plan_utilization_pct}, [userid, truncDate("MM", {report_date})], PRE_AGG) > 0.75
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Monthly Credits and Overage by User</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 22528667-6480-4481-ae54-de69ed4bf936
+- ContentType: INTERACTIVE
+  FilterControls:
+  - CrossSheet:
+      FilterControlId: fc-date-4
+      SourceFilterId: filter-date
+  - CrossSheet:
+      FilterControlId: fc-account-4
+      SourceFilterId: filter-account-id
+  - CrossSheet:
+      FilterControlId: fc-user-4
+      SourceFilterId: filter-user
+  - CrossSheet:
+      FilterControlId: fc-model-4
+      SourceFilterId: filter-model
+  - CrossSheet:
+      FilterControlId: fc-client-4
+      SourceFilterId: filter-client-type
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 87916338-f161-4968-9ff1-bf6eefeec96e
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 2
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 2e71bb79-dc17-4168-a602-f3b2f8d72158
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 14
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: a9f28fd8-8820-41d7-a4b9-60a1f295534d
+          ElementType: VISUAL
+          RowIndex: 16
+          RowSpan: 14
+  Name: Model & Client Breakdown
+  SheetId: 6b42ae1f-864d-49ad-ae0f-fc92cd7e6154
+  TextBoxes:
+  - Content: "<text-box>\n  &#128197; Kiro billing is calculated per calendar month\
+      \ - plans and credit allowances reset at the start of each month.\n  <br/>\n\
+      \  &#128270; For accurate usage deep-dives, set the Lookback period above to\
+      \ a full calendar month (e.g. \"This month\" or \"Previous month\").\n  <br/>\n\
+      \  \u26A0\uFE0F Partial or rolling date ranges will understate plan utilization\
+      \ and overage.\n</text-box>"
+    SheetTextBoxId: 87916338-f161-4968-9ff1-bf6eefeec96e
+  Visuals:
+  - BarChartVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - field-model-m1
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 6b3c8c63-86fd-414c-ac5a-4fc7c5bede34
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        BarsArrangement: STACKED
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - DateDimensionField:
+                Column:
+                  ColumnName: report_date
+                  DataSetIdentifier: kiro_user_activity
+                DateGranularity: DAY
+                FieldId: field-date-m1
+                HierarchyId: ac825248-8570-4682-9d43-f689950f9e1d
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: model_name
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-model-m1
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: model_messages_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-msgs-m1
+        Legend:
+          Visibility: VISIBLE
+        Orientation: VERTICAL
+        SortConfiguration:
+          CategoryItemsLimit:
+            OtherCategories: INCLUDE
+          CategorySort:
+          - FieldSort:
+              Direction: ASC
+              FieldId: field-date-m1
+          ColorItemsLimit:
+            OtherCategories: INCLUDE
+          SmallMultiplesLimitConfiguration:
+            OtherCategories: INCLUDE
+      ColumnHierarchies:
+      - DateTimeHierarchy:
+          DrillDownFilters: []
+          HierarchyId: ac825248-8570-4682-9d43-f689950f9e1d
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Daily Messages by Model</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 2e71bb79-dc17-4168-a602-f3b2f8d72158
+  - PivotTableVisual:
+      Actions:
+      - ActionOperations:
+        - FilterOperation:
+            SelectedFieldsConfiguration:
+              SelectedFields:
+              - field-model-t1
+            TargetVisualsConfiguration:
+              SameSheetTargetVisualConfiguration:
+                TargetVisualOptions: ALL_VISUALS
+        CustomActionId: 88b08790-3528-4c8d-a583-3db1a9d18bc7
+        Name: Action 1
+        Status: ENABLED
+        Trigger: DATA_POINT_CLICK
+      ChartConfiguration:
+        FieldOptions:
+          DataPathOptions:
+          - DataPathList:
+            - FieldId: field-cpm-t1
+              FieldValue: credits_per_message
+            Width: 410px
+          - DataPathList:
+            - FieldId: field-msgs-t2
+              FieldValue: model_messages_num
+            Width: 219px
+          - DataPathList:
+            - FieldId: field-model-t1
+              FieldValue: model_name
+            Width: 155px
+          SelectedFieldOptions:
+          - CustomLabel: Model Name
+            FieldId: field-model-t1
+            Visibility: VISIBLE
+          - CustomLabel: Client Type
+            FieldId: field-client-t1
+            Visibility: VISIBLE
+          - CustomLabel: Subscription Tier
+            FieldId: field-tier-t1
+            Visibility: VISIBLE
+          - CustomLabel: User Count
+            FieldId: field-users-t1
+            Visibility: VISIBLE
+          - CustomLabel: Total Messages
+            FieldId: field-msgs-t2
+            Visibility: VISIBLE
+          - CustomLabel: Credits Used
+            FieldId: field-credits-t1
+            Visibility: VISIBLE
+          - CustomLabel: Credits per Message
+            FieldId: field-cpm-t1
+            Visibility: VISIBLE
+        FieldWells:
+          PivotTableAggregatedFieldWells:
+            Columns: []
+            Rows:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: model_name
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-model-t1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: client_type
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-client-t1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: subscription_tier
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-tier-t1
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: DISTINCT_COUNT
+                Column:
+                  ColumnName: userid
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-users-t1
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: model_messages_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-msgs-t2
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: credits_used_num
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-credits-t1
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: AVERAGE
+                Column:
+                  ColumnName: credits_per_message
+                  DataSetIdentifier: kiro_user_activity
+                FieldId: field-cpm-t1
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 3
+        SortConfiguration:
+          FieldSortOptions:
+          - FieldId: field-model-t1
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: field-credits-t1
+        TableOptions:
+          CellStyle: {}
+          ColumnHeaderStyle: {}
+          RowFieldNamesStyle: {}
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Monthly Messages by Model and Client Type</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: a9f28fd8-8820-41d7-a4b9-60a1f295534d
