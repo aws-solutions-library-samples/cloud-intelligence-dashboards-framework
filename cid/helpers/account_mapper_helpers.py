@@ -1798,6 +1798,33 @@ class UnifiedWorkflow:
 
         return mapping
 
+    def _set_athena_parameters(self, target_database: str) -> None:
+        """
+        Pre-set Athena database/workgroup parameters to avoid later prompts.
+
+        Auto-selects the workgroup when exactly one real workgroup exists
+        (excluding UI "(create new)" placeholder entries) and falls back to
+        'primary' when none exist. Shared by all workflow modes.
+
+        Args:
+            target_database: Database to set as the active athena-database
+        """
+        from cid.utils import set_parameters, get_parameters
+        params = get_parameters()
+        params['athena-database'] = target_database
+
+        workgroups = [wg['Name'] for wg in self.athena.list_work_groups()]
+        real_workgroups = [wg for wg in workgroups if not wg.endswith('(create new)')]
+
+        if len(real_workgroups) == 1:
+            logger.info("Auto-selected workgroup: %s", real_workgroups[0])
+            params['athena-workgroup'] = real_workgroups[0]
+        elif len(real_workgroups) == 0:
+            logger.info("No workgroups found, using default 'primary'")
+            params['athena-workgroup'] = 'primary'
+
+        set_parameters(params)
+
     def execute(self, source_file: str = None, source_database: str = None) -> dict:
         """
         Execute the complete workflow with auto-discovery.
@@ -1845,24 +1872,7 @@ class UnifiedWorkflow:
         logger.info("Target database for views: %s", target_database)
 
         # Pre-set Athena parameters BEFORE any queries to avoid prompts
-        from cid.utils import set_parameters, get_parameters
-        params = get_parameters()
-        params['athena-database'] = target_database
-
-        # Auto-select workgroup if only one real workgroup exists (excluding "create new" options)
-        workgroups = [wg['Name'] for wg in self.athena.list_work_groups()]
-        # Filter out any that might be added by the UI as "create new" options
-        real_workgroups = [wg for wg in workgroups if not wg.endswith('(create new)')]
-
-        if len(real_workgroups) == 1:
-            logger.info("Auto-selected workgroup: %s", real_workgroups[0])
-            params['athena-workgroup'] = real_workgroups[0]
-        elif len(real_workgroups) == 0:
-            # No workgroups exist, use default 'primary'
-            logger.info("No workgroups found, using default 'primary'")
-            params['athena-workgroup'] = 'primary'
-
-        set_parameters(params)
+        self._set_athena_parameters(target_database)
 
         # Phase 2: Configuration — load/save config from target database
         with spinner("Checking for existing configuration"):
@@ -2011,7 +2021,6 @@ class UnifiedWorkflow:
         Returns:
             dict: Results containing created view names and status
         """
-        from cid.utils import set_parameters, get_parameters
 
         # Get file path
         if not source_file:
@@ -2057,19 +2066,8 @@ class UnifiedWorkflow:
         # Discover target database
         target_database = self.discovery.discover_target_database()
 
-        # Pre-set Athena parameters
-        params = get_parameters()
-        params['athena-database'] = target_database
-
-        workgroups = [wg['Name'] for wg in self.athena.list_work_groups()]
-        real_workgroups = [wg for wg in workgroups if not wg.endswith('(create new)')]
-
-        if len(real_workgroups) == 1:
-            params['athena-workgroup'] = real_workgroups[0]
-        elif len(real_workgroups) == 0:
-            params['athena-workgroup'] = 'primary'
-
-        set_parameters(params)
+        # Pre-set Athena parameters (shared with the other workflow modes)
+        self._set_athena_parameters(target_database)
 
         # Determine columns: account_id + account_name (if present) + taxonomy dimensions
         all_columns = list(csv_data[0].keys())
@@ -2120,71 +2118,44 @@ class UnifiedWorkflow:
         if not transformed_data:
             raise CidCritical("No valid account rows found in CSV")
 
-        # Build config for persistence
+        # Build config for persistence. The transformed rows (final columns,
+        # normalized account IDs) are carried as the file source data so the
+        # shared writer materializes them as the account_map_file_source view
+        # (including 262KB split + UNION handling), exactly like other modes.
+        file_source_view = f"{self.view_name}_file_source"
         config = {
             'metadata': {
                 'source_database': None,
                 'source_table': None,
                 'target_database': target_database,
                 'data_source_mode': 'csv_only',
+                'file_source_view': file_source_view,
             },
             'taxonomy_dimensions': [
-                {'name': dimension_names[col], 'source_type': 'file', 'source_value': col}
+                {'name': dimension_names[col], 'source_type': 'file', 'source_value': dimension_names[col]}
                 for col in selected_columns
             ],
             'file_source': {
                 'path': str(source_file),
-                'account_column': account_col,
-                'data': csv_data,
+                'account_column': 'account_id',
+                'data': transformed_data,
             },
         }
 
-        # Preview
-        cid_print(f"\n📋 Preview ({min(10, len(transformed_data))} of {len(transformed_data)} rows):\n")
-        sample = transformed_data[:10]
-        if sample:
-            headers = list(sample[0].keys())
-            col_widths = {h: max(len(h), max(len(str(row.get(h, ''))) for row in sample)) for h in headers}
-            header_line = ' | '.join(h.ljust(col_widths[h]) for h in headers)
-            cid_print(f"  {header_line}")
-            cid_print(f"  {'-+-'.join('-' * col_widths[h] for h in headers)}")
-            for row in sample:
-                row_line = ' | '.join(str(row.get(h, '')).ljust(col_widths[h]) for h in headers)
-                cid_print(f"  {row_line}")
-
-        cid_print("")
-        confirm = inquirer.confirm(
-            message=f"Create account_map view with {len(transformed_data)} accounts in database '{target_database}'?",
-            default=True
-        ).execute()
-
-        if not confirm:
+        # Preview and confirmation (same UX as the other workflow modes)
+        writer = AthenaWriter(config, self.athena)
+        sql = writer._generate_account_map_transformation_sql(config, self.view_name, target_database)
+        if not self._preview_and_confirm(sql, transformed_data[:10]):
             return {"status": "cancelled", "message": "User cancelled operation"}
 
-        # Write the view using VALUES clause
-        writer = AthenaWriter(config, self.athena)
-        with spinner("Creating account_map view"):
-            view_names = writer.create_view_from_values(
-                transformed_data, self.view_name, target_database
-            )
+        # Write all views through the shared orchestrator: orphan part-view
+        # cleanup, file source view (with split/UNION), config view, and the
+        # account_map view.
+        logger.info("Writing views to Athena...")
+        results = writer.write_complete_mapping(config, transformed_data, target_database, self.view_name)
+        results['status'] = 'success'
 
-        # Create union view if split
-        if len(view_names) > 1:
-            with spinner("Creating union view"):
-                writer.create_union_view(view_names, self.view_name, target_database)
-
-        # Save config view
-        config_mgr = ConfigManager(self.athena, self.view_name)
-        with spinner("Saving configuration"):
-            config_mgr.save_to_view(config, target_database)
-
-        return {
-            'status': 'success',
-            'account_map_view': self.view_name,
-            'config_view': f"{self.view_name}_config",
-            'file_source_view': None,
-            'deleted_views': [],
-        }
+        return results
 
     def _check_existing_config(self, database: str) -> Optional[dict]:
         """
@@ -3366,7 +3337,31 @@ SELECT {select_clause} FROM (
         
         # Get taxonomy dimensions
         taxonomy_dimensions = config.get('taxonomy_dimensions', [])
-        
+
+        # File-only mode (no source table, e.g. "CSV file only"): the file
+        # source view already holds the complete account list with final
+        # column names, so account_map is a thin view over it. The heavy
+        # lifting (VALUES materialization, 262KB split + UNION) is done by
+        # create_file_source_view via the shared writer path.
+        if not source_table:
+            if not file_source_view:
+                raise RuntimeError("Config has neither source_table nor file_source_view")
+            select_parts = [
+                'file.account_id',
+                'file.account_name',
+                'file.parent_account_id',
+                'file.parent_account_name',
+            ]
+            dim_names = sorted(
+                {d['name'] for d in taxonomy_dimensions}, key=str.lower
+            )
+            select_parts.extend(f'file."{name}"' for name in dim_names)
+            select_clause = ',\n    '.join(select_parts)
+            return f"""CREATE OR REPLACE VIEW {database}.{view_name} AS
+SELECT
+    {select_clause}
+FROM {database}.{file_source_view} file"""
+
         # Track dimension names to detect duplicates
         dimension_names_used = set()
         

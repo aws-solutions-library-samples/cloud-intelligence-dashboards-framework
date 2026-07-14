@@ -169,7 +169,7 @@ FROM optimization_data.organization_data org
 |---|---|
 | `account_map` | Main enriched account mapping view used by dashboards |
 | `account_map_config` | Stores configuration for reuse on subsequent runs |
-| `account_map_file_source` | (Only with `--file`) Stores CSV data as Athena view for JOINs |
+| `account_map_file_source` | (With `--file` or CSV-only mode) Stores file/CSV data as an Athena view |
 
 ## Output Column Compatibility
 
@@ -202,8 +202,13 @@ When the user selects "CSV file only":
 4. Optionally rename the selected columns to friendly, SQL-safe dimension
    names (same prompt as the organization_data workflow; default keeps the
    original CSV header). Renamed names become the output view column names.
-5. Output includes `parent_account_id` and `parent_account_name` (NULL) for dashboard compatibility
-6. Creates a VALUES-based view (splits into multiple parts + UNION if > 262KB)
+5. Rows are normalized (zero-padded account IDs, `parent_account_id` and
+   `parent_account_name` as NULL for dashboard compatibility)
+6. Writes through the same `AthenaWriter.write_complete_mapping()` orchestrator
+   as the other modes: orphan part-view cleanup, then the normalized rows are
+   materialized as the `account_map_file_source` VALUES view (auto-split into
+   part views + UNION if > 262KB), the config view is saved, and `account_map`
+   is created as a thin `SELECT ... FROM account_map_file_source` view.
 
 ### Both mode
 
