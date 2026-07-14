@@ -1748,6 +1748,56 @@ class UnifiedWorkflow:
 
         return name
 
+    def _prompt_dimension_renames(self, columns: list, reserved=None) -> dict:
+        """
+        Ask the user to optionally rename source columns to friendly, SQL-safe
+        dimension names. Shared by the organization_data ("Additional file")
+        workflow and the CSV-only workflow so the rename experience is identical.
+
+        A single confirm gates the whole set; declining keeps the original
+        column names. Provided names are validated and sanitized as SQL
+        identifiers, then de-duplicated by appending _2, _3, ... while also
+        staying clear of any names in ``reserved``.
+
+        Args:
+            columns: Ordered list of source column names to offer for renaming
+            reserved: Optional iterable of names the result must not collide with
+                      (e.g. reserved output columns or existing dimensions)
+
+        Returns:
+            dict mapping each source column -> final dimension name (input order)
+        """
+        mapping = {}
+        if not columns:
+            return mapping
+
+        used = set(reserved or ())
+        customize = inquirer.confirm(
+            message="Do you want to rename any taxonomy dimensions from the file?",
+            default=False
+        ).execute()
+
+        for col in columns:
+            if customize:
+                new_name = inquirer.text(
+                    message=f"Name for dimension '{col}' (press Enter to keep):",
+                    default=col,
+                    validate=lambda x: self.config_mgr._validate_dimension_name(x) if x and x.strip() else True
+                ).execute()
+                new_name = self.config_mgr._sanitize_dimension_name(new_name) or col
+            else:
+                new_name = col
+
+            # De-duplicate against reserved names and earlier selections
+            base, i = new_name, 2
+            while new_name in used:
+                new_name = f"{base}_{i}"
+                i += 1
+            used.add(new_name)
+            mapping[col] = new_name
+
+        return mapping
+
     def execute(self, source_file: str = None, source_database: str = None) -> dict:
         """
         Execute the complete workflow with auto-discovery.
@@ -2044,6 +2094,13 @@ class UnifiedWorkflow:
         else:
             selected_columns = []
 
+        # Optionally rename selected columns to friendly dimension names
+        # (shared with the organization_data workflow; default keeps headers).
+        dimension_names = self._prompt_dimension_renames(
+            selected_columns,
+            reserved={'account_id', 'account_name', 'parent_account_id', 'parent_account_name'},
+        )
+
         # Build transformed rows for the VALUES-based view
         # Include parent_account_id and parent_account_name to match the default
         # account_map schema expected by dashboards
@@ -2057,7 +2114,7 @@ class UnifiedWorkflow:
             out_row['parent_account_id'] = ''
             out_row['parent_account_name'] = ''
             for col in selected_columns:
-                out_row[col] = str(row.get(col, ''))
+                out_row[dimension_names[col]] = str(row.get(col, ''))
             transformed_data.append(out_row)
 
         if not transformed_data:
@@ -2072,7 +2129,7 @@ class UnifiedWorkflow:
                 'data_source_mode': 'csv_only',
             },
             'taxonomy_dimensions': [
-                {'name': col, 'source_type': 'file', 'source_value': col}
+                {'name': dimension_names[col], 'source_type': 'file', 'source_value': col}
                 for col in selected_columns
             ],
             'file_source': {
@@ -2278,35 +2335,17 @@ class UnifiedWorkflow:
                 )
 
                 if selected_columns:
-                    # Prompt for dimension name customization
-                    customize = inquirer.confirm(
-                        message="Do you want to rename any taxonomy dimensions from the file?",
-                        default=False
-                    ).execute()
-
-                    dimension_names = {}
-                    if customize:
-                        for col in selected_columns:
-                            new_name = inquirer.text(
-                                message=f"Name for dimension '{col}' (press Enter to keep):",
-                                default=col,
-                                validate=lambda x: self.config_mgr._validate_dimension_name(x) if x and x.strip() else True
-                            ).execute()
-                            # Sanitize the dimension name (replace spaces with underscores)
-                            new_name = self.config_mgr._sanitize_dimension_name(new_name)
-                            dimension_names[col] = new_name
-                    else:
-                        dimension_names = {col: col for col in selected_columns}
-
-                    # Remove old file dimensions from config
+                    # Replace any previous file dimensions with the new selection
                     config['taxonomy_dimensions'] = [
                         dim for dim in config['taxonomy_dimensions']
                         if dim['source_type'] != 'file'
                     ]
 
-                    # Add new file dimensions to config
+                    dimension_names = self._prompt_dimension_renames(
+                        selected_columns,
+                        reserved={d['name'] for d in config['taxonomy_dimensions']},
+                    )
                     for col, name in dimension_names.items():
-                        name = self._resolve_dimension_name(name, config)
                         config['taxonomy_dimensions'].append({
                             'name': name,
                             'source_type': 'file',
@@ -2426,26 +2465,11 @@ class UnifiedWorkflow:
                 )
 
                 if selected_columns:
-                    # Prompt for dimension name customization
-                    customize = inquirer.confirm(
-                        message="Do you want to rename any taxonomy dimensions from the file?",
-                        default=False
-                    ).execute()
-
-                    dimension_names = {}
-                    if customize:
-                        for col in selected_columns:
-                            new_name = inquirer.text(
-                                message=f"Name for dimension '{col}' (press Enter to keep):",
-                                default=col
-                            ).execute()
-                            dimension_names[col] = new_name
-                    else:
-                        dimension_names = {col: col for col in selected_columns}
-
-                    # Add file dimensions to config
+                    dimension_names = self._prompt_dimension_renames(
+                        selected_columns,
+                        reserved={d['name'] for d in config['taxonomy_dimensions']},
+                    )
                     for col, name in dimension_names.items():
-                        name = self._resolve_dimension_name(name, config)
                         config['taxonomy_dimensions'].append({
                             'name': name,
                             'source_type': 'file',
