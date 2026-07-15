@@ -308,6 +308,114 @@ class AbstractCUR(CidBase):
         else:
             raise NotImplemented('cur version not known')
 
+    @property
+    def tag_fields_by_dimension(self) -> dict:
+        """Returns a dict mapping bare tag key -> list of selectors found across different dimensions.
+
+        Only populated for CUR2.  Only keys that appear in **two or more** dimensions are returned,
+        making this the authoritative list of cross-dimension merge candidates.
+
+        Example return value::
+
+            {
+                'environment': [
+                    "resource_tags['user_environment']",
+                    "tags['accountTag/environment']",
+                ],
+                'cost_center': [
+                    "tags['accountTag/cost_center']",
+                    "tags['iamPrincipal/cost_center']",
+                ],
+            }
+
+        The bare key is extracted by stripping the dimension-specific prefix from each selector,
+        using the same rules as ``_tag_to_name()`` in ``common.py`` but without adding any
+        output prefix — so the result is purely the user-facing tag key name (special characters
+        normalised to ``_``).
+        """
+        if self.version != '2':
+            return {}
+
+        import re
+
+        def _bare_key(selector: str) -> str:
+            """Strip dimension prefix to get the bare, normalised tag key."""
+            if selector == 'line_item_iam_principal':
+                return 'iam_principal'
+            # Extract the key part from MAP accessor notation: foo['bar'] -> 'bar'
+            key = selector.split("['")[-1].split("']")[0]
+            # Strip dimension prefixes
+            for prefix in ('accountTag/', 'userAttribute/', 'iamPrincipal/', 'user_'):
+                if key.startswith(prefix):
+                    key = key[len(prefix):]
+                    break
+            # Normalise non-word characters to underscore (mirrors QS key sanitisation)
+            return re.sub(r'\W', '_', key)
+
+        # Bucket every discovered selector by its bare key
+        by_key: dict = {}
+        for selector in self.tag_and_cost_category_fields:
+            key = _bare_key(selector)
+            by_key.setdefault(key, []).append(selector)
+
+        # Keep only keys that appear in more than one dimension
+        return {key: selectors for key, selectors in by_key.items() if len(selectors) > 1}
+
+    @property
+    def tag_fields_by_dimension(self) -> dict:
+        """Returns a dict mapping bare tag key -> list of selectors found across different dimensions.
+
+        Only populated for CUR2.  Only keys that appear in **two or more** dimensions are returned,
+        making this the authoritative list of cross-dimension merge candidates.
+
+        Example return value::
+
+            {
+                'environment': [
+                    "resource_tags['user_environment']",
+                    "tags['accountTag/environment']",
+                ],
+                'cost_center': [
+                    "tags['accountTag/cost_center']",
+                    "tags['iamPrincipal/cost_center']",
+                ],
+            }
+
+        The bare key is extracted by stripping the dimension-specific prefix from each selector,
+        using the same rules as ``_tag_to_name()`` in ``common.py`` but without adding any
+        output prefix — so the result is purely the user-facing tag key name (special characters
+        normalised to ``_``).
+        """
+        if self.version != '2':
+            return {}
+
+        import re
+
+        def _bare_key(selector: str) -> str:
+            """Strip dimension prefix to get the bare, normalised tag key."""
+            if selector == 'line_item_iam_principal':
+                return 'iam_principal'
+            # Extract the key part from MAP accessor notation: foo['bar'] -> 'bar'
+            key = selector.split("['")[-1].split("']")[0]
+            # Strip dimension prefixes
+            for prefix in ('accountTag/', 'userAttribute/', 'iamPrincipal/', 'user_'):
+                if key.startswith(prefix):
+                    key = key[len(prefix):]
+                    # Convert CamelCase/PascalCase to snake_case
+                    key = re.sub(r'(?<!^)(?=[A-Z])', '_', key).lower()
+                    break
+            # Normalise non-word characters to underscore (mirrors QS key sanitisation)
+            return re.sub(r'\W', '_', key)
+
+        # Bucket every discovered selector by its bare key
+        by_key: dict = {}
+        for selector in self.tag_and_cost_category_fields:
+            key = _bare_key(selector)
+            by_key.setdefault(key, []).append(selector)
+
+        # Keep only keys that appear in more than one dimension
+        return {key: selectors for key, selectors in by_key.items() if len(selectors) > 1}
+
 
 class CUR(AbstractCUR):
     """This Class represents CUR table (1 or 2 versions)"""

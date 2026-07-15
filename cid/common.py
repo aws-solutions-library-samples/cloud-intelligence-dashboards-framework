@@ -2018,60 +2018,248 @@ class Cid():
         self.glue.create_or_update_crawler(crawler_definition=compiled_definition)
 
 
-    def generic_tags_json(self, param_name='resource-tags', options=[]) -> str:
-        ''' returns an sql for json tag
-        '''
-        def _tag_to_name(tag):
-            if tag == 'line_item_iam_principal':
-                return 'iam_principal'
-            tag_name = (tag
-                .replace('resource_tags_', '')
-                .replace('cost_category_', '')
-                .replace("'user_","'tag_")
-                .replace('accountTag/', '')
-                .replace('userAttribute/', '')
-                .replace('iamPrincipal/', '')
-                .replace("'aws_","'tag_aws_")
-                .split("['")[-1].split("']")[0]
-            )
-            if not tag_name.startswith('tag_'):
-                if tag.startswith('cost_category'):
-                    tag_name = 'cost_category_' + tag_name
-                elif "userAttribute/" in tag:
-                    tag_name = 'user_attribute_tag_' + tag_name
-                elif "iamPrincipal/" in tag:
-                    tag_name = 'iam_principal_tag_' + tag_name
-                elif tag.startswith('tags'):
-                    tag_name = 'account_tag_' + tag_name
-                else:
-                    tag_name = 'tag_' + tag_name
-            return re.sub(r'\W', '_', tag_name)
+    # --------------------------------------------------------------------------
+    # Dimension ordering used when building COALESCE expressions for tag merges
+    # --------------------------------------------------------------------------
+    _MERGE_STRATEGY_ORDER = {
+        'resource_first':       ['resource_tags', 'tags_iam_principal', 'tags_user_attribute', 'cost_category', 'tags_account'],
+        'account_first':        ['tags_account', 'resource_tags', 'tags_iam_principal', 'tags_user_attribute', 'cost_category'],
+    }
 
-        resource_tags = get_parameters().get(param_name, None) or get_parameters().get(param_name.replace('_', '-'), None)
-        tags_and_names = {_tag_to_name(tag):tag  for tag in sorted(options)}
-        logger.info(f'tags_and_names = {tags_and_names}')
-        logger.info(f'resource_tags = {resource_tags}')
-        if isinstance(resource_tags, str):
-            resource_tags = [tag for tag in resource_tags.split(',') if tag]
-        if resource_tags is None:
-            resource_tags = get_parameter(
-                param_name,
-                message='Select Cost Allocation Tags to be added to datasets(WARNING: this can affect performance. Choose only the strict minimum)',
-                multi=True,
-                choices=sorted(list(set(tags_and_names.keys()))),
-                default=resource_tags or [],
-            )
+    @staticmethod
+    def _selector_dimension(selector: str) -> str:
+        """Return a canonical dimension label for a CUR2 tag selector string."""
+        if selector == 'line_item_iam_principal':
+            return 'tags_iam_principal'
+        if selector.startswith('resource_tags'):
+            return 'resource_tags'
+        if selector.startswith('cost_category'):
+            return 'cost_category'
+        if "accountTag/" in selector:
+            return 'tags_account'
+        if "iamPrincipal/" in selector:
+            return 'tags_iam_principal'
+        if "userAttribute/" in selector:
+            return 'tags_user_attribute'
+        return 'resource_tags'  # fallback
 
-        if not resource_tags:
-            return "'{}'"
-        logger.debug(f'selected_tag_names = {resource_tags}')
-        pattern = r"\W"
-        array = ',\n                        '.join(
-            # replace all special characters with _ to allow QS read from this json (QS parseJson does not like special characters)
-            [f"""('{re.sub(pattern, "_", name)}', {tags_and_names[name]})"""
-            for name in resource_tags]
+    @staticmethod
+    def _tag_to_name(tag: str) -> str:
+        """Convert a raw CUR tag selector into a normalised JSON key name.
+
+        Works for both CUR1 flat columns (``resource_tags_user_env``) and CUR2
+        MAP accessors (``resource_tags['user_env']``, ``tags['accountTag/Env']``).
+        The result is safe for QuickSight ``parseJson`` dot-notation: every
+        non-word character is replaced with ``_``.
+        """
+        if tag == 'line_item_iam_principal':
+            return 'iam_principal'
+        tag_name = (tag
+            .replace('resource_tags_', '')
+            .replace('cost_category_', '')
+            .replace("'user_", "'tag_")
+            .replace('accountTag/', '')
+            .replace('userAttribute/', '')
+            .replace('iamPrincipal/', '')
+            .replace("'aws_", "'tag_aws_")
+            .split("['")[-1].split("']")[0]
         )
-        res = f'''
+        if not tag_name.startswith('tag_'):
+            if tag.startswith('cost_category'):
+                tag_name = 'cost_category_' + tag_name
+            elif "userAttribute/" in tag:
+                tag_name = 'user_attribute_tag_' + tag_name
+            elif "iamPrincipal/" in tag:
+                tag_name = 'iam_principal_tag_' + tag_name
+            elif tag.startswith('tags'):
+                tag_name = 'account_tag_' + tag_name
+            else:
+                tag_name = 'tag_' + tag_name
+        return re.sub(r'\W', '_', tag_name)
+
+    @staticmethod
+    def _build_merge_sql(bare_key: str, selectors: list, strategy: str) -> str:
+        """Build a ``COALESCE(NULLIF(..., ''), ...)`` SQL expression that implements
+        a cross-dimension merge for *bare_key*, trying each selector in the order
+        dictated by *strategy*.
+
+        ``NULLIF(..., '')`` is used rather than plain ``COALESCE`` because Athena MAP
+        element accessors return an empty string — not ``NULL`` — for missing keys.
+
+        Args:
+            bare_key:  The normalised tag key (used only for logging).
+            selectors: All discovered selectors for this key (e.g.
+                       ``["resource_tags['user_env']", "tags['accountTag/env']"]``).
+            strategy:  One of ``'resource_first'``, ``'account_first'``.
+
+        Returns:
+            A multi-line SQL string suitable for embedding directly in an
+            ``ARRAY[...]`` element inside ``MAP_FROM_ENTRIES``.
+        """
+        order = Cid._MERGE_STRATEGY_ORDER.get(strategy, Cid._MERGE_STRATEGY_ORDER['resource_first'])
+
+        def _rank(sel):
+            dim = Cid._selector_dimension(sel)
+            try:
+                return order.index(dim)
+            except ValueError:
+                return len(order)
+
+        ordered = sorted(selectors, key=_rank)
+        logger.debug(f'merge order for "{bare_key}": {[Cid._selector_dimension(s) for s in ordered]}')
+
+        coalesce_args = ',\n                        '.join(
+            f"NULLIF({sel}, '')" for sel in ordered
+        )
+        return f'COALESCE(\n                        {coalesce_args}\n                    )'
+
+    @staticmethod
+    def _load_selected_tags(param_name: str):
+        """Return the previously stored tag selection for *param_name*, or ``None``.
+
+        Checks both the hyphenated and underscored variants of the key so that
+        CLI flags (``--resource-tags``) and programmatic callers
+        (``resource_tags=...``) both resolve correctly.  A comma-separated string
+        is split into a list; an existing list is returned as-is.
+        """
+        value = (
+            get_parameters().get(param_name)
+            or get_parameters().get(param_name.replace('_', '-'))
+        )
+        if isinstance(value, str):
+            return [t for t in value.split(',') if t]
+        return value  # list or None
+
+    def _resolve_merge_config(self, param_name: str, merge_map: dict) -> tuple:
+        """Determine which tag keys to merge and which strategy to use.
+
+        Reads persisted choices first; if none exist and the session is
+        interactive, prompts the user and persists their answers for future
+        ``cid update`` runs.
+
+        Args:
+            param_name: The parameter namespace (e.g. ``'resource-tags'``).
+            merge_map:  ``{bare_key: [selectors]}`` from
+                        ``cur.tag_fields_by_dimension``.
+
+        Returns:
+            ``(keys_to_merge: set[str], strategy: str)``
+        """
+        # --- try cache first ---
+        cached_keys = get_parameters().get(f'{param_name}-merges')
+        cached_strategy = get_parameters().get(f'{param_name}-merge-strategy')
+        if cached_keys is not None:
+            keys = set(cached_keys.split(',')) if isinstance(cached_keys, str) else set(cached_keys)
+            logger.info(f'Using cached merge choices: keys={keys}, strategy={cached_strategy}')
+            return keys, cached_strategy or 'resource_first'
+
+        # --- non-interactive: skip merging ---
+        if not utils.isatty():
+            logger.info('Non-interactive mode: skipping cross-dimension tag merge prompts.')
+            return set(), 'resource_first'
+
+        # --- interactive: display candidates and prompt ---
+        dim_labels = {
+            'resource_tags':       'resource tag',
+            'tags_account':        'account tag',
+            'tags_iam_principal':  'IAM principal tag',
+            'tags_user_attribute': 'user attribute tag',
+            'cost_category':       'cost category',
+        }
+        cid_print('\n<BOLD>Tags found in multiple dimensions (merge candidates):<END>')
+        max_key_len = max(len(k) for k in merge_map)
+        for bare_key, selectors in sorted(merge_map.items()):
+            dims = ', '.join(dim_labels.get(self._selector_dimension(s), s) for s in selectors)
+            cid_print(f'  <BOLD>{bare_key:<{max_key_len}}<END>  ->  {dims}')
+        cid_print('')
+
+        use_merge = get_yesno_parameter(
+            f'{param_name}-use-merge',
+            message='Merge tags that share the same key across multiple dimensions into a single field?',
+            default='yes',
+        )
+
+        if not use_merge:
+            set_parameters({f'{param_name}-merges': '', f'{param_name}-merge-strategy': 'resource_first'})
+            return set(), 'resource_first'
+
+        strategy = get_parameter(
+            f'{param_name}-merge-strategy',
+            message='Global merge strategy — which dimension takes priority when a tag exists in multiple dimensions?',
+            choices=['resource_first', 'account_first'],
+            default='resource_first',
+        )
+        chosen_keys = get_parameter(
+            f'{param_name}-merge-keys',
+            message='Select which cross-dimension tags to merge (merged field will be named merged_<key>)',
+            multi=True,
+            choices=sorted(merge_map.keys()),
+            default=sorted(merge_map.keys()),
+        )
+        keys_to_merge = set(chosen_keys)
+        set_parameters({
+            f'{param_name}-merges': ','.join(sorted(keys_to_merge)),
+            f'{param_name}-merge-strategy': strategy,
+        })
+        return keys_to_merge, strategy
+
+    @staticmethod
+    def _build_tag_choices(tags_and_names: dict, keys_to_merge: set, merge_map: dict) -> dict:
+        """Build merged display options for selected cross-dimension keys.
+
+        For every tag whose bare key is in *keys_to_merge* a single
+        ``merged_<key>`` entry is created in *merged_display*.
+        Individual per-dimension entries are kept in *passthrough_names* so
+        users can still select all original tags in addition to merged options.
+
+        Args:
+            tags_and_names: ``{normalised_name: selector}`` for all available tags.
+            keys_to_merge:  Bare keys the user has chosen to merge.
+            merge_map:      ``{bare_key: [selectors]}`` from
+                            ``cur.tag_fields_by_dimension``.
+
+        Returns:
+            *merged_display* ``{merged_<key>: (bare_key, [selectors])}``
+        """
+        merged_display: dict = {
+            f'merged_{bare_key}': (bare_key, selectors)
+            for bare_key, selectors in merge_map.items()
+            if bare_key in keys_to_merge
+        }
+        return merged_display
+
+    def _build_tags_json_sql(
+        self,
+        selected_tags: list,
+        merged_display: dict,
+        tags_and_names: dict,
+        merge_strategy: str,
+    ) -> str:
+        """Render the final ``json_format(CAST(MAP_FROM_ENTRIES(ARRAY[...])))`` SQL.
+
+        Each entry in *selected_tags* becomes one element of the Athena MAP:
+        - Tags in *merged_display* expand to a ``COALESCE(NULLIF(...), ...)``
+          expression covering all their dimensions.
+        - All other tags emit a plain ``selector`` reference.
+
+        Returns ``'{}'`` (literal empty JSON) if no entries can be rendered.
+        """
+        array_entries = []
+        for name in selected_tags:
+            safe_name = re.sub(r'\W', '_', name)
+            if name in merged_display:
+                bare_key, selectors = merged_display[name]
+                array_entries.append(f"('{safe_name}', {self._build_merge_sql(bare_key, selectors, merge_strategy)})")
+            else:
+                selector = tags_and_names.get(name)
+                if selector:
+                    array_entries.append(f"('{safe_name}', {selector})")
+
+        if not array_entries:
+            return "'{}'"
+
+        array = ',\n                        '.join(array_entries)
+        return f'''
             json_format(
                 CAST (
                     MAP_FROM_ENTRIES (
@@ -2082,6 +2270,69 @@ class Cid():
                 AS JSON)
             )
         '''
+
+    def generic_tags_json(self, param_name='resource-tags', options=[], cur=None) -> str:
+        """Return an Athena SQL expression that serialises selected cost allocation
+        tags into a JSON string column, substituted for ``${cur_tags_json}`` in the
+        core view templates (``summary_view``, ``hourly_view``, ``resource_view``).
+
+        When *cur* is a CUR2 instance, tag keys that exist in more than one
+        dimension are detected and — after confirming with the user — an
+        additional ``COALESCE``-based ``merged_<key>`` entry can be added while
+        keeping separate per-dimension entries available.
+        """
+        tags_and_names = {self._tag_to_name(tag): tag for tag in sorted(options)}
+        logger.info(f'tags_and_names = {tags_and_names}')
+
+        selected = self._load_selected_tags(param_name)
+        logger.info(f'pre-loaded selected tags = {selected}')
+
+        merge_map, keys_to_merge, merge_strategy = {}, set(), 'resource_first'
+        if cur is not None and getattr(cur, 'version', None) == '2':
+            merge_map = cur.tag_fields_by_dimension
+            logger.debug(f'cur.tag_fields_by_dimension = {merge_map}')
+            if merge_map and selected is None:
+                keys_to_merge, merge_strategy = self._resolve_merge_config(param_name, merge_map)
+            elif merge_map:
+                # In pre-seeded/non-interactive runs selected tags are already set,
+                # so reuse merge parameters without prompting.
+                merge_strategy = get_parameters().get(f'{param_name}-merge-strategy', 'resource_first')
+
+                raw_keys = (
+                    get_parameters().get(f'{param_name}-merges')
+                    or get_parameters().get(f'{param_name}-merge-keys')
+                    or []
+                )
+                if isinstance(raw_keys, str):
+                    keys_to_merge = {k for k in raw_keys.split(',') if k}
+                else:
+                    keys_to_merge = set(raw_keys)
+
+                # Also infer merge keys from explicit merged_* selections.
+                for name in (selected or []):
+                    if isinstance(name, str) and name.startswith('merged_'):
+                        keys_to_merge.add(name[len('merged_'):])
+
+                # Keep only valid keys present in current merge candidates.
+                keys_to_merge &= set(merge_map.keys())
+
+        merged_display = self._build_tag_choices(tags_and_names, keys_to_merge, merge_map)
+        all_choices = sorted(list(merged_display) + list(tags_and_names))
+
+        if selected is None:
+            selected = get_parameter(
+                param_name,
+                message='Select Cost Allocation Tags to be added to datasets (WARNING: this can affect performance. Choose only the strict minimum)',
+                multi=True,
+                choices=all_choices,
+                default=[],
+            )
+
+        if not selected:
+            return "'{}'"
+
+        logger.debug(f'selected_tag_names = {selected}')
+        res = self._build_tags_json_sql(selected, merged_display, tags_and_names, merge_strategy)
         logger.trace(f'cur_tags_json = {res}')
         return res
 
@@ -2089,6 +2340,7 @@ class Cid():
         return self.generic_tags_json(
             param_name='resource-tags',
             options=cur.tag_and_cost_category_fields,
+            cur=cur,
         )
 
     def get_view_query(self, view_name: str) -> str:
