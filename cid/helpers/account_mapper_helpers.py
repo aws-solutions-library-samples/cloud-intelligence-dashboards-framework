@@ -21,6 +21,29 @@ logger = logging.getLogger(__name__)
 ALLOWED_SEPARATORS = set('-_./|:@# ')
 
 
+def _expand_path(path) -> Path:
+    """Expand ~ and ~user in a user-supplied file path.
+
+    InquirerPy's filepath prompt completes paths like '~/Downloads/file.csv'
+    but returns them verbatim, so every consumer must expand the home prefix
+    before touching the filesystem.
+    """
+    return Path(str(path)).expanduser()
+
+
+def _path_is_file(path) -> bool:
+    """Check whether a user-supplied path (possibly ~-prefixed) is a file."""
+    try:
+        return _expand_path(path).is_file()
+    except (OSError, ValueError):
+        return False
+
+
+def _quote_ident(name: str) -> str:
+    """Quote a SQL identifier, escaping embedded double quotes."""
+    return '"' + str(name).replace('"', '""') + '"'
+
+
 def _validate_separator(sep: str) -> bool:
     """Validate that a separator is safe for use in SQL split_part()."""
     return bool(sep) and len(sep) <= 2 and all(c in ALLOWED_SEPARATORS for c in sep)
@@ -600,12 +623,12 @@ class DataLoader:
         if not file_path:
             raise ValueError("File path must be provided or configured in file_source.file_path")
         
-        file_path_obj = Path(file_path)
-        
+        file_path_obj = _expand_path(file_path)
+
         if not file_path_obj.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
         
-        logger.info("Loading data from file: %s", file_path)
+        logger.info("Loading data from file: %s", file_path_obj)
         
         # Determine file format from extension
         suffix = file_path_obj.suffix.lower()
@@ -613,7 +636,9 @@ class DataLoader:
         try:
             if suffix != '.csv':
                 raise ValueError(f"Unsupported file format: {suffix}. Only .csv is supported.")
-            with open(file_path, newline='', encoding='utf-8') as f:
+            # utf-8-sig transparently strips a UTF-8 BOM if present (e.g. exports
+            # from AWS Organizations / Excel); behaves like utf-8 otherwise.
+            with open(file_path_obj, newline='', encoding='utf-8-sig') as f:
                 reader = csv.DictReader(f, skipinitialspace=True)
                 rows = list(reader)
             # Strip whitespace from column names and values, skip None keys
@@ -1637,7 +1662,7 @@ class AutoDiscovery:
             # Fall back to manual entry
             selected_file = inquirer.text(
                 message="No files found. Enter file path manually:",
-                validate=lambda path: Path(path).is_file() or "File does not exist"
+                validate=lambda path: _path_is_file(path) or "File does not exist"
             ).execute()
         else:
             # Add option to enter path manually
@@ -1652,7 +1677,7 @@ class AutoDiscovery:
             if selected == "[Enter path manually]":
                 selected_file = inquirer.text(
                     message="Enter file path:",
-                    validate=lambda path: Path(path).is_file() or "File does not exist"
+                    validate=lambda path: _path_is_file(path) or "File does not exist"
                 ).execute()
             else:
                 selected_file = selected
@@ -1882,7 +1907,7 @@ class UnifiedWorkflow:
         if data_source_mode == 'both' and not source_file:
             source_file = inquirer.filepath(
                 message="Enter path to CSV file:",
-                validate=lambda x: Path(x).is_file() or "File not found"
+                validate=lambda x: _path_is_file(x) or "File not found"
             ).execute()
         effective_source_file = source_file
 
@@ -2026,17 +2051,20 @@ class UnifiedWorkflow:
         if not source_file:
             source_file = inquirer.filepath(
                 message="Enter path to CSV file:",
-                validate=lambda x: Path(x).is_file() or "File not found"
+                validate=lambda x: _path_is_file(x) or "File not found"
             ).execute()
 
-        file_path = Path(source_file)
+        file_path = _expand_path(source_file)
         if not file_path.is_file():
             raise CidCritical(f"File not found: {source_file}")
 
-        cid_print(f"\n📁 Reading CSV file: {source_file}")
+        cid_print(f"\n📁 Reading CSV file: {file_path}")
 
-        # Load CSV data
-        with open(file_path, newline='', encoding='utf-8') as f:
+        # Load CSV data. utf-8-sig transparently strips a UTF-8 BOM if present
+        # (e.g. exports from AWS Organizations / Excel). With plain utf-8 the
+        # BOM sticks to the first quoted header and the embedded quotes end up
+        # in the column name, producing invalid Athena SQL later.
+        with open(file_path, newline='', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f, skipinitialspace=True)
             csv_data = list(reader)
 
@@ -2136,7 +2164,7 @@ class UnifiedWorkflow:
                 for col in selected_columns
             ],
             'file_source': {
-                'path': str(source_file),
+                'path': str(file_path),
                 'account_column': 'account_id',
                 'data': transformed_data,
             },
@@ -2390,7 +2418,7 @@ class UnifiedWorkflow:
         if use_file and not source_file:
             source_file = inquirer.filepath(
                 message="Enter path to CSV file:",
-                validate=lambda x: Path(x).is_file() or "File not found"
+                validate=lambda x: _path_is_file(x) or "File not found"
             ).execute()
 
         # Configure file source if selected
@@ -2892,12 +2920,13 @@ class AthenaWriter:
         values_clause = ',\n  '.join(values_rows)
 
         # Quote column names to handle spaces, special chars, and reserved words
-        quoted_columns = [f'"{col}"' for col in columns]
+        # (escaping any embedded double quotes)
+        quoted_columns = [_quote_ident(col) for col in columns]
         column_list = ', '.join(quoted_columns)
 
         # Explicitly CAST each column to VARCHAR in the outer SELECT to handle
         # columns that are all-NULL (Athena cannot infer type from NULL alone)
-        select_parts = [f'CAST("{col}" AS VARCHAR) AS "{col}"' for col in columns]
+        select_parts = [f'CAST({_quote_ident(col)} AS VARCHAR) AS {_quote_ident(col)}' for col in columns]
         select_clause = ', '.join(select_parts)
 
         sql = f"""CREATE OR REPLACE VIEW {database}.{view_name} AS
@@ -3355,7 +3384,7 @@ SELECT {select_clause} FROM (
             dim_names = sorted(
                 {d['name'] for d in taxonomy_dimensions}, key=str.lower
             )
-            select_parts.extend(f'file."{name}"' for name in dim_names)
+            select_parts.extend(f'file.{_quote_ident(name)}' for name in dim_names)
             select_clause = ',\n    '.join(select_parts)
             return f"""CREATE OR REPLACE VIEW {database}.{view_name} AS
 SELECT
@@ -3409,19 +3438,19 @@ FROM {database}.{file_source_view} file"""
                     filter(org.hierarchytags, x -> x.key = '{source_value}'),
                     1
                 ).value"""
-                dimension_parts.append((output_name, f"{tag_expr} AS {output_name}"))
+                dimension_parts.append((output_name, f"{tag_expr} AS {_quote_ident(output_name)}"))
                     
             elif source_type == 'file':
                 if file_source_view:
-                    dimension_parts.append((output_name, f"file.{source_value} AS {output_name}"))
+                    dimension_parts.append((output_name, f"file.{_quote_ident(source_value)} AS {_quote_ident(output_name)}"))
                 else:
                     logger.warning("File source dimension %s specified but no file source view", dim_name)
-                    dimension_parts.append((output_name, f"NULL AS {output_name}"))
+                    dimension_parts.append((output_name, f"NULL AS {_quote_ident(output_name)}"))
                     
             elif source_type == 'ou_level':
                 level_index = int(source_value)
                 ou_expr = f"TRY(org.hierarchy[{level_index}].name)"
-                dimension_parts.append((output_name, f"{ou_expr} AS {output_name}"))
+                dimension_parts.append((output_name, f"{ou_expr} AS {_quote_ident(output_name)}"))
 
             elif source_type == 'name_split':
                 if isinstance(source_value, dict):
@@ -3432,10 +3461,10 @@ FROM {database}.{file_source_view} file"""
                     safe_separator = _sanitize_separator_for_sql(separator)
                     index = source_value.get('index', 0)
                     split_expr = f"split_part(org.name, '{safe_separator}', {index + 1})"
-                    dimension_parts.append((output_name, f"{split_expr} AS {output_name}"))
+                    dimension_parts.append((output_name, f"{split_expr} AS {_quote_ident(output_name)}"))
                 else:
                     logger.warning("Name split dimension %s has invalid source_value format", dim_name)
-                    dimension_parts.append((output_name, f"NULL AS {output_name}"))
+                    dimension_parts.append((output_name, f"NULL AS {_quote_ident(output_name)}"))
         
         # Sort taxonomy dimensions alphabetically by output name
         dimension_parts.sort(key=lambda x: x[0].lower())
