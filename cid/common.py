@@ -2018,37 +2018,49 @@ class Cid():
         self.glue.create_or_update_crawler(crawler_definition=compiled_definition)
 
 
-    def generic_tags_json(self, param_name='resource-tags', options=[]) -> str:
-        ''' returns an sql for json tag
-        '''
-        def _tag_to_name(tag):
-            if tag == 'line_item_iam_principal':
-                return 'iam_principal'
-            tag_name = (tag
-                .replace('resource_tags_', '')
-                .replace('cost_category_', '')
-                .replace("'user_","'tag_")
-                .replace('accountTag/', '')
-                .replace('userAttribute/', '')
-                .replace('iamPrincipal/', '')
-                .replace("'aws_","'tag_aws_")
-                .split("['")[-1].split("']")[0]
-            )
-            if not tag_name.startswith('tag_'):
-                if tag.startswith('cost_category'):
-                    tag_name = 'cost_category_' + tag_name
-                elif "userAttribute/" in tag:
-                    tag_name = 'user_attribute_tag_' + tag_name
-                elif "iamPrincipal/" in tag:
-                    tag_name = 'iam_principal_tag_' + tag_name
-                elif tag.startswith('tags'):
-                    tag_name = 'account_tag_' + tag_name
-                else:
-                    tag_name = 'tag_' + tag_name
-            return re.sub(r'\W', '_', tag_name)
+    @staticmethod
+    def _tag_to_display_name(tag):
+        """Convert a CUR tag selector into a display name for the tags_json MAP key.
 
+        Used by both generic_tags_json (inline) and cur_tags_json (for merge injection).
+        """
+        if tag == 'line_item_iam_principal':
+            return 'iam_principal'
+        tag_name = (tag
+            .replace('resource_tags_', '')
+            .replace('cost_category_', '')
+            .replace("'user_","'tag_")
+            .replace('accountTag/', '')
+            .replace('userAttribute/', '')
+            .replace('iamPrincipal/', '')
+            .replace("'aws_","'tag_aws_")
+            .split("['")[-1].split("']")[0]
+        )
+        if not tag_name.startswith('tag_'):
+            if tag.startswith('cost_category'):
+                tag_name = 'cost_category_' + tag_name
+            elif "userAttribute/" in tag:
+                tag_name = 'user_attribute_tag_' + tag_name
+            elif "iamPrincipal/" in tag:
+                tag_name = 'iam_principal_tag_' + tag_name
+            elif tag.startswith('tags'):
+                tag_name = 'account_tag_' + tag_name
+            else:
+                tag_name = 'tag_' + tag_name
+        return re.sub(r'\W', '_', tag_name)
+
+    def generic_tags_json(self, param_name='resource-tags', options=[], tags_and_names_override=None) -> str:
+        ''' returns an sql for json tag
+
+        Args:
+            param_name: Parameter namespace for persisting tag selections.
+            options: List of CUR tag selectors (from tag_and_cost_category_fields).
+            tags_and_names_override: If provided, used instead of building from options.
+                Allows callers (e.g. TagMerger) to inject additional entries like
+                merged cross-dimension tags.
+        '''
         resource_tags = get_parameters().get(param_name, None) or get_parameters().get(param_name.replace('_', '-'), None)
-        tags_and_names = {_tag_to_name(tag):tag  for tag in sorted(options)}
+        tags_and_names = tags_and_names_override if tags_and_names_override is not None else {self._tag_to_display_name(tag):tag  for tag in sorted(options)}
         logger.info(f'tags_and_names = {tags_and_names}')
         logger.info(f'resource_tags = {resource_tags}')
         if isinstance(resource_tags, str):
@@ -2086,9 +2098,26 @@ class Cid():
         return res
 
     def cur_tags_json(self, cur) -> str:
+        options = cur.tag_and_cost_category_fields
+
+        # Cross-dimension tag merge (CUR2 only)
+        tags_and_names_override = None
+        if getattr(cur, 'version', None) == '2':
+            from cid.helpers.tag_merger import TagMerger
+            merger = TagMerger(options, param_prefix='resource-tags')
+            if merger.merge_candidates:
+                keys_to_merge, strategy = merger.resolve_merge_keys()
+                if keys_to_merge:
+                    # Build standard mapping using the same logic as generic_tags_json
+                    tags_and_names = {self._tag_to_display_name(tag): tag for tag in sorted(options)}
+                    tags_and_names_override = merger.inject_merged_entries(
+                        tags_and_names, keys_to_merge, strategy
+                    )
+
         return self.generic_tags_json(
             param_name='resource-tags',
-            options=cur.tag_and_cost_category_fields,
+            options=options,
+            tags_and_names_override=tags_and_names_override,
         )
 
     def get_view_query(self, view_name: str) -> str:
