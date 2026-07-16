@@ -2098,7 +2098,8 @@ class UnifiedWorkflow:
         transform_engine = TransformEngine(config, org_data, file_data)
         transformed_data = transform_engine.transform()
 
-        # Add payer_name column to preview if payer names are configured
+        # Add parent_account_name (payer friendly labels) to the preview,
+        # mirroring the CASE column the generated SQL produces
         payer_names = config.get('payer_names', {})
         if payer_names and transformed_data and 'parent_account_id' in transformed_data[0]:
             for row in transformed_data:
@@ -2126,9 +2127,7 @@ class UnifiedWorkflow:
         # Phase 6: Write Views
         logger.info("Writing views to Athena...")
         results = self.writer.write_complete_mapping(config, transformed_data, target_database, self.view_name)
-        results['status'] = 'success'
-
-        return results
+        return self._derive_status(results, config)
 
     def _prompt_data_source_mode(self, source_file: str = None) -> str:
         """
@@ -2200,24 +2199,61 @@ class UnifiedWorkflow:
                 name_col = candidate
                 break
 
+        # Determine the payer (management) account ID column. A column named
+        # parent_account_id (any case/spacing) is used directly, matching the
+        # --simple mode contract. Otherwise the user can point at a column,
+        # or decline — then parent_account_id defaults to '0' like --simple.
+        parent_col = next(
+            (c for c in all_columns
+             if c.lower().replace(' ', '_') == 'parent_account_id' and c != 'account_id'),
+            None
+        )
+        if parent_col:
+            cid_print(f"   Using column '{parent_col}' as parent_account_id")
+        else:
+            has_payer_col = inquirer.confirm(
+                message="Does the file contain a column with the payer (management) account ID?",
+                default=False
+            ).execute()
+            if has_payer_col:
+                parent_col = inquirer.select(
+                    message="Select the payer account ID column:",
+                    choices=[c for c in all_columns if c not in ('account_id', name_col)]
+                ).execute()
+
         # Select taxonomy dimensions and optional friendly names (shared)
+        exclude = {c for c in (name_col, parent_col) if c}
         dimension_names = self._select_file_dimensions(
             csv_data,
             reserved={'account_id', 'account_name', 'parent_account_id', 'parent_account_name'},
-            exclude_columns={name_col} if name_col else None,
+            exclude_columns=exclude or None,
         )
         selected_columns = list(dimension_names.keys())
 
+        # Offer friendly names for the payer accounts (shared prompt).
+        # parent_account_name holds these friendly labels and is only
+        # created when names were defined — same rule as the org-based mode.
+        payer_names = {}
+        if parent_col:
+            payer_name_config = {}
+            self._prompt_payer_names(payer_name_config, csv_data, payer_column=parent_col)
+            payer_names = payer_name_config.get('payer_names', {})
+
         # Build transformed rows for the VALUES-based view
-        # Include parent_account_id and parent_account_name to match the default
-        # account_map schema expected by dashboards
         transformed_data = []
         for row in csv_data:
             account_id = row['account_id']
             out_row = {'account_id': account_id}
             out_row['account_name'] = str(row.get(name_col, account_id)) if name_col else account_id
-            out_row['parent_account_id'] = ''
-            out_row['parent_account_name'] = ''
+            if parent_col:
+                parent_id = str(row.get(parent_col, '')).strip()
+                out_row['parent_account_id'] = parent_id.zfill(12) if parent_id else '0'
+            else:
+                # No payer column in the file — same default as --simple mode
+                out_row['parent_account_id'] = '0'
+            if payer_names:
+                pid = out_row['parent_account_id']
+                out_row['parent_account_name'] = payer_names.get(pid, pid)
             for col in selected_columns:
                 out_row[dimension_names[col]] = str(row.get(col, ''))
             transformed_data.append(out_row)
@@ -2245,6 +2281,8 @@ class UnifiedWorkflow:
                 'data': transformed_data,
             },
         }
+        if payer_names:
+            config['payer_names'] = payer_names
 
         # Preview and confirmation (same UX as the other workflow modes)
         writer = AthenaWriter(config, self.athena)
@@ -2257,8 +2295,37 @@ class UnifiedWorkflow:
         # account_map view.
         logger.info("Writing views to Athena...")
         results = writer.write_complete_mapping(config, transformed_data, target_database, self.view_name)
-        results['status'] = 'success'
+        return self._derive_status(results, config)
 
+    @staticmethod
+    def _derive_status(results: dict, config: dict) -> dict:
+        """
+        Derive the workflow status from what was actually created.
+
+        write_complete_mapping records None for any view it failed to
+        create; reflect that in the returned status instead of reporting
+        success unconditionally.
+
+        Args:
+            results: Results dict from write_complete_mapping
+            config: Configuration used for the run
+
+        Returns:
+            The results dict with 'status' (and 'message' on failure) set
+        """
+        expected = ['account_map_view', 'config_view']
+        if config.get('file_source'):
+            expected.append('file_source_view')
+
+        failed = [view for view in expected if not results.get(view)]
+        if failed:
+            results['status'] = 'failed'
+            results['message'] = f"Failed to create: {', '.join(failed)}"
+            logger.error("Account mapping failed. Views not created: %s", ', '.join(failed))
+            cid_print(f"\n❌ Failed to create: {', '.join(failed)}")
+            cid_print("   Check cid.log for details.")
+        else:
+            results['status'] = 'success'
         return results
 
     def _check_existing_config(self, database: str) -> Optional[dict]:
@@ -2406,6 +2473,22 @@ class UnifiedWorkflow:
                         'source_type': 'file',
                         'source_value': col
                     })
+
+            # Validate that every file dimension references a column present
+            # in the new file. If the user kept the previous selection but the
+            # new file lacks those columns, the generated SQL would select
+            # non-existent columns and fail with an opaque Athena error.
+            available_columns = set(file_df[0].keys()) if file_df else set()
+            stale_dims = [
+                dim for dim in config['taxonomy_dimensions']
+                if dim['source_type'] == 'file' and dim['source_value'] not in available_columns
+            ]
+            if stale_dims:
+                stale_names = ', '.join(dim['name'] for dim in stale_dims)
+                cid_print(f"\n⚠️  Removing dimension(s) whose source column is not in the new file: {stale_names}")
+                config['taxonomy_dimensions'] = [
+                    dim for dim in config['taxonomy_dimensions'] if dim not in stale_dims
+                ]
 
             # Update file source info
             config['file_source'] = {
@@ -2713,27 +2796,31 @@ class UnifiedWorkflow:
 
         return levels
 
-    def _prompt_payer_names(self, config: dict, org_data: List[Dict]) -> dict:
+    def _prompt_payer_names(self, config: dict, org_data: List[Dict],
+                            payer_column: str = 'payer_id') -> dict:
         """
         Prompt user to assign friendly names to management account IDs.
 
-        Discovers distinct payer IDs from org data and asks if the user wants
-        to provide custom names. Stores the mapping in config['payer_names'].
+        Discovers distinct payer IDs from the given rows and asks if the user
+        wants to provide custom names. Stores the mapping in config['payer_names'].
+        Shared by the organization_data workflow (payer_id column) and the
+        CSV-only workflow (user-selected payer column).
 
         Args:
             config: Current configuration dictionary
-            org_data: Organization List[Dict] with payer_id column
+            org_data: List[Dict] rows containing the payer column
+            payer_column: Name of the column holding payer account IDs
 
         Returns:
             dict: Updated configuration with optional payer_names
         """
 
-        if not org_data or 'payer_id' not in org_data[0]:
-            logger.debug("No payer_id column in org data, skipping payer naming")
+        if not org_data or payer_column not in org_data[0]:
+            logger.debug("No %s column in data, skipping payer naming", payer_column)
             return config
 
         # Get distinct payer IDs
-        unique_payers = set(str(r.get('payer_id', '')).zfill(12) for r in org_data if not _is_null(r.get('payer_id')))
+        unique_payers = set(str(r.get(payer_column, '')).strip().zfill(12) for r in org_data if not _is_null(r.get(payer_column)))
         unique_payers = sorted(unique_payers)
 
         if not unique_payers:
@@ -3410,8 +3497,11 @@ SELECT {select_clause} FROM (
                 'file.account_id',
                 'file.account_name',
                 'file.parent_account_id',
-                'file.parent_account_name',
             ]
+            # parent_account_name (payer friendly labels) only exists when
+            # names were defined — same rule as the org-based mode
+            if config.get('payer_names'):
+                select_parts.append('file.parent_account_name')
             dim_names = sorted(
                 {d['name'] for d in taxonomy_dimensions}, key=str.lower
             )
@@ -3432,7 +3522,9 @@ FROM {database}.{file_source_view} file"""
             'org.managementaccountid AS parent_account_id'
         ]
         
-        # Add payer_name column if payer names are configured
+        # parent_account_name holds the user-defined friendly labels for the
+        # payer accounts. Only emitted when names were configured — same
+        # rule as CSV-only mode.
         payer_names = config.get('payer_names', {})
         if payer_names:
             case_parts = []
