@@ -24,3 +24,4 @@ Resources:
   - Url: media-services-insights/msih.yaml
   - Url: rls/rls.yaml
   - Url: pca/pca.yaml
+  - Url: rds-health/rds-health.yaml
