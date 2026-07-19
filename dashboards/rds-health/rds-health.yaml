@@ -1,0 +1,1338 @@
+dashboards:
+  RDS-ANALYSIS-NEW02:
+    dependsOn:
+      datasets:
+      - rds_analysis_daily_backup_view
+      - rds_analysis_dist_view
+      - rds_analysis_endofsupport_view
+      - rds_analysis_maintenance_view
+      - rds_analysis_tags_view
+      - rds_aurora_io_optimized_view
+      - rds_cost_summary_view
+    name: RDS Health Dashboard
+    dashboardId: rds-health-dashboard
+    category: Custom
+    theme: MIDNIGHT
+    version: v0.0.0
+    file: ./rds-health-definition.yaml
+datasets:
+  rds_analysis_daily_backup_view:
+    data:
+      DataSetId: rds_analysis_daily_backup_dataset
+      Name: rds_analysis_daily_backup_view
+      PhysicalTableMap:
+        rds-dailybackup-table:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: rds_analysis_daily_backup_view
+            InputColumns:
+            - Name: dbinstanceidentifier
+              Type: STRING
+            - Name: dbinstanceclass
+              Type: STRING
+            - Name: engine
+              Type: STRING
+            - Name: endpoint
+              Type: STRING
+            - Name: allocatedstorage
+              Type: INTEGER
+            - Name: instancecreatetime
+              Type: STRING
+            - Name: preferredbackupwindow
+              Type: STRING
+            - Name: backupretentionperiod
+              Type: INTEGER
+            - Name: dbparametergroups
+              Type: STRING
+            - Name: preferredmaintenancewindow
+              Type: STRING
+            - Name: latestrestorabletime
+              Type: STRING
+            - Name: multiaz
+              Type: STRING
+            - Name: engineversion
+              Type: STRING
+            - Name: autominorversionupgrade
+              Type: STRING
+            - Name: readreplicasourcedbinstanceidentifier
+              Type: STRING
+            - Name: licensemodel
+              Type: STRING
+            - Name: publiclyaccessible
+              Type: STRING
+            - Name: storageencrypted
+              Type: STRING
+            - Name: dbiresourceid
+              Type: STRING
+            - Name: cacertificateidentifier
+              Type: STRING
+            - Name: dbinstancearn
+              Type: STRING
+            - Name: deletionprotection
+              Type: STRING
+            - Name: maxallocatedstorage
+              Type: INTEGER
+            - Name: taglist
+              Type: STRING
+            - Name: certificatedetails
+              Type: STRING
+            - Name: accountid
+              Type: STRING
+            - Name: accountname
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: current_major_version
+              Type: STRING
+            - Name: latest_major_version
+              Type: STRING
+            - Name: latest_major_version_N-1
+              Type: STRING
+            - Name: latest_major_version_N-2
+              Type: STRING
+            - Name: current_minor_version
+              Type: STRING
+            - Name: latest_minor_version
+              Type: STRING
+            - Name: latest_minor_version_N-1
+              Type: STRING
+            - Name: latest_minor_version_N-2
+              Type: STRING
+            - Name: dbclusteridentifier
+              Type: STRING
+            - Name: engine_version_status
+              Type: STRING
+            - Name: dbsnapshotidentifier
+              Type: STRING
+            - Name: snapshotcreatetime
+              Type: STRING
+            - Name: status
+              Type: STRING
+            - Name: vpcid
+              Type: STRING
+            - Name: snapshottype
+              Type: STRING
+            - Name: encrypted
+              Type: STRING
+            - Name: dbsnapshotarn
+              Type: STRING
+            - Name: originalsnapshotcreatetime
+              Type: STRING
+            - Name: snapshottarget
+              Type: STRING
+            - Name: collection_date
+              Type: STRING
+            - Name: payer_id
+              Type: STRING
+            - Name: year
+              Type: STRING
+            - Name: month
+              Type: STRING
+            - Name: day
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        rds-dailybackup-logical:
+          Alias: rds_analysis_daily_backup_view
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - dbinstanceidentifier
+              - dbinstanceclass
+              - engine
+              - endpoint
+              - allocatedstorage
+              - instancecreatetime
+              - preferredbackupwindow
+              - backupretentionperiod
+              - dbparametergroups
+              - preferredmaintenancewindow
+              - latestrestorabletime
+              - multiaz
+              - engineversion
+              - autominorversionupgrade
+              - readreplicasourcedbinstanceidentifier
+              - licensemodel
+              - publiclyaccessible
+              - storageencrypted
+              - dbiresourceid
+              - cacertificateidentifier
+              - dbinstancearn
+              - deletionprotection
+              - maxallocatedstorage
+              - taglist
+              - certificatedetails
+              - accountid
+              - accountname
+              - region
+              - current_major_version
+              - latest_major_version
+              - latest_major_version_N-1
+              - latest_major_version_N-2
+              - current_minor_version
+              - latest_minor_version
+              - latest_minor_version_N-1
+              - latest_minor_version_N-2
+              - dbclusteridentifier
+              - engine_version_status
+              - dbsnapshotidentifier
+              - snapshotcreatetime
+              - status
+              - vpcid
+              - snapshottype
+              - encrypted
+              - dbsnapshotarn
+              - originalsnapshotcreatetime
+              - snapshottarget
+              - collection_date
+              - payer_id
+              - year
+              - month
+              - day
+          Source:
+            PhysicalTableId: rds-dailybackup-table
+    dependsOn:
+      views:
+      - rds_analysis_daily_backup_view
+    schedules:
+    - default
+  rds_analysis_dist_view:
+    data:
+      DataSetId: rds_analysis_dataset
+      Name: rds_analysis_dist_view
+      PhysicalTableMap:
+        rds-analysis-table:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: rds_analysis_dist_view
+            InputColumns:
+            - Name: dbinstanceidentifier
+              Type: STRING
+            - Name: dbinstanceclass
+              Type: STRING
+            - Name: engine
+              Type: STRING
+            - Name: dbinstancestatus
+              Type: STRING
+            - Name: endpoint
+              Type: STRING
+            - Name: allocatedstorage
+              Type: INTEGER
+            - Name: instancecreatetime
+              Type: STRING
+            - Name: preferredbackupwindow
+              Type: STRING
+            - Name: backupretentionperiod
+              Type: INTEGER
+            - Name: dbsecuritygroups
+              Type: STRING
+            - Name: dbparametergroups
+              Type: STRING
+            - Name: preferredmaintenancewindow
+              Type: STRING
+            - Name: latestrestorabletime
+              Type: STRING
+            - Name: multiaz
+              Type: STRING
+            - Name: engineversion
+              Type: STRING
+            - Name: autominorversionupgrade
+              Type: STRING
+            - Name: licensemodel
+              Type: STRING
+            - Name: publiclyaccessible
+              Type: STRING
+            - Name: storageencrypted
+              Type: STRING
+            - Name: dbiresourceid
+              Type: STRING
+            - Name: cacertificateidentifier
+              Type: STRING
+            - Name: dbinstancearn
+              Type: STRING
+            - Name: performanceinsightsenabled
+              Type: STRING
+            - Name: deletionprotection
+              Type: STRING
+            - Name: maxallocatedstorage
+              Type: INTEGER
+            - Name: certificatedetails
+              Type: STRING
+            - Name: accountid
+              Type: STRING
+            - Name: accountname
+              Type: STRING
+            - Name: collection_date
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: current_major_version
+              Type: STRING
+            - Name: latest_major_version
+              Type: STRING
+            - Name: latest_major_version_N-1
+              Type: STRING
+            - Name: latest_major_version_N-2
+              Type: STRING
+            - Name: current_minor_version
+              Type: STRING
+            - Name: latest_minor_version
+              Type: STRING
+            - Name: latest_minor_version_N-1
+              Type: STRING
+            - Name: latest_minor_version_N-2
+              Type: STRING
+            - Name: dbclusteridentifier
+              Type: STRING
+            - Name: engine_version_status
+              Type: STRING
+            - Name: readreplicasourcedbinstanceidentifier
+              Type: STRING
+            - Name: taglist
+              Type: STRING
+            - Name: payer_id
+              Type: STRING
+            - Name: year
+              Type: STRING
+            - Name: month
+              Type: STRING
+            - Name: day
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        rds-analysis-logical:
+          Alias: rds_analysis_dist_view
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - dbinstanceidentifier
+              - dbinstanceclass
+              - engine
+              - dbinstancestatus
+              - endpoint
+              - allocatedstorage
+              - instancecreatetime
+              - preferredbackupwindow
+              - backupretentionperiod
+              - dbsecuritygroups
+              - dbparametergroups
+              - preferredmaintenancewindow
+              - latestrestorabletime
+              - multiaz
+              - engineversion
+              - autominorversionupgrade
+              - licensemodel
+              - publiclyaccessible
+              - storageencrypted
+              - dbiresourceid
+              - cacertificateidentifier
+              - dbinstancearn
+              - performanceinsightsenabled
+              - deletionprotection
+              - maxallocatedstorage
+              - certificatedetails
+              - accountid
+              - accountname
+              - collection_date
+              - region
+              - current_major_version
+              - latest_major_version
+              - latest_major_version_N-1
+              - latest_major_version_N-2
+              - current_minor_version
+              - latest_minor_version
+              - latest_minor_version_N-1
+              - latest_minor_version_N-2
+              - dbclusteridentifier
+              - engine_version_status
+              - readreplicasourcedbinstanceidentifier
+              - taglist
+              - payer_id
+              - year
+              - month
+              - day
+          Source:
+            PhysicalTableId: rds-analysis-table
+    dependsOn:
+      views:
+      - rds_analysis_dist_view
+    schedules:
+    - default
+  rds_analysis_endofsupport_view:
+    data:
+      DataSetId: rds_analysis_endofsupport_dataset
+      Name: rds_analysis_endofsupport_view
+      PhysicalTableMap:
+        rds-endofsupport-table:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: rds_analysis_endofsupport_view
+            InputColumns:
+            - Name: accountid
+              Type: STRING
+            - Name: dbinstanceidentifier
+              Type: STRING
+            - Name: dbclusteridentifier
+              Type: STRING
+            - Name: engine
+              Type: STRING
+            - Name: engineversion
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: dbinstancestatus
+              Type: STRING
+            - Name: endpoint
+              Type: STRING
+            - Name: autominorversionupgrade
+              Type: BOOLEAN
+            - Name: preferredbackupwindow
+              Type: STRING
+            - Name: preferredmaintenancewindow
+              Type: STRING
+            - Name: latestrestorabletime
+              Type: STRING
+            - Name: backupretentionperiod
+              Type: INTEGER
+            - Name: current_major_version
+              Type: STRING
+            - Name: latest_major_version
+              Type: STRING
+            - Name: latest_major_version_n-1
+              Type: STRING
+            - Name: latest_major_version_n-2
+              Type: STRING
+            - Name: current_minor_version
+              Type: STRING
+            - Name: latest_minor_version
+              Type: STRING
+            - Name: latest_minor_version_n-1
+              Type: STRING
+            - Name: latest_minor_version_n-2
+              Type: STRING
+            - Name: engine_version_status
+              Type: STRING
+            - Name: collection_date
+              Type: STRING
+            - Name: year
+              Type: STRING
+            - Name: month
+              Type: STRING
+            - Name: day
+              Type: STRING
+            - Name: rdseos_engine
+              Type: STRING
+            - Name: major_version
+              Type: STRING
+            - Name: rdseos_collection_date
+              Type: STRING
+            - Name: standard_support_start
+              Type: STRING
+            - Name: standard_support_end
+              Type: STRING
+            - Name: extended_support_start
+              Type: STRING
+            - Name: extended_support_end
+              Type: STRING
+            - Name: rds_support_status
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        rds-endofsupport-logical:
+          Alias: rds_analysis_endofsupport_view
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - accountid
+              - dbinstanceidentifier
+              - dbclusteridentifier
+              - engine
+              - engineversion
+              - region
+              - dbinstancestatus
+              - endpoint
+              - autominorversionupgrade
+              - preferredbackupwindow
+              - preferredmaintenancewindow
+              - latestrestorabletime
+              - backupretentionperiod
+              - current_major_version
+              - latest_major_version
+              - latest_major_version_n-1
+              - latest_major_version_n-2
+              - current_minor_version
+              - latest_minor_version
+              - latest_minor_version_n-1
+              - latest_minor_version_n-2
+              - engine_version_status
+              - collection_date
+              - year
+              - month
+              - day
+              - rdseos_engine
+              - major_version
+              - rdseos_collection_date
+              - standard_support_start
+              - standard_support_end
+              - extended_support_start
+              - extended_support_end
+              - rds_support_status
+          Source:
+            PhysicalTableId: rds-endofsupport-table
+    dependsOn:
+      views:
+      - rds_analysis_endofsupport_view
+    schedules:
+    - default
+  rds_analysis_maintenance_view:
+    data:
+      DataSetId: rds_analysis_maintenance_dataset
+      Name: rds_analysis_maintenance_view
+      PhysicalTableMap:
+        rds-maintenance-table:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: rds_analysis_maintenance_view
+            InputColumns:
+            - Name: dbinstanceidentifier
+              Type: STRING
+            - Name: engine
+              Type: STRING
+            - Name: dbinstancestatus
+              Type: STRING
+            - Name: multiaz
+              Type: STRING
+            - Name: engineversion
+              Type: STRING
+            - Name: autominorversionupgrade
+              Type: STRING
+            - Name: accountid
+              Type: STRING
+            - Name: accountname
+              Type: STRING
+            - Name: collection_date
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: current_major_version
+              Type: STRING
+            - Name: latest_major_version
+              Type: STRING
+            - Name: current_minor_version
+              Type: STRING
+            - Name: latest_minor_version
+              Type: STRING
+            - Name: dbclusteridentifier
+              Type: STRING
+            - Name: engine_version_status
+              Type: STRING
+            - Name: taglist
+              Type: STRING
+            - Name: action
+              Type: STRING
+            - Name: description
+              Type: STRING
+            - Name: currentapplydate
+              Type: STRING
+            - Name: autoappliedafterdate
+              Type: STRING
+            - Name: forcedapplydate
+              Type: STRING
+            - Name: optinstatus
+              Type: STRING
+            - Name: payer_id
+              Type: STRING
+            - Name: year
+              Type: STRING
+            - Name: month
+              Type: STRING
+            - Name: day
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        rds-maintenance-logical:
+          Alias: rds_analysis_maintenance_view
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - dbinstanceidentifier
+              - engine
+              - dbinstancestatus
+              - multiaz
+              - engineversion
+              - autominorversionupgrade
+              - accountid
+              - accountname
+              - collection_date
+              - region
+              - current_major_version
+              - latest_major_version
+              - current_minor_version
+              - latest_minor_version
+              - dbclusteridentifier
+              - engine_version_status
+              - taglist
+              - action
+              - description
+              - currentapplydate
+              - autoappliedafterdate
+              - forcedapplydate
+              - optinstatus
+              - payer_id
+              - year
+              - month
+              - day
+          Source:
+            PhysicalTableId: rds-maintenance-table
+    dependsOn:
+      views:
+      - rds_analysis_maintenance_view
+    schedules:
+    - default
+  rds_analysis_tags_view:
+    data:
+      DataSetId: rds_analysis_tags_dataset
+      Name: rds_analysis_tags_view
+      PhysicalTableMap:
+        rds-tags-table:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: rds_analysis_tags_view
+            InputColumns:
+            - Name: dbinstanceidentifier
+              Type: STRING
+            - Name: dbinstancearn
+              Type: STRING
+            - Name: tag_info
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        rds-tags-logical:
+          Alias: rds_analysis_tags_view
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - dbinstanceidentifier
+              - dbinstancearn
+              - tag_info
+          Source:
+            PhysicalTableId: rds-tags-table
+    dependsOn:
+      views:
+      - rds_analysis_tags_view
+    schedules:
+    - default
+  rds_aurora_io_optimized_view:
+    data:
+      DataSetId: rds_aurora_io_optimized_dataset
+      Name: rds_aurora_io_optimized_view
+      PhysicalTableMap:
+        e02e0680-6c8a-4741-98db-721dc83891d3:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: rds_aurora_io_optimized_view
+            InputColumns:
+            - Name: usage_month
+              Type: DATETIME
+            - Name: payer_account_id
+              Type: STRING
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: database_engine
+              Type: STRING
+            - Name: dbclusteridentifier
+              Type: STRING
+            - Name: dbinstanceidentifiers
+              Type: STRING
+            - Name: compute_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: io_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: storage_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: other_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: total_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: io_pct
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: estimated_savings
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: recommendation
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        7e3c839b-f897-4c3d-bd00-293f476ba693:
+          Alias: rds_aurora_io_optimized_view
+          DataTransforms:
+          - TagColumnOperation:
+              ColumnName: region
+              Tags:
+              - ColumnGeographicRole: STATE
+          - ProjectOperation:
+              ProjectedColumns:
+              - usage_month
+              - payer_account_id
+              - account_id
+              - account_name
+              - region
+              - database_engine
+              - dbclusteridentifier
+              - dbinstanceidentifiers
+              - compute_cost
+              - io_cost
+              - storage_cost
+              - other_cost
+              - total_cost
+              - io_pct
+              - estimated_savings
+              - recommendation
+          Source:
+            PhysicalTableId: e02e0680-6c8a-4741-98db-721dc83891d3
+    dependsOn:
+      views:
+      - rds_aurora_io_optimized_view
+    schedules:
+    - default
+  rds_cost_summary_view:
+    data:
+      DataSetId: rds_cost_summary_view
+      Name: rds_cost_summary_view
+      PhysicalTableMap:
+        rds-cost-summary-table:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: rds_cost_summary_view
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+            - Name: payer_account_id
+              Type: STRING
+            - Name: billing_period
+              Type: DATETIME
+            - Name: usage_date
+              Type: DATETIME
+            - Name: resource_id
+              Type: STRING
+            - Name: product_code
+              Type: STRING
+            - Name: service
+              Type: STRING
+            - Name: product_name
+              Type: STRING
+            - Name: product_family
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: availability_zone
+              Type: STRING
+            - Name: instance_type_family
+              Type: STRING
+            - Name: instance_type
+              Type: STRING
+            - Name: processor
+              Type: STRING
+            - Name: processor_features
+              Type: STRING
+            - Name: current_generation
+              Type: STRING
+            - Name: platform
+              Type: STRING
+            - Name: database_engine
+              Type: STRING
+            - Name: usage_type
+              Type: STRING
+            - Name: operation
+              Type: STRING
+            - Name: charge_type
+              Type: STRING
+            - Name: charge_category
+              Type: STRING
+            - Name: purchase_option
+              Type: STRING
+            - Name: pricing_unit
+              Type: STRING
+            - Name: usage_quantity
+              Type: DECIMAL
+              SubType: FIXED
+            - Name: unblended_cost
+              Type: DECIMAL
+              SubType: FIXED
+            - Name: amortized_cost
+              Type: DECIMAL
+              SubType: FIXED
+            - Name: public_cost
+              Type: DECIMAL
+              SubType: FIXED
+            - Name: ri_sp_arn
+              Type: STRING
+            - Name: ri_sp_upfront_fees
+              Type: DECIMAL
+              SubType: FIXED
+            - Name: ri_sp_trueup
+              Type: DECIMAL
+              SubType: FIXED
+            - Name: year
+              Type: STRING
+            - Name: month
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        rds-cost-summary-logical:
+          Alias: rds_cost_summary_view
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - account_id
+              - account_name
+              - payer_account_id
+              - billing_period
+              - usage_date
+              - resource_id
+              - product_code
+              - service
+              - product_name
+              - product_family
+              - region
+              - availability_zone
+              - instance_type_family
+              - instance_type
+              - processor
+              - processor_features
+              - current_generation
+              - platform
+              - database_engine
+              - usage_type
+              - operation
+              - charge_type
+              - charge_category
+              - purchase_option
+              - pricing_unit
+              - usage_quantity
+              - unblended_cost
+              - amortized_cost
+              - public_cost
+              - ri_sp_arn
+              - ri_sp_upfront_fees
+              - ri_sp_trueup
+              - year
+              - month
+          Source:
+            PhysicalTableId: rds-cost-summary-table
+    dependsOn:
+      views:
+      - rds_cost_summary_view
+    schedules:
+    - default
+crawlers: {}
+views:
+  rds_analysis_daily_backup_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_analysis_daily_backup_view AS
+      WITH
+        latest_instance_snapshots AS (
+         SELECT
+           *
+         , ROW_NUMBER() OVER (PARTITION BY accountid, dbinstanceidentifier, date(parse_datetime(collection_date, 'yyyy-MM-dd HH:mm:ss')) ORDER BY from_iso8601_timestamp(snapshotcreatetime) DESC) maxsnapshotcreatetime
+         FROM
+           "optimization_data".inventory_rds_db_snapshots_data
+      )
+      , latest_cluster_snapshots AS (
+         SELECT
+           *
+         , ROW_NUMBER() OVER (PARTITION BY accountid, dbclusteridentifier, date(parse_datetime(collection_date, 'yyyy-MM-dd HH:mm:ss')) ORDER BY from_iso8601_timestamp(snapshotcreatetime) DESC) maxsnapshotcreatetime
+         FROM
+           "optimization_data".inventory_rds_cluster_snapshots_data
+      )
+      SELECT
+        rds_analysis_data.dbinstanceidentifier
+      , rds_analysis_data.dbinstanceclass
+      , rds_analysis_data.engine
+      , rds_analysis_data.endpoint
+      , rds_analysis_data.allocatedstorage
+      , rds_analysis_data.instancecreatetime
+      , rds_analysis_data.preferredbackupwindow
+      , rds_analysis_data.backupretentionperiod
+      , rds_analysis_data.dbparametergroups
+      , rds_analysis_data.preferredmaintenancewindow
+      , rds_analysis_data.latestrestorabletime
+      , rds_analysis_data.multiaz
+      , rds_analysis_data.engineversion
+      , rds_analysis_data.autominorversionupgrade
+      , rds_analysis_data.readreplicasourcedbinstanceidentifier
+      , rds_analysis_data.licensemodel
+      , rds_analysis_data.publiclyaccessible
+      , rds_analysis_data.storageencrypted
+      , rds_analysis_data.dbiresourceid
+      , rds_analysis_data.cacertificateidentifier
+      , rds_analysis_data.dbinstancearn
+      , rds_analysis_data.deletionprotection
+      , rds_analysis_data.maxallocatedstorage
+      , array_join(transform(rds_analysis_data.taglist, (x) -> concat(concat(x.Key, ':'), x.Value)), ', ') taglist
+      , rds_analysis_data.certificatedetails
+      , rds_analysis_data.accountid
+      , organization_data.name "accountname"
+      , rds_analysis_data.region
+      , rds_analysis_data.current_major_version
+      , rds_analysis_data.latest_major_version
+      , rds_analysis_data."latest_major_version_n-1" "latest_major_version_N-1"
+      , rds_analysis_data."latest_major_version_n-2" "latest_major_version_N-2"
+      , rds_analysis_data.current_minor_version
+      , rds_analysis_data.latest_minor_version
+      , rds_analysis_data."latest_minor_version_n-1" "latest_minor_version_N-1"
+      , rds_analysis_data."latest_minor_version_n-2" "latest_minor_version_N-2"
+      , rds_analysis_data.dbclusteridentifier
+      , rds_analysis_data.engine_version_status
+      , COALESCE(cs.dbclustersnapshotidentifier, s.dbsnapshotidentifier) dbsnapshotidentifier
+      , COALESCE(cs.snapshotcreatetime, s.snapshotcreatetime) snapshotcreatetime
+      , COALESCE(cs.status, s.status) status
+      , COALESCE(cs.vpcid, s.vpcid) vpcid
+      , COALESCE(cs.snapshottype, s.snapshottype) snapshottype
+      , COALESCE(cs.storageencrypted, s.encrypted) encrypted
+      , COALESCE(cs.dbclustersnapshotarn, s.dbsnapshotarn) dbsnapshotarn
+      , s.originalsnapshotcreatetime
+      , s.snapshottarget
+      , rds_analysis_data.collection_date
+      , rds_analysis_data.payer_id
+      , rds_analysis_data.year
+      , rds_analysis_data.month
+      , rds_analysis_data.day
+      FROM
+        ((("optimization_data".rds_analysis_data
+      LEFT JOIN latest_instance_snapshots s ON ((s.accountid = rds_analysis_data.accountid) AND (s.dbinstanceidentifier = rds_analysis_data.dbinstanceidentifier) AND (s.maxsnapshotcreatetime = 1) AND (rds_analysis_data.dbclusteridentifier IS NULL) AND (date(parse_datetime(s.collection_date, 'yyyy-MM-dd HH:mm:ss')) = date(parse_datetime(rds_analysis_data.collection_date, 'yyyy-MM-dd HH:mm:ss')))))
+      LEFT JOIN latest_cluster_snapshots cs ON ((cs.accountid = rds_analysis_data.accountid) AND (cs.dbclusteridentifier = rds_analysis_data.dbclusteridentifier) AND (cs.maxsnapshotcreatetime = 1) AND (rds_analysis_data.dbclusteridentifier IS NOT NULL) AND (date(parse_datetime(cs.collection_date, 'yyyy-MM-dd HH:mm:ss')) = date(parse_datetime(rds_analysis_data.collection_date, 'yyyy-MM-dd HH:mm:ss')))))
+      LEFT JOIN "optimization_data".organization_data ON ("optimization_data".rds_analysis_data.accountid = organization_data.id))
+  rds_analysis_dist_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_analysis_dist_view AS
+      SELECT
+        rds_analysis_data.dbinstanceidentifier
+      , rds_analysis_data.dbinstanceclass
+      , rds_analysis_data.engine
+      , rds_analysis_data.dbinstancestatus
+      , rds_analysis_data.endpoint
+      , rds_analysis_data.allocatedstorage
+      , rds_analysis_data.instancecreatetime
+      , rds_analysis_data.preferredbackupwindow
+      , rds_analysis_data.backupretentionperiod
+      , rds_analysis_data.dbsecuritygroups
+      , rds_analysis_data.dbparametergroups
+      , rds_analysis_data.preferredmaintenancewindow
+      , rds_analysis_data.latestrestorabletime
+      , rds_analysis_data.multiaz
+      , rds_analysis_data.engineversion
+      , rds_analysis_data.autominorversionupgrade
+      , rds_analysis_data.licensemodel
+      , rds_analysis_data.publiclyaccessible
+      , rds_analysis_data.storageencrypted
+      , rds_analysis_data.dbiresourceid
+      , rds_analysis_data.cacertificateidentifier
+      , rds_analysis_data.dbinstancearn
+      , rds_analysis_data.performanceinsightsenabled
+      , rds_analysis_data.deletionprotection
+      , rds_analysis_data.maxallocatedstorage
+      , rds_analysis_data.certificatedetails
+      , rds_analysis_data.accountid
+      , organization_data.name "accountname"
+      , rds_analysis_data.collection_date
+      , rds_analysis_data.region
+      , rds_analysis_data.current_major_version
+      , rds_analysis_data.latest_major_version
+      , rds_analysis_data."latest_major_version_n-1" "latest_major_version_N-1"
+      , rds_analysis_data."latest_major_version_n-2" "latest_major_version_N-2"
+      , rds_analysis_data.current_minor_version
+      , rds_analysis_data.latest_minor_version
+      , rds_analysis_data."latest_minor_version_n-1" "latest_minor_version_N-1"
+      , rds_analysis_data."latest_minor_version_n-2" "latest_minor_version_N-2"
+      , rds_analysis_data.dbclusteridentifier
+      , rds_analysis_data.engine_version_status
+      , rds_analysis_data.readreplicasourcedbinstanceidentifier
+      , array_join(transform(rds_analysis_data.taglist, (x) -> concat(concat(x.Key, ':'), x.Value)), ', ') taglist
+      , rds_analysis_data.payer_id
+      , rds_analysis_data.year
+      , rds_analysis_data.month
+      , rds_analysis_data.day
+      FROM
+        ("optimization_data".rds_analysis_data
+      LEFT JOIN "optimization_data".organization_data ON (rds_analysis_data.accountid = organization_data.id))
+  rds_analysis_endofsupport_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_analysis_endofsupport_view AS
+      SELECT
+        rds_analysis_data.accountid
+      , rds_analysis_data.dbinstanceidentifier
+      , rds_analysis_data.dbclusteridentifier
+      , rds_analysis_data.engine
+      , rds_analysis_data.engineversion
+      , rds_analysis_data.region
+      , rds_analysis_data.dbinstancestatus
+      , rds_analysis_data.endpoint
+      , rds_analysis_data.autominorversionupgrade
+      , rds_analysis_data.preferredbackupwindow
+      , rds_analysis_data.preferredmaintenancewindow
+      , rds_analysis_data.latestrestorabletime
+      , rds_analysis_data.backupretentionperiod
+      , rds_analysis_data.current_major_version
+      , rds_analysis_data.latest_major_version
+      , rds_analysis_data."latest_major_version_n-1" "latest_major_version_N-1"
+      , rds_analysis_data."latest_major_version_n-2" "latest_major_version_N-2"
+      , rds_analysis_data.current_minor_version
+      , rds_analysis_data.latest_minor_version
+      , rds_analysis_data."latest_minor_version_n-1" "latest_minor_version_N-1"
+      , rds_analysis_data."latest_minor_version_n-2" "latest_minor_version_N-2"
+      , rds_analysis_data.engine_version_status
+      , rds_analysis_data.collection_date
+      , rds_analysis_data.year
+      , rds_analysis_data.month
+      , rds_analysis_data.day
+      , rds_endofsupport_data.engine rdseos_engine
+      , rds_endofsupport_data.major_version
+      , rds_endofsupport_data.collection_date rdseos_collection_date
+      , rds_endofsupport_data.standard_support_start
+      , rds_endofsupport_data.standard_support_end
+      , rds_endofsupport_data.extended_support_start
+      , rds_endofsupport_data.extended_support_end
+      , (CASE WHEN (rds_endofsupport_data.standard_support_end = '') THEN 'Not Applicable' WHEN (current_date < date(rds_endofsupport_data.standard_support_end)) THEN 'Standard Support' WHEN ((rds_endofsupport_data.extended_support_end <> '') AND (current_date < date(rds_endofsupport_data.extended_support_end))) THEN 'Extended Support' ELSE 'Support Ended' END) rds_support_status
+      FROM
+        "optimization_data".rds_analysis_data
+      , "optimization_data".rds_endofsupport_data
+      WHERE ((rds_analysis_data.engine = rds_endofsupport_data.engine) AND (rds_analysis_data.current_major_version = rds_endofsupport_data.major_version) AND (DATE(CAST(rds_analysis_data.collection_date AS timestamp)) = DATE(CAST(rds_endofsupport_data.collection_date AS timestamp))))
+  rds_analysis_maintenance_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_analysis_maintenance_view AS
+      SELECT
+        rds_analysis_data.dbinstanceidentifier
+      , rds_analysis_data.engine
+      , rds_analysis_data.dbinstancestatus
+      , rds_analysis_data.multiaz
+      , rds_analysis_data.engineversion
+      , rds_analysis_data.autominorversionupgrade
+      , rds_analysis_data.accountid
+      , organization_data.name "accountname"
+      , rds_analysis_data.collection_date
+      , rds_analysis_data.region
+      , rds_analysis_data.current_major_version
+      , rds_analysis_data.latest_major_version
+      , rds_analysis_data.current_minor_version
+      , rds_analysis_data.latest_minor_version
+      , rds_analysis_data.dbclusteridentifier
+      , rds_analysis_data.engine_version_status
+      , array_join(transform(rds_analysis_data.taglist, (x) -> concat(concat(x.Key, ':'), x.Value)), ', ') taglist
+      , rds_maintenance_data.action
+      , rds_maintenance_data.description
+      , rds_maintenance_data.currentapplydate
+      , rds_maintenance_data.autoappliedafterdate
+      , rds_maintenance_data.forcedapplydate
+      , rds_maintenance_data.optinstatus
+      , rds_analysis_data.payer_id
+      , rds_analysis_data.year
+      , rds_analysis_data.month
+      , rds_analysis_data.day
+      FROM
+        (("optimization_data".rds_analysis_data
+      LEFT JOIN "optimization_data".organization_data ON (rds_analysis_data.accountid = organization_data.id))
+      LEFT JOIN "optimization_data".rds_maintenance_data ON ((rds_maintenance_data.resourceidentifier = rds_analysis_data.dbinstancearn) AND (rds_maintenance_data.accountid = rds_analysis_data.accountid) AND (date(CAST(rds_maintenance_data.collection_date AS timestamp)) = date(CAST(rds_analysis_data.collection_date AS timestamp))) AND (rds_maintenance_data.region = rds_analysis_data.region) AND (rds_maintenance_data.payer_id = rds_analysis_data.payer_id)))
+  rds_analysis_tags_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_analysis_tags_view AS
+      SELECT DISTINCT
+        a.dbinstanceidentifier
+      , a.dbinstancearn
+      , concat(tag.Key, ':', tag.Value) tag_info
+      FROM
+        ("optimization_data".rds_analysis_data a
+      CROSS JOIN UNNEST(a.taglist) t (tag))
+      WHERE (tag.Key <> '')
+  rds_aurora_io_optimized_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_aurora_io_optimized_view AS
+      WITH
+        aurora_resources AS (
+         SELECT
+           r.bill_payer_account_id payer_account_id
+         , r.line_item_usage_account_id account_id
+         , r.line_item_usage_account_name account_name
+         , r.product_region_code region
+         , r.product['database_engine'] database_engine
+         , r.line_item_resource_id resource_id
+         , r.line_item_usage_type usage_type
+         , date_trunc('month', r.line_item_usage_start_date) usage_month
+         , (CASE WHEN ((r.line_item_usage_type LIKE '%-Aurora:StorageIOUsage') OR (r.line_item_usage_type LIKE 'Aurora:StorageIOUsage')) THEN 'io' WHEN ((r.line_item_usage_type LIKE '%-Aurora:StorageUsage') OR (r.line_item_usage_type LIKE 'Aurora:StorageUsage')) THEN 'storage' WHEN ((r.line_item_usage_type LIKE '%-InstanceUsage:%') OR (r.line_item_usage_type LIKE 'InstanceUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-AlwaysOnUsage:%') OR (r.line_item_usage_type LIKE 'AlwaysOnUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-BoxUsage:%') OR (r.line_item_usage_type LIKE 'BoxUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-DedicatedUsage:%') OR (r.line_item_usage_type LIKE 'DedicatedUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-HighUsage:%') OR (r.line_item_usage_type LIKE 'HighUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-MirrorUsage:%') OR (r.line_item_usage_type LIKE 'MirrorUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-Multi-AZUsage:%') OR (r.line_item_usage_type LIKE 'Multi-AZUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-SpotUsage:%') OR (r.line_item_usage_type LIKE 'SpotUsage:%')) THEN 'compute' WHEN (r.line_item_usage_type LIKE '%Aurora:ServerlessV2Usage') THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-InstanceUsageIOOptimized:%') OR (r.line_item_usage_type LIKE 'InstanceUsageIOOptimized:%')) THEN 'compute' WHEN (r.line_item_usage_type LIKE '%Aurora:ServerlessV2IOOptimizedUsage') THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-Aurora:IO-OptimizedStorageUsage') OR (r.line_item_usage_type LIKE 'Aurora:IO-OptimizedStorageUsage')) THEN 'storage' ELSE 'other' END) cost_category
+         , (CASE WHEN (r.line_item_resource_id LIKE 'arn:aws:rds:%:cluster-snapshot:%') THEN 'snapshot' WHEN (r.line_item_resource_id LIKE 'arn:aws:rds:%:cluster:%') THEN 'cluster' WHEN (r.line_item_resource_id LIKE 'arn:aws:rds:%:db:%') THEN 'instance' ELSE 'unknown' END) resource_type
+         , (CASE WHEN ((r.line_item_resource_id LIKE 'arn:aws:rds:%:cluster:%') AND (NOT (r.line_item_resource_id LIKE 'arn:aws:rds:%:cluster-snapshot:%'))) THEN REGEXP_EXTRACT(r.line_item_resource_id, 'arn:aws:rds:[^:]+:[^:]+:cluster:(.+)', 1) WHEN (r.line_item_resource_id LIKE 'arn:aws:rds:%:db:%') THEN REGEXP_EXTRACT(r.line_item_resource_id, 'arn:aws:rds:[^:]+:[^:]+:db:(.+)', 1) ELSE r.line_item_resource_id END) extracted_name
+         , r.line_item_unblended_cost unblended_cost
+         FROM
+           cid_data_export.cur2 r
+         WHERE ((r.line_item_product_code = 'AmazonRDS') AND ((r.product['database_engine'] LIKE '%Aurora%') OR (r.line_item_usage_type LIKE '%Aurora%')) AND (line_item_line_item_type IN ('Usage', 'DiscountedUsage', 'SavingsPlanCoveredUsage')) AND (line_item_usage_start_date >= DATE_ADD('month', -6, current_date)))
+      )
+      , cluster_instance_map AS (
+         SELECT DISTINCT
+           a.accountid
+         , a.dbclusteridentifier
+         , LOWER(a.dbclusterresourceid) dbclusterresourceid
+         , b.dbinstanceidentifier
+         , a.region
+         , a.engine
+         FROM
+           (optimization_data.inventory_rds_db_clusters_data a
+         INNER JOIN optimization_data.inventory_rds_db_instances_data b ON ((a.accountid = b.accountid) AND (a.dbclusteridentifier = b.dbclusteridentifier) AND (a.region = b.region)))
+         WHERE (a.dbclusterresourceid IS NOT NULL)
+      )
+      , cluster_map AS (
+         SELECT DISTINCT
+           accountid
+         , dbclusteridentifier
+         , dbclusterresourceid
+         , region
+         , engine
+         FROM
+           cluster_instance_map
+      )
+      , instance_map AS (
+         SELECT DISTINCT
+           accountid
+         , dbinstanceidentifier
+         , dbclusteridentifier
+         , region
+         , engine
+         FROM
+           cluster_instance_map
+      )
+      , aurora_with_cluster AS (
+         SELECT
+           ar.payer_account_id
+         , ar.account_id
+         , ar.account_name
+         , ar.region
+         , COALESCE(cm.engine, im.engine, ar.database_engine) database_engine
+         , ar.usage_month
+         , ar.cost_category
+         , ar.unblended_cost
+         , ar.resource_type
+         , ar.extracted_name
+         , (CASE WHEN (ar.resource_type = 'cluster') THEN cm.dbclusteridentifier WHEN (ar.resource_type = 'instance') THEN im.dbclusteridentifier END) dbclusteridentifier
+         FROM
+           ((aurora_resources ar
+         LEFT JOIN cluster_map cm ON ((ar.resource_type = 'cluster') AND (LOWER(ar.extracted_name) = cm.dbclusterresourceid) AND (ar.region = cm.region) AND (ar.account_id = cm.accountid)))
+         LEFT JOIN instance_map im ON ((ar.resource_type = 'instance') AND (ar.extracted_name = im.dbinstanceidentifier) AND (ar.account_id = im.accountid) AND (ar.region = im.region)))
+         WHERE ((NOT (ar.resource_type IN ('snapshot', 'unknown'))) AND (((ar.resource_type = 'cluster') AND (cm.dbclusteridentifier IS NOT NULL)) OR ((ar.resource_type = 'instance') AND (im.dbclusteridentifier IS NOT NULL))))
+      )
+      , aggregated AS (
+         SELECT
+           usage_month
+         , payer_account_id
+         , account_id
+         , account_name
+         , region
+         , database_engine
+         , dbclusteridentifier
+         , ARRAY_JOIN(ARRAY_AGG(DISTINCT (CASE WHEN (resource_type = 'instance') THEN extracted_name END)), ', ') dbinstanceidentifiers
+         , SUM((CASE WHEN (cost_category = 'compute') THEN unblended_cost ELSE 0 END)) compute_cost
+         , SUM((CASE WHEN (cost_category = 'io') THEN unblended_cost ELSE 0 END)) io_cost
+         , SUM((CASE WHEN (cost_category = 'storage') THEN unblended_cost ELSE 0 END)) storage_cost
+         , SUM((CASE WHEN (cost_category = 'other') THEN unblended_cost ELSE 0 END)) other_cost
+         , SUM(unblended_cost) total_cost
+         FROM
+           aurora_with_cluster
+         GROUP BY usage_month, payer_account_id, account_id, account_name, region, database_engine, dbclusteridentifier
+         HAVING (SUM((CASE WHEN (cost_category = 'compute') THEN unblended_cost ELSE 0 END)) > 0)
+      )
+      SELECT
+        usage_month
+      , payer_account_id
+      , account_id
+      , account_name
+      , region
+      , database_engine
+      , dbclusteridentifier
+      , dbinstanceidentifiers
+      , compute_cost
+      , io_cost
+      , storage_cost
+      , other_cost
+      , total_cost
+      , ROUND(((io_cost / ((compute_cost + io_cost) + storage_cost)) * 100), 2) io_pct
+      , ROUND(((io_cost - (compute_cost * 3E-1)) - (storage_cost * 1.25E0)), 2) estimated_savings
+      , (CASE WHEN (((io_cost / ((compute_cost + io_cost) + storage_cost)) * 100) > 25) THEN 'Aurora IO Optimized - Recommended' WHEN (((io_cost / ((compute_cost + io_cost) + storage_cost)) * 100) > 15) THEN 'Aurora IO Optimized - Review' ELSE 'Aurora IO Optimized - Not Recommended' END) recommendation
+      FROM
+        aggregated
+  rds_cost_summary_view:
+    dependsOn:
+      views:
+      - resource_view
+      - summary_view
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_cost_summary_view AS
+      WITH
+        resource_agg AS (
+         SELECT
+           linked_account_id
+         , usage_date
+         , region
+         , product_code
+         , usage_type
+         , ARRAY_JOIN(ARRAY_AGG(DISTINCT resource_id), ', ') resource_ids
+         FROM
+           "cid_cur".resource_view
+         WHERE (product_code = 'AmazonRDS')
+         GROUP BY linked_account_id, usage_date, region, product_code, usage_type
+      )
+      SELECT
+        a.account_id
+      , a.account_name
+      , s.payer_account_id
+      , s.billing_period
+      , s.usage_date
+      , r.resource_ids resource_id
+      , s.product_code
+      , s.service
+      , s.product_name
+      , s.product_family
+      , s.region
+      , s.availability_zone
+      , s.instance_type_family
+      , s.instance_type
+      , s.processor
+      , s.processor_features
+      , s.current_generation
+      , s.platform
+      , s.database_engine
+      , s.usage_type
+      , s.operation
+      , s.charge_type
+      , s.charge_category
+      , s.purchase_option
+      , s.pricing_unit
+      , s.usage_quantity
+      , s.unblended_cost
+      , s.amortized_cost
+      , s.public_cost
+      , s.ri_sp_arn
+      , s.ri_sp_upfront_fees
+      , s.ri_sp_trueup
+      , s.year
+      , s.month
+      FROM
+        (("cid_cur".summary_view s
+      INNER JOIN "cid_cur".account_map a ON (s.linked_account_id = a.account_id))
+      LEFT JOIN resource_agg r ON ((s.linked_account_id = r.linked_account_id) AND (s.usage_date = r.usage_date) AND (s.region = r.region) AND (s.product_code = r.product_code) AND (s.usage_type = r.usage_type)))
+      WHERE (s.product_code = 'AmazonRDS')
+  resource_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".resource_view AS
+      SELECT DISTINCT
+        "date_trunc"('day', "line_item_usage_start_date") "usage_date"
+      , "bill_payer_account_id" "payer_account_id"
+      , '{}' tags_json
+      , "line_item_usage_account_id" "linked_account_id"
+      , "bill_billing_entity" "billing_entity"
+      , product['product_name'] "product_name"
+      , "line_item_resource_id" "resource_id"
+      , "line_item_product_code" "product_code"
+      , "line_item_operation" "operation"
+      , "line_item_line_item_type" "charge_type"
+      , "line_item_usage_type" "usage_type"
+      , "pricing_unit" "pricing_unit"
+      , product['region'] "region"
+      , "line_item_line_item_description" "item_description"
+      , "line_item_legal_entity" "legal_entity"
+      , "pricing_term" "pricing_term"
+      , product['database_engine'] "database_engine"
+      , product['deployment_option'] "product_deployment_option"
+      , "product_from_location" "product_from_location"
+      , product['group'] "product_group"
+      , "product_instance_type" "instance_type"
+      , product['instance_type_family'] "instance_type_family"
+      , product['operating_system'] "platform"
+      , "product_product_family" "product_family"
+      , "product_servicecode" "service"
+      , product['storage'] "product_storage"
+      , "product_to_location" "product_to_location"
+      , product['volume_api_name'] "product_volume_api_name"
+      , "reservation_reservation_a_r_n" "reservation_a_r_n"
+      , "savings_plan_savings_plan_a_r_n" "savings_plan_a_r_n"
+      , "sum"("savings_plan_savings_plan_effective_cost") "savings_plan_effective_cost"
+      , "sum"("reservation_effective_cost") "reservation_effective_cost"
+      , "sum"("line_item_usage_amount") "usage_quantity"
+      , "sum"("line_item_unblended_cost") "unblended_cost"
+      FROM
+        "cid_data_export"."cur2"
+      WHERE (((current_date - INTERVAL  '30' DAY) <= line_item_usage_start_date) AND (line_item_resource_id <> '') AND (NOT (COALESCE("line_item_operation", '') IN ('EKSPod-EC2', 'ECSTask-EC2'))))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30
+  summary_view:
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".summary_view AS
+      SELECT
+        split_part("billing_period", '-', 1) "year"
+      , split_part("billing_period", '-', 2) "month"
+      , '{}' tags_json
+      , "bill_billing_period_start_date" "billing_period"
+      , (CASE WHEN ("date_trunc"('month', "line_item_usage_start_date") >= ("date_trunc"('month', current_timestamp) - INTERVAL  '3' MONTH)) THEN "date_trunc"('day', "line_item_usage_start_date") ELSE "date_trunc"('month', "line_item_usage_start_date") END) "usage_date"
+      , "bill_payer_account_id" "payer_account_id"
+      , "line_item_usage_account_id" "linked_account_id"
+      , "bill_invoice_id" "invoice_id"
+      , "line_item_line_item_type" "charge_type"
+      , (CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN 'Running_Usage' WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN 'Running_Usage' WHEN ("line_item_line_item_type" = 'Usage') THEN 'Running_Usage' ELSE 'non_usage' END) "charge_category"
+      , (CASE WHEN ("savings_plan_savings_plan_a_r_n" <> '') THEN 'SavingsPlan' WHEN ("reservation_reservation_a_r_n" <> '') THEN 'Reserved' WHEN ("line_item_usage_type" LIKE '%Spot%') THEN 'Spot' ELSE 'OnDemand' END) "purchase_option"
+      , (CASE WHEN ("savings_plan_savings_plan_a_r_n" <> '') THEN "savings_plan_savings_plan_a_r_n" WHEN ("reservation_reservation_a_r_n" <> '') THEN "reservation_reservation_a_r_n" ELSE CAST('' AS varchar) END) "ri_sp_arn"
+      , "line_item_product_code" "product_code"
+      , product['product_name'] "product_name"
+      , (CASE WHEN (("bill_billing_entity" = 'AWS Marketplace') AND (NOT ("line_item_line_item_type" LIKE '%Discount%'))) THEN product['product_name'] WHEN ("product_servicecode" = '') THEN "line_item_product_code" ELSE "product_servicecode" END) "service"
+      , "product_product_family" "product_family"
+      , "line_item_usage_type" "usage_type"
+      , "line_item_operation" "operation"
+      , "line_item_line_item_description" "item_description"
+      , "line_item_availability_zone" "availability_zone"
+      , product['region'] "region"
+      , (CASE WHEN (("line_item_usage_type" LIKE '%Spot%') AND ("line_item_product_code" = 'AmazonEC2') AND ("line_item_line_item_type" = 'Usage')) THEN "split_part"("line_item_line_item_description", '.', 1) ELSE product['instance_type_family'] END) "instance_type_family"
+      , (CASE WHEN (("line_item_usage_type" LIKE '%Spot%') AND ("line_item_product_code" = 'AmazonEC2') AND ("line_item_line_item_type" = 'Usage')) THEN "split_part"("line_item_line_item_description", ' ', 1) ELSE "product_instance_type" END) "instance_type"
+      , (CASE WHEN (("line_item_usage_type" LIKE '%Spot%') AND ("line_item_product_code" = 'AmazonEC2') AND ("line_item_line_item_type" = 'Usage')) THEN "split_part"("split_part"("line_item_line_item_description", ' ', 2), '/', 1) ELSE product['operating_system'] END) "platform"
+      , product['tenancy'] "tenancy"
+      , product['physical_processor'] "processor"
+      , product['processor_features'] "processor_features"
+      , product['database_engine'] "database_engine"
+      , product['group'] "product_group"
+      , "product_from_location" "product_from_location"
+      , "product_to_location" "product_to_location"
+      , product['current_generation'] "current_generation"
+      , "line_item_legal_entity" "legal_entity"
+      , "bill_billing_entity" "billing_entity"
+      , "pricing_unit" "pricing_unit"
+      , approx_distinct("line_item_resource_id") "resource_id_count"
+      , sum((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "line_item_usage_amount" WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "line_item_usage_amount" WHEN ("line_item_line_item_type" = 'Usage') THEN "line_item_usage_amount" ELSE 0 END)) "usage_quantity"
+      , sum("line_item_unblended_cost") "unblended_cost"
+      , sum((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost" WHEN ("line_item_line_item_type" = 'SavingsPlanRecurringFee') THEN ("savings_plan_total_commitment_to_date" - "savings_plan_used_commitment") WHEN ("line_item_line_item_type" = 'SavingsPlanNegation') THEN 0 WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN 0 WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_effective_cost" WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee") WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0 WHEN (("line_item_line_item_type" = 'Refund') AND ("line_item_product_code" = 'ComputeSavingsPlans')) THEN 0 ELSE "line_item_unblended_cost" END)) "amortized_cost"
+      , sum((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanRecurringFee') THEN -("savings_plan_amortized_upfront_commitment_for_billing_period") WHEN ("line_item_line_item_type" = 'RIFee') THEN -("reservation_amortized_upfront_fee_for_billing_period") ELSE 0 END)) "ri_sp_trueup"
+      , sum((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN "line_item_unblended_cost" WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN "line_item_unblended_cost" ELSE 0 END)) "ri_sp_upfront_fees"
+      , sum((CASE WHEN ("line_item_line_item_type" <> 'SavingsPlanNegation') THEN "pricing_public_on_demand_cost" ELSE 0 END)) "public_cost"
+      FROM
+        "cid_data_export"."cur2"
+      WHERE (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST("concat"("billing_period", '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH)) AND (NOT (COALESCE("line_item_operation", '') IN ('EKSPod-EC2', 'ECSTask-EC2'))))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
