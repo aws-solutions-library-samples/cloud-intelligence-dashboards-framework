@@ -1,4 +1,4 @@
-boto3>=1.35.86
+boto3>=1.43.10
 Click>=8.0
 PyYAML
 requests
