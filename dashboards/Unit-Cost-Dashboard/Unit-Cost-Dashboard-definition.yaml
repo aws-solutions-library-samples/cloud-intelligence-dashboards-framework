@@ -8560,146 +8560,146 @@ Sheets:
           ElementId: 48bdbc67-03a3-4c43-b8d4-5e5207c0f691
           ElementType: TEXT_BOX
           RowIndex: 0
-          RowSpan: 9
+          RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 794005d1-5fac-4e00-9929-ed5dcc03e6ac
           ElementType: VISUAL
-          RowIndex: 9
+          RowIndex: 4
           RowSpan: 13
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 7608cec6-e875-4fe7-b847-42a03187bd79
           ElementType: VISUAL
-          RowIndex: 22
+          RowIndex: 17
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: 5d20b78a-7823-4221-abc4-7463b430d98c
           ElementType: TEXT_BOX
-          RowIndex: 31
+          RowIndex: 26
           RowSpan: 18
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: e6c84103-2de6-4621-a166-6043f2fccc93
           ElementType: TEXT_BOX
-          RowIndex: 31
+          RowIndex: 26
           RowSpan: 18
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 5f10055f-ab0c-40de-8bec-9c1e5662fbca
           ElementType: TEXT_BOX
-          RowIndex: 49
+          RowIndex: 44
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 432dec8a-e349-4d5b-9644-30e6053472c5
           ElementType: VISUAL
-          RowIndex: 59
+          RowIndex: 54
           RowSpan: 14
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: bf5e7371-7fb7-420d-ba9b-c0ab7d9b0c0d
           ElementType: VISUAL
-          RowIndex: 73
+          RowIndex: 68
           RowSpan: 14
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 824b8a34-c890-4905-85bf-434318d0d7af
           ElementType: VISUAL
-          RowIndex: 87
+          RowIndex: 82
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 17
           ElementId: 7386f985-8ba8-4143-8530-3d4a25facbc8
           ElementType: TEXT_BOX
-          RowIndex: 105
+          RowIndex: 91
           RowSpan: 12
         - ColumnIndex: 17
           ColumnSpan: 19
           ElementId: c1c014b4-12ea-4f9f-8152-7550c91d3c8c
           ElementType: TEXT_BOX
-          RowIndex: 105
+          RowIndex: 91
           RowSpan: 12
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 4a8e90dd-b7c7-4ab7-bf2f-81fa9c1bc0d7
           ElementType: VISUAL
-          RowIndex: 117
+          RowIndex: 103
           RowSpan: 14
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 0d93c02e-daa3-4887-a9dd-185e1ce2fe98
           ElementType: VISUAL
-          RowIndex: 131
+          RowIndex: 117
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: c2fa4a5b-91e5-4a59-84c4-27a6f3a47ffe
           ElementType: TEXT_BOX
-          RowIndex: 139
+          RowIndex: 125
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 4b73e9e7-ad73-4b56-9d3b-7cf634a2a670
           ElementType: TEXT_BOX
-          RowIndex: 149
+          RowIndex: 135
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: cd3d8a3f-368c-42c8-a909-fd6205bde6f0
           ElementType: VISUAL
-          RowIndex: 158
+          RowIndex: 144
           RowSpan: 11
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 4c4bee0f-f4f8-4182-b438-a296c2419081
           ElementType: TEXT_BOX
-          RowIndex: 169
+          RowIndex: 155
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 4
           ElementId: 801d464f-e926-4eaf-bc4b-d6248937db80
           ElementType: PARAMETER_CONTROL
           Padding: 8px 8px 8px 8px
-          RowIndex: 178
+          RowIndex: 164
           RowSpan: 12
         - ColumnIndex: 4
           ColumnSpan: 4
           ElementId: c0d32c47-b0dd-4980-8cbd-7e56dca8f798
           ElementType: PARAMETER_CONTROL
           Padding: 8px
-          RowIndex: 178
+          RowIndex: 164
           RowSpan: 12
         - ColumnIndex: 8
           ColumnSpan: 28
           ElementId: 9b939068-1245-4357-b336-c647146c28c2
           ElementType: VISUAL
-          RowIndex: 178
+          RowIndex: 164
           RowSpan: 12
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 3b065d78-4bd3-4417-8209-0850aa21c50e
           ElementType: VISUAL
-          RowIndex: 190
+          RowIndex: 176
           RowSpan: 17
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 933a7f88-c8fa-4929-afc4-843d5c34eac7
           ElementType: VISUAL
-          RowIndex: 207
+          RowIndex: 193
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 18
           ElementId: b08e25d0-ceb2-4748-81f4-e8247aefe493
           ElementType: TEXT_BOX
-          RowIndex: 215
+          RowIndex: 201
           RowSpan: 18
         - ColumnIndex: 18
           ColumnSpan: 18
           ElementId: 9873c834-e6e8-4ecf-bbf1-582a0f3a49fa
           ElementType: TEXT_BOX
-          RowIndex: 215
+          RowIndex: 201
           RowSpan: 18
   Name: Storage - Unit Metrics
   ParameterControls:
@@ -8850,98 +8850,70 @@ Sheets:
   SheetId: 8ca2b1b6-3a95-4990-a838-ffe1d5cb4573
   TextBoxes:
   - Content: "<text-box>\n  <inline color=\"#7fd4b9\" font-size=\"20px\">\n    <b>EBS\
-      \ Storage</b>\n  </inline>\n  <br/>\n  <inline color=\"#7fd4b9\" font-size=\"\
-      20px\"/>\n  <br/>\n  EBS unit metrics are valuable for cost management and future\
-      \ planning, providing insight into unit economics (cost per GB, IOPS, throughput)\
-      \ and overall spending trends for EBS Provisioned IOPS, EBS Snapshots, EBS Storage,\
-      \ and EBS Throughput.\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n   \
-      \   <inline color=\"#60cdb3\">EB</inline>\n      <inline color=\"#60cdb3\">\n\
-      \        <b>S Provisioned IOPS:</b>\n      </inline>\n      <inline color=\"\
-      #60cdb3\">\_</inline>\n      The cost per provisioned IOPS (Input/Output Operations\
-      \ Per Second) for EBS volumes. This metric reveals how much you're paying for\
-      \ each IOPS provisioned, regardless of actual usage. It helps identify over-provisioned\
-      \ volumes where you're paying for performance you don't use.\n    </li>\n  </ul>\n\
-      \  <br/>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline color=\"\
-      #60cdb3\">\n        <b>EBS Snapshots:</b>\n      </inline>\n      \_The cost\
-      \ per GB of EBS snapshot storage, showing the per-GB expense of point-in-time\
-      \ backups across different retention periods. This metric helps identify redundant\
-      \ or forgotten snapshots that continue to incur charges long after their usefulness\
-      \ has expired.\n    </li>\n  </ul>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"\
-      ql-indent-0\">\n      <inline color=\"#60cdb3\">\n        <b>EBS Storage:</b>\n\
-      \      </inline>\n      <inline color=\"#acdff5\">\_</inline>\n      The cost\
-      \ per GB across different EBS volume types (gp2, gp3,io1, io2, st1, sc1), revealing\
-      \ which specific volume types are most cost-effective for your actual workload\
-      \ patterns and identifying idle or underutilized volumes that could be downsized\
-      \ or terminated.\n    </li>\n  </ul>\n  <br/>\n  <br/>\n  <ul>\n    <li class=\"\
-      ql-indent-0\">\n      <inline color=\"#60cdb3\">\n        <b>EBS Throughput:</b>\n\
-      \      </inline>\n      <inline color=\"#60cdb3\">\_</inline>\n      The cost\
-      \ per MB/s of provisioned throughput for EBS volumes. This metric delivers per-MB/s\
-      \ cost analysis across provisioned volumes, exposing instances where you're\
-      \ paying premium rates for high-throughput capabilities that remain largely\
-      \ unused.\n    </li>\n  </ul>\n</text-box>"
+      \ Storage</b>\n  </inline>\n  <br/>\n  Identify where EBS spend is decoupled\
+      \ from actual usage: right-size, downgrade, or terminate to optimize spend.\n\
+      \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <b>EBS Provisioned IOPS:</b>\n\
+      \      \_Per-IOPS spending regardless of utilization.\n    </li>\n    <li class=\"\
+      ql-indent-0\">\n      <b>\_EBS Snapshots:</b>\n      \_Per-GB snapshot storage\
+      \ across retention periods.\n    </li>\n    <li class=\"ql-indent-0\">\n   \
+      \   <b>EBS Storage:</b>\n      \_Per-GB spending by volume type (gp2, gp3, io1,\
+      \ io2, st1, sc1).\n    </li>\n    <li class=\"ql-indent-0\">\n      <b>EBS Throughput:</b>\n\
+      \      \_Per-MB/s provisioned throughput spending.\n    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: 48bdbc67-03a3-4c43-b8d4-5e5207c0f691
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline color=\"Accent\"\
       \ font-size=\"20px\">\n      <b>How to Read Trends</b>\n    </inline>\n  </block>\n\
       \  <br/>\n  <br/>\n  <inline color=\"#60cdb3\" font-size=\"20px\">\n    <b>EBS\
-      \ Provisioned IOPS :</b>\n  </inline>\n  <br/>\n  - Increasing Cost/IOPS: May\
-      \ indicate migration to premium io1/io2 volumes without proper sizing\n  <br/>\n\
-      \  - Consistently High Cost/IOPS with Low Utilization: Suggests significant\
-      \ over-provisioning of IOPS\n  <br/>\n  - Varying Cost/IOPS Across Accounts:\
-      \ Points to inconsistent provisioning practices\n  <br/>\n  <br/>\n  <inline\
+      \ Provisioned IOPS :</b>\n  </inline>\n  <br/>\n  <b>Increasing cost per IOPS:</b>\n\
+      \  \_Volumes have migrated to io1/io2 without right-sizing.\n  <br/>\n  <b>High\
+      \ cost per IOPS with low utilization:</b>\n  \_IOPS capacity is over-provisioned.\n\
+      \  <br/>\n  <b>Varying cost per IOPS across accounts:</b>\n  \_Provisioning\
+      \ practices are inconsistent.\n  <br/>\n  <inline font-size=\"16px\">\n    <b>\n\
+      \      <u>Actions to Improve</u>\n    </b>\n  </inline>\n  <inline font-size=\"\
+      16px\">\n    <b>:\_</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
+      >Right-size IOPS allocations based on observed utilization</li>\n    <li class=\"\
+      ql-indent-0\">Evaluate gp3 for independent IOPS scaling</li>\n    <li class=\"\
+      ql-indent-0\">Migrate io1 to io2 for equivalent performance at lower cost</li>\n\
+      \  </ul>\n  <br/>\n  <br/>\n  <inline color=\"#60cdb3\" font-size=\"20px\">\n\
+      \    <b>EBS Throughput :</b>\n  </inline>\n  <br/>\n  <b>Increasing cost per\
+      \ MB/s:</b>\n  \_Provisioned throughput exceeds workload demand.\n  <br/>\n\
+      \  <b>Low throughput utilization:</b>\n  \_Capacity is provisioned but not consumed.\n\
+      \  <br/>\n  <b>Increasing throughput costs:</b>\n  \_Workloads have migrated\
+      \ to higher-throughput volume types without right-sizing.\n  <br/>\n  <inline\
       \ font-size=\"16px\">\n    <b>\n      <u>Actions to Improve</u>\n    </b>\n\
       \  </inline>\n  <inline font-size=\"16px\">\n    <b>:\_</b>\n  </inline>\n \
-      \ <br/>\n  <br/>\n  - Monitor actual IOPS usage via CloudWatch and right-size\
-      \ provisioned IOPS\n  <br/>\n  - Match IOPS allocations to actual workload requirements\
-      \ (aim for 70-80% utilization)\n  <br/>\n  - Consider gp3 volumes which provide\
-      \ baseline performance with independent IOPS scaling\n  <br/>\n  - Migrate from\
-      \ io1 to io2 for the same performance at lower cost\n  <br/>\n  - Implement\
-      \ automated right-sizing based on usage patterns\n  <br/>\n  <br/>\n  <inline\
-      \ color=\"#60cdb3\" font-size=\"20px\">\n    <b>EBS Throughput :</b>\n  </inline>\n\
-      \  <br/>\n  - High Cost/MB/s: Indicates over-provisioning of throughput capacity\n\
-      \  <br/>\n  - Low Throughput Utilization: Suggests paying for throughput that\
-      \ isn't being used\n  <br/>\n  - Increasing Throughput Costs: May signal migration\
-      \ to higher-throughput volume types without proper assessment\n  <br/>\n  <br/>\n\
-      \  <br/>\n  <inline font-size=\"16px\">\n    <b>\n      <u>Actions to Improve</u>\n\
-      \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>:\_</b>\n  </inline>\n\
-      \  <br/>\n  <br/>\n  - Monitor actual throughput utilization via CloudWatch\n\
-      \  <br/>\n  - Use gp3 volumes which allow independent throughput configuration\n\
-      \  <br/>\n  - Right-size throughput allocations based on actual workload requirements\n\
-      \  <br/>\n  - Consider st1 volumes for high-throughput, sequential workloads\
-      \ at lower cost\n  <br/>\n  - Make data-driven decisions about when to use throughput-optimized\
-      \ volumes versus more cost-effective alternatives\n  <br/>\n  - Implement automated\
-      \ throughput adjustments based on usage patterns\n</text-box>"
+      \ <br/>\n  <ul>\n    <li class=\"ql-indent-0\">Right-size throughput allocations\
+      \ based on observed consumption\_</li>\n    <li class=\"ql-indent-0\">Evaluate\
+      \ gp3 for independent throughput configuration</li>\n    <li class=\"ql-indent-0\"\
+      >Evaluate st1 for sequential, high-throughput workloads at lower cost per MB/s</li>\n\
+      \  </ul>\n</text-box>"
     SheetTextBoxId: 5d20b78a-7823-4221-abc4-7463b430d98c
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline color=\"Accent\"\
       \ font-size=\"20px\">\n      <b>Reading Trends</b>\n    </inline>\n  </block>\n\
       \  <br/>\n  <br/>\n  <inline color=\"#60cdb3\" font-size=\"20px\">\n    <b>EBS\
-      \ Storage :</b>\n  </inline>\n  <br/>\n  - High Cost/GB: Indicates excessive\
-      \ use of premium volume types (io1/io2)\n  <br/>\n  - Large Volume of Low-Utilization\
-      \ Storage: Suggests idle or oversized volumes\n  <br/>\n  - Increasing gp2 Costs:\
-      \ Points to opportunities to migrate to more cost-effective gp3\n  <br/>\n \
-      \ <br/>\n  <inline font-size=\"16px\">\n    <b>\n      <u>Actions to Improve</u>\n\
+      \ Storage :</b>\n  </inline>\n  <br/>\n  <b>High cost per GB:</b>\n  \_\_Storage\
+      \ relies mainly on io1/io2 volume types. **\n  <br/>\n  <b>Large volume of low-utilization\
+      \ storage:</b>\n  \_Idle or oversized volumes are incurring charges.\n  <br/>\n\
+      \  <b>Increasing gp2 costs:</b>\n  \_gp2 volumes have not been migrated to gp3.\n\
+      \  <br/>\n  <inline font-size=\"16px\">\n    <b>\n      <u>Actions to Improve</u>\n\
       \    </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>:\_</b>\n  </inline>\n\
-      \  <br/>\n  <br/>\n  - Migrate from gp2 to gp3 volumes for better price/performance\
-      \ (up to 20% savings)\n  <br/>\n  - Right-size volumes based on actual usage\
-      \ (aim for 70-80% utilization)\n  <br/>\n  - Use st1 (throughput optimized)\
-      \ or sc1 (cold storage) for infrequently accessed data\n  <br/>\n  - Delete\
-      \ unused volumes identified via CloudWatch or Trusted Advisor\n  <br/>\n  -\
-      \ Implement tagging to track volume ownership and purpose\n  <br/>\n  - Use\
-      \ AWS Compute Optimizer recommendations for volume sizing\n  <br/>\n  <br/>\n\
-      \  <inline color=\"#60cdb3\" font-size=\"20px\">\n    <b>EBS Snapshots :\_</b>\n\
-      \  </inline>\n  <br/>\n  - High Volume with Stable Cost/GB: Indicates accumulation\
-      \ of snapshots without proper lifecycle management\n  <br/>\n  - Growing Snapshot\
-      \ Storage: Suggests ineffective or missing snapshot deletion policies\n  <br/>\n\
-      \  - Increasing Cost/GB: May indicate retention of snapshots in standard tier\
-      \ that could be archived\n  <br/>\n  <br/>\n  <br/>\n  <inline font-size=\"\
-      16px\">\n    <b>\n      <u>Actions to Improve</u>\n    </b>\n  </inline>\n \
-      \ <inline font-size=\"16px\">\n    <b>:\_</b>\n  </inline>\n  <br/>\n  <br/>\n\
-      \  - Implement AWS Data Lifecycle Manager to automate snapshot creation and\
-      \ deletion\n  <br/>\n  - Create lifecycle policies that automatically delete\
-      \ unnecessary snapshots\n  <br/>\n  - Identify and remove snapshots of deleted\
-      \ volumes\n  <br/>\n  - Archive older snapshots that need to be retained but\
-      \ are rarely accessed\n  <br/>\n  - Implement tiered retention policies (e.g.,\
-      \ daily snapshots for 1 week, weekly for 1 month)\n  <br/>\n  - Use AWS Backup\
-      \ for centralized snapshot management\n</text-box>"
+      \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">Migrate gp2 to gp3 for better\
+      \ price-performance</li>\n    <li class=\"ql-indent-0\">Right-size volumes based\
+      \ on observed utilization (of last 30-60 days) ??</li>\n    <li class=\"ql-indent-0\"\
+      >Evaluate st1 or sc1 for infrequently accessed data</li>\n    <li class=\"ql-indent-0\"\
+      >Delete unattached or idle volumes identified via AWS Compute Optimizer or Trusted\
+      \ Advisor</li>\n  </ul>\n  <br/>\n  <inline color=\"#60cdb3\" font-size=\"20px\"\
+      >\n    <b>EBS Snapshots :\_</b>\n  </inline>\n  <br/>\n  <b>High volume with\
+      \ stable cost per GB:</b>\n  \_Snapshots are accumulating without a lifecycle\
+      \ policy.\n  <br/>\n  <b>Growing snapshot storage:</b>\n  \_Deletion policies\
+      \ are ineffective or missing.\n  <br/>\n  <b>Increasing cost per GB:</b>\n \
+      \ \_Snapshots are retained in standard tier that could be archived.\n  <br/>\n\
+      \  <inline font-size=\"16px\">\n    <b>\n      <u>Actions to Improve</u>\n \
+      \   </b>\n  </inline>\n  <inline font-size=\"16px\">\n    <b>:\_</b>\n  </inline>\n\
+      \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">Implement Lifecycle to automate\
+      \ snapshot creation and deletion</li>\n    <li class=\"ql-indent-0\">Identify\
+      \ and remove snapshots of deleted or unattached volumes</li>\n    <li class=\"\
+      ql-indent-0\">Archive older snapshots that require retention but are rarely\
+      \ accessed</li>\n  </ul>\n</text-box>"
     SheetTextBoxId: e6c84103-2de6-4621-a166-6043f2fccc93
   - Content: "<text-box>\n  <inline color=\"#7fd4b9\" font-size=\"22.4px\">\n    <b>S3</b>\n\
       \  </inline>\n  <br/>\n  <br/>\n  <inline font-size=\"14px\">S3 unit metrics\
@@ -13304,3 +13276,68 @@ Sheets:
             \ Cost\_</inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 3ff43aea-1eef-4aaf-b97f-fe0d762e41aa
+- ContentType: INTERACTIVE
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: e8f704dd-d4ca-478a-af06-19db00a583fe
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 7
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 5ac950ff-d143-495d-afed-78be576152dd
+          ElementType: TEXT_BOX
+          RowIndex: 7
+          RowSpan: 9
+  Name: About
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements: []
+  SheetId: 08d5b8cd-5178-4f1b-990b-7edefd62159d
+  TextBoxes:
+  - Content: "<text-box>\n  <inline font-size=\"48px\">Notices</inline>\n  <br/>\n\
+      \  <br/>\n  <inline font-size=\"20px\">Customers are responsible for making\
+      \ their own independent assessment of\_this dashboard and its content.\_This\
+      \ dashboard and its content: (a) is for informational purposes only, (b) represents\
+      \ current AWS product offerings and practices, which are subject to change without\
+      \ notice, and (c) does not create any commitments or assurances from AWS and\
+      \ its affiliates, suppliers or licensors. AWS\_content, products or services\
+      \ are provided \u201Cas is\u201D without warranties, representations, or conditions\
+      \ of any kind, whether express or implied. The responsibilities and liabilities\
+      \ of AWS to its customers are controlled by AWS agreements, and this document\
+      \ is not part of, nor does it modify, any agreement between AWS and its customers.</inline>\n\
+      </text-box>"
+    SheetTextBoxId: e8f704dd-d4ca-478a-af06-19db00a583fe
+  - Content: "<text-box>\n  <block align=\"center\">\n    <inline color=\"#61d1d6\"\
+      \ font-size=\"40px\">Unit Cost Dashboard</inline>\n  </block>\n  <br/>\n  <block\
+      \ align=\"center\">\n    <inline font-size=\"40px\">\n      <b>v1.0.0</b>\n\
+      \    </inline>\n  </block>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n\
+      \  <block align=\"center\"/>\n  <br/>\n  <block align=\"center\"/>\n  <br/>\n\
+      \  <block align=\"right\">Built by: Deepthi Nune, Yuriy Prykhodko, Viktoriia\
+      \ Potishuk, Alex Peshekhonov, Ines Attia\_</block>\n  <br/>\n  <block align=\"\
+      right\">\n    Learn more\n    <inline color=\"#4200db\">\n      <a href=\"https://wellarchitectedlabs.com/cost/200_labs/200_cloud_intelligence/\"\
+      \ target=\"_blank\">\_</a>\n    </inline>\n    about AWS Cloud Intelligence\
+      \ Dashboards (CID) on\n    <inline color=\"#61d1d6\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/getting-started.html\"\
+      \ target=\"_blank\">\n        <u>AWS Well-Architected Labs</u>\n      </a>\n\
+      \    </inline>\n    \_and\n    <inline color=\"#61d1d6\">\n      <a href=\"\
+      https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\" target=\"_blank\"\
+      >\n        <u>CID YouTube Channel</u>\n      </a>\n    </inline>\n  </block>\n\
+      \  <br/>\n  <block align=\"right\">\n    If you wish to provide feedback please\
+      \ or report an error please email:\n    <inline color=\"#61d1d6\">\_</inline>\n\
+      \    <inline background-color=\"PrimaryBackground\" color=\"#61d1d6\">\n   \
+      \   <a href=\"mailto:cloud-intelligence-dashboards@amazon.com?subject=CUDOS%20Dashboard%20Feedback\"\
+      \ target=\"_blank\">cloud-intelligence-dashboards@amazon.com</a>\n    </inline>\n\
+      \  </block>\n  <br/>\n  <block align=\"right\">Powered by: Amazon Quick Suite,\
+      \ Amazon Athena, Amazon S3</block>\n</text-box>"
+    SheetTextBoxId: 5ac950ff-d143-495d-afed-78be576152dd
+  Visuals: []
