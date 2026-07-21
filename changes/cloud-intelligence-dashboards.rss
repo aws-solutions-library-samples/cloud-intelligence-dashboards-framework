@@ -8,6 +8,23 @@
     <lastBuildDate>Wed, 18 Jun 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Media Services Information Hub - v2.2.1</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md
+      </link>
+      <pubDate>Fri, 10 Jul 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">3948f771-907f-4e4a-91d4-4f13c8a83eb2</guid>
+      <description>Media Services Information Hub - v2.2.1</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>EML Reservations:</strong> Handle savings calculation estimations for EML profiles where there is no OD cost to reference</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
       <title>[Update] Graviton Savings Dashboard v3.0.2</title>
       <link>
         https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-graviton-savings.md
