@@ -5,8 +5,27 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Wed, 18 Jun 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 23 Jul 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] CID Data Collection v3.14.6</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/releases/tag/3.14.6
+      </link>
+      <pubDate>Thu, 23 Jul 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Data Collection Update]]></category>
+      <guid isPermaLink="false">9cfe1d1c-b597-4eb6-8048-f67c23f0103b</guid>
+      <description>CID Data Collection v3.14.6</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Identity Center:</strong> New module collecting IAM Identity Center users and groups for user-attribute enrichment in dashboards.</li>
+    <li><strong>New regions:</strong> Data Collection stack can now be deployed in Europe (Milan) eu-south-1 and Europe (Zurich) eu-central-2.</li>
+    <li><strong>WorkSpaces metrics:</strong> Throttle handling with fallback, new metrics, and bug fixes for EUC dashboard data collection.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Media Services Information Hub - v2.2.1</title>
       <link>
