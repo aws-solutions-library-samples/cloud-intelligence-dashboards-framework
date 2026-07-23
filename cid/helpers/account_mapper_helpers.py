@@ -21,6 +21,64 @@ logger = logging.getLogger(__name__)
 ALLOWED_SEPARATORS = set('-_./|:@# ')
 
 
+def _expand_path(path) -> Path:
+    """Expand ~ and ~user in a user-supplied file path.
+
+    InquirerPy's filepath prompt completes paths like '~/Downloads/file.csv'
+    but returns them verbatim, so every consumer must expand the home prefix
+    before touching the filesystem.
+    """
+    return Path(str(path)).expanduser()
+
+
+def _path_is_file(path) -> bool:
+    """Check whether a user-supplied path (possibly ~-prefixed) is a file."""
+    try:
+        return _expand_path(path).is_file()
+    except (OSError, ValueError):
+        return False
+
+
+def _normalize_file_account_ids(rows: List[Dict], account_col: str) -> List[Dict]:
+    """
+    Normalize CSV account IDs for joining with organization data.
+
+    Single place where file account IDs are made comparable to org.id,
+    irrespective of workflow mode:
+    - Renames the account column to 'account_id' (kept as first column)
+    - Zero-pads IDs to 12 digits (Excel and some exports strip leading zeros)
+    - Drops rows with an empty/invalid account ID
+
+    Args:
+        rows: Raw CSV rows (List[Dict])
+        account_col: Name of the column holding account IDs
+
+    Returns:
+        New List[Dict] with normalized 'account_id' column
+    """
+    normalized = []
+    skipped = 0
+    for row in rows:
+        account_id = str(row.get(account_col, '')).strip().zfill(12)
+        if not account_id or account_id == '000000000000':
+            skipped += 1
+            continue
+        out_row = {'account_id': account_id}
+        # Exclude the source account column and any stray 'account_id'
+        # column so it cannot clobber the normalized value
+        out_row.update({k: v for k, v in row.items() if k not in (account_col, 'account_id')})
+        normalized.append(out_row)
+
+    if skipped:
+        logger.warning("Skipped %d row(s) with empty/invalid account ID", skipped)
+    return normalized
+
+
+def _quote_ident(name: str) -> str:
+    """Quote a SQL identifier, escaping embedded double quotes."""
+    return '"' + str(name).replace('"', '""') + '"'
+
+
 def _validate_separator(sep: str) -> bool:
     """Validate that a separator is safe for use in SQL split_part()."""
     return bool(sep) and len(sep) <= 2 and all(c in ALLOWED_SEPARATORS for c in sep)
@@ -600,12 +658,12 @@ class DataLoader:
         if not file_path:
             raise ValueError("File path must be provided or configured in file_source.file_path")
         
-        file_path_obj = Path(file_path)
-        
+        file_path_obj = _expand_path(file_path)
+
         if not file_path_obj.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
         
-        logger.info("Loading data from file: %s", file_path)
+        logger.info("Loading data from file: %s", file_path_obj)
         
         # Determine file format from extension
         suffix = file_path_obj.suffix.lower()
@@ -613,7 +671,9 @@ class DataLoader:
         try:
             if suffix != '.csv':
                 raise ValueError(f"Unsupported file format: {suffix}. Only .csv is supported.")
-            with open(file_path, newline='', encoding='utf-8') as f:
+            # utf-8-sig transparently strips a UTF-8 BOM if present (e.g. exports
+            # from AWS Organizations / Excel); behaves like utf-8 otherwise.
+            with open(file_path_obj, newline='', encoding='utf-8-sig') as f:
                 reader = csv.DictReader(f, skipinitialspace=True)
                 rows = list(reader)
             # Strip whitespace from column names and values, skip None keys
@@ -1637,7 +1697,7 @@ class AutoDiscovery:
             # Fall back to manual entry
             selected_file = inquirer.text(
                 message="No files found. Enter file path manually:",
-                validate=lambda path: Path(path).is_file() or "File does not exist"
+                validate=lambda path: _path_is_file(path) or "File does not exist"
             ).execute()
         else:
             # Add option to enter path manually
@@ -1652,7 +1712,7 @@ class AutoDiscovery:
             if selected == "[Enter path manually]":
                 selected_file = inquirer.text(
                     message="Enter file path:",
-                    validate=lambda path: Path(path).is_file() or "File does not exist"
+                    validate=lambda path: _path_is_file(path) or "File does not exist"
                 ).execute()
             else:
                 selected_file = selected
@@ -1748,6 +1808,185 @@ class UnifiedWorkflow:
 
         return name
 
+    def _prompt_dimension_renames(self, columns: list, reserved=None) -> dict:
+        """
+        Ask the user to optionally rename source columns to friendly, SQL-safe
+        dimension names. Shared by the organization_data ("Additional file")
+        workflow and the CSV-only workflow so the rename experience is identical.
+
+        A single confirm gates the whole set; declining keeps the original
+        column names. Provided names are validated and sanitized as SQL
+        identifiers, then de-duplicated by appending _2, _3, ... while also
+        staying clear of any names in ``reserved``.
+
+        Args:
+            columns: Ordered list of source column names to offer for renaming
+            reserved: Optional iterable of names the result must not collide with
+                      (e.g. reserved output columns or existing dimensions)
+
+        Returns:
+            dict mapping each source column -> final dimension name (input order)
+        """
+        mapping = {}
+        if not columns:
+            return mapping
+
+        used = set(reserved or ())
+        customize = inquirer.confirm(
+            message="Do you want to rename any taxonomy dimensions from the file?",
+            default=False
+        ).execute()
+
+        for col in columns:
+            if customize:
+                new_name = inquirer.text(
+                    message=f"Name for dimension '{col}' (press Enter to keep):",
+                    default=col,
+                    validate=lambda x: self.config_mgr._validate_dimension_name(x) if x and x.strip() else True
+                ).execute()
+                new_name = self.config_mgr._sanitize_dimension_name(new_name) or col
+            else:
+                new_name = col
+
+            # De-duplicate against reserved names and earlier selections
+            base, i = new_name, 2
+            while new_name in used:
+                new_name = f"{base}_{i}"
+                i += 1
+            used.add(new_name)
+            mapping[col] = new_name
+
+        return mapping
+
+    @staticmethod
+    def _normalize_file_account_ids(rows: List[Dict], account_col: str) -> List[Dict]:
+        """Normalize CSV account IDs (see module-level _normalize_file_account_ids)."""
+        return _normalize_file_account_ids(rows, account_col)
+
+    def _select_account_column(self, file_df: List[Dict]) -> str:
+        """
+        Auto-detect the account ID column or prompt the user to select it.
+
+        Args:
+            file_df: Loaded CSV rows
+
+        Returns:
+            Name of the account ID column
+        """
+        account_col = self.discovery.discover_account_id_column(file_df)
+        if not account_col:
+            account_col = inquirer.select(
+                message="Select the account ID column:",
+                choices=list(file_df[0].keys()) if file_df else []
+            ).execute()
+        else:
+            cid_print(f"   Auto-detected account ID column: {account_col}")
+        return account_col
+
+    def _load_file_source(self, source_file: str = None,
+                          use_glob_picker: bool = False) -> Tuple[str, List[Dict]]:
+        """
+        Resolve a CSV path, load it, and normalize account IDs.
+
+        Shared entry point for every workflow mode that ingests a CSV, so
+        reading (BOM/whitespace handling via DataLoader), account column
+        selection and zero-padding behave identically everywhere.
+
+        Args:
+            source_file: Optional path (prompts if not provided)
+            use_glob_picker: Use the glob-based file picker instead of the
+                             plain filepath prompt when prompting
+
+        Returns:
+            Tuple of (file path as str, normalized rows with 'account_id' column)
+
+        Raises:
+            CidCritical: If the file is empty or contains no valid account rows
+        """
+        if not source_file:
+            if use_glob_picker:
+                source_file = self.discovery.prompt_file_selection()
+            else:
+                source_file = inquirer.filepath(
+                    message="Enter path to CSV file:",
+                    validate=lambda x: _path_is_file(x) or "File not found"
+                ).execute()
+
+        file_path = _expand_path(source_file)
+        cid_print(f"\n📁 Reading CSV file: {file_path}")
+
+        loader = DataLoader(self.athena, {})
+        file_df = loader.load_from_file(str(file_path))
+        if not file_df:
+            raise CidCritical("CSV file is empty")
+
+        cid_print(f"   {len(file_df)} accounts loaded\n")
+
+        account_col = self._select_account_column(file_df)
+        file_df = self._normalize_file_account_ids(file_df, account_col)
+        if not file_df:
+            raise CidCritical("No valid account rows found in CSV")
+
+        return str(file_path), file_df
+
+    def _select_file_dimensions(self, file_df: List[Dict], reserved=None,
+                                exclude_columns=None) -> dict:
+        """
+        Let the user pick CSV columns as taxonomy dimensions and rename them.
+
+        Shared by all workflow modes. Excludes 'account_id' (the normalized
+        join column) and any additional columns the caller reserves.
+
+        Args:
+            file_df: Normalized CSV rows (account column already 'account_id')
+            reserved: Names the final dimension names must not collide with
+            exclude_columns: Columns to exclude from the dimension choices
+                             (e.g. a detected account name column)
+
+        Returns:
+            dict mapping selected source column -> final dimension name
+        """
+        skip = {'account_id'} | set(exclude_columns or ())
+        file_columns = [c for c in (file_df[0].keys() if file_df else []) if c not in skip]
+
+        if not file_columns:
+            return {}
+
+        cid_print(f"   Detected taxonomy columns: {', '.join(file_columns)}")
+        selected_columns = self._checkbox_with_retry(
+            message="Select columns to include as taxonomy dimensions (space to select, Enter to confirm):",
+            choices=file_columns
+        )
+
+        return self._prompt_dimension_renames(selected_columns, reserved=reserved)
+
+    def _set_athena_parameters(self, target_database: str) -> None:
+        """
+        Pre-set Athena database/workgroup parameters to avoid later prompts.
+
+        Auto-selects the workgroup when exactly one real workgroup exists
+        (excluding UI "(create new)" placeholder entries) and falls back to
+        'primary' when none exist. Shared by all workflow modes.
+
+        Args:
+            target_database: Database to set as the active athena-database
+        """
+        from cid.utils import set_parameters, get_parameters
+        params = get_parameters()
+        params['athena-database'] = target_database
+
+        workgroups = [wg['Name'] for wg in self.athena.list_work_groups()]
+        real_workgroups = [wg for wg in workgroups if not wg.endswith('(create new)')]
+
+        if len(real_workgroups) == 1:
+            logger.info("Auto-selected workgroup: %s", real_workgroups[0])
+            params['athena-workgroup'] = real_workgroups[0]
+        elif len(real_workgroups) == 0:
+            logger.info("No workgroups found, using default 'primary'")
+            params['athena-workgroup'] = 'primary'
+
+        set_parameters(params)
+
     def execute(self, source_file: str = None, source_database: str = None) -> dict:
         """
         Execute the complete workflow with auto-discovery.
@@ -1795,35 +2034,14 @@ class UnifiedWorkflow:
         logger.info("Target database for views: %s", target_database)
 
         # Pre-set Athena parameters BEFORE any queries to avoid prompts
-        from cid.utils import set_parameters, get_parameters
-        params = get_parameters()
-        params['athena-database'] = target_database
-
-        # Auto-select workgroup if only one real workgroup exists (excluding "create new" options)
-        workgroups = [wg['Name'] for wg in self.athena.list_work_groups()]
-        # Filter out any that might be added by the UI as "create new" options
-        real_workgroups = [wg for wg in workgroups if not wg.endswith('(create new)')]
-
-        if len(real_workgroups) == 1:
-            logger.info("Auto-selected workgroup: %s", real_workgroups[0])
-            params['athena-workgroup'] = real_workgroups[0]
-        elif len(real_workgroups) == 0:
-            # No workgroups exist, use default 'primary'
-            logger.info("No workgroups found, using default 'primary'")
-            params['athena-workgroup'] = 'primary'
-
-        set_parameters(params)
+        self._set_athena_parameters(target_database)
 
         # Phase 2: Configuration — load/save config from target database
         with spinner("Checking for existing configuration"):
             existing_config = self._check_existing_config(target_database)
 
-        # For 'both' mode, ensure a file is available for interactive config
-        if data_source_mode == 'both' and not source_file:
-            source_file = inquirer.filepath(
-                message="Enter path to CSV file:",
-                validate=lambda x: Path(x).is_file() or "File not found"
-            ).execute()
+        # File prompting happens lazily inside _load_file_source, exactly
+        # where a CSV is actually needed (new config or file source update)
         effective_source_file = source_file
 
         if existing_config:
@@ -1880,7 +2098,8 @@ class UnifiedWorkflow:
         transform_engine = TransformEngine(config, org_data, file_data)
         transformed_data = transform_engine.transform()
 
-        # Add payer_name column to preview if payer names are configured
+        # Add parent_account_name (payer friendly labels) to the preview,
+        # mirroring the CASE column the generated SQL produces
         payer_names = config.get('payer_names', {})
         if payer_names and transformed_data and 'parent_account_id' in transformed_data[0]:
             for row in transformed_data:
@@ -1908,9 +2127,7 @@ class UnifiedWorkflow:
         # Phase 6: Write Views
         logger.info("Writing views to Athena...")
         results = self.writer.write_complete_mapping(config, transformed_data, target_database, self.view_name)
-        results['status'] = 'success'
-
-        return results
+        return self._derive_status(results, config)
 
     def _prompt_data_source_mode(self, source_file: str = None) -> str:
         """
@@ -1961,173 +2178,155 @@ class UnifiedWorkflow:
         Returns:
             dict: Results containing created view names and status
         """
-        from cid.utils import set_parameters, get_parameters
 
-        # Get file path
-        if not source_file:
-            source_file = inquirer.filepath(
-                message="Enter path to CSV file:",
-                validate=lambda x: Path(x).is_file() or "File not found"
-            ).execute()
-
-        file_path = Path(source_file)
-        if not file_path.is_file():
-            raise CidCritical(f"File not found: {source_file}")
-
-        cid_print(f"\n📁 Reading CSV file: {source_file}")
-
-        # Load CSV data
-        with open(file_path, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f, skipinitialspace=True)
-            csv_data = list(reader)
-
-        if not csv_data:
-            raise CidCritical("CSV file is empty")
-
-        # Strip whitespace from column names and values, skip None keys
-        csv_data = [
-            {k.strip(): v.strip() if isinstance(v, str) else v
-             for k, v in row.items() if k is not None}
-            for row in csv_data
-        ]
-
-        cid_print(f"   {len(csv_data)} accounts loaded\n")
-
-        # Auto-detect account_id column
-        account_col = self.discovery.discover_account_id_column(csv_data)
-        if not account_col:
-            columns = list(csv_data[0].keys())
-            account_col = inquirer.select(
-                message="Select the account ID column:",
-                choices=columns
-            ).execute()
-        else:
-            cid_print(f"   Auto-detected account ID column: {account_col}")
+        # Load and normalize the CSV through the shared file source pipeline
+        # (path prompt, ~ expansion, BOM handling, account column selection,
+        # 12-digit zero-padding — identical to the 'both' workflow mode)
+        file_path, csv_data = self._load_file_source(source_file)
 
         # Discover target database
         target_database = self.discovery.discover_target_database()
 
-        # Pre-set Athena parameters
-        params = get_parameters()
-        params['athena-database'] = target_database
+        # Pre-set Athena parameters (shared with the other workflow modes)
+        self._set_athena_parameters(target_database)
 
-        workgroups = [wg['Name'] for wg in self.athena.list_work_groups()]
-        real_workgroups = [wg for wg in workgroups if not wg.endswith('(create new)')]
-
-        if len(real_workgroups) == 1:
-            params['athena-workgroup'] = real_workgroups[0]
-        elif len(real_workgroups) == 0:
-            params['athena-workgroup'] = 'primary'
-
-        set_parameters(params)
-
-        # Determine columns: account_id + account_name (if present) + taxonomy dimensions
+        # Detect an account name column (CSV-only specific: it feeds the
+        # account_name output column instead of being a taxonomy dimension)
         all_columns = list(csv_data[0].keys())
         name_col = None
         for candidate in ['account_name', 'name', 'Name', 'Account Name', 'AccountName']:
-            if candidate in all_columns and candidate != account_col:
+            if candidate in all_columns and candidate != 'account_id':
                 name_col = candidate
                 break
 
-        # Taxonomy columns = everything except account_id and account_name
-        skip_cols = {account_col}
-        if name_col:
-            skip_cols.add(name_col)
-        taxonomy_columns = [c for c in all_columns if c not in skip_cols]
-
-        if taxonomy_columns:
-            cid_print(f"\n   Detected taxonomy columns: {', '.join(taxonomy_columns)}")
-            selected_columns = self._checkbox_with_retry(
-                message="Select columns to include as taxonomy dimensions (space to select, Enter to confirm):",
-                choices=taxonomy_columns
-            )
+        # Determine the payer (management) account ID column. A column named
+        # parent_account_id (any case/spacing) is used directly, matching the
+        # --simple mode contract. Otherwise the user can point at a column,
+        # or decline — then parent_account_id defaults to '0' like --simple.
+        parent_col = next(
+            (c for c in all_columns
+             if c.lower().replace(' ', '_') == 'parent_account_id' and c != 'account_id'),
+            None
+        )
+        if parent_col:
+            cid_print(f"   Using column '{parent_col}' as parent_account_id")
         else:
-            selected_columns = []
+            has_payer_col = inquirer.confirm(
+                message="Does the file contain a column with the payer (management) account ID?",
+                default=False
+            ).execute()
+            if has_payer_col:
+                parent_col = inquirer.select(
+                    message="Select the payer account ID column:",
+                    choices=[c for c in all_columns if c not in ('account_id', name_col)]
+                ).execute()
+
+        # Select taxonomy dimensions and optional friendly names (shared)
+        exclude = {c for c in (name_col, parent_col) if c}
+        dimension_names = self._select_file_dimensions(
+            csv_data,
+            reserved={'account_id', 'account_name', 'parent_account_id', 'parent_account_name'},
+            exclude_columns=exclude or None,
+        )
+        selected_columns = list(dimension_names.keys())
+
+        # Offer friendly names for the payer accounts (shared prompt).
+        # parent_account_name holds these friendly labels and is only
+        # created when names were defined — same rule as the org-based mode.
+        payer_names = {}
+        if parent_col:
+            payer_name_config = {}
+            self._prompt_payer_names(payer_name_config, csv_data, payer_column=parent_col)
+            payer_names = payer_name_config.get('payer_names', {})
 
         # Build transformed rows for the VALUES-based view
-        # Include parent_account_id and parent_account_name to match the default
-        # account_map schema expected by dashboards
         transformed_data = []
         for row in csv_data:
-            account_id = str(row.get(account_col, '')).strip().zfill(12)
-            if not account_id or account_id == '000000000000':
-                continue
+            account_id = row['account_id']
             out_row = {'account_id': account_id}
             out_row['account_name'] = str(row.get(name_col, account_id)) if name_col else account_id
-            out_row['parent_account_id'] = ''
-            out_row['parent_account_name'] = ''
+            if parent_col:
+                parent_id = str(row.get(parent_col, '')).strip()
+                out_row['parent_account_id'] = parent_id.zfill(12) if parent_id else '0'
+            else:
+                # No payer column in the file — same default as --simple mode
+                out_row['parent_account_id'] = '0'
+            if payer_names:
+                pid = out_row['parent_account_id']
+                out_row['parent_account_name'] = payer_names.get(pid, pid)
             for col in selected_columns:
-                out_row[col] = str(row.get(col, ''))
+                out_row[dimension_names[col]] = str(row.get(col, ''))
             transformed_data.append(out_row)
 
-        if not transformed_data:
-            raise CidCritical("No valid account rows found in CSV")
-
-        # Build config for persistence
+        # Build config for persistence. The transformed rows (final columns,
+        # normalized account IDs) are carried as the file source data so the
+        # shared writer materializes them as the account_map_file_source view
+        # (including 262KB split + UNION handling), exactly like other modes.
+        file_source_view = f"{self.view_name}_file_source"
         config = {
             'metadata': {
                 'source_database': None,
                 'source_table': None,
                 'target_database': target_database,
                 'data_source_mode': 'csv_only',
+                'file_source_view': file_source_view,
             },
             'taxonomy_dimensions': [
-                {'name': col, 'source_type': 'file', 'source_value': col}
+                {'name': dimension_names[col], 'source_type': 'file', 'source_value': dimension_names[col]}
                 for col in selected_columns
             ],
             'file_source': {
-                'path': str(source_file),
-                'account_column': account_col,
-                'data': csv_data,
+                'path': str(file_path),
+                'account_column': 'account_id',
+                'data': transformed_data,
             },
         }
+        if payer_names:
+            config['payer_names'] = payer_names
 
-        # Preview
-        cid_print(f"\n📋 Preview ({min(10, len(transformed_data))} of {len(transformed_data)} rows):\n")
-        sample = transformed_data[:10]
-        if sample:
-            headers = list(sample[0].keys())
-            col_widths = {h: max(len(h), max(len(str(row.get(h, ''))) for row in sample)) for h in headers}
-            header_line = ' | '.join(h.ljust(col_widths[h]) for h in headers)
-            cid_print(f"  {header_line}")
-            cid_print(f"  {'-+-'.join('-' * col_widths[h] for h in headers)}")
-            for row in sample:
-                row_line = ' | '.join(str(row.get(h, '')).ljust(col_widths[h]) for h in headers)
-                cid_print(f"  {row_line}")
-
-        cid_print("")
-        confirm = inquirer.confirm(
-            message=f"Create account_map view with {len(transformed_data)} accounts in database '{target_database}'?",
-            default=True
-        ).execute()
-
-        if not confirm:
+        # Preview and confirmation (same UX as the other workflow modes)
+        writer = AthenaWriter(config, self.athena)
+        sql = writer._generate_account_map_transformation_sql(config, self.view_name, target_database)
+        if not self._preview_and_confirm(sql, transformed_data[:10]):
             return {"status": "cancelled", "message": "User cancelled operation"}
 
-        # Write the view using VALUES clause
-        writer = AthenaWriter(config, self.athena)
-        with spinner("Creating account_map view"):
-            view_names = writer.create_view_from_values(
-                transformed_data, self.view_name, target_database
-            )
+        # Write all views through the shared orchestrator: orphan part-view
+        # cleanup, file source view (with split/UNION), config view, and the
+        # account_map view.
+        logger.info("Writing views to Athena...")
+        results = writer.write_complete_mapping(config, transformed_data, target_database, self.view_name)
+        return self._derive_status(results, config)
 
-        # Create union view if split
-        if len(view_names) > 1:
-            with spinner("Creating union view"):
-                writer.create_union_view(view_names, self.view_name, target_database)
+    @staticmethod
+    def _derive_status(results: dict, config: dict) -> dict:
+        """
+        Derive the workflow status from what was actually created.
 
-        # Save config view
-        config_mgr = ConfigManager(self.athena, self.view_name)
-        with spinner("Saving configuration"):
-            config_mgr.save_to_view(config, target_database)
+        write_complete_mapping records None for any view it failed to
+        create; reflect that in the returned status instead of reporting
+        success unconditionally.
 
-        return {
-            'status': 'success',
-            'account_map_view': self.view_name,
-            'config_view': f"{self.view_name}_config",
-            'file_source_view': None,
-            'deleted_views': [],
-        }
+        Args:
+            results: Results dict from write_complete_mapping
+            config: Configuration used for the run
+
+        Returns:
+            The results dict with 'status' (and 'message' on failure) set
+        """
+        expected = ['account_map_view', 'config_view']
+        if config.get('file_source'):
+            expected.append('file_source_view')
+
+        failed = [view for view in expected if not results.get(view)]
+        if failed:
+            results['status'] = 'failed'
+            results['message'] = f"Failed to create: {', '.join(failed)}"
+            logger.error("Account mapping failed. Views not created: %s", ', '.join(failed))
+            cid_print(f"\n❌ Failed to create: {', '.join(failed)}")
+            cid_print("   Check cid.log for details.")
+        else:
+            results['status'] = 'success'
+        return results
 
     def _check_existing_config(self, database: str) -> Optional[dict]:
         """
@@ -2178,7 +2377,7 @@ class UnifiedWorkflow:
                 if source_type == 'name_split' and isinstance(source_value, dict):
                     created_from = f"Account name split by \"{source_value.get('separator')}\" at index {source_value.get('index')}"
                 elif source_type == 'ou_level':
-                    created_from = f"OU hierarchy level {source_value}"
+                    created_from = f"OU name (level {source_value})"
                 elif source_type == 'file':
                     created_from = f"File column \"{source_value}\""
                 elif source_type == 'tag':
@@ -2245,78 +2444,56 @@ class UnifiedWorkflow:
         if update_file:
             # Run file selection workflow
             logger.info("Updating file source...")
-            
-            # Use --file parameter if provided, otherwise prompt
-            if source_file:
-                file_path = source_file
-                cid_print(f"Using file: {source_file}")
-            else:
-                file_path = self.discovery.prompt_file_selection()
 
-            # Load file to get columns
-            temp_loader = DataLoader(self.athena, config)
-            file_df = temp_loader.load_from_file(file_path)
+            # Load and normalize the CSV through the shared file source
+            # pipeline. Uses the glob-based picker when no --file was given
+            # (existing UX for updating a file source).
+            file_path, file_df = self._load_file_source(
+                source_file, use_glob_picker=not source_file
+            )
 
-            # Auto-detect or prompt for account ID column
-            account_col = self.discovery.discover_account_id_column(file_df)
-            if not account_col:
-                account_col = inquirer.select(
-                    message="Select the account ID column:",
-                    choices=list(file_df[0].keys()) if file_df else []
-                ).execute()
-            else:
-                logger.info("Auto-detected account ID column: %s", account_col)
+            # Select taxonomy dimensions and optional friendly names (shared)
+            dimension_names = self._select_file_dimensions(
+                file_df,
+                reserved={
+                    d['name'] for d in config['taxonomy_dimensions']
+                    if d['source_type'] != 'file'
+                },
+            )
 
-            # Get file columns for dimensions (excluding account ID column)
-            file_columns = [col for col in (file_df[0].keys() if file_df else []) if col != account_col]
+            if dimension_names:
+                # Replace any previous file dimensions with the new selection
+                config['taxonomy_dimensions'] = [
+                    dim for dim in config['taxonomy_dimensions']
+                    if dim['source_type'] != 'file'
+                ]
+                for col, name in dimension_names.items():
+                    config['taxonomy_dimensions'].append({
+                        'name': name,
+                        'source_type': 'file',
+                        'source_value': col
+                    })
 
-            # Ask which columns to use as taxonomy dimensions
-            if file_columns:
-                selected_columns = self._checkbox_with_retry(
-                    message="Select which columns to use as taxonomy dimensions (space to select, Enter to confirm):",
-                    choices=file_columns
-                )
-
-                if selected_columns:
-                    # Prompt for dimension name customization
-                    customize = inquirer.confirm(
-                        message="Do you want to rename any taxonomy dimensions from the file?",
-                        default=False
-                    ).execute()
-
-                    dimension_names = {}
-                    if customize:
-                        for col in selected_columns:
-                            new_name = inquirer.text(
-                                message=f"Name for dimension '{col}' (press Enter to keep):",
-                                default=col,
-                                validate=lambda x: self.config_mgr._validate_dimension_name(x) if x and x.strip() else True
-                            ).execute()
-                            # Sanitize the dimension name (replace spaces with underscores)
-                            new_name = self.config_mgr._sanitize_dimension_name(new_name)
-                            dimension_names[col] = new_name
-                    else:
-                        dimension_names = {col: col for col in selected_columns}
-
-                    # Remove old file dimensions from config
-                    config['taxonomy_dimensions'] = [
-                        dim for dim in config['taxonomy_dimensions']
-                        if dim['source_type'] != 'file'
-                    ]
-
-                    # Add new file dimensions to config
-                    for col, name in dimension_names.items():
-                        name = self._resolve_dimension_name(name, config)
-                        config['taxonomy_dimensions'].append({
-                            'name': name,
-                            'source_type': 'file',
-                            'source_value': col
-                        })
+            # Validate that every file dimension references a column present
+            # in the new file. If the user kept the previous selection but the
+            # new file lacks those columns, the generated SQL would select
+            # non-existent columns and fail with an opaque Athena error.
+            available_columns = set(file_df[0].keys()) if file_df else set()
+            stale_dims = [
+                dim for dim in config['taxonomy_dimensions']
+                if dim['source_type'] == 'file' and dim['source_value'] not in available_columns
+            ]
+            if stale_dims:
+                stale_names = ', '.join(dim['name'] for dim in stale_dims)
+                cid_print(f"\n⚠️  Removing dimension(s) whose source column is not in the new file: {stale_names}")
+                config['taxonomy_dimensions'] = [
+                    dim for dim in config['taxonomy_dimensions'] if dim not in stale_dims
+                ]
 
             # Update file source info
             config['file_source'] = {
                 'path': file_path,
-                'account_column': account_col,
+                'account_column': 'account_id',
                 'data': file_df
             }
             config['metadata']['file_source_view'] = file_source_view
@@ -2358,8 +2535,8 @@ class UnifiedWorkflow:
 
         # Build data source choices — always include file option
         data_source_choices = [
-            "Tags from source table",
-            "OU hierarchy level",
+            "Account/OU tags",
+            "OU name",
             "Additional file (CSV)",
             "Split account name column",
         ]
@@ -2368,94 +2545,51 @@ class UnifiedWorkflow:
         data_sources = self._checkbox_with_retry(
             message="Select data sources for taxonomy dimensions (space to select, Enter to confirm):",
             choices=data_source_choices,
-            default=["Tags from source table"]
+            default=["Account/OU tags"]
         )
 
-        use_tags = "Tags from source table" in data_sources
-        use_ou_level = "OU hierarchy level" in data_sources
+        use_tags = "Account/OU tags" in data_sources
+        use_ou_level = "OU name" in data_sources
         use_file = "Additional file (CSV)" in data_sources
         use_name_split = "Split account name column" in data_sources
-
-        # If file selected but no path provided, prompt for it
-        if use_file and not source_file:
-            source_file = inquirer.filepath(
-                message="Enter path to CSV file:",
-                validate=lambda x: Path(x).is_file() or "File not found"
-            ).execute()
 
         # Configure file source if selected
         if use_file:
             cid_print("\n" + "="*70)
             cid_print("📁 FILE SOURCE CONFIGURATION")
             cid_print("="*70)
-            cid_print(f"Using file: {source_file}\n")
-            
-            # Use the provided file path directly
-            file_path = source_file
 
-            # Load file to get columns
-            temp_loader = DataLoader(self.athena, config)
-            file_df = temp_loader.load_from_file(file_path)
-
-            # Auto-detect or prompt for account ID column
-            account_col = self.discovery.discover_account_id_column(file_df)
-            if not account_col:
-                account_col = inquirer.select(
-                    message="Select the account ID column:",
-                    choices=list(file_df[0].keys()) if file_df else []
-                ).execute()
-            else:
-                logger.info("Auto-detected account ID column: %s", account_col)
+            # Load and normalize the CSV through the shared file source
+            # pipeline (~ expansion, BOM handling, account column selection,
+            # 12-digit zero-padding — identical to the CSV-only mode). The
+            # normalized 'account_id' column guarantees the Athena LEFT JOIN
+            # on org.id matches the same rows the Python preview matches.
+            file_path, file_df = self._load_file_source(source_file)
 
             # Store file source info
             config['file_source'] = {
                 'path': file_path,
-                'account_column': account_col,
+                'account_column': 'account_id',
                 'data': file_df
             }
             config['metadata']['file_source_view'] = f"{self.view_name}_file_source"
 
-            # Get file columns for dimensions (excluding account ID column)
-            file_columns = [col for col in (file_df[0].keys() if file_df else []) if col != account_col]
-
-            # Ask which columns to use as taxonomy dimensions
-            if file_columns:
-                selected_columns = self._checkbox_with_retry(
-                    message="Select which columns to use as taxonomy dimensions (space to select, Enter to confirm):",
-                    choices=file_columns
-                )
-
-                if selected_columns:
-                    # Prompt for dimension name customization
-                    customize = inquirer.confirm(
-                        message="Do you want to rename any taxonomy dimensions from the file?",
-                        default=False
-                    ).execute()
-
-                    dimension_names = {}
-                    if customize:
-                        for col in selected_columns:
-                            new_name = inquirer.text(
-                                message=f"Name for dimension '{col}' (press Enter to keep):",
-                                default=col
-                            ).execute()
-                            dimension_names[col] = new_name
-                    else:
-                        dimension_names = {col: col for col in selected_columns}
-
-                    # Add file dimensions to config
-                    for col, name in dimension_names.items():
-                        name = self._resolve_dimension_name(name, config)
-                        config['taxonomy_dimensions'].append({
-                            'name': name,
-                            'source_type': 'file',
-                            'source_value': col
-                        })
+            # Select taxonomy dimensions and optional friendly names (shared)
+            dimension_names = self._select_file_dimensions(
+                file_df,
+                reserved={d['name'] for d in config['taxonomy_dimensions']},
+            )
+            for col, name in dimension_names.items():
+                config['taxonomy_dimensions'].append({
+                    'name': name,
+                    'source_type': 'file',
+                    'source_value': col
+                })
 
         # Configure OU hierarchy level if selected
         if use_ou_level:
             cid_print("\n" + "="*70)
-            cid_print("🏢 OU HIERARCHY LEVEL CONFIGURATION")
+            cid_print("🏢 OU NAME CONFIGURATION")
             cid_print("="*70)
             cid_print("Extract taxonomy dimensions from the organizational unit hierarchy.")
             cid_print("Each level represents a position in the OU path.\n")
@@ -2662,27 +2796,31 @@ class UnifiedWorkflow:
 
         return levels
 
-    def _prompt_payer_names(self, config: dict, org_data: List[Dict]) -> dict:
+    def _prompt_payer_names(self, config: dict, org_data: List[Dict],
+                            payer_column: str = 'payer_id') -> dict:
         """
         Prompt user to assign friendly names to management account IDs.
 
-        Discovers distinct payer IDs from org data and asks if the user wants
-        to provide custom names. Stores the mapping in config['payer_names'].
+        Discovers distinct payer IDs from the given rows and asks if the user
+        wants to provide custom names. Stores the mapping in config['payer_names'].
+        Shared by the organization_data workflow (payer_id column) and the
+        CSV-only workflow (user-selected payer column).
 
         Args:
             config: Current configuration dictionary
-            org_data: Organization List[Dict] with payer_id column
+            org_data: List[Dict] rows containing the payer column
+            payer_column: Name of the column holding payer account IDs
 
         Returns:
             dict: Updated configuration with optional payer_names
         """
 
-        if not org_data or 'payer_id' not in org_data[0]:
-            logger.debug("No payer_id column in org data, skipping payer naming")
+        if not org_data or payer_column not in org_data[0]:
+            logger.debug("No %s column in data, skipping payer naming", payer_column)
             return config
 
         # Get distinct payer IDs
-        unique_payers = set(str(r.get('payer_id', '')).zfill(12) for r in org_data if not _is_null(r.get('payer_id')))
+        unique_payers = set(str(r.get(payer_column, '')).strip().zfill(12) for r in org_data if not _is_null(r.get(payer_column)))
         unique_payers = sorted(unique_payers)
 
         if not unique_payers:
@@ -2897,12 +3035,13 @@ class AthenaWriter:
         values_clause = ',\n  '.join(values_rows)
 
         # Quote column names to handle spaces, special chars, and reserved words
-        quoted_columns = [f'"{col}"' for col in columns]
+        # (escaping any embedded double quotes)
+        quoted_columns = [_quote_ident(col) for col in columns]
         column_list = ', '.join(quoted_columns)
 
         # Explicitly CAST each column to VARCHAR in the outer SELECT to handle
         # columns that are all-NULL (Athena cannot infer type from NULL alone)
-        select_parts = [f'CAST("{col}" AS VARCHAR) AS "{col}"' for col in columns]
+        select_parts = [f'CAST({_quote_ident(col)} AS VARCHAR) AS {_quote_ident(col)}' for col in columns]
         select_clause = ', '.join(select_parts)
 
         sql = f"""CREATE OR REPLACE VIEW {database}.{view_name} AS
@@ -3131,10 +3270,13 @@ SELECT {select_clause} FROM (
                 file_df = list(config['file_source']['data'])
                 account_col = config['file_source']['account_column']
                 
-                # Rename account column to account_id for JOIN compatibility
+                # Normalize account IDs (rename to 'account_id' + 12-digit
+                # zero-padding). No-op for data that already went through
+                # _load_file_source; covers configs from older runs where
+                # the raw account column was carried through.
+                file_df = _normalize_file_account_ids(file_df, account_col)
                 if account_col != 'account_id':
-                    file_df = [{('account_id' if k == account_col else k): v for k, v in row.items()} for row in file_df]
-                    logger.info("Renamed column '%s' to 'account_id' for file source view", account_col)
+                    logger.info("Normalized column '%s' to 'account_id' for file source view", account_col)
                 
                 with spinner("Creating file source view"):
                     success = self.create_file_source_view(file_df, file_view_name, database)
@@ -3342,7 +3484,34 @@ SELECT {select_clause} FROM (
         
         # Get taxonomy dimensions
         taxonomy_dimensions = config.get('taxonomy_dimensions', [])
-        
+
+        # File-only mode (no source table, e.g. "CSV file only"): the file
+        # source view already holds the complete account list with final
+        # column names, so account_map is a thin view over it. The heavy
+        # lifting (VALUES materialization, 262KB split + UNION) is done by
+        # create_file_source_view via the shared writer path.
+        if not source_table:
+            if not file_source_view:
+                raise RuntimeError("Config has neither source_table nor file_source_view")
+            select_parts = [
+                'file.account_id',
+                'file.account_name',
+                'file.parent_account_id',
+            ]
+            # parent_account_name (payer friendly labels) only exists when
+            # names were defined — same rule as the org-based mode
+            if config.get('payer_names'):
+                select_parts.append('file.parent_account_name')
+            dim_names = sorted(
+                {d['name'] for d in taxonomy_dimensions}, key=str.lower
+            )
+            select_parts.extend(f'file.{_quote_ident(name)}' for name in dim_names)
+            select_clause = ',\n    '.join(select_parts)
+            return f"""CREATE OR REPLACE VIEW {database}.{view_name} AS
+SELECT
+    {select_clause}
+FROM {database}.{file_source_view} file"""
+
         # Track dimension names to detect duplicates
         dimension_names_used = set()
         
@@ -3353,7 +3522,9 @@ SELECT {select_clause} FROM (
             'org.managementaccountid AS parent_account_id'
         ]
         
-        # Add payer_name column if payer names are configured
+        # parent_account_name holds the user-defined friendly labels for the
+        # payer accounts. Only emitted when names were configured — same
+        # rule as CSV-only mode.
         payer_names = config.get('payer_names', {})
         if payer_names:
             case_parts = []
@@ -3390,19 +3561,19 @@ SELECT {select_clause} FROM (
                     filter(org.hierarchytags, x -> x.key = '{source_value}'),
                     1
                 ).value"""
-                dimension_parts.append((output_name, f"{tag_expr} AS {output_name}"))
+                dimension_parts.append((output_name, f"{tag_expr} AS {_quote_ident(output_name)}"))
                     
             elif source_type == 'file':
                 if file_source_view:
-                    dimension_parts.append((output_name, f"file.{source_value} AS {output_name}"))
+                    dimension_parts.append((output_name, f"file.{_quote_ident(source_value)} AS {_quote_ident(output_name)}"))
                 else:
                     logger.warning("File source dimension %s specified but no file source view", dim_name)
-                    dimension_parts.append((output_name, f"NULL AS {output_name}"))
+                    dimension_parts.append((output_name, f"NULL AS {_quote_ident(output_name)}"))
                     
             elif source_type == 'ou_level':
                 level_index = int(source_value)
                 ou_expr = f"TRY(org.hierarchy[{level_index}].name)"
-                dimension_parts.append((output_name, f"{ou_expr} AS {output_name}"))
+                dimension_parts.append((output_name, f"{ou_expr} AS {_quote_ident(output_name)}"))
 
             elif source_type == 'name_split':
                 if isinstance(source_value, dict):
@@ -3413,10 +3584,10 @@ SELECT {select_clause} FROM (
                     safe_separator = _sanitize_separator_for_sql(separator)
                     index = source_value.get('index', 0)
                     split_expr = f"split_part(org.name, '{safe_separator}', {index + 1})"
-                    dimension_parts.append((output_name, f"{split_expr} AS {output_name}"))
+                    dimension_parts.append((output_name, f"{split_expr} AS {_quote_ident(output_name)}"))
                 else:
                     logger.warning("Name split dimension %s has invalid source_value format", dim_name)
-                    dimension_parts.append((output_name, f"NULL AS {output_name}"))
+                    dimension_parts.append((output_name, f"NULL AS {_quote_ident(output_name)}"))
         
         # Sort taxonomy dimensions alphabetically by output name
         dimension_parts.sort(key=lambda x: x[0].lower())

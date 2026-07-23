@@ -228,7 +228,7 @@ The command follows a six-phase workflow:
 
 During interactive configuration you choose one or more data sources for your taxonomy dimensions:
 
-**Tags from source table** — Extracts values from the `hierarchytags` column in `organization_data`. Each selected tag key becomes a column in the output view. For example, if your accounts are tagged with `Environment=Production` and `CostCenter=Engineering`, selecting those tag keys produces `environment` and `cost_center` columns.
+**Account/OU tags** — Extracts values from the `hierarchytags` column in `organization_data`. Each selected tag key becomes a column in the output view. For example, if your accounts are tagged with `Environment=Production` and `CostCenter=Engineering`, selecting those tag keys produces `environment` and `cost_center` columns.
 
 **Additional file (`--file`)** — Joins columns from a CSV/Excel/JSON file by account ID. The file must contain an account ID column; all other selected columns become taxonomy dimensions. Example file:
 ```csv
@@ -237,7 +237,7 @@ account_id,business_unit,team
 234567890123,Platform,Data
 ```
 
-**OU hierarchy level** — Extracts the organizational unit name at a given level in the account's OU hierarchy. The tool discovers available levels from your data and shows sample values. For example, if an account's hierarchy is `ROOT > Pegasus > Team-A`, selecting level 2 produces `Pegasus`. Generates SQL like `TRY(org.hierarchy[2].name)`.
+**OU name** — Extracts the organizational unit name at a given level in the account's OU hierarchy. The tool discovers available levels from your data and shows sample values. For example, if an account's hierarchy is `ROOT > Pegasus > Team-A`, selecting level 2 produces `Pegasus`. Generates SQL like `TRY(org.hierarchy[2].name)`.
 
 **Split account name** — Extracts dimensions by splitting the `account_name` string on a separator character. You specify the separator and the positional index to extract. For example, for account name `aws-retail-prod`, splitting by `-` at index 1 yields `retail`, and at index 2 yields `prod`.
 
@@ -264,7 +264,7 @@ The command saves its configuration as an Athena view (`<view_name>_config`). On
 Create an account map using AWS Organization tags:
 ```bash
 cid-cmd map
-# → Select "Tags from source table"
+# → Select "Account/OU tags"
 # → Pick tag keys like Environment, CostCenter, Team
 # → Preview and confirm
 ```
@@ -272,7 +272,7 @@ cid-cmd map
 Create an account map enriched with data from a spreadsheet:
 ```bash
 cid-cmd map --file ~/Downloads/account_taxonomy.xlsx
-# → Select "Additional file" and/or "Tags from source table"
+# → Select "Additional file" and/or "Account/OU tags"
 # → Pick columns from the file to use as dimensions
 # → Preview and confirm
 ```

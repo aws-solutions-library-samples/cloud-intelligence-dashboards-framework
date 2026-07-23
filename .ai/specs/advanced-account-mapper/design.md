@@ -169,7 +169,7 @@ FROM optimization_data.organization_data org
 |---|---|
 | `account_map` | Main enriched account mapping view used by dashboards |
 | `account_map_config` | Stores configuration for reuse on subsequent runs |
-| `account_map_file_source` | (Only with `--file`) Stores CSV data as Athena view for JOINs |
+| `account_map_file_source` | (With `--file` or CSV-only mode) Stores file/CSV data as an Athena view |
 
 ## Output Column Compatibility
 
@@ -181,7 +181,7 @@ The output columns are compatible with the legacy `account_map_cur2.sql` templat
 | `account_name` | `org.name` | CSV account_name column (or account_id) |
 | `parent_account_id` | `org.managementaccountid` | NULL |
 | `parent_account_name` | CASE expression from `payer_names` config | NULL |
-| (taxonomy dimensions) | Configured by user | Selected CSV columns |
+| (taxonomy dimensions) | Configured by user | Selected CSV columns (optionally renamed) |
 
 ## Data Source Modes
 
@@ -199,8 +199,16 @@ When the user selects "CSV file only":
 1. Prompts for file path (or uses `--file` if provided)
 2. Auto-detects `account_id` and `account_name` columns
 3. Remaining columns are offered as taxonomy dimensions
-4. Output includes `parent_account_id` and `parent_account_name` (NULL) for dashboard compatibility
-5. Creates a VALUES-based view (splits into multiple parts + UNION if > 262KB)
+4. Optionally rename the selected columns to friendly, SQL-safe dimension
+   names (same prompt as the organization_data workflow; default keeps the
+   original CSV header). Renamed names become the output view column names.
+5. Rows are normalized (zero-padded account IDs, `parent_account_id` and
+   `parent_account_name` as NULL for dashboard compatibility)
+6. Writes through the same `AthenaWriter.write_complete_mapping()` orchestrator
+   as the other modes: orphan part-view cleanup, then the normalized rows are
+   materialized as the `account_map_file_source` VALUES view (auto-split into
+   part views + UNION if > 262KB), the config view is saved, and `account_map`
+   is created as a thin `SELECT ... FROM account_map_file_source` view.
 
 ### Both mode
 
