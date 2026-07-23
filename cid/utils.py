@@ -276,11 +276,36 @@ def get_parameter(param_name, message, choices=None, default=None, none_as_disab
         if multi:
             default = default or []
             default = default if isinstance(default, list) else [default]
-            default = [c for c in default if c in choices]
-            if not isatty():
-                result = default
+            if isinstance(choices, dict) and choices and all(isinstance(value, (list, dict)) for value in choices.values()):
+                # grouped choices: {group_label: [item, ...]} or {group_label: {display: value, ...}}
+                # groups are shown as headers; dict groups allow a display label per item
+                value_by_display = {}
+                groups = {}
+                for group_label, items in choices.items():
+                    items = items if isinstance(items, dict) else {item: item for item in items}
+                    value_by_display.update({display: value for display, value in items.items()})
+                    groups[group_label] = list(items.keys())
+                display_by_value = {value: display for display, value in value_by_display.items()}
+                flat = [display for displays in groups.values() for display in displays]
+                default = [display_by_value.get(value, value) for value in default if value in display_by_value]
+                if not isatty():
+                    result = [value_by_display[display] for display in default]
+                else:
+                    result = [value_by_display[display] for display in select_and_order(message, flat, default, groups=groups)]
+            elif isinstance(choices, dict):
+                # dict choices: keys are display names, values are returned
+                name_by_value = {value: name for name, value in choices.items()}
+                default = [name_by_value.get(value, value) for value in default if value in name_by_value]
+                if not isatty():
+                    result = [choices[name] for name in default]
+                else:
+                    result = [choices[name] for name in select_and_order(message, list(choices.keys()), default)]
             else:
-                result = select_and_order(message, choices, default)
+                default = [c for c in default if c in choices]
+                if not isatty():
+                    result = default
+                else:
+                    result = select_and_order(message, choices, default)
         else:
             if not isatty():
                 raise Exception(f'Please set parameter {param_name}. Unable to request user in environment={exec_env()}')
@@ -392,8 +417,12 @@ def select_items(message, all_items, selected_items=[]):
     ).execute()
 
 
-def select_and_order(message, all_items, selected_items=None):
-    """Let user select and arrange items from a list"""
+def select_and_order(message, all_items, selected_items=None, groups=None):
+    """Let user select and arrange items from a list
+
+    :param groups: optional {group_label: [item, ...]} to render available items
+        under group headers instead of a flat list
+    """
     selected_items = (selected_items or []).copy()
     unselected_items = [item for item in all_items if item not in selected_items]
 
@@ -413,11 +442,23 @@ def select_and_order(message, all_items, selected_items=None):
             choices.append(Separator("--- Selected Items (empty) ---"))
         if unselected_items:
             choices.append(Separator("--- Items Available To Add ---"))
-        for item in unselected_items:
-            choices.append(Choice(
-                value={"action": "add_item", "item": item},
-                name=f"  {item}"
-            ))
+        if groups:
+            for group_label, group_items in groups.items():
+                items_to_show = [item for item in group_items if item in unselected_items]
+                if not items_to_show:
+                    continue
+                choices.append(Separator(f"{group_label}:"))
+                for item in items_to_show:
+                    choices.append(Choice(
+                        value={"action": "add_item", "item": item},
+                        name=f"    {item}"
+                    ))
+        else:
+            for item in unselected_items:
+                choices.append(Choice(
+                    value={"action": "add_item", "item": item},
+                    name=f"  {item}"
+                ))
         selection = inquirer.select(
             message=message,
             choices=choices,
