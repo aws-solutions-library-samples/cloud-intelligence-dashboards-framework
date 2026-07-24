@@ -92,13 +92,13 @@ CID_DATA_BUCKETS=(
 for bucket in "${CID_DATA_BUCKETS[@]}"; do
   echo "Checking if bucket $bucket exists..."
   if aws s3api head-bucket --bucket $bucket 2>/dev/null; then
-    echo "Emptying bucket $bucket (keeping bucket)..."
-    
     # Skip if this is the backend bucket
     if [ "$bucket" = "$S3_BUCKET" ]; then
       echo "Skipping backend bucket: $bucket"
       continue
     fi
+
+    echo "Emptying and deleting bucket $bucket..."
     
     # First delete all non-versioned objects
     aws s3 rm s3://$bucket --recursive || true
@@ -137,12 +137,17 @@ for bucket in "${CID_DATA_BUCKETS[@]}"; do
       MARKER_COUNT=${MARKER_COUNT:-0}
       
       if [ "$VERSION_COUNT" -eq 0 ] && [ "$MARKER_COUNT" -eq 0 ]; then
-        echo "Bucket $bucket is now empty (bucket preserved)!"
+        echo "Bucket $bucket is now empty!"
         break
       fi
       
       echo "Bucket still has objects, continuing..."
     done
+
+    # Delete the bucket before terraform destroy to prevent CloudFormation conflicts
+    echo "Deleting bucket $bucket..."
+    aws s3 rb s3://$bucket --force || true
+    echo "Deleted bucket: $bucket"
   else
     echo "Bucket $bucket does not exist or is not accessible"
   fi
@@ -185,19 +190,15 @@ fi
 terraform destroy "${TFVARS_FILES[@]}" -auto-approve
 cd "$SCRIPT_DIR"
 
-# Final cleanup: Delete the data-exports bucket if it still exists
-echo "Checking for remaining data-exports bucket..."
-DATA_EXPORTS_BUCKET="${RESOURCE_PREFIX}-${ACCOUNT_ID}-data-exports"
-if aws s3api head-bucket --bucket $DATA_EXPORTS_BUCKET 2>/dev/null; then
-  echo "Found remaining bucket: $DATA_EXPORTS_BUCKET - deleting it..."
-  # Ensure it's empty first
-  aws s3 rm s3://$DATA_EXPORTS_BUCKET --recursive || true
-  # Delete the bucket
-  aws s3 rb s3://$DATA_EXPORTS_BUCKET --force || true
-  echo "Deleted bucket: $DATA_EXPORTS_BUCKET"
-else
-  echo "Data-exports bucket already deleted or doesn't exist"
-fi
+# Post-destroy safety check: ensure CID buckets are truly gone
+echo "Post-destroy safety check: verifying CID buckets are deleted..."
+for bucket in "${CID_DATA_BUCKETS[@]}"; do
+  if aws s3api head-bucket --bucket $bucket 2>/dev/null; then
+    echo "WARNING: Bucket $bucket still exists after destroy. Force deleting..."
+    aws s3 rm s3://$bucket --recursive || true
+    aws s3 rb s3://$bucket --force || true
+  fi
+done
 
 # Clean up temporary directory if created for standalone execution
 if [[ "$TEMP_DIR" == /tmp/* ]]; then

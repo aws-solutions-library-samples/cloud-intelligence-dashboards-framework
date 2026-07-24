@@ -71,7 +71,7 @@
       WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_effective_cost"
       WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee")
       WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0
-      WHEN (("line_item_line_item_type" = 'Refund') AND ("line_item_product_code" = 'ComputeSavingsPlans')) THEN 0
+      WHEN (("line_item_line_item_type" = 'Refund') AND ("line_item_product_code" = 'ComputeSavingsPlans') AND ("line_item_line_item_description" LIKE 'Refund for one-time fee for Savings Plan ID%')) THEN 0
       ELSE "line_item_unblended_cost"
     END) "amortized_cost"
   , sum(CASE

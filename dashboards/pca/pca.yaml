@@ -2021,7 +2021,7 @@ views:
          , "line_item_unblended_rate"
          , SUM("line_item_usage_amount") "usage_amount"
          , SUM("line_item_unblended_cost") "current_unblended_cost"
-         , SUM("line_item_net_unblended_cost") "current_net_unblended_cost"
+         , SUM(COALESCE(CAST("line_item_net_unblended_cost" AS double), CAST("line_item_unblended_cost" AS double))) "current_net_unblended_cost"
          , SUM((CASE WHEN ("line_item_unblended_cost" = 0) THEN 0 ELSE "line_item_usage_amount" END)) "usage_amount_excl_free_tier"
          FROM
            ${cur_table_name}
@@ -2106,7 +2106,7 @@ views:
       , null "previous_unblended_cost"
       , null "previous_net_unblended_cost"
       , SUM("line_item_unblended_cost") "aws_service_unblended_cost"
-      , SUM("line_item_net_unblended_cost") "aws_service_net_unblended_cost"
+      , SUM(COALESCE(CAST("line_item_net_unblended_cost" AS double), CAST("line_item_unblended_cost" AS double))) "aws_service_net_unblended_cost"
       FROM
         ${cur_table_name}
       WHERE (("product_product_name" IN (SELECT "product_product_name"

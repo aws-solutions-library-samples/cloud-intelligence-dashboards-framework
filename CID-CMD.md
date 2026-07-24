@@ -25,6 +25,11 @@ CID is also provided in a form of CloudFormation templates. See detailed instruc
     pip3 install --upgrade cid-cmd
     ```
 
+    > **AWS CloudShell note:** If upgrading from a pre-installed version and `cid-cmd` fails with `cannot execute: required file not found`, run the following to regenerate the launcher with the correct interpreter:
+    > ```bash
+    > python3 -m pip install --force-reinstall cid-cmd
+    > ```
+
 #### Dashboard Deployment
 
 ```bash

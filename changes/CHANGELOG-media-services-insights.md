@@ -1,5 +1,9 @@
 # What's new in the Media Services Insights Hub (MSIH)
 
+## Media Services Insights Hub - v2.2.1
+
+- EML Reservations: Handle savings calculation estimations for EML profiles where there is no OD cost to reference
+
 ## Media Services Insights Hub - v2.2.0
 
 - Refine MediaLive Reservations modeling
