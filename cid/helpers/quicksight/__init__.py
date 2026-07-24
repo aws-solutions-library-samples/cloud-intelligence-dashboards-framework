@@ -85,33 +85,47 @@ class QuickSight(CidBase):
     def identityRegion(self) -> str:
         if not self._identityRegion:
             try:
-                logger.info(f'Detecting QuickSight identity region, trying {self.region}')
-                username = get_parameters().get('quicksight-user', self.username)
-                parameters = {
-                    'AwsAccountId': self.account_id,
-                    'UserName': username,
-                    'Namespace': 'default'
-                }
-                self.client.describe_user(**parameters)
-                self._identityRegion = self.region
-            except self.client.exceptions.AccessDeniedException as exc:
-                logger.debug(exc)
-                pattern = f'Operation is being called from endpoint {self.region}, but your identity region is (.*). Please use the (.*) endpoint.'
-                match = re.search(pattern, exc.response['Error']['Message'])
-                if match:
-                    logger.info(f'Switching QuickSight identity region to {match.group(1)}')
-                    self._identityRegion = match.group(1)
+                logger.info(f'Detecting QuickSight identity region via list_namespaces')
+                paginator = self.client.get_paginator('list_namespaces')
+                results = list(paginator.paginate(AwsAccountId=self.account_id).search(
+                    "Namespaces[? Name=='default'].CapacityRegion"
+                ))
+                if results and results[0]:
+                    self._identityRegion = results[0]
+                    logger.info(f'QuickSight identity region detected: {self._identityRegion}')
                 else:
-                    raise
-            except self.client.exceptions.ResourceNotFoundException:
-                logger.info(f'QuickSight identity region detection failed, using {self.region}')
-                self._identityRegion = self.region
+                    logger.info(f'list_namespaces returned no CapacityRegion, using {self.region}')
+                    self._identityRegion = self.region
             except Exception as exc:
                 logger.debug(exc, exc_info=True)
-                logger.info(f'QuickSight identity region detection failed, using {self.region}')
-                self._identityRegion = self.region
+                logger.info(f'list_namespaces failed ({exc}), falling back to describe_user method')
+                self._identityRegion = self._detect_identity_region_fallback()
             logger.info(f'Using QuickSight identity region: {self._identityRegion}')
         return self._identityRegion
+
+    def _detect_identity_region_fallback(self) -> str:
+        """Fallback: detect identity region via describe_user error message parsing."""
+        try:
+            username = get_parameters().get('quicksight-user', self.username)
+            parameters = {
+                'AwsAccountId': self.account_id,
+                'UserName': username,
+                'Namespace': 'default'
+            }
+            self.client.describe_user(**parameters)
+            return self.region
+        except self.client.exceptions.AccessDeniedException as exc:
+            logger.debug(exc)
+            pattern = f'Operation is being called from endpoint {self.region}, but your identity region is (.*). Please use the (.*) endpoint.'
+            match = re.search(pattern, exc.response['Error']['Message'])
+            if match:
+                logger.info(f'Switching QuickSight identity region to {match.group(1)}')
+                return match.group(1)
+            raise
+        except Exception as exc:
+            logger.debug(exc, exc_info=True)
+            logger.info(f'QuickSight identity region detection failed, using {self.region}')
+            return self.region
 
     def pre_discover(self) -> str:
         """ Pre discover assets
