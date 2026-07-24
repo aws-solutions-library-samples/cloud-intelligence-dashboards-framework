@@ -70,6 +70,7 @@ dashboards = {
   containers   = "yes"  # SCAD Containers Cost Allocation
   cora         = "yes"  # CORA Dashboard
   focus        = "yes"  # FOCUS Dashboard
+  extended_support = "yes"  # Extended Support Cost Projection
 }
 ```
 
@@ -178,6 +179,7 @@ These require a foundational dashboard to be deployed first and use the same CUR
 | Containers | `containers` | yes | SCAD Containers Cost Allocation |
 | CORA | `cora` | yes | CORA Dashboard |
 | FOCUS | `focus` | yes | FOCUS Dashboard |
+| Extended Support | `extended_support` | yes | Extended Support Cost Projection |
 
 ## Advanced Configuration
 
