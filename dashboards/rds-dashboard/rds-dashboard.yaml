@@ -1,32 +1,31 @@
 dashboards:
-  RDS-ANALYSIS-NEW02:
+  rds-dashboard:
     dependsOn:
       datasets:
-      - rds_analysis_daily_backup_view
-      - rds_analysis_dist_view
-      - rds_analysis_endofsupport_view
-      - rds_analysis_maintenance_view
-      - rds_analysis_tags_view
+      - rds_backup_view
+      - rds_inventory_view
+      - rds_maintenance_view
+      - rds_tags_view
       - rds_aurora_io_optimized_view
       - rds_cost_summary_view
-    name: RDS Health Dashboard
-    dashboardId: rds-health-dashboard
+    name: RDS Dashboard
+    dashboardId: rds-dashboard
     category: Custom
     theme: MIDNIGHT
     version: v0.0.0
-    file: ./rds-health-definition.yaml
+    file: ./rds-dashboard-definition.yaml
 datasets:
-  rds_analysis_daily_backup_view:
+  rds_backup_view:
     data:
-      DataSetId: rds_analysis_daily_backup_dataset
-      Name: rds_analysis_daily_backup_view
+      DataSetId: rds_backup_dataset
+      Name: rds_backup_view
       PhysicalTableMap:
         rds-dailybackup-table:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
             Schema: ${athena_database_name}
-            Name: rds_analysis_daily_backup_view
+            Name: rds_backup_view
             InputColumns:
             - Name: dbinstanceidentifier
               Type: STRING
@@ -48,15 +47,11 @@ datasets:
               Type: STRING
             - Name: preferredmaintenancewindow
               Type: STRING
-            - Name: latestrestorabletime
-              Type: STRING
             - Name: multiaz
               Type: STRING
             - Name: engineversion
               Type: STRING
             - Name: autominorversionupgrade
-              Type: STRING
-            - Name: readreplicasourcedbinstanceidentifier
               Type: STRING
             - Name: licensemodel
               Type: STRING
@@ -72,13 +67,11 @@ datasets:
               Type: STRING
             - Name: deletionprotection
               Type: STRING
-            - Name: maxallocatedstorage
-              Type: INTEGER
-            - Name: taglist
-              Type: STRING
             - Name: certificatedetails
               Type: STRING
             - Name: accountid
+              Type: STRING
+            - Name: latestrestorabletime
               Type: STRING
             - Name: accountname
               Type: STRING
@@ -135,7 +128,7 @@ datasets:
       ImportMode: SPICE
       LogicalTableMap:
         rds-dailybackup-logical:
-          Alias: rds_analysis_daily_backup_view
+          Alias: rds_backup_view
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
@@ -149,11 +142,9 @@ datasets:
               - backupretentionperiod
               - dbparametergroups
               - preferredmaintenancewindow
-              - latestrestorabletime
               - multiaz
               - engineversion
               - autominorversionupgrade
-              - readreplicasourcedbinstanceidentifier
               - licensemodel
               - publiclyaccessible
               - storageencrypted
@@ -161,10 +152,9 @@ datasets:
               - cacertificateidentifier
               - dbinstancearn
               - deletionprotection
-              - maxallocatedstorage
-              - taglist
               - certificatedetails
               - accountid
+              - latestrestorabletime
               - accountname
               - region
               - current_major_version
@@ -195,20 +185,20 @@ datasets:
             PhysicalTableId: rds-dailybackup-table
     dependsOn:
       views:
-      - rds_analysis_daily_backup_view
+      - rds_backup_view
     schedules:
     - default
-  rds_analysis_dist_view:
+  rds_inventory_view:
     data:
-      DataSetId: rds_analysis_dataset
-      Name: rds_analysis_dist_view
+      DataSetId: rds_inventory_dataset
+      Name: rds_inventory_view
       PhysicalTableMap:
         rds-analysis-table:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
             Schema: ${athena_database_name}
-            Name: rds_analysis_dist_view
+            Name: rds_inventory_view
             InputColumns:
             - Name: dbinstanceidentifier
               Type: STRING
@@ -228,26 +218,20 @@ datasets:
               Type: STRING
             - Name: backupretentionperiod
               Type: INTEGER
-            - Name: dbsecuritygroups
-              Type: STRING
-            - Name: dbparametergroups
-              Type: STRING
             - Name: preferredmaintenancewindow
               Type: STRING
-            - Name: latestrestorabletime
-              Type: STRING
             - Name: multiaz
-              Type: STRING
+              Type: BOOLEAN
             - Name: engineversion
               Type: STRING
             - Name: autominorversionupgrade
-              Type: STRING
+              Type: BOOLEAN
             - Name: licensemodel
               Type: STRING
             - Name: publiclyaccessible
-              Type: STRING
+              Type: BOOLEAN
             - Name: storageencrypted
-              Type: STRING
+              Type: BOOLEAN
             - Name: dbiresourceid
               Type: STRING
             - Name: cacertificateidentifier
@@ -255,14 +239,20 @@ datasets:
             - Name: dbinstancearn
               Type: STRING
             - Name: performanceinsightsenabled
-              Type: STRING
+              Type: BOOLEAN
             - Name: deletionprotection
-              Type: STRING
-            - Name: maxallocatedstorage
-              Type: INTEGER
+              Type: BOOLEAN
             - Name: certificatedetails
               Type: STRING
             - Name: accountid
+              Type: STRING
+            - Name: maxallocatedstorage
+              Type: INTEGER
+            - Name: latestrestorabletime
+              Type: STRING
+            - Name: readreplicasourcedbinstanceidentifier
+              Type: STRING
+            - Name: taglist
               Type: STRING
             - Name: accountname
               Type: STRING
@@ -270,136 +260,6 @@ datasets:
               Type: STRING
             - Name: region
               Type: STRING
-            - Name: current_major_version
-              Type: STRING
-            - Name: latest_major_version
-              Type: STRING
-            - Name: latest_major_version_N-1
-              Type: STRING
-            - Name: latest_major_version_N-2
-              Type: STRING
-            - Name: current_minor_version
-              Type: STRING
-            - Name: latest_minor_version
-              Type: STRING
-            - Name: latest_minor_version_N-1
-              Type: STRING
-            - Name: latest_minor_version_N-2
-              Type: STRING
-            - Name: dbclusteridentifier
-              Type: STRING
-            - Name: engine_version_status
-              Type: STRING
-            - Name: readreplicasourcedbinstanceidentifier
-              Type: STRING
-            - Name: taglist
-              Type: STRING
-            - Name: payer_id
-              Type: STRING
-            - Name: year
-              Type: STRING
-            - Name: month
-              Type: STRING
-            - Name: day
-              Type: STRING
-      ImportMode: SPICE
-      LogicalTableMap:
-        rds-analysis-logical:
-          Alias: rds_analysis_dist_view
-          DataTransforms:
-          - ProjectOperation:
-              ProjectedColumns:
-              - dbinstanceidentifier
-              - dbinstanceclass
-              - engine
-              - dbinstancestatus
-              - endpoint
-              - allocatedstorage
-              - instancecreatetime
-              - preferredbackupwindow
-              - backupretentionperiod
-              - dbsecuritygroups
-              - dbparametergroups
-              - preferredmaintenancewindow
-              - latestrestorabletime
-              - multiaz
-              - engineversion
-              - autominorversionupgrade
-              - licensemodel
-              - publiclyaccessible
-              - storageencrypted
-              - dbiresourceid
-              - cacertificateidentifier
-              - dbinstancearn
-              - performanceinsightsenabled
-              - deletionprotection
-              - maxallocatedstorage
-              - certificatedetails
-              - accountid
-              - accountname
-              - collection_date
-              - region
-              - current_major_version
-              - latest_major_version
-              - latest_major_version_N-1
-              - latest_major_version_N-2
-              - current_minor_version
-              - latest_minor_version
-              - latest_minor_version_N-1
-              - latest_minor_version_N-2
-              - dbclusteridentifier
-              - engine_version_status
-              - readreplicasourcedbinstanceidentifier
-              - taglist
-              - payer_id
-              - year
-              - month
-              - day
-          Source:
-            PhysicalTableId: rds-analysis-table
-    dependsOn:
-      views:
-      - rds_analysis_dist_view
-    schedules:
-    - default
-  rds_analysis_endofsupport_view:
-    data:
-      DataSetId: rds_analysis_endofsupport_dataset
-      Name: rds_analysis_endofsupport_view
-      PhysicalTableMap:
-        rds-endofsupport-table:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: ${athena_database_name}
-            Name: rds_analysis_endofsupport_view
-            InputColumns:
-            - Name: accountid
-              Type: STRING
-            - Name: dbinstanceidentifier
-              Type: STRING
-            - Name: dbclusteridentifier
-              Type: STRING
-            - Name: engine
-              Type: STRING
-            - Name: engineversion
-              Type: STRING
-            - Name: region
-              Type: STRING
-            - Name: dbinstancestatus
-              Type: STRING
-            - Name: endpoint
-              Type: STRING
-            - Name: autominorversionupgrade
-              Type: BOOLEAN
-            - Name: preferredbackupwindow
-              Type: STRING
-            - Name: preferredmaintenancewindow
-              Type: STRING
-            - Name: latestrestorabletime
-              Type: STRING
-            - Name: backupretentionperiod
-              Type: INTEGER
             - Name: current_major_version
               Type: STRING
             - Name: latest_major_version
@@ -416,21 +276,11 @@ datasets:
               Type: STRING
             - Name: latest_minor_version_n-2
               Type: STRING
+            - Name: dbclusteridentifier
+              Type: STRING
             - Name: engine_version_status
               Type: STRING
-            - Name: collection_date
-              Type: STRING
-            - Name: year
-              Type: STRING
-            - Name: month
-              Type: STRING
-            - Name: day
-              Type: STRING
-            - Name: rdseos_engine
-              Type: STRING
-            - Name: major_version
-              Type: STRING
-            - Name: rdseos_collection_date
+            - Name: rds_support_status
               Type: STRING
             - Name: standard_support_start
               Type: STRING
@@ -440,28 +290,55 @@ datasets:
               Type: STRING
             - Name: extended_support_end
               Type: STRING
-            - Name: rds_support_status
+            - Name: payer_id
+              Type: STRING
+            - Name: year
+              Type: STRING
+            - Name: month
+              Type: STRING
+            - Name: day
+              Type: STRING
+            - Name: dbsecuritygroups
+              Type: STRING
+            - Name: dbparametergroups
               Type: STRING
       ImportMode: SPICE
       LogicalTableMap:
-        rds-endofsupport-logical:
-          Alias: rds_analysis_endofsupport_view
+        rds-analysis-logical:
+          Alias: rds_inventory_view
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
-              - accountid
               - dbinstanceidentifier
-              - dbclusteridentifier
+              - dbinstanceclass
               - engine
-              - engineversion
-              - region
               - dbinstancestatus
               - endpoint
-              - autominorversionupgrade
+              - allocatedstorage
+              - instancecreatetime
               - preferredbackupwindow
-              - preferredmaintenancewindow
-              - latestrestorabletime
               - backupretentionperiod
+              - preferredmaintenancewindow
+              - multiaz
+              - engineversion
+              - autominorversionupgrade
+              - licensemodel
+              - publiclyaccessible
+              - storageencrypted
+              - dbiresourceid
+              - cacertificateidentifier
+              - dbinstancearn
+              - performanceinsightsenabled
+              - deletionprotection
+              - certificatedetails
+              - accountid
+              - maxallocatedstorage
+              - latestrestorabletime
+              - readreplicasourcedbinstanceidentifier
+              - taglist
+              - accountname
+              - collection_date
+              - region
               - current_major_version
               - latest_major_version
               - latest_major_version_n-1
@@ -470,37 +347,37 @@ datasets:
               - latest_minor_version
               - latest_minor_version_n-1
               - latest_minor_version_n-2
+              - dbclusteridentifier
               - engine_version_status
-              - collection_date
-              - year
-              - month
-              - day
-              - rdseos_engine
-              - major_version
-              - rdseos_collection_date
+              - rds_support_status
               - standard_support_start
               - standard_support_end
               - extended_support_start
               - extended_support_end
-              - rds_support_status
+              - payer_id
+              - year
+              - month
+              - day
+              - dbparametergroups
+              - dbsecuritygroups
           Source:
-            PhysicalTableId: rds-endofsupport-table
+            PhysicalTableId: rds-analysis-table
     dependsOn:
       views:
-      - rds_analysis_endofsupport_view
+      - rds_inventory_view
     schedules:
     - default
-  rds_analysis_maintenance_view:
+  rds_maintenance_view:
     data:
-      DataSetId: rds_analysis_maintenance_dataset
-      Name: rds_analysis_maintenance_view
+      DataSetId: rds_maintenance_dataset
+      Name: rds_maintenance_view
       PhysicalTableMap:
         rds-maintenance-table:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
             Schema: ${athena_database_name}
-            Name: rds_analysis_maintenance_view
+            Name: rds_maintenance_view
             InputColumns:
             - Name: dbinstanceidentifier
               Type: STRING
@@ -533,8 +410,6 @@ datasets:
             - Name: dbclusteridentifier
               Type: STRING
             - Name: engine_version_status
-              Type: STRING
-            - Name: taglist
               Type: STRING
             - Name: action
               Type: STRING
@@ -559,7 +434,7 @@ datasets:
       ImportMode: SPICE
       LogicalTableMap:
         rds-maintenance-logical:
-          Alias: rds_analysis_maintenance_view
+          Alias: rds_maintenance_view
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
@@ -579,7 +454,6 @@ datasets:
               - latest_minor_version
               - dbclusteridentifier
               - engine_version_status
-              - taglist
               - action
               - description
               - currentapplydate
@@ -594,20 +468,20 @@ datasets:
             PhysicalTableId: rds-maintenance-table
     dependsOn:
       views:
-      - rds_analysis_maintenance_view
+      - rds_maintenance_view
     schedules:
     - default
-  rds_analysis_tags_view:
+  rds_tags_view:
     data:
-      DataSetId: rds_analysis_tags_dataset
-      Name: rds_analysis_tags_view
+      DataSetId: rds_tags_dataset
+      Name: rds_tags_view
       PhysicalTableMap:
         rds-tags-table:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
             Catalog: AwsDataCatalog
             Schema: ${athena_database_name}
-            Name: rds_analysis_tags_view
+            Name: rds_tags_view
             InputColumns:
             - Name: dbinstanceidentifier
               Type: STRING
@@ -618,7 +492,7 @@ datasets:
       ImportMode: SPICE
       LogicalTableMap:
         rds-tags-logical:
-          Alias: rds_analysis_tags_view
+          Alias: rds_tags_view
           DataTransforms:
           - ProjectOperation:
               ProjectedColumns:
@@ -629,7 +503,7 @@ datasets:
             PhysicalTableId: rds-tags-table
     dependsOn:
       views:
-      - rds_analysis_tags_view
+      - rds_tags_view
     schedules:
     - default
   rds_aurora_io_optimized_view:
@@ -853,63 +727,121 @@ datasets:
     - default
 crawlers: {}
 views:
-  rds_analysis_daily_backup_view:
+  rds_backup_view:
     data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".rds_analysis_daily_backup_view AS
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_backup_view AS
       WITH
-        latest_instance_snapshots AS (
+        cluster_members AS (
+         SELECT DISTINCT
+           c.accountid
+         , c.region
+         , c.dbclusteridentifier
+         , m.dbinstanceidentifier
+         FROM
+           ("${data_collection_database_name}".inventory_rds_db_clusters_data c
+         CROSS JOIN UNNEST(c.dbclustermembers) t (m))
+      )
+      , latest_instance_snapshots AS (
          SELECT
            *
          , ROW_NUMBER() OVER (PARTITION BY accountid, dbinstanceidentifier, date(parse_datetime(collection_date, 'yyyy-MM-dd HH:mm:ss')) ORDER BY from_iso8601_timestamp(snapshotcreatetime) DESC) maxsnapshotcreatetime
          FROM
-           "optimization_data".inventory_rds_db_snapshots_data
+           "${data_collection_database_name}".inventory_rds_db_snapshots_data
       )
       , latest_cluster_snapshots AS (
          SELECT
            *
          , ROW_NUMBER() OVER (PARTITION BY accountid, dbclusteridentifier, date(parse_datetime(collection_date, 'yyyy-MM-dd HH:mm:ss')) ORDER BY from_iso8601_timestamp(snapshotcreatetime) DESC) maxsnapshotcreatetime
          FROM
-           "optimization_data".inventory_rds_cluster_snapshots_data
+           "${data_collection_database_name}".inventory_rds_cluster_snapshots_data
+      )
+      , version_status_lookup AS (
+         SELECT DISTINCT
+           engine
+         , engineversion
+         , majorengineversion
+         , status engine_version_status
+         FROM
+           "${data_collection_database_name}".rds_db_engine_versions
+      )
+      , ranked_major_versions AS (
+         SELECT DISTINCT
+           engine
+         , majorengineversion
+         , DENSE_RANK() OVER (PARTITION BY engine ORDER BY CAST(SPLIT_PART(majorengineversion, '.', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(SPLIT_PART(majorengineversion, '.', 2), ''), '0') AS INTEGER) DESC) major_rank
+         FROM
+           "${data_collection_database_name}".rds_db_engine_versions
+         WHERE ((status = 'available') AND ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL)))
+      )
+      , engine_major_versions AS (
+         SELECT
+           engine
+         , MAX((CASE WHEN (major_rank = 1) THEN majorengineversion END)) latest_major_version
+         , MAX((CASE WHEN (major_rank = 2) THEN majorengineversion END)) "latest_major_version_N-1"
+         , MAX((CASE WHEN (major_rank = 3) THEN majorengineversion END)) "latest_major_version_N-2"
+         FROM
+           ranked_major_versions
+         WHERE (major_rank <= 3)
+         GROUP BY engine
+      )
+      , ranked_minor_versions AS (
+         SELECT DISTINCT
+           engine
+         , majorengineversion
+         , engineversion
+         , DENSE_RANK() OVER (PARTITION BY engine, majorengineversion ORDER BY CAST(REGEXP_EXTRACT(engineversion, '^(\d+)', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, engineversion DESC) minor_rank
+         FROM
+           "${data_collection_database_name}".rds_db_engine_versions
+         WHERE ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL))
+      )
+      , engine_minor_versions AS (
+         SELECT
+           engine
+         , majorengineversion
+         , MAX((CASE WHEN (minor_rank = 1) THEN engineversion END)) latest_minor_version
+         , MAX((CASE WHEN (minor_rank = 2) THEN engineversion END)) "latest_minor_version_N-1"
+         , MAX((CASE WHEN (minor_rank = 3) THEN engineversion END)) "latest_minor_version_N-2"
+         FROM
+           ranked_minor_versions
+         WHERE (minor_rank <= 3)
+         GROUP BY engine, majorengineversion
       )
       SELECT
-        rds_analysis_data.dbinstanceidentifier
-      , rds_analysis_data.dbinstanceclass
-      , rds_analysis_data.engine
-      , rds_analysis_data.endpoint
-      , rds_analysis_data.allocatedstorage
-      , rds_analysis_data.instancecreatetime
-      , rds_analysis_data.preferredbackupwindow
-      , rds_analysis_data.backupretentionperiod
-      , rds_analysis_data.dbparametergroups
-      , rds_analysis_data.preferredmaintenancewindow
-      , rds_analysis_data.latestrestorabletime
-      , rds_analysis_data.multiaz
-      , rds_analysis_data.engineversion
-      , rds_analysis_data.autominorversionupgrade
-      , rds_analysis_data.readreplicasourcedbinstanceidentifier
-      , rds_analysis_data.licensemodel
-      , rds_analysis_data.publiclyaccessible
-      , rds_analysis_data.storageencrypted
-      , rds_analysis_data.dbiresourceid
-      , rds_analysis_data.cacertificateidentifier
-      , rds_analysis_data.dbinstancearn
-      , rds_analysis_data.deletionprotection
-      , rds_analysis_data.maxallocatedstorage
-      , array_join(transform(rds_analysis_data.taglist, (x) -> concat(concat(x.Key, ':'), x.Value)), ', ') taglist
-      , rds_analysis_data.certificatedetails
-      , rds_analysis_data.accountid
-      , organization_data.name "accountname"
-      , rds_analysis_data.region
-      , rds_analysis_data.current_major_version
-      , rds_analysis_data.latest_major_version
-      , rds_analysis_data."latest_major_version_n-1" "latest_major_version_N-1"
-      , rds_analysis_data."latest_major_version_n-2" "latest_major_version_N-2"
-      , rds_analysis_data.current_minor_version
-      , rds_analysis_data.latest_minor_version
-      , rds_analysis_data."latest_minor_version_n-1" "latest_minor_version_N-1"
-      , rds_analysis_data."latest_minor_version_n-2" "latest_minor_version_N-2"
-      , rds_analysis_data.dbclusteridentifier
-      , rds_analysis_data.engine_version_status
+        i.dbinstanceidentifier
+      , i.dbinstanceclass
+      , i.engine
+      , i.endpoint
+      , i.allocatedstorage
+      , i.instancecreatetime
+      , i.preferredbackupwindow
+      , i.backupretentionperiod
+      , i.dbparametergroups
+      , i.preferredmaintenancewindow
+      , i.multiaz
+      , i.engineversion
+      , i.autominorversionupgrade
+      , i.licensemodel
+      , i.publiclyaccessible
+      , i.storageencrypted
+      , i.dbiresourceid
+      , i.cacertificateidentifier
+      , i.dbinstancearn
+      , i.deletionprotection
+      , i.certificatedetails
+      , i.accountid
+      , i.latestrestorabletime
+      , org.name accountname
+      , i.region
+      , vs.majorengineversion current_major_version
+      , emaj.latest_major_version
+      , emaj."latest_major_version_N-1"
+      , emaj."latest_major_version_N-2"
+      , i.engineversion current_minor_version
+      , emin.latest_minor_version
+      , emin."latest_minor_version_N-1"
+      , emin."latest_minor_version_N-2"
+      , cm.dbclusteridentifier
+      , COALESCE(vs.engine_version_status, 'Unknown') engine_version_status
       , COALESCE(cs.dbclustersnapshotidentifier, s.dbsnapshotidentifier) dbsnapshotidentifier
       , COALESCE(cs.snapshotcreatetime, s.snapshotcreatetime) snapshotcreatetime
       , COALESCE(cs.status, s.status) status
@@ -919,157 +851,285 @@ views:
       , COALESCE(cs.dbclustersnapshotarn, s.dbsnapshotarn) dbsnapshotarn
       , s.originalsnapshotcreatetime
       , s.snapshottarget
-      , rds_analysis_data.collection_date
-      , rds_analysis_data.payer_id
-      , rds_analysis_data.year
-      , rds_analysis_data.month
-      , rds_analysis_data.day
+      , i.collection_date
+      , i.payer_id
+      , i.year
+      , i.month
+      , i.day
       FROM
-        ((("optimization_data".rds_analysis_data
-      LEFT JOIN latest_instance_snapshots s ON ((s.accountid = rds_analysis_data.accountid) AND (s.dbinstanceidentifier = rds_analysis_data.dbinstanceidentifier) AND (s.maxsnapshotcreatetime = 1) AND (rds_analysis_data.dbclusteridentifier IS NULL) AND (date(parse_datetime(s.collection_date, 'yyyy-MM-dd HH:mm:ss')) = date(parse_datetime(rds_analysis_data.collection_date, 'yyyy-MM-dd HH:mm:ss')))))
-      LEFT JOIN latest_cluster_snapshots cs ON ((cs.accountid = rds_analysis_data.accountid) AND (cs.dbclusteridentifier = rds_analysis_data.dbclusteridentifier) AND (cs.maxsnapshotcreatetime = 1) AND (rds_analysis_data.dbclusteridentifier IS NOT NULL) AND (date(parse_datetime(cs.collection_date, 'yyyy-MM-dd HH:mm:ss')) = date(parse_datetime(rds_analysis_data.collection_date, 'yyyy-MM-dd HH:mm:ss')))))
-      LEFT JOIN "optimization_data".organization_data ON ("optimization_data".rds_analysis_data.accountid = organization_data.id))
-  rds_analysis_dist_view:
+        ((((((("${data_collection_database_name}".inventory_rds_db_instances_data i
+      LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
+      LEFT JOIN latest_instance_snapshots s ON ((s.accountid = i.accountid) AND (s.dbinstanceidentifier = i.dbinstanceidentifier) AND (s.maxsnapshotcreatetime = 1) AND (cm.dbclusteridentifier IS NULL) AND (date(parse_datetime(s.collection_date, 'yyyy-MM-dd HH:mm:ss')) = date(parse_datetime(i.collection_date, 'yyyy-MM-dd HH:mm:ss')))))
+      LEFT JOIN latest_cluster_snapshots cs ON ((cs.accountid = i.accountid) AND (cs.dbclusteridentifier = cm.dbclusteridentifier) AND (cs.maxsnapshotcreatetime = 1) AND (cm.dbclusteridentifier IS NOT NULL) AND (date(parse_datetime(cs.collection_date, 'yyyy-MM-dd HH:mm:ss')) = date(parse_datetime(i.collection_date, 'yyyy-MM-dd HH:mm:ss')))))
+      LEFT JOIN "${data_collection_database_name}".organization_data org ON (i.accountid = org.id))
+      LEFT JOIN version_status_lookup vs ON ((i.engine = vs.engine) AND (i.engineversion = vs.engineversion)))
+      LEFT JOIN engine_major_versions emaj ON (i.engine = emaj.engine))
+      LEFT JOIN engine_minor_versions emin ON ((i.engine = emin.engine) AND (vs.majorengineversion = emin.majorengineversion)))
+    parameters:
+      data_collection_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_instances_data'
+        error: "Prerequisites not found. Ensure CID Data Collection is installed with RDS inventory module enabled."
+  rds_inventory_view:
     data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".rds_analysis_dist_view AS
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_inventory_view AS
+      WITH
+        cluster_members AS (
+         SELECT DISTINCT
+           c.accountid
+         , c.region
+         , c.dbclusteridentifier
+         , m.dbinstanceidentifier
+         FROM
+           ("${data_collection_database_name}".inventory_rds_db_clusters_data c
+         CROSS JOIN UNNEST(c.dbclustermembers) t (m))
+      )
+      , ranked_major_versions AS (
+         SELECT DISTINCT
+           engine
+         , majorengineversion
+         , DENSE_RANK() OVER (PARTITION BY engine ORDER BY CAST(SPLIT_PART(majorengineversion, '.', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(SPLIT_PART(majorengineversion, '.', 2), ''), '0') AS INTEGER) DESC) major_rank
+         FROM
+           "${data_collection_database_name}".rds_db_engine_versions
+         WHERE ((status = 'available') AND ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL)))
+      )
+      , engine_major_versions AS (
+         SELECT
+           engine
+         , MAX((CASE WHEN (major_rank = 1) THEN majorengineversion END)) latest_major_version
+         , MAX((CASE WHEN (major_rank = 2) THEN majorengineversion END)) "latest_major_version_N-1"
+         , MAX((CASE WHEN (major_rank = 3) THEN majorengineversion END)) "latest_major_version_N-2"
+         FROM
+           ranked_major_versions
+         WHERE (major_rank <= 3)
+         GROUP BY engine
+      )
+      , ranked_minor_versions AS (
+         SELECT DISTINCT
+           engine
+         , majorengineversion
+         , engineversion
+         , DENSE_RANK() OVER (PARTITION BY engine, majorengineversion ORDER BY CAST(REGEXP_EXTRACT(engineversion, '^(\d+)', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, engineversion DESC) minor_rank
+         FROM
+           "${data_collection_database_name}".rds_db_engine_versions
+         WHERE ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL))
+      )
+      , engine_minor_versions AS (
+         SELECT
+           engine
+         , majorengineversion
+         , MAX((CASE WHEN (minor_rank = 1) THEN engineversion END)) latest_minor_version
+         , MAX((CASE WHEN (minor_rank = 2) THEN engineversion END)) "latest_minor_version_N-1"
+         , MAX((CASE WHEN (minor_rank = 3) THEN engineversion END)) "latest_minor_version_N-2"
+         FROM
+           ranked_minor_versions
+         WHERE (minor_rank <= 3)
+         GROUP BY engine, majorengineversion
+      )
+      , version_status_lookup AS (
+         SELECT DISTINCT
+           engine
+         , engineversion
+         , majorengineversion
+         , status engine_version_status
+         FROM
+           "${data_collection_database_name}".rds_db_engine_versions
+      )
+      , eos_data AS (
+         SELECT
+           engine
+         , majorengineversion
+         , MAX((CASE WHEN (lc.lifecyclesupportname = 'open-source-rds-standard-support') THEN CAST(CAST(lc.lifecyclesupportstartdate AS DATE) AS VARCHAR) END)) standard_support_start
+         , MAX((CASE WHEN (lc.lifecyclesupportname = 'open-source-rds-standard-support') THEN CAST(CAST(lc.lifecyclesupportenddate AS DATE) AS VARCHAR) END)) standard_support_end
+         , MAX((CASE WHEN (lc.lifecyclesupportname = 'open-source-rds-extended-support') THEN CAST(CAST(lc.lifecyclesupportstartdate AS DATE) AS VARCHAR) END)) extended_support_start
+         , MAX((CASE WHEN (lc.lifecyclesupportname = 'open-source-rds-extended-support') THEN CAST(CAST(lc.lifecyclesupportenddate AS DATE) AS VARCHAR) END)) extended_support_end
+         FROM
+           ("${data_collection_database_name}".rds_db_major_engine_versions
+         CROSS JOIN UNNEST(supportedenginelifecycles) t (lc))
+         GROUP BY engine, majorengineversion
+      )
       SELECT
-        rds_analysis_data.dbinstanceidentifier
-      , rds_analysis_data.dbinstanceclass
-      , rds_analysis_data.engine
-      , rds_analysis_data.dbinstancestatus
-      , rds_analysis_data.endpoint
-      , rds_analysis_data.allocatedstorage
-      , rds_analysis_data.instancecreatetime
-      , rds_analysis_data.preferredbackupwindow
-      , rds_analysis_data.backupretentionperiod
-      , rds_analysis_data.dbsecuritygroups
-      , rds_analysis_data.dbparametergroups
-      , rds_analysis_data.preferredmaintenancewindow
-      , rds_analysis_data.latestrestorabletime
-      , rds_analysis_data.multiaz
-      , rds_analysis_data.engineversion
-      , rds_analysis_data.autominorversionupgrade
-      , rds_analysis_data.licensemodel
-      , rds_analysis_data.publiclyaccessible
-      , rds_analysis_data.storageencrypted
-      , rds_analysis_data.dbiresourceid
-      , rds_analysis_data.cacertificateidentifier
-      , rds_analysis_data.dbinstancearn
-      , rds_analysis_data.performanceinsightsenabled
-      , rds_analysis_data.deletionprotection
-      , rds_analysis_data.maxallocatedstorage
-      , rds_analysis_data.certificatedetails
-      , rds_analysis_data.accountid
-      , organization_data.name "accountname"
-      , rds_analysis_data.collection_date
-      , rds_analysis_data.region
-      , rds_analysis_data.current_major_version
-      , rds_analysis_data.latest_major_version
-      , rds_analysis_data."latest_major_version_n-1" "latest_major_version_N-1"
-      , rds_analysis_data."latest_major_version_n-2" "latest_major_version_N-2"
-      , rds_analysis_data.current_minor_version
-      , rds_analysis_data.latest_minor_version
-      , rds_analysis_data."latest_minor_version_n-1" "latest_minor_version_N-1"
-      , rds_analysis_data."latest_minor_version_n-2" "latest_minor_version_N-2"
-      , rds_analysis_data.dbclusteridentifier
-      , rds_analysis_data.engine_version_status
-      , rds_analysis_data.readreplicasourcedbinstanceidentifier
-      , array_join(transform(rds_analysis_data.taglist, (x) -> concat(concat(x.Key, ':'), x.Value)), ', ') taglist
-      , rds_analysis_data.payer_id
-      , rds_analysis_data.year
-      , rds_analysis_data.month
-      , rds_analysis_data.day
+        i.dbinstanceidentifier
+      , i.dbinstanceclass
+      , i.engine
+      , i.dbinstancestatus
+      , i.endpoint
+      , i.allocatedstorage
+      , i.instancecreatetime
+      , i.preferredbackupwindow
+      , i.backupretentionperiod
+      , i.dbsecuritygroups
+      , i.dbparametergroups
+      , i.preferredmaintenancewindow
+      , i.multiaz
+      , i.engineversion
+      , i.autominorversionupgrade
+      , i.licensemodel
+      , i.publiclyaccessible
+      , i.storageencrypted
+      , i.dbiresourceid
+      , i.cacertificateidentifier
+      , i.dbinstancearn
+      , i.performanceinsightsenabled
+      , i.deletionprotection
+      , i.certificatedetails
+      , i.accountid
+      , i.maxallocatedstorage
+      , i.latestrestorabletime
+      , i.readreplicasourcedbinstanceidentifier
+      , i.taglist
+      , org.name accountname
+      , i.collection_date
+      , i.region
+      , cm.dbclusteridentifier
+      , vs.majorengineversion current_major_version
+      , emaj.latest_major_version
+      , emaj."latest_major_version_N-1"
+      , emaj."latest_major_version_N-2"
+      , i.engineversion current_minor_version
+      , emin.latest_minor_version
+      , emin."latest_minor_version_N-1"
+      , emin."latest_minor_version_N-2"
+      , COALESCE(vs.engine_version_status, 'Unknown') engine_version_status
+      , (CASE WHEN (eos.standard_support_end IS NULL) THEN 'Standard Support' WHEN (CAST(eos.standard_support_end AS DATE) > current_date) THEN 'Standard Support' WHEN ((eos.extended_support_end IS NOT NULL) AND (CAST(eos.extended_support_end AS DATE) > current_date)) THEN 'Extended Support' ELSE 'End of Extended Support' END) rds_support_status
+      , eos.standard_support_start
+      , eos.standard_support_end
+      , eos.extended_support_start
+      , eos.extended_support_end
+      , i.payer_id
+      , i.year
+      , i.month
+      , i.day
       FROM
-        ("optimization_data".rds_analysis_data
-      LEFT JOIN "optimization_data".organization_data ON (rds_analysis_data.accountid = organization_data.id))
-  rds_analysis_endofsupport_view:
+        (((((("${data_collection_database_name}".inventory_rds_db_instances_data i
+      LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
+      LEFT JOIN "${data_collection_database_name}".organization_data org ON (i.accountid = org.id))
+      LEFT JOIN version_status_lookup vs ON ((i.engine = vs.engine) AND (i.engineversion = vs.engineversion)))
+      LEFT JOIN engine_major_versions emaj ON (i.engine = emaj.engine))
+      LEFT JOIN engine_minor_versions emin ON ((i.engine = emin.engine) AND (vs.majorengineversion = emin.majorengineversion)))
+      LEFT JOIN eos_data eos ON ((i.engine = eos.engine) AND (vs.majorengineversion = eos.majorengineversion)))
+    parameters:
+      data_collection_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_instances_data'
+        error: "Prerequisites not found. Ensure CID Data Collection is installed with RDS inventory module enabled."
+  rds_maintenance_view:
     data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".rds_analysis_endofsupport_view AS
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_maintenance_view AS
+      WITH
+        cluster_members AS (
+         SELECT DISTINCT
+           c.accountid
+         , c.region
+         , c.dbclusteridentifier
+         , m.dbinstanceidentifier
+         FROM
+           ("${data_collection_database_name}".inventory_rds_db_clusters_data c
+         CROSS JOIN UNNEST(c.dbclustermembers) t (m))
+      )
+      , version_status_lookup AS (
+         SELECT DISTINCT
+           engine
+         , engineversion
+         , majorengineversion
+         , status engine_version_status
+         FROM
+           "${data_collection_database_name}".rds_db_engine_versions
+      )
+      , ranked_major_versions AS (
+         SELECT DISTINCT
+           engine
+         , majorengineversion
+         , DENSE_RANK() OVER (PARTITION BY engine ORDER BY CAST(SPLIT_PART(majorengineversion, '.', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(SPLIT_PART(majorengineversion, '.', 2), ''), '0') AS INTEGER) DESC) major_rank
+         FROM
+           "${data_collection_database_name}".rds_db_engine_versions
+         WHERE ((status = 'available') AND ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL)))
+      )
+      , engine_major_versions AS (
+         SELECT
+           engine
+         , MAX((CASE WHEN (major_rank = 1) THEN majorengineversion END)) latest_major_version
+         FROM
+           ranked_major_versions
+         WHERE (major_rank <= 3)
+         GROUP BY engine
+      )
+      , ranked_minor_versions AS (
+         SELECT DISTINCT
+           engine
+         , majorengineversion
+         , engineversion
+         , DENSE_RANK() OVER (PARTITION BY engine, majorengineversion ORDER BY CAST(REGEXP_EXTRACT(engineversion, '^(\d+)', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, engineversion DESC) minor_rank
+         FROM
+           "${data_collection_database_name}".rds_db_engine_versions
+         WHERE ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL))
+      )
+      , engine_minor_versions AS (
+         SELECT
+           engine
+         , majorengineversion
+         , MAX((CASE WHEN (minor_rank = 1) THEN engineversion END)) latest_minor_version
+         FROM
+           ranked_minor_versions
+         WHERE (minor_rank <= 3)
+         GROUP BY engine, majorengineversion
+      )
       SELECT
-        rds_analysis_data.accountid
-      , rds_analysis_data.dbinstanceidentifier
-      , rds_analysis_data.dbclusteridentifier
-      , rds_analysis_data.engine
-      , rds_analysis_data.engineversion
-      , rds_analysis_data.region
-      , rds_analysis_data.dbinstancestatus
-      , rds_analysis_data.endpoint
-      , rds_analysis_data.autominorversionupgrade
-      , rds_analysis_data.preferredbackupwindow
-      , rds_analysis_data.preferredmaintenancewindow
-      , rds_analysis_data.latestrestorabletime
-      , rds_analysis_data.backupretentionperiod
-      , rds_analysis_data.current_major_version
-      , rds_analysis_data.latest_major_version
-      , rds_analysis_data."latest_major_version_n-1" "latest_major_version_N-1"
-      , rds_analysis_data."latest_major_version_n-2" "latest_major_version_N-2"
-      , rds_analysis_data.current_minor_version
-      , rds_analysis_data.latest_minor_version
-      , rds_analysis_data."latest_minor_version_n-1" "latest_minor_version_N-1"
-      , rds_analysis_data."latest_minor_version_n-2" "latest_minor_version_N-2"
-      , rds_analysis_data.engine_version_status
-      , rds_analysis_data.collection_date
-      , rds_analysis_data.year
-      , rds_analysis_data.month
-      , rds_analysis_data.day
-      , rds_endofsupport_data.engine rdseos_engine
-      , rds_endofsupport_data.major_version
-      , rds_endofsupport_data.collection_date rdseos_collection_date
-      , rds_endofsupport_data.standard_support_start
-      , rds_endofsupport_data.standard_support_end
-      , rds_endofsupport_data.extended_support_start
-      , rds_endofsupport_data.extended_support_end
-      , (CASE WHEN (rds_endofsupport_data.standard_support_end = '') THEN 'Not Applicable' WHEN (current_date < date(rds_endofsupport_data.standard_support_end)) THEN 'Standard Support' WHEN ((rds_endofsupport_data.extended_support_end <> '') AND (current_date < date(rds_endofsupport_data.extended_support_end))) THEN 'Extended Support' ELSE 'Support Ended' END) rds_support_status
+        i.dbinstanceidentifier
+      , i.engine
+      , i.dbinstancestatus
+      , i.multiaz
+      , i.engineversion
+      , i.autominorversionupgrade
+      , i.accountid
+      , org.name accountname
+      , i.collection_date
+      , i.region
+      , vs.majorengineversion current_major_version
+      , emaj.latest_major_version
+      , i.engineversion current_minor_version
+      , emin.latest_minor_version
+      , cm.dbclusteridentifier
+      , vs.engine_version_status
+      , m.action
+      , m.description
+      , m.currentapplydate
+      , m.autoappliedafterdate
+      , m.forcedapplydate
+      , m.optinstatus
+      , i.payer_id
+      , i.year
+      , i.month
+      , i.day
       FROM
-        "optimization_data".rds_analysis_data
-      , "optimization_data".rds_endofsupport_data
-      WHERE ((rds_analysis_data.engine = rds_endofsupport_data.engine) AND (rds_analysis_data.current_major_version = rds_endofsupport_data.major_version) AND (DATE(CAST(rds_analysis_data.collection_date AS timestamp)) = DATE(CAST(rds_endofsupport_data.collection_date AS timestamp))))
-  rds_analysis_maintenance_view:
+        (((((("${data_collection_database_name}".inventory_rds_db_instances_data i
+      LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
+      LEFT JOIN "${data_collection_database_name}".organization_data org ON (i.accountid = org.id))
+      LEFT JOIN version_status_lookup vs ON ((i.engine = vs.engine) AND (i.engineversion = vs.engineversion)))
+      LEFT JOIN engine_major_versions emaj ON (i.engine = emaj.engine))
+      LEFT JOIN engine_minor_versions emin ON ((i.engine = emin.engine) AND (vs.majorengineversion = emin.majorengineversion)))
+      LEFT JOIN "${data_collection_database_name}".rds_maintenance_data m ON ((m.resourceidentifier = i.dbinstancearn) AND (m.accountid = i.accountid) AND (date(CAST(m.collection_date AS timestamp)) = date(CAST(i.collection_date AS timestamp))) AND (m.region = i.region) AND (m.payer_id = i.payer_id)))
+    parameters:
+      data_collection_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_instances_data'
+        error: "Prerequisites not found. Ensure CID Data Collection is installed with RDS inventory module enabled."
+  rds_tags_view:
     data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".rds_analysis_maintenance_view AS
-      SELECT
-        rds_analysis_data.dbinstanceidentifier
-      , rds_analysis_data.engine
-      , rds_analysis_data.dbinstancestatus
-      , rds_analysis_data.multiaz
-      , rds_analysis_data.engineversion
-      , rds_analysis_data.autominorversionupgrade
-      , rds_analysis_data.accountid
-      , organization_data.name "accountname"
-      , rds_analysis_data.collection_date
-      , rds_analysis_data.region
-      , rds_analysis_data.current_major_version
-      , rds_analysis_data.latest_major_version
-      , rds_analysis_data.current_minor_version
-      , rds_analysis_data.latest_minor_version
-      , rds_analysis_data.dbclusteridentifier
-      , rds_analysis_data.engine_version_status
-      , array_join(transform(rds_analysis_data.taglist, (x) -> concat(concat(x.Key, ':'), x.Value)), ', ') taglist
-      , rds_maintenance_data.action
-      , rds_maintenance_data.description
-      , rds_maintenance_data.currentapplydate
-      , rds_maintenance_data.autoappliedafterdate
-      , rds_maintenance_data.forcedapplydate
-      , rds_maintenance_data.optinstatus
-      , rds_analysis_data.payer_id
-      , rds_analysis_data.year
-      , rds_analysis_data.month
-      , rds_analysis_data.day
-      FROM
-        (("optimization_data".rds_analysis_data
-      LEFT JOIN "optimization_data".organization_data ON (rds_analysis_data.accountid = organization_data.id))
-      LEFT JOIN "optimization_data".rds_maintenance_data ON ((rds_maintenance_data.resourceidentifier = rds_analysis_data.dbinstancearn) AND (rds_maintenance_data.accountid = rds_analysis_data.accountid) AND (date(CAST(rds_maintenance_data.collection_date AS timestamp)) = date(CAST(rds_analysis_data.collection_date AS timestamp))) AND (rds_maintenance_data.region = rds_analysis_data.region) AND (rds_maintenance_data.payer_id = rds_analysis_data.payer_id)))
-  rds_analysis_tags_view:
-    data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".rds_analysis_tags_view AS
+      CREATE OR REPLACE VIEW "${athena_database_name}".rds_tags_view AS
       SELECT DISTINCT
-        a.dbinstanceidentifier
-      , a.dbinstancearn
+        i.dbinstanceidentifier
+      , i.dbinstancearn
       , concat(tag.Key, ':', tag.Value) tag_info
       FROM
-        ("optimization_data".rds_analysis_data a
-      CROSS JOIN UNNEST(a.taglist) t (tag))
+        ("${data_collection_database_name}".inventory_rds_db_instances_data i
+      CROSS JOIN UNNEST(i.taglist) t (tag))
       WHERE (tag.Key <> '')
+    parameters:
+      data_collection_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_instances_data'
+        error: "Prerequisites not found. Ensure CID Data Collection is installed with RDS inventory module enabled."
   rds_aurora_io_optimized_view:
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".rds_aurora_io_optimized_view AS
@@ -1183,6 +1243,11 @@ views:
       , (CASE WHEN (((io_cost / ((compute_cost + io_cost) + storage_cost)) * 100) > 25) THEN 'Aurora IO Optimized - Recommended' WHEN (((io_cost / ((compute_cost + io_cost) + storage_cost)) * 100) > 15) THEN 'Aurora IO Optimized - Review' ELSE 'Aurora IO Optimized - Not Recommended' END) recommendation
       FROM
         aggregated
+    parameters:
+      data_collection_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_instances_data'
+        error: "Prerequisites not found. Ensure CID Data Collection is installed with RDS inventory module enabled."
   rds_cost_summary_view:
     dependsOn:
       views:

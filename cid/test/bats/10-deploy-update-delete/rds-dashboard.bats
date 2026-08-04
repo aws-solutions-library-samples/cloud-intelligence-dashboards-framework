@@ -5,9 +5,9 @@ database_name="${database_name:-optimization_data}" # If variable not set or nul
 quicksight_group="${quicksight_group:-cid-owners}" # If variable not set or null, use default
 quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If variable not set or null, use default
 
-@test "Install RDS Health Dashboard" {
+@test "Install RDS Dashboard" {
   run cid-cmd -vv deploy  \
-    --dashboard-id rds-health-dashboard \
+    --dashboard-id rds-dashboard \
     --athena-database $database_name\
     --athena-workgroup primary\
     --quicksight-group $quicksight_group \
@@ -17,47 +17,38 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
   [ "$status" -eq 0 ]
 }
 
-@test "Views created - rds_analysis_daily_backup_view" {
+@test "Views created - rds_inventory_view" {
   run aws athena get-table-metadata \
     --catalog-name 'AwsDataCatalog'\
     --database-name $database_name \
-    --table-name 'rds_analysis_daily_backup_view'
+    --table-name 'rds_inventory_view'
 
   [ "$status" -eq 0 ]
 }
 
-@test "Views created - rds_analysis_dist_view" {
+@test "Views created - rds_backup_view" {
   run aws athena get-table-metadata \
     --catalog-name 'AwsDataCatalog'\
     --database-name $database_name \
-    --table-name 'rds_analysis_dist_view'
+    --table-name 'rds_backup_view'
 
   [ "$status" -eq 0 ]
 }
 
-@test "Views created - rds_analysis_endofsupport_view" {
+@test "Views created - rds_maintenance_view" {
   run aws athena get-table-metadata \
     --catalog-name 'AwsDataCatalog'\
     --database-name $database_name \
-    --table-name 'rds_analysis_endofsupport_view'
+    --table-name 'rds_maintenance_view'
 
   [ "$status" -eq 0 ]
 }
 
-@test "Views created - rds_analysis_maintenance_view" {
+@test "Views created - rds_tags_view" {
   run aws athena get-table-metadata \
     --catalog-name 'AwsDataCatalog'\
     --database-name $database_name \
-    --table-name 'rds_analysis_maintenance_view'
-
-  [ "$status" -eq 0 ]
-}
-
-@test "Views created - rds_analysis_tags_view" {
-  run aws athena get-table-metadata \
-    --catalog-name 'AwsDataCatalog'\
-    --database-name $database_name \
-    --table-name 'rds_analysis_tags_view'
+    --table-name 'rds_tags_view'
 
   [ "$status" -eq 0 ]
 }
@@ -80,42 +71,34 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
   [ "$status" -eq 0 ]
 }
 
-@test "Dataset created - rds_analysis_daily_backup_dataset" {
+@test "Dataset created - rds_inventory_dataset" {
   run aws quicksight describe-data-set \
     --aws-account-id $account_id \
-    --data-set-id rds_analysis_daily_backup_dataset
+    --data-set-id rds_inventory_dataset
 
   [ "$status" -eq 0 ]
 }
 
-@test "Dataset created - rds_analysis_dataset" {
+@test "Dataset created - rds_backup_dataset" {
   run aws quicksight describe-data-set \
     --aws-account-id $account_id \
-    --data-set-id rds_analysis_dataset
+    --data-set-id rds_backup_dataset
 
   [ "$status" -eq 0 ]
 }
 
-@test "Dataset created - rds_analysis_endofsupport_dataset" {
+@test "Dataset created - rds_maintenance_dataset" {
   run aws quicksight describe-data-set \
     --aws-account-id $account_id \
-    --data-set-id rds_analysis_endofsupport_dataset
+    --data-set-id rds_maintenance_dataset
 
   [ "$status" -eq 0 ]
 }
 
-@test "Dataset created - rds_analysis_maintenance_dataset" {
+@test "Dataset created - rds_tags_dataset" {
   run aws quicksight describe-data-set \
     --aws-account-id $account_id \
-    --data-set-id rds_analysis_maintenance_dataset
-
-  [ "$status" -eq 0 ]
-}
-
-@test "Dataset created - rds_analysis_tags_dataset" {
-  run aws quicksight describe-data-set \
-    --aws-account-id $account_id \
-    --data-set-id rds_analysis_tags_dataset
+    --data-set-id rds_tags_dataset
 
   [ "$status" -eq 0 ]
 }
@@ -139,14 +122,14 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
 @test "Dashboard created" {
   run aws quicksight describe-dashboard \
     --aws-account-id $account_id \
-    --dashboard-id rds-health-dashboard
+    --dashboard-id rds-dashboard
 
   [ "$status" -eq 0 ]
 }
 
 @test "Update works" {
   run cid-cmd -vv --yes update --force --recursive  \
-    --dashboard-id rds-health-dashboard \
+    --dashboard-id rds-dashboard \
     --athena-database $database_name\
     --athena-workgroup primary\
     --quicksight-group $quicksight_group \
@@ -160,7 +143,7 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
   run cid-cmd -vv --yes delete \
     --athena-database $database_name\
     --athena-workgroup primary\
-    --dashboard-id rds-health-dashboard
+    --dashboard-id rds-dashboard
 
   [ "$status" -eq 0 ]
 }
@@ -168,7 +151,7 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
 @test "Dashboard is deleted" {
   run aws quicksight describe-dashboard \
     --aws-account-id $account_id \
-    --dashboard-id rds-health-dashboard
+    --dashboard-id rds-dashboard
 
   [ "$status" -ne 0 ]
 }
@@ -177,7 +160,7 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
   skip "Datasets may be shared with other dashboards"
   run aws quicksight describe-data-set \
     --aws-account-id $account_id \
-    --data-set-id rds_analysis_dataset
+    --data-set-id rds_inventory_dataset
 
   [ "$status" -ne 0 ]
 }
@@ -187,7 +170,7 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
   run aws athena get-table-metadata \
     --catalog-name 'AwsDataCatalog'\
     --database-name $database_name \
-    --table-name 'rds_analysis_dist_view'
+    --table-name 'rds_inventory_view'
 
   [ "$status" -ne 0 ]
 }
