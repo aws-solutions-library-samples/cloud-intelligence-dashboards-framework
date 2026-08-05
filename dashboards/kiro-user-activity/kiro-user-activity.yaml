@@ -3,6 +3,7 @@ dashboards:
     dependsOn:
       datasets:
       - kiro_user_activity
+      - kiro_cur_view
     name: Kiro User Activity Dashboard
     dashboardId: kiro-user-activity
     category: Advanced
@@ -82,8 +83,10 @@ datasets:
           DataTransforms:
           - CreateColumnsOperation:
               Columns:
-              - ColumnName: report_date
-                ColumnId: col-report-date
+              # Standardized date column name shared with kiro_cur_view so a single
+              # cross-dataset "Lookback period" control scopes both datasets.
+              - ColumnName: usage_date
+                ColumnId: col-usage-date
                 Expression: parseDate({date}, "yyyy-MM-dd")
           - CreateColumnsOperation:
               Columns:
@@ -158,7 +161,7 @@ datasets:
           - ProjectOperation:
               ProjectedColumns:
               - date
-              - report_date
+              - usage_date
               - userid
               - user
               - user_email
@@ -188,6 +191,78 @@ datasets:
       - kiro_user_activity_view
     schedules:
     - default
+  # CUR-backed dataset. The Kiro user-activity CSV only contains users who were
+  # active (it has no notion of a subscribed-but-idle user), so subscription
+  # counts and the active/inactive split have to come from billing data. This
+  # dataset powers the Total Subscriptions / Active / Inactive Kiro Users KPIs,
+  # mirroring the "Kiro and Amazon Q Developer Summary" widget in CUDOS.
+  kiro_cur_view:
+    data:
+      DataSetId: 3d6c8f21-4b9a-4e77-8f0c-1a2b3c4d5e6f
+      Name: kiro_cur_view
+      ImportMode: SPICE
+      PhysicalTableMap:
+        7c1f2a3b-9d84-4c1e-bf20-5a6b7c8d9e01:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: kiro_cur_view
+            InputColumns:
+            - Name: usage_date
+              Type: DATETIME
+            - Name: payer_account_id
+              Type: STRING
+            - Name: account_id
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: resource_id
+              Type: STRING
+            - Name: product_code
+              Type: STRING
+            - Name: operation
+              Type: STRING
+            - Name: charge_type
+              Type: STRING
+            - Name: usage_type
+              Type: STRING
+            - Name: pricing_unit
+              Type: STRING
+            - Name: subscription_type
+              Type: STRING
+            - Name: usage_quantity
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+      LogicalTableMap:
+        2b4d6f8a-1c3e-4a5b-8d7f-0e1a2b3c4d5f:
+          Alias: kiro_cur_view
+          Source:
+            PhysicalTableId: 7c1f2a3b-9d84-4c1e-bf20-5a6b7c8d9e01
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - usage_date
+              - payer_account_id
+              - account_id
+              - region
+              - resource_id
+              - product_code
+              - operation
+              - charge_type
+              - usage_type
+              - pricing_unit
+              - subscription_type
+              - usage_quantity
+              - unblended_cost
+    dependsOn:
+      views:
+      - kiro_cur_view
+    schedules:
+    - default
 crawlers: {}
 views:
   kiro_user_activity_view:
@@ -206,3 +281,59 @@ views:
             '%Y-%m-%d'
           ) AS date
         ) >= date_add('year', -2, current_date)
+  kiro_cur_view:
+    # Kiro billing slice of CUR 2.0, modeled on the CUDOS `resource_view` (NOT
+    # `summary_view`): rows stay at one-per-resource_id granularity because each
+    # subscribed Kiro user surfaces as a distinct line_item_resource_id, and the
+    # KPIs need DISTINCT_COUNT(resource_id) plus a per-user pricing_unit='Credits'
+    # test. `summary_view` aggregates resource_id away, so it can't drive these.
+    #
+    # This reproduces the "Kiro and Amazon Q Developer Summary" logic from CUDOS:
+    #   - Total Subscriptions = distinct resource_id where product_code='Kiro'
+    #   - Active   = users with at least one Credits line   (Kiro User Has Credits Usage = True)
+    #   - Inactive = users with zero Credits lines          (= False)
+    # Bounded to 18 months to keep SPICE refresh and Athena scans performant.
+    dependsOn:
+      cur2:
+        - bill_payer_account_id
+        - line_item_usage_account_id
+        - line_item_usage_start_date
+        - line_item_resource_id
+        - line_item_product_code
+        - line_item_operation
+        - line_item_line_item_type
+        - line_item_usage_type
+        - line_item_usage_amount
+        - line_item_unblended_cost
+        - pricing_unit
+        - product['region']
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".kiro_cur_view AS
+      SELECT DISTINCT
+        "date_trunc"('day', "line_item_usage_start_date") "usage_date"
+      , "bill_payer_account_id" "payer_account_id"
+      , "line_item_usage_account_id" "account_id"
+      , product['region'] "region"
+      , "line_item_resource_id" "resource_id"
+      , "line_item_product_code" "product_code"
+      , "line_item_operation" "operation"
+      , "line_item_line_item_type" "charge_type"
+      , "line_item_usage_type" "usage_type"
+      , "pricing_unit" "pricing_unit"
+      , CASE
+          WHEN "line_item_usage_type" LIKE '%KiroEnterprise-Pro' THEN 'Kiro Enterprise Pro Subscription'
+          WHEN "line_item_usage_type" LIKE '%KiroEnterprise-ProPlus' THEN 'Kiro Enterprise Pro Plus Subscription'
+          WHEN "line_item_usage_type" LIKE '%KiroEnterprise-Power' THEN 'Kiro Enterprise Power Subscription'
+          WHEN "line_item_usage_type" LIKE '%KiroEnterprise-Credits' THEN 'Kiro Enterprise Credits'
+          ELSE "line_item_operation"
+        END "subscription_type"
+      , "sum"("line_item_usage_amount") "usage_quantity"
+      , "sum"("line_item_unblended_cost") "unblended_cost"
+      FROM
+        "${cur2_database}"."${cur2_table_name}"
+      WHERE
+        "line_item_product_code" = 'Kiro'
+        AND coalesce("line_item_operation", '') <> 'q-developer-snapshot'
+        AND "line_item_resource_id" <> ''
+        AND "line_item_usage_start_date" >= (current_date - INTERVAL '18' MONTH)
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11

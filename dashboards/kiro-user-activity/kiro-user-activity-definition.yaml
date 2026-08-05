@@ -4,10 +4,10 @@ CalculatedFields:
   Name: at_risk_flag
 - DataSetIdentifier: kiro_user_activity
   Expression: ifelse({plan_credits} > 0, sumOver({credits_used_num}, [userid, truncDate("MM",
-    {report_date})], PRE_AGG) / {plan_credits}, 0)
+    {usage_date})], PRE_AGG) / {plan_credits}, 0)
   Name: monthly_plan_utilization_pct
 - DataSetIdentifier: kiro_user_activity
-  Expression: sumOver({overage_credits_used_num}, [userid, truncDate("MM", {report_date})],
+  Expression: sumOver({overage_credits_used_num}, [userid, truncDate("MM", {usage_date})],
     PRE_AGG)
   Name: monthly_overage_credits
 # Tier right-sizing based on MONTHLY utilization (Kiro bills per calendar month).
@@ -28,6 +28,18 @@ CalculatedFields:
       'Right-Sized'
     )
   Name: tier_recommendation_monthly
+# CUR-backed active/inactive split, ported from the CUDOS "Kiro and Amazon Q
+# Developer Summary" widget. A subscribed user (one resource_id) is "Active" if
+# they have at least one Credits line in the window, "False" (inactive) if none.
+# The activity CSV can't express this - it only has users who did something.
+- DataSetIdentifier: kiro_cur_view
+  Expression: |-
+    ifelse(
+        sumOver(ifelse({pricing_unit} = 'Credits', 1, 0), [{resource_id}], PRE_AGG) = 0,
+        'False',
+        'True'
+    )
+  Name: Kiro User Has Credits Usage
 ColumnConfigurations:
 - Column:
     ColumnName: credits_per_message
@@ -88,15 +100,17 @@ ColumnConfigurations:
 DataSetIdentifierDeclarations:
 - DataSetArn: arn:aws:quicksight:::dataset/6ec4cfba-7ad1-43e2-9485-c2e027855025
   Identifier: kiro_user_activity
+- DataSetArn: arn:aws:quicksight:::dataset/3d6c8f21-4b9a-4e77-8f0c-1a2b3c4d5e6f
+  Identifier: kiro_cur_view
 FilterGroups:
-- CrossDataset: SINGLE_DATASET
+- CrossDataset: ALL_DATASETS
   FilterGroupId: fg-date-global
   Filters:
   - RelativeDatesFilter:
       AnchorDateConfiguration:
         AnchorOption: NOW
       Column:
-        ColumnName: report_date
+        ColumnName: usage_date
         DataSetIdentifier: kiro_user_activity
       DefaultFilterControlConfiguration:
         ControlOptions:
@@ -295,6 +309,52 @@ FilterGroups:
         VisualIds:
         - 1d7afd39-eec5-40fc-9da3-2f060a0648a8
   Status: ENABLED
+# Active-user scope for the "Total Active Kiro Users" KPI: users (resource_id)
+# with at least one Credits line in the window. Ported from CUDOS.
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-kiro-active-users
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: Kiro User Has Credits Usage
+        DataSetIdentifier: kiro_cur_view
+      Configuration:
+        CustomFilterConfiguration:
+          CategoryValue: 'True'
+          MatchOperator: EQUALS
+          NullOption: NON_NULLS_ONLY
+      FilterId: filter-kiro-active-users
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 8b044d5a-3941-4e30-be58-fa08a3770aba
+        VisualIds:
+        - kpi-active-users
+  Status: ENABLED
+# Inactive-user scope for the "Total Inactive Kiro Users" KPI: subscribed users
+# (resource_id) with zero Credits lines in the window. Ported from CUDOS.
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-kiro-inactive-users
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: Kiro User Has Credits Usage
+        DataSetIdentifier: kiro_cur_view
+      Configuration:
+        CustomFilterConfiguration:
+          CategoryValue: 'False'
+          MatchOperator: EQUALS
+          NullOption: NON_NULLS_ONLY
+      FilterId: filter-kiro-inactive-users
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 8b044d5a-3941-4e30-be58-fa08a3770aba
+        VisualIds:
+        - kpi-inactive-users
+  Status: ENABLED
 ParameterDeclarations: []
 Sheets:
 - ContentType: INTERACTIVE
@@ -328,33 +388,45 @@ Sheets:
           ElementType: TEXT_BOX
           RowIndex: 0
           RowSpan: 2
+        # Headline KPI row. First three are CUR-backed subscription counts
+        # (ported from the CUDOS Kiro summary widget); the "Active" count
+        # replaces the former activity-CSV "Active Users" KPI, which undercounted
+        # because the CSV only contains users who generated activity, not the
+        # authoritative subscription roster. The former "New Users" KPI was
+        # dropped in favour of the "Inactive" count.
         - ColumnIndex: 0
-          ColumnSpan: 7
-          ElementId: 50fe68a8-66f8-4c71-965b-faf52256a28b
+          ColumnSpan: 6
+          ElementId: kpi-total-subs
           ElementType: VISUAL
           RowIndex: 2
           RowSpan: 3
-        - ColumnIndex: 7
-          ColumnSpan: 7
+        - ColumnIndex: 6
+          ColumnSpan: 6
+          ElementId: kpi-active-users
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 3
+        - ColumnIndex: 12
+          ColumnSpan: 6
+          ElementId: kpi-inactive-users
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 3
+        - ColumnIndex: 18
+          ColumnSpan: 6
           ElementId: 5ed267ef-42db-4175-ae58-15852829ce13
           ElementType: VISUAL
           RowIndex: 2
           RowSpan: 3
-        - ColumnIndex: 14
-          ColumnSpan: 8
+        - ColumnIndex: 24
+          ColumnSpan: 6
           ElementId: de966e5f-2d57-4931-8e15-dc8bd47cbdea
           ElementType: VISUAL
           RowIndex: 2
           RowSpan: 3
-        - ColumnIndex: 22
-          ColumnSpan: 7
+        - ColumnIndex: 30
+          ColumnSpan: 6
           ElementId: a400ed3d-9038-4a09-a22d-4a9c92a2da12
-          ElementType: VISUAL
-          RowIndex: 2
-          RowSpan: 3
-        - ColumnIndex: 29
-          ColumnSpan: 7
-          ElementId: dc09913c-f175-470f-9c14-03b19cdebaf2
           ElementType: VISUAL
           RowIndex: 2
           RowSpan: 3
@@ -405,6 +477,104 @@ Sheets:
       \ and overage.\n</text-box>"
     SheetTextBoxId: bf7f0bcb-5618-40f2-b256-c858633a5218
   Visuals:
+  # CUR-backed subscription KPIs, ported from the CUDOS "Kiro and Amazon Q
+  # Developer Summary" widget. Each subscribed user is one distinct resource_id
+  # in CUR; the active/inactive split comes from the Kiro User Has Credits Usage
+  # calc field. These scope to the shared Lookback period via usage_date.
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: resource_id
+                DataSetIdentifier: kiro_cur_view
+              FieldId: kpi-total-subs-val
+        KPIOptions:
+          PrimaryValueDisplayType: ACTUAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Selected period</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Total Kiro Subscriptions</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: kpi-total-subs
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: resource_id
+                DataSetIdentifier: kiro_cur_view
+              FieldId: kpi-active-users-val
+        KPIOptions:
+          PrimaryValueDisplayType: ACTUAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Selected period</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Total Active Kiro Users</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: kpi-active-users
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: resource_id
+                DataSetIdentifier: kiro_cur_view
+              FieldId: kpi-inactive-users-val
+        KPIOptions:
+          PrimaryValueDisplayType: ACTUAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      ConditionalFormatting:
+        ConditionalFormattingOptions:
+        - ActualValue:
+            TextColor:
+              Solid:
+                Color: '#DE3B00'
+                Expression: DISTINCT_COUNT({resource_id}) > 0
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Selected period</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Total Inactive Kiro Users</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: kpi-inactive-users
   - BarChartVisual:
       Actions:
       - ActionOperations:
@@ -429,7 +599,7 @@ Sheets:
             Category:
             - DateDimensionField:
                 Column:
-                  ColumnName: report_date
+                  ColumnName: usage_date
                   DataSetIdentifier: kiro_user_activity
                 FieldId: col-report-date.2.1783435216420
                 HierarchyId: 857fc968-acc7-40e9-910b-b225d399ff99
@@ -519,7 +689,7 @@ Sheets:
             Category:
             - DateDimensionField:
                 Column:
-                  ColumnName: report_date
+                  ColumnName: usage_date
                   DataSetIdentifier: kiro_user_activity
                 FieldId: col-report-date.1.1783435188825
                 HierarchyId: f4675419-56e3-4f96-a5b8-21fd6df5024d
@@ -660,31 +830,6 @@ Sheets:
           TargetValues: []
           TrendGroups: []
           Values:
-          - CategoricalMeasureField:
-              AggregationFunction: DISTINCT_COUNT
-              Column:
-                ColumnName: userid
-                DataSetIdentifier: kiro_user_activity
-              FieldId: kpi-users-val
-        SortConfiguration: {}
-      ColumnHierarchies: []
-      Subtitle:
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: |-
-            <visual-title>
-              <inline font-size="14px">Active Users</inline>
-            </visual-title>
-        Visibility: VISIBLE
-      VisualId: 50fe68a8-66f8-4c71-965b-faf52256a28b
-  - KPIVisual:
-      Actions: []
-      ChartConfiguration:
-        FieldWells:
-          TargetValues: []
-          TrendGroups: []
-          Values:
           - NumericalMeasureField:
               AggregationFunction:
                 SimpleNumericalAggregation: SUM
@@ -766,32 +911,6 @@ Sheets:
             </visual-title>
         Visibility: VISIBLE
       VisualId: a400ed3d-9038-4a09-a22d-4a9c92a2da12
-  - KPIVisual:
-      Actions: []
-      ChartConfiguration:
-        FieldWells:
-          TargetValues: []
-          TrendGroups: []
-          Values:
-          - NumericalMeasureField:
-              AggregationFunction:
-                SimpleNumericalAggregation: SUM
-              Column:
-                ColumnName: is_new_user
-                DataSetIdentifier: kiro_user_activity
-              FieldId: kpi-new-users-val
-        SortConfiguration: {}
-      ColumnHierarchies: []
-      Subtitle:
-        Visibility: VISIBLE
-      Title:
-        FormatText:
-          RichText: |-
-            <visual-title>
-              <inline font-size="14px">New Users</inline>
-            </visual-title>
-        Visibility: VISIBLE
-      VisualId: dc09913c-f175-470f-9c14-03b19cdebaf2
   - BarChartVisual:
       Actions:
       - ActionOperations:
@@ -818,7 +937,7 @@ Sheets:
             Category:
             - DateDimensionField:
                 Column:
-                  ColumnName: report_date
+                  ColumnName: usage_date
                   DataSetIdentifier: kiro_user_activity
                 DateGranularity: DAY
                 FieldId: field-date-1
@@ -1093,7 +1212,7 @@ Sheets:
             Category:
             - DateDimensionField:
                 Column:
-                  ColumnName: report_date
+                  ColumnName: usage_date
                   DataSetIdentifier: kiro_user_activity
                 FieldId: col-report-date.2.1783423442399
                 HierarchyId: 5046d5c3-2002-4442-a153-42fa8e1e66f8
@@ -1245,7 +1364,7 @@ Sheets:
             Width: 161px
           - DataPathList:
             - FieldId: col-report-date.10.1783423815272
-              FieldValue: report_date
+              FieldValue: usage_date
             Width: 132px
           - DataPathList:
             - FieldId: field-util-t1
@@ -1292,7 +1411,7 @@ Sheets:
             Rows:
             - DateDimensionField:
                 Column:
-                  ColumnName: report_date
+                  ColumnName: usage_date
                   DataSetIdentifier: kiro_user_activity
                 FieldId: col-report-date.10.1783423815272
             - CategoricalDimensionField:
@@ -1472,7 +1591,7 @@ Sheets:
             Category:
             - DateDimensionField:
                 Column:
-                  ColumnName: report_date
+                  ColumnName: usage_date
                   DataSetIdentifier: kiro_user_activity
                 DateGranularity: DAY
                 FieldId: field-date-ov1
@@ -1740,7 +1859,7 @@ Sheets:
               TextColor:
                 Solid:
                   Color: '#DE3B00'
-                  Expression: minOver({monthly_plan_utilization_pct}, [userid, truncDate("MM", {report_date})], PRE_AGG) > 0.75
+                  Expression: minOver({monthly_plan_utilization_pct}, [userid, truncDate("MM", {usage_date})], PRE_AGG) > 0.75
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -1829,7 +1948,7 @@ Sheets:
             Category:
             - DateDimensionField:
                 Column:
-                  ColumnName: report_date
+                  ColumnName: usage_date
                   DataSetIdentifier: kiro_user_activity
                 DateGranularity: DAY
                 FieldId: field-date-m1
