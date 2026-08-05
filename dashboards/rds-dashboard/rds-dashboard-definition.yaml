@@ -51,8 +51,8 @@ CalculatedFields:
   Expression: parseDate({collection_date},'yyyy-MM-dd HH:mm:ss')
   Name: CollectionDay
 - DataSetIdentifier: rds_inventory_dataset
-  Expression: ifelse(performanceinsightsenabled=0,'False','True')
-  Name: DB / Perf Insights Status
+  Expression: ifelse(databaseinsightsmode='advanced','Advanced','Standard')
+  Name: Database Insights Mode
 - DataSetIdentifier: rds_inventory_dataset
   Expression: |-
     ifelse(
@@ -146,6 +146,9 @@ CalculatedFields:
 - DataSetIdentifier: rds_inventory_dataset
   Expression: ifelse(backupretentionperiod>0,1,0)
   Name: backup_enabled
+- DataSetIdentifier: rds_inventory_dataset
+  Expression: ifelse(databaseinsightsmode='advanced',1,0)
+  Name: db_insights_advanced_count
 - DataSetIdentifier: rds_inventory_dataset
   Expression: concat(accountid, '|', dbinstanceidentifier, '|', region)
   Name: distinct-dbinstanceidentifier
@@ -278,7 +281,7 @@ CalculatedFields:
   Expression: ifelse({Selected Minor Version Status}='True',1,0)
   Name: latest_minor_version_percent
 - DataSetIdentifier: rds_inventory_dataset
-  Expression: ifelse(multiaz=0,1,0)
+  Expression: ifelse(multiaz=1,1,0)
   Name: multiaz_enabled_status
 - DataSetIdentifier: rds_inventory_dataset
   Expression: |-
@@ -308,7 +311,7 @@ CalculatedFields:
   Expression: ifelse(storageencrypted=1,1,0)
   Name: storage_encrypted_status
 - DataSetIdentifier: rds_inventory_dataset
-  Expression: ifelse(storageencrypted=0,0,1)
+  Expression: ifelse(storageencrypted=0,1,0)
   Name: storage_unencrypted_status
 - DataSetIdentifier: rds_inventory_dataset
   Expression: ifelse(maxallocatedstorage <> 0,'True','False')
@@ -5205,7 +5208,7 @@ Sheets:
               AggregationFunction:
                 SimpleNumericalAggregation: SUM
               Column:
-                ColumnName: performanceinsightsenabled
+                ColumnName: db_insights_advanced_count
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: rds-analysis-logical.performanceinsightsenabled.0.1785127405049
         KPIOptions:
@@ -5235,7 +5238,7 @@ Sheets:
           RichText: |-
             <visual-title>
               <block align="center">
-                <inline font-size="15px">Total DB/Perf Insights Enabled</inline>
+                <inline font-size="15px">Total DB Insights Adv Mode</inline>
               </block>
               <br/>
               <block align="center">
@@ -5611,7 +5614,7 @@ Sheets:
                 FieldId: c63d921b-b5d0-442d-84bc-997f2bad2e48.9.1743735044579
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: DB / Perf Insights Status
+                  ColumnName: Database Insights Mode
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: c7ef0b3b-e6c7-4115-a88d-de137b9f84e1.10.1736874464157
             - CategoricalDimensionField:
@@ -5721,7 +5724,7 @@ Sheets:
               Icon:
                 CustomCondition:
                   Color: '#2CAD00'
-                  Expression: '{DB / Perf Insights Status} = "True"'
+                  Expression: '{Database Insights Mode} = "Advanced"'
                   IconOptions:
                     Icon: CIRCLE
         - Cell:
@@ -5730,7 +5733,7 @@ Sheets:
               Icon:
                 CustomCondition:
                   Color: '#FF8700'
-                  Expression: '{DB / Perf Insights Status} = "False"'
+                  Expression: '{Database Insights Mode} = "Standard"'
                   IconOptions:
                     Icon: CIRCLE
         - Cell:
@@ -6105,6 +6108,7 @@ Sheets:
               </block>
               <br/>
               <block align="center">
+                <inline font-size="15px">(</inline>
                 <inline font-size="15px">
                   <parameter>${pCollectionDate}</parameter>
                 </inline>

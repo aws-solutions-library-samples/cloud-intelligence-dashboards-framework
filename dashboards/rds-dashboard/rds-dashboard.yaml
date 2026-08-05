@@ -240,6 +240,8 @@ datasets:
               Type: STRING
             - Name: performanceinsightsenabled
               Type: BOOLEAN
+            - Name: databaseinsightsmode
+              Type: STRING
             - Name: deletionprotection
               Type: BOOLEAN
             - Name: certificatedetails
@@ -329,6 +331,7 @@ datasets:
               - cacertificateidentifier
               - dbinstancearn
               - performanceinsightsenabled
+              - databaseinsightsmode
               - deletionprotection
               - certificatedetails
               - accountid
@@ -971,6 +974,7 @@ views:
       , i.cacertificateidentifier
       , i.dbinstancearn
       , i.performanceinsightsenabled
+      , i.databaseinsightsmode
       , i.deletionprotection
       , i.certificatedetails
       , i.accountid
