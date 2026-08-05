@@ -219,6 +219,8 @@ datasets:
               Type: STRING
             - Name: resource_id
               Type: STRING
+            - Name: user_email
+              Type: STRING
             - Name: product_code
               Type: STRING
             - Name: operation
@@ -250,6 +252,7 @@ datasets:
               - account_id
               - region
               - resource_id
+              - user_email
               - product_code
               - operation
               - charge_type
@@ -293,7 +296,19 @@ views:
     #   - Active   = users with at least one Credits line   (Kiro User Has Credits Usage = True)
     #   - Inactive = users with zero Credits lines          (= False)
     # Bounded to 18 months to keep SPICE refresh and Athena scans performant.
+    #
+    # user_email: CUR only identifies a subscriber by line_item_resource_id, which
+    # is an Identity Center ARN (arn:aws:identitystore:::user/<uuid>). The <uuid>
+    # tail equals the activity dataset's `userid`, so we LEFT JOIN the activity
+    # view to resolve a human-readable email. This is best-effort: a user who has
+    # never generated activity has no row there, so email falls back to the uuid.
+    # FUTURE: an Identity Center email source is being built in parallel; when
+    # available, swap this join for that lookup to cover never-active users too.
     dependsOn:
+      # kiro_user_activity_view must exist first: the email LEFT JOIN below reads
+      # from it. cid-cmd creates dependency views before the view that needs them.
+      views:
+        - kiro_user_activity_view
       cur2:
         - bill_payer_account_id
         - line_item_usage_account_id
@@ -315,6 +330,7 @@ views:
       , "line_item_usage_account_id" "account_id"
       , product['region'] "region"
       , "line_item_resource_id" "resource_id"
+      , COALESCE(activity."user_email", "regexp_extract"("line_item_resource_id", '[^/]+$')) "user_email"
       , "line_item_product_code" "product_code"
       , "line_item_operation" "operation"
       , "line_item_line_item_type" "charge_type"
@@ -331,9 +347,14 @@ views:
       , "sum"("line_item_unblended_cost") "unblended_cost"
       FROM
         "${cur2_database}"."${cur2_table_name}"
+        LEFT JOIN (
+          SELECT DISTINCT "userid", "user_email"
+          FROM "${athena_database_name}".kiro_user_activity_view
+          WHERE "user_email" <> ''
+        ) activity ON "regexp_extract"("line_item_resource_id", '[^/]+$') = activity."userid"
       WHERE
         "line_item_product_code" = 'Kiro'
         AND coalesce("line_item_operation", '') <> 'q-developer-snapshot'
         AND "line_item_resource_id" <> ''
         AND "line_item_usage_start_date" >= (current_date - INTERVAL '18' MONTH)
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12

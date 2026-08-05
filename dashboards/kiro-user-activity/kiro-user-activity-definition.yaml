@@ -334,6 +334,10 @@ FilterGroups:
   Status: ENABLED
 # Inactive-user scope for the "Total Inactive Kiro Users" KPI: subscribed users
 # (resource_id) with zero Credits lines in the window. Ported from CUDOS.
+# The inactive-users filter must live in two separate FilterGroups, one per
+# sheet: QuickSight rejects a single FilterGroup that spans multiple sheets
+# with SELECTED_VISUALS scope (it requires ALL_VISUALS on each sheet in that
+# case). Both apply the identical "Kiro User Has Credits Usage = False" filter.
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: fg-kiro-inactive-users
   Filters:
@@ -354,6 +358,27 @@ FilterGroups:
         SheetId: 8b044d5a-3941-4e30-be58-fa08a3770aba
         VisualIds:
         - kpi-inactive-users
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-kiro-inactive-users-table
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: Kiro User Has Credits Usage
+        DataSetIdentifier: kiro_cur_view
+      Configuration:
+        CustomFilterConfiguration:
+          CategoryValue: 'False'
+          MatchOperator: EQUALS
+          NullOption: NON_NULLS_ONLY
+      FilterId: filter-kiro-inactive-users-table
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 6be25593-1f88-4d18-891d-5b8aa3828fa6
+        VisualIds:
+        - table-inactive-users
   Status: ENABLED
 ParameterDeclarations: []
 Sheets:
@@ -1177,6 +1202,12 @@ Sheets:
           ElementType: VISUAL
           RowIndex: 17
           RowSpan: 14
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: table-inactive-users
+          ElementType: VISUAL
+          RowIndex: 31
+          RowSpan: 14
   Name: User Engagement
   SheetId: 6be25593-1f88-4d18-891d-5b8aa3828fa6
   TextBoxes:
@@ -1513,6 +1544,82 @@ Sheets:
             \ with Tier Recommendation for specified lookback period</inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 193498d7-0142-423d-95cc-606c5d86c46f
+  - PivotTableVisual:
+      # Inactive Kiro subscribers, sourced from kiro_cur_view (the authoritative
+      # subscription roster from CUR). Scoped by fg-kiro-inactive-users-table to
+      # rows where "Kiro User Has Credits Usage" = False. user_email is resolved
+      # via the activity-table join in the view; it falls back to the resource_id
+      # UUID when the user has never generated activity (see manifest comment).
+      # Rendered as a pivot so account_id groups (collapsible) and the whole
+      # table can be sorted by account or cost.
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Account
+            FieldId: field-inactive-account
+            Visibility: VISIBLE
+          - CustomLabel: User
+            FieldId: field-inactive-user
+            Visibility: VISIBLE
+          - CustomLabel: Subscription Type
+            FieldId: field-inactive-subtype
+            Visibility: VISIBLE
+          - CustomLabel: Cost
+            FieldId: field-inactive-cost
+            Visibility: VISIBLE
+        FieldWells:
+          PivotTableAggregatedFieldWells:
+            Columns: []
+            Rows:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: kiro_cur_view
+                FieldId: field-inactive-account
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: user_email
+                  DataSetIdentifier: kiro_cur_view
+                FieldId: field-inactive-user
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: subscription_type
+                  DataSetIdentifier: kiro_cur_view
+                FieldId: field-inactive-subtype
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: unblended_cost
+                  DataSetIdentifier: kiro_cur_view
+                FieldId: field-inactive-cost
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      Prefix: $
+                      SeparatorConfiguration: {}
+        SortConfiguration:
+          FieldSortOptions:
+          - FieldId: field-inactive-account
+            SortBy:
+              Field:
+                Direction: ASC
+                FieldId: field-inactive-account
+        TableOptions:
+          CellStyle: {}
+          ColumnHeaderStyle: {}
+          RowFieldNamesStyle: {}
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"14px\">Inactive Kiro Users\
+            \ \u2014 subscribed with no credits usage in the lookback period</inline>\n\
+            </visual-title>"
+        Visibility: VISIBLE
+      VisualId: table-inactive-users
 - ContentType: INTERACTIVE
   FilterControls:
   - CrossSheet:
