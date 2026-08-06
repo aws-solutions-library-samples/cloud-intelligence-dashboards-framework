@@ -6968,8 +6968,8 @@ Sheets:
             \  <br/>\n  \u2197\uFE0FTop Movers :\n  <br/>\n  <if condition=\"TopMovers.itemsCount\
             \ = 0\" level=\"inline\">\n    \_No Top movers for\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
             \  </if>\n  <br/>\n  <if condition=\"TopMovers.itemsCount &gt; 0\" level=\"\
-            block\">\n    &#128314;There is\n    <b>\n      <expression>TopMovers.itemsCount</expression>\n\
-            \    </b>\n    \_top mover for the month of\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
+            block\">\n    &#128314;There is <b></b>\n    <b>\n      <expression>TopMovers.itemsCount</expression>\n\
+            \    </b>\n    \_top mover for the month of <b></b>\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
             \    \_:\n  </if>\n  <br/>\n  <for level=\"block\" listExpression=\"TopMovers.items\"\
             >\n    <ul>\n      <li class=\"ql-indent-0\">\n        <b>\_Account\_\
             </b>\n        <b>\n          <expression>TopMovers.items[index].categoryValue.value</expression>\n\
@@ -6983,8 +6983,8 @@ Sheets:
             \ Movers :\n  <br/>\n  <if condition=\"BottomMovers.itemsCount = 0\" level=\"\
             inline\">\n    \_No Bottom Movers for\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
             \  </if>\n  <br/>\n  <if condition=\"BottomMovers.itemsCount &gt; 0\"\
-            \ level=\"block\">\n    &#128315;There is\n    <expression>BottomMovers.itemsCount</expression>\n\
-            \    \_bottom movers for the month of\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
+            \ level=\"block\">\n    &#128315;There is <b></b>\n    <expression>BottomMovers.itemsCount</expression>\n\
+            \    \_bottom movers for the month of <b></b>\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
             \    \_:\n  </if>\n  <br/>\n  <for level=\"block\" listExpression=\"BottomMovers.items\"\
             >\n    <ul>\n      <li class=\"ql-indent-0\">\n        <b>\_Account\_\
             </b>\n        <b>\n          <expression>BottomMovers.items[index].categoryValue.value</expression>\n\
@@ -6996,21 +6996,21 @@ Sheets:
             \        </b>\n        <b>\_in\_</b>\n        <expression>PeriodToDate.currentTimeValue.formattedValue</expression>\n\
             \      </li>\n    </ul>\n  </for>\n  <br/>\n  <br/>\n  &#128161; Key Insights:\n\
             \  <br/>\n  <if condition=\"BottomMovers.itemsCount &gt; 0\" level=\"\
-            inline\">\n    - Atleast\n    <expression>BottomMovers.itemsCount</expression>\n\
+            inline\">\n    - At least <b></b>\n    <expression>BottomMovers.itemsCount</expression>\n\
             \    \_\_\_account[s] require immediate attention\n  </if>\n  <if condition=\"\
             BottomMovers.itemsCount = 0\" level=\"inline\">\n    \_- No Bottom movers\
             \ for the the month of\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
             \  </if>\n  <br/>\n  <if condition=\"TopMovers.itemsCount &gt; 0\" level=\"\
-            inline\">\n    - Total\n    <expression>TopMovers.itemsCount</expression>\n\
+            inline\">\n    - Total <b></b>\n    <expression>TopMovers.itemsCount</expression>\n\
             \    account[s] showed improved backup coverage\n  </if>\n  <if condition=\"\
             TopMovers.itemsCount &lt; 1\" level=\"inline\">\n    \_- No top movers\
             \ for the month of\n    <expression>PeriodToDate.currentTimeValue.formattedValue</expression>\n\
             \  </if>\n  <br/>\n  <if condition=\"PeriodOverPeriod.percentDifference.value\
             \ &gt;= 0\" level=\"inline\">\n    - Overall RDS Backup Coverage improved\
-            \ in\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
+            \ in <b></b>\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
             \  </if>\n  <if condition=\"PeriodOverPeriod.percentDifference.value &lt;\
             \ 0\" level=\"inline\">\n    \_- Overall RDS backup Coverage declined\
-            \ in\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
+            \ in <b></b>\n    <expression>PeriodOverPeriod.currentTimeValue.formattedValue</expression>\n\
             \  </if>\n  \uFEFF\uFEFF\n  <br/>\n  <if condition=\"PeriodOverPeriod.percentDifference.value\
             \ &lt; 0\" level=\"inline\">\_- Recommended Action: Review the backup\
             \ policies to improve backup percentage</if>\n  <br/>\n  <if condition=\"\
@@ -7375,7 +7375,7 @@ Sheets:
             >\n        <inline color=\"Accent\">RDS DB Engine</inline>\n        <inline\
             \ color=\"Accent\">\n          <b>\_</b>\n        </inline>\n        <inline\
             \ color=\"Accent\">\n          <b>\n            <expression>Top.items[index].categoryValue.formattedValue</expression>\n\
-            \          </b>\n        </inline>\n        \_with Backup Coverage  of\n\
+            \          </b>\n        </inline>\n        \_with Backup Coverage  of <b></b>\n\
             \        <if condition=\"Top.items[index].metricValue.value = 1\" level=\"\
             inline\">\n          <inline color=\"#92ac61\">\n            <b>\n   \
             \           <expression>Top.items[index].metricValue.formattedValue</expression>\n\
@@ -7481,7 +7481,7 @@ Sheets:
             Accent\">Region</inline>\n        <inline color=\"Accent\">\n        \
             \  <b>\_</b>\n        </inline>\n        <inline color=\"Accent\">\n \
             \         <b>\n            <expression>Top.items[index].categoryValue.formattedValue</expression>\n\
-            \          </b>\n        </inline>\n        \_with Backup Coverage  of\n\
+            \          </b>\n        </inline>\n        \_with Backup Coverage  of <b></b>\n\
             \        <if condition=\"Top.items[index].metricValue.value = 1\" level=\"\
             inline\">\n          <inline color=\"#7dc72f\">\n            <b>\n   \
             \           <expression>Top.items[index].metricValue.formattedValue</expression>\n\
@@ -8239,9 +8239,9 @@ Sheets:
             \    </inline>\n  </if>\n  <if condition=\"Top.itemsCount &lt; 2\" level=\"\
             inline\">\n    <inline font-size=\"19.2px\">\n      <b>\_is:</b>\n   \
             \ </inline>\n  </if>\n  <br/>\n  <for level=\"block\" listExpression=\"\
-            Top.items\">\n    <ul>\n      <li class=\"ql-indent-0\">\n        Account\n\
+            Top.items\">\n    <ul>\n      <li class=\"ql-indent-0\">\n        Account <b></b>\n\
             \        <b>\n          <expression>Top.items[index].categoryValue.value</expression>\n\
-            \        </b>\n        \_\_with Backup Coverage  of\n        <if condition=\"\
+            \        </b>\n        \_\_with Backup Coverage  of <b></b>\n        <if condition=\"\
             Top.items[index].metricValue.value &gt;= 0.9 and Top.items[index].metricValue.value\
             \ &lt; 1\" level=\"inline\">\n          <inline color=\"#f0cc16\">\n \
             \           <b>\n              <expression>Top.items[index].metricValue.formattedValue</expression>\n\
