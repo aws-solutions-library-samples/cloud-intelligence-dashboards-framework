@@ -324,7 +324,7 @@ views:
         - product['region']
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".kiro_cur_view AS
-      SELECT DISTINCT
+      SELECT
         "date_trunc"('day', "line_item_usage_start_date") "usage_date"
       , "bill_payer_account_id" "payer_account_id"
       , "line_item_usage_account_id" "account_id"
