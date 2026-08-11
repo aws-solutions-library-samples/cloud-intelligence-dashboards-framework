@@ -2231,3 +2231,69 @@ Sheets:
             </visual-title>
         Visibility: VISIBLE
       VisualId: a9f28fd8-8820-41d7-a4b9-60a1f295534d
+# Static "About" sheet, mirroring the Notices tab on the CUDOS dashboard. It is
+# text-only (no visuals, no filter controls) and carries the standard AWS
+# informational-use disclaimer, the dashboard name/version, and CID links.
+- ContentType: INTERACTIVE
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 8982dad8-c41f-45be-a383-2a662eeacbac
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 8
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: fdd229b0-07cb-4b93-b634-0a2357c4b4b1
+          ElementType: TEXT_BOX
+          RowIndex: 8
+          RowSpan: 4
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: a6e4980b-1629-4c09-8a27-d003e813f20a
+          ElementType: TEXT_BOX
+          RowIndex: 12
+          RowSpan: 4
+  Name: About
+  SheetId: 67b78df7-be55-4830-a8c1-1213be241a08
+  TextBoxes:
+  # "Notices" heading + standard AWS informational-use disclaimer, sized to
+  # match the CUDOS v5 About tab (54.88px heading, 22.4px body).
+  - Content: |-
+      <text-box>
+        <inline font-size="54.88px">Notices</inline>
+        <br/>
+        <br/>
+        <inline font-size="22.4px">Customers are responsible for making their own independent assessment of this dashboard and its content. This dashboard and its content: (a) is for informational purposes only, (b) represents current AWS product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS content, products or services are provided "as is" without warranties, representations, or conditions of any kind, whether express or implied. The responsibilities and liabilities of AWS to its customers are controlled by AWS agreements, and this document is not part of, nor does it modify, any agreement between AWS and its customers.</inline>
+      </text-box>
+    SheetTextBoxId: 8982dad8-c41f-45be-a383-2a662eeacbac
+  # Center-aligned dashboard name / version block, mirroring CUDOS v5 (40px,
+  # teal #61d1d6 name).
+  - Content: |-
+      <text-box>
+        <block align="center">
+          <inline color="#61d1d6" font-size="40px"><b>Kiro User Activity Dashboard</b></inline>
+        </block>
+        <br/>
+        <block align="center">
+          <inline font-size="40px"><b>v1.0.0</b></inline>
+        </block>
+      </text-box>
+    SheetTextBoxId: fdd229b0-07cb-4b93-b634-0a2357c4b4b1
+  # Right-aligned footer credits, mirroring CUDOS v5.
+  - Content: |-
+      <text-box>
+        <block align="right">Built by: Darius, Yuriy Prykhodko</block>
+        <br/>
+        <block align="right">Learn more about AWS Cloud Intelligence Dashboards (CID) on <inline color="#61d1d6"><a href="https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/getting-started.html" target="_blank"><u>AWS Well-Architected Labs</u></a></inline></block>
+        <br/>
+        <block align="right">Powered by: Amazon QuickSight, Amazon Athena</block>
+      </text-box>
+    SheetTextBoxId: a6e4980b-1629-4c09-8a27-d003e813f20a
