@@ -2,6 +2,13 @@
 
 # CUDOS v5
 
+# CUDOS - 5.9.0
+
+* **AI/ML**: Added 'Amazon Bedrock Tokens Usage per Usage Type Group' visual to monitor token consumption
+* **AI/ML**: Added 'Amazon Bedrock Tokens Cache Read and Cache Write Ratio' visual to track the efficiency of prompt caching
+* **AI/ML**: Fix for 'Amazon Bedrock Cost per Million Tokens' calculation to account for the change in pricing unit in the CUR
+* **Storage and Backup**: Fix for 'Total EBS' period-over-period visual to correctly compare the previous month against the current month
+
 # CUDOS - 5.8.1
 
 * **AI/ML**: Switched Amazon Bedrock Unit Cost visuals from cost per 1K Tokens to cost per 1M Tokens
