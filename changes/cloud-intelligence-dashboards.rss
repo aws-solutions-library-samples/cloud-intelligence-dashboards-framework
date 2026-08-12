@@ -8,6 +8,48 @@
     <lastBuildDate>Tue, 12 Aug 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[New Dashboard] Kiro User Activity Dashboard v1.0.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-kiro-user-activity.md
+      </link>
+      <pubDate>Tue, 12 Aug 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[New Dashboard]]></category>
+      <guid isPermaLink="false">d3400ec3-a1f1-43b2-91c4-4c541fbd1da5</guid>
+      <description>Kiro User Activity Dashboard v1.0.0 - Initial Release</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    The <strong>Kiro User Activity Dashboard</strong> gives you visibility into Kiro adoption, usage, and credit consumption across your organization, helping you track engagement and manage subscription costs.
+  </p>
+  <h3>Key Features:</h3>
+  <ul>
+    <li><strong>Executive Summary:</strong> KPI tiles for active users, messages, and credits (including overage), daily active users by client type, credits-by-tier and messages-by-client-type breakdowns, and a daily credit consumption trend.</li>
+    <li><strong>User Engagement:</strong> Top 20 users by message count and per-user daily activity across messages, conversations, and credits.</li>
+    <li><strong>Credit &amp; Overage Tracking:</strong> Daily credits used versus overage, average plan utilization, and a per-user overage table with plan credits, caps, and utilization percentages.</li>
+    <li><strong>Client Type Breakdown:</strong> Daily messages and metrics segmented across IDE, CLI, and Plugin clients.</li>
+    <li><strong>Subscription tiers:</strong> Built-in credit allocations for Free, Pro, Pro+, and Power tiers.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] CID Data Collection v3.14.7</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/releases/tag/3.14.7
+      </link>
+      <pubDate>Tue, 12 Aug 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Data Collection Update]]></category>
+      <guid isPermaLink="false">244f4380-927f-4d70-916c-b856848d22a0</guid>
+      <description>CID Data Collection v3.14.7</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Kiro User Activity:</strong> New module that collects Kiro user activity data, with support for cross-account collection, to power the Kiro User Activity Dashboard.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
       <title>[Update] CUDOS Dashboard v5.9.0</title>
       <link>
         https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---590
