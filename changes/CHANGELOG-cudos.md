@@ -2,6 +2,10 @@
 
 # CUDOS v5
 
+# CUDOS - 5.9.1
+
+* **AI/ML**: Fix typo in Amazon Bedrock Tokens Cache Read and Cache Write Ratio visual
+
 # CUDOS - 5.9.0
 
 * **AI/ML**: Added 'Amazon Bedrock Tokens Usage per Usage Type Group' visual to monitor token consumption
