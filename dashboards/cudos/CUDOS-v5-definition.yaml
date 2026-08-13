@@ -3256,7 +3256,7 @@ CalculatedFields:
           / (sumIf({Bedrock Normalized Usage}, {Bedrock UsageType Group} = 'Input Tokens')
              + sumIf({Bedrock Normalized Usage}, in({Bedrock UsageType Group}, ['Cache Write Input Tokens','Cache Write Input Tokens (1h TTL)']))
              + sumIf({Bedrock Normalized Usage}, {Bedrock UsageType Group} = 'Cache Read Input Tokens'))
-  Name: Bedrock Cahce Read Ratio
+  Name: Bedrock Cache Read Ratio
 - DataSetIdentifier: summary_view
   Expression: |-
     sumIf(
@@ -61564,7 +61564,7 @@ Sheets:
             Values:
             - NumericalMeasureField:
                 Column:
-                  ColumnName: Bedrock Cahce Read Ratio
+                  ColumnName: Bedrock Cache Read Ratio
                   DataSetIdentifier: summary_view
                 FieldId: 74a2cc71-de37-429b-811a-e490dc03019c.2.1786441347515
                 FormatConfiguration:
@@ -85610,7 +85610,7 @@ Sheets:
       \ font-size=\"40px\">\n      <a href=\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/cudos-cid-kpi.html#foundational-cudos-dashboard\"\
       \ target=\"_blank\">\n        <b>CUDOS</b>\n      </a>\n    </inline>\n  </block>\n\
       \  <br/>\n  <block align=\"center\">\n    <inline font-size=\"40px\">\n    \
-      \  <b>v5.9.0</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"center\"\
+      \  <b>v5.9.1</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"center\"\
       >\n    <inline font-size=\"40px\">\n      <b>Cost and Usage Dashboards Operations\
       \ Solution</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"center\"\
       />\n  <br/>\n  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n\
