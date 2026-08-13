@@ -2898,7 +2898,7 @@ datasets:
         6593bf38-e15a-41d7-b85c-9d5d2ea4027f:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: aws_feeds
             InputColumns:
@@ -2944,7 +2944,7 @@ datasets:
         ce6e7be8-3a44-4325-b55d-26ab590920d1:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${data_collection_database_name}
             Name: aws_feeds_blog_post
             InputColumns:
@@ -3010,7 +3010,7 @@ datasets:
         ff99854e-942d-4312-9700-423f15e4d21c:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${data_collection_database_name}
             Name: aws_feeds_security_bulletin
             InputColumns:
@@ -3070,7 +3070,7 @@ datasets:
         720118c4-3819-4fb9-bdbe-1666f7089c5c:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${data_collection_database_name}
             Name: aws_feeds_whats_new
             InputColumns:
@@ -3136,7 +3136,7 @@ datasets:
         5b308e9b-d8cf-4223-a79c-8cf1d09f371f:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${data_collection_database_name}
             Name: aws_feeds_youtube
             InputColumns:

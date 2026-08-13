@@ -4059,7 +4059,7 @@ datasets:
         2ca2f9db-d270-4f8f-8e0d-cce6f039328f:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: sus_s3_storage_all
             InputColumns:
@@ -4111,7 +4111,7 @@ datasets:
         fe1b70ec-a568-4341-9265-db2fe41e6a13:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -4177,7 +4177,7 @@ datasets:
         4494af6c-2a55-46c4-9e3d-20dac6d18946:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -4188,7 +4188,7 @@ datasets:
         89bda628-8355-4af1-9282-7882fb99dead:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: sus_carbon_emissions
             InputColumns:
@@ -4311,7 +4311,7 @@ datasets:
         862dc931-5aeb-45bd-aa09-0560920c43f0:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: sus_compute_ec2
             InputColumns:
@@ -4339,7 +4339,7 @@ datasets:
         937e5fa9-bb37-4b63-a607-f8c1d0a7ca9b:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -4394,7 +4394,7 @@ datasets:
         8d1ead4d-1a2e-4641-947a-d8ffb40d653e:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -4405,7 +4405,7 @@ datasets:
         961a6efd-2ed4-4d1c-8f5a-e7ff676393c8:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: sus_idle_elb
             InputColumns:
@@ -4485,7 +4485,7 @@ datasets:
         d88e946b-50c5-4131-af7f-a20c19b5f44d:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: sus_storage_athena
             InputColumns:
@@ -4509,7 +4509,7 @@ datasets:
         e7b46e3d-87cf-473e-908b-7870ffa90a32:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -4562,7 +4562,7 @@ datasets:
         2d73b781-2ce6-41a2-9ba0-a193d7aba3ec:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: sus_geo_region_athena
             InputColumns:
@@ -4630,7 +4630,7 @@ datasets:
         4f66d90f-5d4a-4e8e-bcdf-2e83d73d37a8:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -4641,7 +4641,7 @@ datasets:
         b4b4e384-904f-42b3-9108-3dff4ad53b30:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: sus_network
             InputColumns:
@@ -4739,7 +4739,7 @@ datasets:
         3dd3174f-61ea-420e-8ea9-d7fb30a929ef:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: sus_compute_split
             InputColumns:
@@ -4763,7 +4763,7 @@ datasets:
         7c5b80e9-7ba4-42bd-b626-4f8500c0ef00:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -4816,7 +4816,7 @@ datasets:
         0766af2c-5154-4b8a-a5df-8d9a2d37efb4:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -4827,7 +4827,7 @@ datasets:
         30332fbc-ad6f-47ec-b5d2-c6bd31f5efc4:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: sus_idle_natgw
             InputColumns:

@@ -17,7 +17,7 @@ datasets:
         53c5ae59-b21c-41b6-9d4e-4818f4e2a8d6:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -28,7 +28,7 @@ datasets:
         67b570dd-8eb4-4623-ac3a-5ce15c6faf2c:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: scad_cca_summary_view_data_on_eks
             InputColumns:
@@ -436,7 +436,7 @@ datasets:
         320f3b02-0ba2-4d14-b684-1a5431781f39:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -447,7 +447,7 @@ datasets:
         40065454-2867-4119-8240-618f4332aa7e:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: scad_cca_summary_view
             InputColumns:
