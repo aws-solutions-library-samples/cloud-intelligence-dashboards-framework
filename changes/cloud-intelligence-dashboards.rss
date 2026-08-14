@@ -5,8 +5,26 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Tue, 12 Aug 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 14 Aug 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] cid-cmd v4.4.17</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/CHANGELOG.md
+      </link>
+      <pubDate>Thu, 14 Aug 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">4a2b0ecf-7474-4082-ac8f-593c255cd605</guid>
+      <description>cid-cmd v4.4.17</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Taxonomy Merge:</strong> Merge several taxonomy fields that represent the same business dimension (a resource tag, IAM principal tag, account tag, or account_map column) into a single dashboard filter and Group By field. The merged column takes the first non-empty value (COALESCE) and is applied as an Amazon Quick calculated field, with no Athena view changes. Also useful for normalizing inconsistent tag keys such as <code>application</code> and <code>app</code>.</li>
+    <li><strong>Account Mapping:</strong> Build an enriched account_map Athena view without writing SQL — from AWS Organizations data (OU hierarchy levels, hierarchical tag inheritance, and account-name splitting), a CSV file (such as a CMDB export or spreadsheet), or both — and choose which columns become taxonomy dimensions.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[New Dashboard] Kiro User Activity Dashboard v1.0.0</title>
       <link>
