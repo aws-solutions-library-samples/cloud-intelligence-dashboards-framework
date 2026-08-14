@@ -42,6 +42,7 @@ def test_csv2view_lowercases_names(tmp_path):
     assert '(col_a, colb)' in sql
 
 
-def test_csv2view_missing_file_raises():
+def test_csv2view_missing_file_raises(tmp_path):
+    output_file = tmp_path / 'out.sql'
     with pytest.raises(CidCritical, match='File not found'):
-        csv2view('/nonexistent/file.csv', 'res', '/tmp/out.sql')
+        csv2view(str(tmp_path / 'nonexistent.csv'), 'res', str(output_file))
