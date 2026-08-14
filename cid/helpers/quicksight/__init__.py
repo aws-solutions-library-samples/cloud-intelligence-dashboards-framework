@@ -18,7 +18,8 @@ from cid.helpers.quicksight.dashboard_patching import add_filter_to_dashboard_de
 from cid.helpers.quicksight.datasource import Datasource
 from cid.helpers.quicksight.template import Template as CidQsTemplate
 from cid.helpers.quicksight.definition import Definition as CidQsDefinition
-from cid.utils import get_parameter, get_parameters, exec_env, cid_print, ago, unset_parameter
+from cid.utils import get_parameter, get_parameters, get_defaults, set_defaults, exec_env, cid_print, ago, unset_parameter
+from cid.helpers.taxonomy_merger import parse_merges, TaxonomyMerger
 from cid.exceptions import CidCritical, CidError
 
 logger = logging.getLogger(__name__)
@@ -1360,9 +1361,14 @@ class QuickSight(CidBase):
 
             # Get a list of common columns for all datasets to update the filters
             common_columns = None
+            account_map_columns = set()
             for dataset_reference in dataset_references:
                 dataset = self.describe_dataset(dataset_reference['DataSetArn'].split('/')[-1])
                 all_columns = dataset.raw['OutputColumns']
+                for physical_table in (dataset.raw.get('PhysicalTableMap') or {}).values():
+                    relational_table = physical_table.get('RelationalTable', {})
+                    if relational_table.get('Name') == 'account_map':
+                        account_map_columns.update(col.get('Name') for col in relational_table.get('InputColumns', []))
                 if dataset.name in definition.get('nonTaxonomyDatasets', []):
                     logger.critical(f'Skipping {dataset.name}')
                     continue
@@ -1377,11 +1383,39 @@ class QuickSight(CidBase):
             logger.debug(f'non_taxonomy_cols: {non_taxonomy_cols}')
             taxonomy_columns_candidates = [c['Name'] for c in common_columns if c['Type'] == 'STRING' and c['Name'] not in non_taxonomy_cols]
             if taxonomy_columns_candidates:
+                # group choices by their source; merged columns get their own group on top.
+                # an empty taxonomy-merges parameter means explicitly no merges, so only
+                # fall back to stored defaults when the parameter is not set at all
+                merges_value = get_parameters().get('taxonomy-merges')
+                if merges_value is None:
+                    merges_value = get_defaults().get('taxonomy-merges')
+                merges = parse_merges(merges_value)
+                merged_names = [name for name in taxonomy_columns_candidates if name in merges]
+                grouper = TaxonomyMerger(
+                    tag_fields=[name for name in taxonomy_columns_candidates if name not in merges and name not in account_map_columns],
+                    account_map_columns=[name for name in taxonomy_columns_candidates if name not in merges and name in account_map_columns],
+                )
+                taxonomy_choices = {}
+                if merged_names:
+                    # show the composition of each merged column in its display label
+                    taxonomy_choices['merged columns'] = {
+                        f"{name} [{' + '.join(merges[name])}]": name
+                        for name in merged_names
+                    }
+                taxonomy_choices.update(grouper.grouped_choices(grouper.available_fields))
+                # preselect the previous taxonomy selection plus merged columns,
+                # so merged columns are added to the dashboard on 'Looks good'
+                previous_taxonomy = get_defaults().get('taxonomy') or []
+                if isinstance(previous_taxonomy, str):
+                    previous_taxonomy = [t for t in previous_taxonomy.split(',') if t]
+                taxonomy_default = list(dict.fromkeys(previous_taxonomy + merged_names))
+                set_defaults({'taxonomy': taxonomy_default})
                 taxonomy = get_parameter('taxonomy',
                     message='Select taxonomy fields to add as dashboard filters and group by fields',
-                    choices=taxonomy_columns_candidates,
+                    choices=taxonomy_choices,
                     multi=True,
                     order=True,
+                    default=taxonomy_default,
                 )
                 if taxonomy:
                     create_parameters['Definition'] = add_filter_to_dashboard_definition(create_parameters['Definition'], taxonomy, taxonomy_dataset=definition.get('taxonomyDataset'))

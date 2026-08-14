@@ -12,7 +12,30 @@ on:
 concurrency: staging_environment
 
 jobs:
+  unit-tests:
+    # fast, credential-free python unit tests; run for all python versions in parallel
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install ./ pytest
+      - name: Run unit tests
+        run: |
+          pytest cid/test/python/ -v
+
   test-cli:
+    needs: unit-tests
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
