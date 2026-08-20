@@ -18,7 +18,7 @@ datasets:
         700593a6-2e53-466b-81b6-8ac852fd32ea:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: unitcost_view
             InputColumns:
@@ -97,7 +97,7 @@ datasets:
         e25bcf6f-d78e-47c4-b730-cb0e0242cda2:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:

@@ -17,7 +17,7 @@ datasets:
         24ed250c-dca7-41e6-9375-eb10bb21c036:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: cloudfront_realtime_logs
             InputColumns:

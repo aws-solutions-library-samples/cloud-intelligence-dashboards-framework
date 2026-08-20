@@ -18,7 +18,7 @@ datasets:
         62e77300-66ee-4669-b257-4823ffd5678a:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -29,7 +29,7 @@ datasets:
         f578e7c1-d15d-4068-bb25-988a092a7333:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: data_transfer_view
             InputColumns:

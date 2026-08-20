@@ -52,7 +52,7 @@ datasets:
         0aacec67-d196-4af2-a2af-d20a8fb3d801:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: focus_resource_view
             InputColumns:
@@ -259,7 +259,7 @@ datasets:
         61ada434-e3b0-4cdf-ae98-609f1951a8ff:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: focus_summary_view
             InputColumns:

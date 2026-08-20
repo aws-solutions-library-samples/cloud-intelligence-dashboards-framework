@@ -18,7 +18,7 @@ datasets:
         24d7d4f8-c978-4377-b7f2-5f1db7c616a8:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: support_cases_status_view
             InputColumns:
@@ -53,7 +53,7 @@ datasets:
         bb496e3a-0c1b-4711-a115-f63cb9cdc045:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -64,7 +64,7 @@ datasets:
         cddcae52-1ce1-43ed-bf75-4883a0830a81:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: support_cases_communications_view
             InputColumns:
