@@ -31,7 +31,7 @@ datasets:
         90eb30a0-71b0-4338-b0a0-b8ca792d820a:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: kiro_user_activity_view
             InputColumns:
@@ -205,7 +205,7 @@ datasets:
         7c1f2a3b-9d84-4c1e-bf20-5a6b7c8d9e01:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: kiro_cur_view
             InputColumns:
