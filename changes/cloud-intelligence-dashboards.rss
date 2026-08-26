@@ -5,8 +5,142 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Wed, 18 Jun 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 14 Aug 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] cid-cmd v4.4.17</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/CHANGELOG.md
+      </link>
+      <pubDate>Thu, 14 Aug 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">4a2b0ecf-7474-4082-ac8f-593c255cd605</guid>
+      <description>cid-cmd v4.4.17</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Taxonomy Merge:</strong> Merge several taxonomy fields that represent the same business dimension (a resource tag, IAM principal tag, account tag, or account_map column) into a single dashboard filter and Group By field. The merged column takes the first non-empty value (COALESCE) and is applied as an Amazon Quick calculated field, with no Athena view changes. Also useful for normalizing inconsistent tag keys such as <code>application</code> and <code>app</code>.</li>
+    <li><strong>Account Mapping:</strong> Build an enriched account_map Athena view without writing SQL — from AWS Organizations data (OU hierarchy levels, hierarchical tag inheritance, and account-name splitting), a CSV file (such as a CMDB export or spreadsheet), or both — and choose which columns become taxonomy dimensions.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[New Dashboard] Kiro User Activity Dashboard v1.0.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-kiro-user-activity.md
+      </link>
+      <pubDate>Tue, 12 Aug 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[New Dashboard]]></category>
+      <guid isPermaLink="false">d3400ec3-a1f1-43b2-91c4-4c541fbd1da5</guid>
+      <description>Kiro User Activity Dashboard v1.0.0 - Initial Release</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    The <strong>Kiro User Activity Dashboard</strong> gives you visibility into Kiro adoption, usage, and credit consumption across your organization, helping you track engagement and manage subscription costs.
+  </p>
+  <h3>Key Features:</h3>
+  <ul>
+    <li><strong>Executive Summary:</strong> KPI tiles for active users, messages, and credits (including overage), daily active users by client type, credits-by-tier and messages-by-client-type breakdowns, and a daily credit consumption trend.</li>
+    <li><strong>User Engagement:</strong> Top 20 users by message count and per-user daily activity across messages, conversations, and credits.</li>
+    <li><strong>Credit &amp; Overage Tracking:</strong> Daily credits used versus overage, average plan utilization, and a per-user overage table with plan credits, caps, and utilization percentages.</li>
+    <li><strong>Client Type Breakdown:</strong> Daily messages and metrics segmented across IDE, CLI, and Plugin clients.</li>
+    <li><strong>Subscription tiers:</strong> Built-in credit allocations for Free, Pro, Pro+, and Power tiers.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] CID Data Collection v3.14.7</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/releases/tag/3.14.7
+      </link>
+      <pubDate>Tue, 12 Aug 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Data Collection Update]]></category>
+      <guid isPermaLink="false">244f4380-927f-4d70-916c-b856848d22a0</guid>
+      <description>CID Data Collection v3.14.7</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Kiro User Activity:</strong> New module that collects Kiro user activity data, with support for cross-account collection, to power the Kiro User Activity Dashboard.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] CUDOS Dashboard v5.9.0</title>
+      <link>
+        https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/changes/CHANGELOG-cudos.md#cudos---590
+      </link>
+      <pubDate>Tue, 12 Aug 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">9dc95a5f-099d-4c41-94d7-1d2c95150f2a</guid>
+      <description>CUDOS Dashboard v5.9.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>AI/ML:</strong> Added 'Amazon Bedrock Tokens Usage per Usage Type Group' visual to monitor token consumption</li>
+    <li><strong>AI/ML:</strong> Added 'Amazon Bedrock Tokens Cache Read and Cache Write Ratio' visual to track the efficiency of prompt caching</li>
+    <li><strong>AI/ML:</strong> Fix for 'Amazon Bedrock Cost per Million Tokens' calculation to account for the change in pricing unit in the CUR</li>
+    <li><strong>Storage and Backup:</strong> Fix for 'Total EBS' period-over-period visual to correctly compare the previous month against the current month</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Extended Support Cost Projection v5.2.3</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v523
+      </link>
+      <pubDate>Thu, 24 Jul 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">6732f9ab-d015-4f79-a154-62cb65ac7090</guid>
+      <description>Extended Support Cost Projection v5.2.3</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>Added estimated cost column to the top details table in RDS, EKS, OpenSearch, and ElastiCache sheets. The value reflects the current pricing period (Year 1-2 or Year 3) estimated cost for each resource.</li>
+    <li>Added new KPI visuals below each existing date range bucket (3, 6, 12 months, and beyond) in all four service sheets, showing the aggregated estimated cost for resources within each time horizon.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] CID Data Collection v3.14.6</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/releases/tag/3.14.6
+      </link>
+      <pubDate>Thu, 23 Jul 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Data Collection Update]]></category>
+      <guid isPermaLink="false">9cfe1d1c-b597-4eb6-8048-f67c23f0103b</guid>
+      <description>CID Data Collection v3.14.6</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Identity Center:</strong> New module collecting IAM Identity Center users and groups for user-attribute enrichment in dashboards.</li>
+    <li><strong>New regions:</strong> Data Collection stack can now be deployed in Europe (Milan) eu-south-1 and Europe (Zurich) eu-central-2.</li>
+    <li><strong>WorkSpaces metrics:</strong> Throttle handling with fallback, new metrics, and bug fixes for EUC dashboard data collection.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Media Services Information Hub - v2.2.1</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md
+      </link>
+      <pubDate>Fri, 10 Jul 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">3948f771-907f-4e4a-91d4-4f13c8a83eb2</guid>
+      <description>Media Services Information Hub - v2.2.1</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>EML Reservations:</strong> Handle savings calculation estimations for EML profiles where there is no OD cost to reference</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Graviton Savings Dashboard v3.0.2</title>
       <link>

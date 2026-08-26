@@ -1,5 +1,20 @@
 # What's new in Extended Support Cost Projection
 
+## Extended Support Cost Projection - v5.2.3
+
+If you have modified the Extended Support Cost Projection dashboard visuals, these changes will be overridden when the dashboard is updated. Consider backing-up the existing dashboard by creating an analysis from it if you want to keep a reference to customised visuals so you can re-apply them after the update takes place.
+
+To update run these commands in your CloudShell (recommended) or other terminal:
+
+```
+python3 -m ensurepip --upgrade
+pip3 install --upgrade cid-cmd
+cid-cmd update --dashboard-id extended-support-cost-projection
+```
+
+- Added estimated cost column to the top details table in RDS, EKS, OpenSearch, and ElastiCache sheets. The value reflects the current pricing period (Year 1-2 or Year 3) estimated cost for each resource.
+- Added new KPI visuals below each existing date range bucket (3, 6, 12 months, and beyond) in all four service sheets, showing the aggregated estimated cost for resources within each time horizon.
+
 ## Extended Support Cost Projection - v5.2.2
 
 **Important:** This version updates the definition of the ElastiCache view for the Extended Support dashboard. A forced and recursive update is required to pick up the changes.

@@ -97,7 +97,21 @@
         "Alias": "hourly_view",
         "DestinationTableId": "destination-hourly-view"
       }
-    }
+    },
+    "SemanticMetadata": [
+      {
+        "Description": {
+          "Text": "AWS Cost & Usage Report (CUR) usage data at HOURLY granularity (usage_date is the hourly usage-start timestamp), WITHOUT resource_id. Use for intra-day / hourly cost & usage patterns, peak-hour analysis, and diurnal trends. Rolling ~30-day window. IMPORTANT: contains only usage line items (Usage, DiscountedUsage, SavingsPlanCoveredUsage) - no credits, refunds, fees, or tax. For resource-level detail use resource_view; for longer history use summary_view."
+        },
+        "CustomInstructions": [
+          {
+            "InlineCustomInstruction": {
+              "InstructionText": "FIELD NAMES\nAll field names in these instructions are the dataset (QuickSight/SPICE) field names - reference them exactly as written. In the CUR COLUMN MAPPING below, the format is `dataset_field -> source CUR column`: the right side is the original AWS Cost and Usage Report column, shown so you can apply standard CUR knowledge. Query using the dataset_field (left side), not the CUR column.\n\nWHEN TO USE\nUse hourly_view for hourly/intra-day analysis: usage-by-hour, peak vs off-peak, diurnal patterns. Window is a rolling ~30 days; usage_date is the HOURLY usage-start timestamp (not truncated to day).\n\nIMPORTANT SCOPE LIMIT\nThis view contains ONLY usage-type line items: 'Usage', 'DiscountedUsage', 'SavingsPlanCoveredUsage'. It has NO credits, refunds, fees, tax, or RI/SP fee rows. Do NOT use it for total-bill, discount, or credit analysis - use summary_view for those. There is no resource_id - use resource_view for per-resource questions.\n\nCOST COLUMNS\n- unblended_cost: raw line-item cost (default metric).\n- reservation_effective_cost / savings_plan_effective_cost: effective cost for RI- and SP-covered usage. Combine with unblended_cost for an effective-cost view of on-demand usage.\n- No public_cost or amortized_cost column here.\n\nCUR COLUMN MAPPING\nusage_date -> line_item_usage_start_date (HOURLY)\nbilling_period -> bill_billing_period_start_date\npayer_account_id -> bill_payer_account_id\nlinked_account_id -> line_item_usage_account_id\nproduct_code -> line_item_product_code\nservice -> product_servicecode (friendly name)\noperation -> line_item_operation\ncharge_type -> line_item_line_item_type (usage types only, see scope limit)\nusage_type -> line_item_usage_type\nitem_description -> line_item_line_item_description\npricing_unit -> pricing_unit\npricing_term -> pricing_term\nregion -> product_region\nreservation_a_r_n -> reservation_reservation_a_r_n\nsavings_plan_a_r_n -> savings_plan_savings_plan_a_r_n\n\nCost sources: unblended_cost -> line_item_unblended_cost; usage_quantity -> line_item_usage_amount; reservation_effective_cost -> reservation_effective_cost; savings_plan_effective_cost -> savings_plan_savings_plan_effective_cost.\n\nUSAGE & ACCOUNTS\nusage_quantity: consumed quantity in pricing_unit.\naccount_id / account_name: friendly account identifiers (may be NULL if mapping not configured).\n\nORGANIZATIONAL TAXONOMY (may be present)\nDepending on the CUR and this deployment's configuration, additional columns for organizational taxonomy may be present - user-defined cost allocation tags (typically prefixed resource_tags_ / user_) and AWS Cost Categories (typically prefixed cost_category_). When present, use them to group cost by organizational dimensions such as team, environment, cost center, project, or business unit (chargeback/showback). Inspect available columns at query time; do not assume a fixed set.\n\nQUERY TIPS\n- Hour-of-day profile: GROUP BY hour(usage_date).\n- Peak detection: ORDER BY SUM(usage_quantity) or SUM(unblended_cost) per hour.\n- Service/account slice: filter service / linked_account_id, then GROUP BY usage_date."
+            }
+          }
+        ]
+      }
+    ]
   },
   "ImportMode": "SPICE",
   "Permissions": []

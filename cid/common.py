@@ -24,6 +24,7 @@ from cid.utils import get_parameter, get_parameters, set_parameters, unset_param
 from cid.helpers.account_map import AccountMap
 from cid.helpers.account_mapper import AccountMapper
 from cid.helpers.parameter_store import ParametersController
+from cid.helpers.taxonomy_merger import TaxonomyMerger
 from cid.helpers import Athena, S3, IAM, CUR, ProxyCUR, Glue, QuickSight, Dashboard, Dataset, Datasource, csv2view, Organizations, CFN
 from cid.helpers.quicksight.template import Template as CidQsTemplate
 from cid._version import __version__
@@ -1509,6 +1510,26 @@ class Cid():
 
 
 
+    def _get_dataset_account_map_columns(self, compiled_dataset: dict) -> list:
+        """ Return account_map column names if the dataset joins the account_map table.
+
+        Columns are read from Athena so that customer-added attributes
+        (business unit, cost center etc.) are included. Returns [] if
+        the dataset does not use account_map or the table cannot be read.
+        """
+        for table in (compiled_dataset.get('PhysicalTableMap') or {}).values():
+            relational_table = table.get('RelationalTable', {})
+            if relational_table.get('Name') != 'account_map':
+                continue
+            try:
+                # no_cache: same as Dataset.patch, the view can be updated within this run
+                metadata = self.athena.get_table_metadata('account_map', database_name=relational_table.get('Schema'), no_cache=True)
+                return [col.get('Name') for col in metadata.get('Columns', [])]
+            except Exception as exc: #pylint: disable=broad-exception-caught
+                logger.debug(f'Cannot read account_map columns: {exc}')
+                return [col.get('Name') for col in relational_table.get('InputColumns', [])]
+        return []
+
     def create_or_update_dataset(self, dataset_definition: dict, dataset_id: str=None,recursive: bool=True, update: bool=False) -> bool:
         # Read dataset definition from template
         data = self.get_data_from_definition(dataset_definition)
@@ -1695,6 +1716,21 @@ class Cid():
                 name: f"parseJson(tags_json, '$.{name.strip()}')" # This syntax does not work:  $[\"{name}\"]
                 for name in resource_tags
             }
+
+        # patch dataset for taxonomy merges: combine tag fields and account_map columns
+        # into single calculated fields (no Athena view changes, QuickSight level only)
+        if custom_fields: # only if the user selected tags/cost categories; ids are join keys, not taxonomy
+            account_map_columns = [
+                col for col in self._get_dataset_account_map_columns(compiled_dataset)
+                if col not in ('account_id', 'parent_account_id')
+            ]
+            taxonomy_merger = TaxonomyMerger(
+                tag_fields=list(custom_fields.keys()),
+                account_map_columns=account_map_columns,
+            )
+            merges = taxonomy_merger.resolve_merges()
+            if merges:
+                custom_fields.update(taxonomy_merger.build_custom_fields(merges))
         logger.debug(f'custom_fields = {custom_fields}')
         compiled_dataset = Dataset.patch(dataset=compiled_dataset, custom_fields=custom_fields, athena=self.athena)
         logger.trace(f"compiled_dataset = {json.dumps(compiled_dataset)}")
@@ -2054,11 +2090,13 @@ class Cid():
         if isinstance(resource_tags, str):
             resource_tags = [tag for tag in resource_tags.split(',') if tag]
         if resource_tags is None:
+            # group choices by their source (resource tag, IAM principal tag, cost category ...)
+            grouper = TaxonomyMerger(tag_fields=sorted(set(tags_and_names.keys())))
             resource_tags = get_parameter(
                 param_name,
-                message='Select Cost Allocation Tags to be added to datasets(WARNING: this can affect performance. Choose only the strict minimum)',
+                message='Select Cost Allocation Tags and Cost Categories to be added to datasets(WARNING: this can affect performance. Choose only the strict minimum)',
                 multi=True,
-                choices=sorted(list(set(tags_and_names.keys()))),
+                choices=grouper.grouped_choices(grouper.tag_fields),
                 default=resource_tags or [],
             )
 
