@@ -742,7 +742,7 @@ views:
          , m.dbinstanceidentifier
          FROM
            ("${data_collection_database_name}".inventory_rds_db_clusters_data c
-         CROSS JOIN UNNEST(c.dbclustermembers) t (m))
+         CROSS JOIN UNNEST(CAST(json_parse(c.dbclustermembers) AS ARRAY(ROW(dbinstanceidentifier varchar, isclusterwriter boolean, dbclusterparametergroupstatus varchar, promotiontier integer)))) t (m))
       )
       , latest_instance_snapshots AS (
          SELECT
@@ -885,7 +885,7 @@ views:
          , m.dbinstanceidentifier
          FROM
            ("${data_collection_database_name}".inventory_rds_db_clusters_data c
-         CROSS JOIN UNNEST(c.dbclustermembers) t (m))
+         CROSS JOIN UNNEST(CAST(json_parse(c.dbclustermembers) AS ARRAY(ROW(dbinstanceidentifier varchar, isclusterwriter boolean, dbclusterparametergroupstatus varchar, promotiontier integer)))) t (m))
       )
       , ranked_major_versions AS (
          SELECT DISTINCT
@@ -981,7 +981,7 @@ views:
       , i.maxallocatedstorage
       , i.latestrestorabletime
       , i.readreplicasourcedbinstanceidentifier
-      , i.taglist
+      , (CASE WHEN i.taglist IS NULL OR i.taglist = '[]' THEN NULL ELSE array_join(transform(CAST(json_parse(i.taglist) AS ARRAY(ROW(Key varchar, Value varchar))), x -> concat(x.Key, ':', x.Value)), ', ') END) taglist
       , org.name accountname
       , i.collection_date
       , i.region
@@ -1029,7 +1029,7 @@ views:
          , m.dbinstanceidentifier
          FROM
            ("${data_collection_database_name}".inventory_rds_db_clusters_data c
-         CROSS JOIN UNNEST(c.dbclustermembers) t (m))
+         CROSS JOIN UNNEST(CAST(json_parse(c.dbclustermembers) AS ARRAY(ROW(dbinstanceidentifier varchar, isclusterwriter boolean, dbclusterparametergroupstatus varchar, promotiontier integer)))) t (m))
       )
       , version_status_lookup AS (
          SELECT DISTINCT
@@ -1127,7 +1127,7 @@ views:
       , concat(tag.Key, ':', tag.Value) tag_info
       FROM
         ("${data_collection_database_name}".inventory_rds_db_instances_data i
-      CROSS JOIN UNNEST(i.taglist) t (tag))
+      CROSS JOIN UNNEST(CAST(json_parse(i.taglist) AS ARRAY(ROW(Key varchar, Value varchar)))) t (tag))
       WHERE (tag.Key <> '')
     parameters:
       data_collection_database_name:
