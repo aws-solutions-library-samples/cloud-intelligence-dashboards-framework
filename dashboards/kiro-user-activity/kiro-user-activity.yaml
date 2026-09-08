@@ -8,7 +8,7 @@ dashboards:
     dashboardId: kiro-user-activity
     category: Advanced
     theme: MIDNIGHT
-    version: v1.0.0
+    version: v1.1.0
     file: ./kiro-user-activity-definition.yaml
     nonTaxonomyColumns:
     - date
@@ -84,7 +84,8 @@ datasets:
           - CreateColumnsOperation:
               Columns:
               # Standardized date column name shared with kiro_cur_view so a single
-              # cross-dataset "Lookback period" control scopes both datasets.
+              # cross-dataset "Billing period" control scopes both datasets. The name
+              # match is what makes that control's ALL_DATASETS scope work.
               - ColumnName: usage_date
                 ColumnId: col-usage-date
                 Expression: parseDate({date}, "yyyy-MM-dd")
@@ -272,6 +273,25 @@ views:
     # Bounded window over the unbounded Glue table: keeps ~2 years of data so
     # SPICE refresh and Athena scans stay performant as the table grows. The
     # underlying kiro_user_activity table remains the full historical record.
+    #
+    # user_email is RESOLVED PER USERID here rather than passed through, because the
+    # source report does not always populate it: measured on 2026-09-08, userid
+    # 0488d4a8-2061-70eb-8ebd-9298bcd62a44 had a blank email on its 2026-05 row and
+    # dseroka+dariusjs@amazon.com on its 2026-09 rows. That split one person into two
+    # identities everywhere the dashboard groups by user (the `user` column below
+    # falls back to the raw uuid when email is blank, so the pivots showed a uuid row
+    # and an email row for the same human) and produced a blank entry in the User
+    # filter control. Resolving it here fixes every consumer at once, including the
+    # ALL_DATASETS User control that has to match kiro_cur_view's user_email - and
+    # kiro_cur_view already resolves email the same way, via its GROUP BY userid
+    # lookup, so the two agree by construction.
+    #
+    # Still NULL for a userid that has never reported an email anywhere; the `user`
+    # display column's uuid fallback covers that case.
+    #
+    # Columns are enumerated rather than SELECT *: Trino has no "SELECT * EXCEPT", so
+    # overwriting one column requires naming them all. If the source table gains a
+    # column, add it here AND to InputColumns above.
     parameters:
       data_collection_database_name:
         type: athena
@@ -282,7 +302,27 @@ views:
         global: True
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".kiro_user_activity_view AS
-      SELECT *
+      SELECT
+        "date"
+      , "userid"
+      , "client_type"
+      , "chat_conversations"
+      , "credits_used"
+      , "overage_cap"
+      , "overage_credits_used"
+      , "overage_enabled"
+      , "profileid"
+      , "subscription_tier"
+      , "total_messages"
+      , "new_user"
+      , "max"("nullif"("user_email", '')) OVER (PARTITION BY "userid") "user_email"
+      , "model_name"
+      , "model_messages"
+      , "account_id"
+      , "region"
+      , "year"
+      , "month"
+      , "day"
       FROM
         "${data_collection_database_name}".kiro_user_activity
       WHERE
@@ -299,11 +339,61 @@ views:
     # KPIs need DISTINCT_COUNT(resource_id) plus a per-user pricing_unit='Credits'
     # test. `summary_view` aggregates resource_id away, so it can't drive these.
     #
-    # This reproduces the "Kiro and Amazon Q Developer Summary" logic from CUDOS:
-    #   - Total Subscriptions = distinct resource_id where product_code='Kiro'
-    #   - Active   = users with at least one Credits line   (Kiro User Has Credits Usage = True)
-    #   - Inactive = users with zero Credits lines          (= False)
+    # Started as a port of the "Kiro and Amazon Q Developer Summary" logic from
+    # CUDOS, which counts distinct resource_id and splits Active/Inactive on whether
+    # a Credits line exists in the selected window. That split has since been
+    # replaced (see below); the row grain and the Credits test are what carried over.
     # Bounded to 18 months to keep SPICE refresh and Athena scans performant.
+    #
+    # THE ACTIVE/INACTIVE SPLIT IS SCOPED TO THE SELECTED BILLING PERIOD, and no extra
+    # columns are needed here to achieve that. A licence is inactive in a month when it
+    # has a fee line on that month's bill and consumed zero credits during it, which the
+    # analysis definition derives from these 14 columns:
+    #   - period_fees              fees billed per account + resource_id, PRE_AGG
+    #   - period_credits           credits consumed per account + resource_id, PRE_AGG
+    #   - inactive_in_period       period_fees > 0 AND period_credits = 0
+    #   - last_activity_in_period  newest Credits line inside the period, PRE_AGG
+    #   - last_activity_date       newest Credits line all-time, PRE_FILTER (display only)
+    #   - days_idle                dateDiff(last_activity_date, now()), PRE_FILTER
+    #   - subscription_key         account_id|resource_id, the licence counting unit
+    #
+    # PRE_AGG is what makes them follow the dashboard's date control, which is
+    # ALL_DATASETS and so reaches this view. A PRE_FILTER window is evaluated BEFORE
+    # filters and would silently ignore the billing period, which is why only the two
+    # display-only all-time fields use it.
+    #
+    # The one hazard, worth knowing before changing the date control: a PARTIAL month
+    # breaks the roster. Measured on real data on 2026-09-08, a month-to-date window made
+    # Total Subscriptions read 1 of 29, because Kiro fee lines are dated either on the 1st
+    # or forward through month end AND CUR delivery lag means the current month's fees may
+    # not have landed yet. Over a complete calendar month every line shape falls inside
+    # the window, so the control defaults to the previous month.
+    #
+    # That default is the ONLY structural defence available. Restricting the control to
+    # whole months is not possible - QuickSight rejects MinimumGranularity: MONTH with
+    # "Filter only supports [DAY, HOUR, MINUTE] as minimum granularity" - so a viewer can
+    # always select a partial window and make these counts read low. The text box on each
+    # sheet warns about it.
+    #
+    # WHY LAST ACTIVITY COMES FROM CUR AND NOT THE ACTIVITY DATASET. Verified in
+    # Athena against real (non-synthetic) subscription data on 2026-09-08: Credits
+    # lines carry the actual day of consumption, and for every subscription present
+    # in both sources the max Credits date equalled the activity dataset's last
+    # active date exactly, with no mismatches. CUR also covers subscriptions in
+    # accounts whose Kiro activity report is not being collected, which the
+    # activity dataset cannot see at all.
+    #
+    # Fee lines are dated by billing convention, not by when anyone worked, and two
+    # different shapes were observed in the same table on 2026-09-08:
+    #   - MONTH-ANCHORED: one line dated the 1st of the billing month (28 of 29
+    #     subscriptions here).
+    #   - DAILY-PRORATED: a fractional line every day, running through the end of the
+    #     billing month, i.e. dated in the FUTURE relative to today (the 1 real
+    #     subscription, billed 0.0333 qty / 0.6667 USD per day).
+    # So neither the presence of a fee line nor max(usage_date) tells you anything
+    # about activity, and code must tolerate future-dated rows. Only
+    # pricing_unit='Credits' with a positive usage amount means "the user actually
+    # did something on this date".
     #
     # user_email: CUR only identifies a subscriber by line_item_resource_id, which
     # is an Identity Center ARN (arn:aws:identitystore:::user/<uuid>). The <uuid>
@@ -356,9 +446,19 @@ views:
       FROM
         "${cur2_database}"."${cur2_table_name}"
         LEFT JOIN (
-          SELECT DISTINCT "userid", "user_email"
+          -- Email lookup only, aggregated to exactly one row per userid. A plain
+          -- SELECT DISTINCT userid, user_email would emit two rows for any userid
+          -- that has ever reported two different emails, fanning out the CUR rows
+          -- it joins to and double-counting unblended_cost.
+          --
+          -- Deliberately keyed on userid alone, not account_id + userid: an email
+          -- is an attribute of the person, so it should resolve for a subscription
+          -- in an account whose activity data has not been collected.
+          SELECT
+            "userid"
+          , "max"("nullif"("user_email", '')) "user_email"
           FROM "${athena_database_name}".kiro_user_activity_view
-          WHERE "user_email" <> ''
+          GROUP BY "userid"
         ) activity ON "regexp_extract"("line_item_resource_id", '[^/]+$') = activity."userid"
       WHERE
         "line_item_product_code" = 'Kiro'
