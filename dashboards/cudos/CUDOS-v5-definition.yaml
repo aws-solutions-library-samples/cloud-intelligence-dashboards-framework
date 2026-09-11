@@ -71734,7 +71734,8 @@ Sheets:
       \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
       16px\">Amazon Cloud Watch</inline>\n    </li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline font-size=\"16px\">AWS CloudTrail</inline>\n    </li>\n   \
-      \ <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">AWS Config</inline>\n\
+      \ <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">AWS DevOps Agent</inline>\n    </li>\n\
+      \    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">AWS Config</inline>\n\
       \    </li>\n  </ul>\n</text-box>"
     SheetTextBoxId: ed32c635-d2cd-44ac-acb8-7e69dbb4e03d
   - Content: "<text-box>\n  <inline font-size=\"40px\">AWS DevOps Agent\_</inline>\n\
