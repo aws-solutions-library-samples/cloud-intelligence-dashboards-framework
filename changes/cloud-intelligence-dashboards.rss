@@ -5,8 +5,33 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Thu, 14 Aug 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 10 Sep 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[New Dashboard] Bedrock Invocation Usage Dashboard v1.0.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-amazon-bedrock-invocation-logs.md
+      </link>
+      <pubDate>Thu, 10 Sep 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[New Dashboard]]></category>
+      <guid isPermaLink="false">84d27c3d-68ff-48ac-917b-15a74170be8f</guid>
+      <description>Bedrock Invocation Usage Dashboard v1.0.0 - Initial Release</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    The <strong>Bedrock Invocation Usage Dashboard</strong> provides enterprise visibility into Amazon Bedrock model invocation activity across your AWS accounts, helping FinOps and engineering leaders monitor per-account token consumption, model usage, and cost attribution at scale.
+  </p>
+  <h3>Key Features:</h3>
+  <ul>
+    <li><strong>Usage Overview &amp; Trends:</strong> KPI highlights for invocation count and token usage, daily trend charts, and breakdowns by model, user, and account with operational details.</li>
+    <li><strong>Raw Data Explorer:</strong> Bedrock Invocation Records Detail and Total Token Usage by Request.</li>
+    <li><strong>Token tracking:</strong> Input, output, total, cache read, and cache write token usage per account and per model.</li>
+    <li><strong>Response insights:</strong> Stop reason analysis and prompt/response previews (truncated to 1,000 characters) for spot-checking quality.</li>
+    <li><strong>Regional breakdown:</strong> Invocation activity by AWS Region, with shared filters for date range, account, model ID, and region.</li>
+  </ul>
+</div>
+]]></content:encoded>
+    </item>
     <item>
       <title>[Update] cid-cmd v4.4.17</title>
       <link>
