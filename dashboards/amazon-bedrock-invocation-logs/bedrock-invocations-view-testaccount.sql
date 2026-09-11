@@ -18,7 +18,7 @@ SELECT
 , modelid
 , identity_arn
 , IF((identity_arn LIKE '%:assumed-role/%'), element_at(split(identity_arn, '/'), -1), identity_arn) identity
-, requestmetadata
+, json_format(cast(requestmetadata as json)) requestmetadata
 , year
 , month
 , day
