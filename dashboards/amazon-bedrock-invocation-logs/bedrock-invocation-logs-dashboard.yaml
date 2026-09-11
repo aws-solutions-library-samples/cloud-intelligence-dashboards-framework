@@ -1,0 +1,157 @@
+dashboards:
+  BEDROCK INVOCATION USAGE DASHBOARD:
+    dependsOn:
+      datasets:
+      - bedrock_invocations_view
+    name: Bedrock Invocation Usage Dashboard
+    dashboardId: bedrock-invocation-usage-dashboard
+    category: Custom
+    theme: MIDNIGHT
+    templateId: bedrock-invocation-usage-dashboard
+    sourceAccountId: '455007007237'
+    region: us-east-1
+datasets:
+  bedrock_invocations_view:
+    data:
+      DataSetId: 392ac514-3697-40b2-9572-e14f4c3ee693
+      Name: bedrock_invocations_view
+      PhysicalTableMap:
+        b6321d12-9c99-4c58-ae3d-a20d5ece32b6:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: bedrock_invocations_view
+            InputColumns:
+            - Name: accountid
+              Id: bedrock_i-accountid-b91da0
+              Type: STRING
+            - Name: timestamp
+              Id: bedrock_i-timestamp-bb4c33
+              Type: DATETIME
+            - Name: region
+              Id: bedrock_i-region-488e60
+              Type: STRING
+            - Name: requestid
+              Id: bedrock_i-requestid-899a8d
+              Type: STRING
+            - Name: operation
+              Id: bedrock_i-operation-76b909
+              Type: STRING
+            - Name: modelid
+              Id: bedrock_i-modelid-00cd66
+              Type: STRING
+            - Name: identity_arn
+              Id: bedrock_i-identity_-8171a8
+              Type: STRING
+            - Name: identity
+              Id: bedrock_i-identity-428a3f
+              Type: STRING
+            - Name: requestmetadata
+              Id: bedrock_i-requestme-5f6d31
+              Type: STRING
+            - Name: year
+              Id: bedrock_i-year-678670
+              Type: STRING
+            - Name: month
+              Id: bedrock_i-month-144b93
+              Type: STRING
+            - Name: day
+              Id: bedrock_i-day-1076c9
+              Type: STRING
+            - Name: input_token_count
+              Id: bedrock_i-input_tok-a47677
+              Type: INTEGER
+            - Name: input_content_type
+              Id: bedrock_i-input_con-249e78
+              Type: STRING
+            - Name: output_token_count
+              Id: bedrock_i-output_to-da297f
+              Type: INTEGER
+            - Name: output_content_type
+              Id: bedrock_i-output_co-ee9c02
+              Type: STRING
+            - Name: usage_input_tokens
+              Id: bedrock_i-usage_inp-e8eab4
+              Type: INTEGER
+            - Name: usage_output_tokens
+              Id: bedrock_i-usage_out-be4188
+              Type: INTEGER
+            - Name: usage_total_tokens
+              Id: bedrock_i-usage_tot-4e4f1d
+              Type: INTEGER
+            - Name: usage_cache_read_tokens
+              Id: bedrock_i-usage_cac-2d238a
+              Type: INTEGER
+            - Name: usage_cache_write_tokens
+              Id: bedrock_i-usage_cac-9b0d26
+              Type: INTEGER
+            - Name: stop_reason
+              Id: bedrock_i-stop_reas-7d398a
+              Type: STRING
+            - Name: response_preview
+              Id: bedrock_i-response_-a54d0c
+              Type: STRING
+            - Name: prompt_preview
+              Id: bedrock_i-prompt_pr-1bea89
+              Type: STRING
+      ImportMode: SPICE
+      DataPrepConfiguration:
+        SourceTableMap:
+          a9d947c3-b1f9-484a-9fd1-e0cd2c8a305b:
+            PhysicalTableId: b6321d12-9c99-4c58-ae3d-a20d5ece32b6
+        TransformStepMap:
+          7a65ac3a-6cf3-4aa4-8f84-ef4af13567fc:
+            ImportTableStep:
+              Alias: bedrock_invocations_view
+              Source:
+                SourceTableId: a9d947c3-b1f9-484a-9fd1-e0cd2c8a305b
+        DestinationTableMap:
+          f0629f89-9e5f-4012-8160-b905d8a83881:
+            Alias: Destination Table 1
+            Source:
+              TransformOperationId: 7a65ac3a-6cf3-4aa4-8f84-ef4af13567fc
+      SemanticModelConfiguration:
+        TableMap:
+          7ae5b770-b403-4791-9f1a-3a41cb3e2187:
+            Alias: Semantic Table 1
+            DestinationTableId: f0629f89-9e5f-4012-8160-b905d8a83881
+    dependsOn:
+      views:
+      - bedrock_invocations_view
+    schedules:
+    - default
+crawlers: {}
+views:
+  bedrock_invocations_view:
+    dependsOn: {}
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".bedrock_invocations_view AS
+      SELECT
+        accountid
+      , CAST(from_iso8601_timestamp(timestamp) AS timestamp) timestamp
+      , region
+      , requestid
+      , operation
+      , modelid
+      , identity_arn
+      , IF((identity_arn LIKE '%:assumed-role/%'), element_at(split(identity_arn, '/'), -1), identity_arn) identity
+      , JSON_FORMAT(CAST(requestmetadata AS JSON)) requestmetadata
+      , year
+      , month
+      , day
+      , input.inputtokencount input_token_count
+      , input.inputcontenttype input_content_type
+      , output.outputtokencount output_token_count
+      , output.outputcontenttype output_content_type
+      , CAST(json_extract_scalar(output.outputbodyjson, '$.usage.inputtokens') AS INTEGER) usage_input_tokens
+      , CAST(json_extract_scalar(output.outputbodyjson, '$.usage.outputtokens') AS INTEGER) usage_output_tokens
+      , CAST(json_extract_scalar(output.outputbodyjson, '$.usage.totaltokens') AS INTEGER) usage_total_tokens
+      , CAST(json_extract_scalar(output.outputbodyjson, '$.usage.cachereadinputtokencount') AS INTEGER) usage_cache_read_tokens
+      , CAST(json_extract_scalar(output.outputbodyjson, '$.usage.cachewriteinputtokencount') AS INTEGER) usage_cache_write_tokens
+      , json_extract_scalar(output.outputbodyjson, '$.stopreason') stop_reason
+      , json_extract_scalar(output.outputbodyjson, '$.output.message.content[0].text') response_preview
+      , COALESCE(json_extract_scalar(input.inputbodyjson, '$.messages[0].content[0].text'), json_extract_scalar(input.inputbodyjson, '$.messages[0].content'), json_extract_scalar(input.inputbodyjson, '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText')) prompt_preview
+      FROM
+        "${athena_database_name}".bedrock_invocations
+      WHERE (from_iso8601_timestamp(timestamp) >= date_add('month', -6, current_timestamp))
