@@ -1,0 +1,30 @@
+# Security agent (launch library). Loaded via agents/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  security:
+    category: Additional
+    name: CID Security Advisor
+    agentId: cid-security-advisor
+    description: >-
+      Security finding triage advisor over the Cloud Intelligence Dashboards.
+      Prioritizes Trusted Advisor security and fault-tolerance findings and
+      correlates them with security-service usage across accounts.
+    dependsOn:
+      spaces: [cid-dashboards-space]
+      dashboards: [CUDOSv5, CID]
+      optionalDashboards: [Trends]
+      datasets:
+        - ta-organizational-view
+      knowledgeBases: []
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "Which accounts have the most open high-severity security findings?"
+      - "Summarize Trusted Advisor security findings by check and account"
+      - "Which accounts show unusual changes in security-service usage?"
+    welcomeMessage: >-
+      Hi, I'm the CID Security Advisor. Ask me to triage Trusted Advisor
+      security findings, rank accounts by open findings, or review
+      security-service usage across your organization.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }

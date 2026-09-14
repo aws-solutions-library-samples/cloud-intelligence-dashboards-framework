@@ -1,0 +1,31 @@
+# Operations agent (launch library). Loaded via agents/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  operations:
+    category: Additional
+    name: CID Operations Advisor
+    agentId: cid-operations-advisor
+    description: >-
+      Incident triage and operational health advisor over the Cloud Intelligence
+      Dashboards. Correlates usage and spend signals with Trusted Advisor
+      findings and Compute Optimizer recommendations to spot operational risk.
+    dependsOn:
+      spaces: [cid-dashboards-space]
+      dashboards: [CUDOSv5, CID]
+      optionalDashboards: [Trends]
+      datasets:
+        - ta-organizational-view
+        - compute_optimizer_all_options
+      knowledgeBases: []
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "Which services show unusual usage growth that could signal an operational issue?"
+      - "Summarize the highest-risk Trusted Advisor findings across my accounts"
+      - "Which resources does Compute Optimizer flag as idle or over-provisioned?"
+    welcomeMessage: >-
+      Hi, I'm the CID Operations Advisor. Ask me about operational health,
+      unusual usage patterns, Trusted Advisor findings, or Compute Optimizer
+      recommendations across your AWS accounts.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }

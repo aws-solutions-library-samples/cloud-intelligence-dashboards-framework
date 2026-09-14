@@ -40,6 +40,25 @@ GitHub provides additional document on [forking a repository](https://help.githu
 [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
 
 
+## Running the Python test suite
+
+Install the package with its test dependencies and run the python tests:
+
+```bash
+pip install -e '.[test]'
+pytest cid/test/python/
+```
+
+
+## Contributing a Quick Agent (zero Python)
+
+Adding a new Quick Agent to the catalog is a content-only contribution: one folder of
+YAML files (`agents/<name>/<name>.yaml` + `persona.yaml`) plus a line in
+`agents/catalog.yaml`, and no Python change — the same way dashboards are added.
+See the [zero-Python agent contribution guide](docs/agents-contributing.md) for the manifest
+shapes, a worked example, the content-only PR template, and the review SLA.
+
+
 ## Finding contributions to work on
 Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.
 

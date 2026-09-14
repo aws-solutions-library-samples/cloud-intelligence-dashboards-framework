@@ -108,6 +108,63 @@ cid-cmd create-cur-proxy -vv \
 ```
 
 
+#### Create Quick Agent
+Create a Quick Agent (an AI advisor) and its knowledge Space over CID dashboards that are **already deployed**. This command never deploys dashboards and never provisions the data layer (CUR, Data Exports, Data Collection). When required dashboards are missing it points to the existing CID/CUDOS and Data Collection deployment guidance instead of deploying anything. When the agent is already deployed, it shows what differs from the catalog and asks whether to update instead. See the [create-agent command reference](docs/cid-cmd.md#create-agent) for details.
+
+```bash
+cid-cmd create-agent
+```
+
+Create Agent Command Options:
+```
+ --agent-id TEXT                   Agent id from the catalog (a category-grouped picker is shown when omitted)
+ --space TEXT                      Name of a Space to use instead of the per-agent default Space (bring-your-own Space)
+ --cleanup-space                   Remove only CID-managed Space dashboard resources that are no longer referenced by any agent's dependencies
+ --update (yes|no)                 When the agent is already deployed, update it without prompting ('no' exits with guidance)
+```
+
+Example with a bring-your-own Space:
+```bash
+cid-cmd create-agent --agent-id finops --space 'My Team Space'
+```
+
+#### Update Quick Agent
+Update a deployed CID-managed Quick Agent to match the catalog (for example after a persona change). Shows which catalog-managed fields drifted and asks for confirmation before overriding them. Space links are reconciled additively by default: Spaces you attached outside the catalog are never detached.
+
+```bash
+cid-cmd update-agent --agent-id finops
+```
+
+Update Agent Command Options:
+```
+ --agent-id TEXT                   Agent id from the catalog (a category-grouped picker is shown when omitted)
+ --space TEXT                      Name of a Space to use instead of the per-agent default Space (bring-your-own Space)
+ --cleanup-space                   Remove only CID-managed Space dashboard resources that are no longer referenced by any agent's dependencies
+ --sync-spaces                     Exactly synchronize the agent Space links with the catalog (removes Spaces the catalog does not carry)
+ --repair                          Detach and re-attach the agent Spaces to rewrite the links (recovers an agent whose Space shows as unavailable although it describes as healthy)
+```
+
+#### List Quick Agents
+List catalog agents grouped by category with live deployment status. Deployed agents are marked with a check indicator; entries in category `Deprecated` are hidden. Each entry also lists the agent's required and optional dependency dashboards with their deployment state (✓/✗).
+
+```bash
+cid-cmd list-agents
+```
+
+#### Delete Quick Agent
+Delete a CID-managed Quick Agent. Deletion is gated by a yes/no confirmation defaulting to `no`, refuses agents that were not created by CID, and never deletes any dashboard.
+
+```bash
+cid-cmd delete-agent --agent-id finops
+```
+
+Delete Agent Command Options:
+```
+ --agent-id TEXT                   Agent id to delete
+ --delete-space                    Also delete the Agent's Space when no other CID-managed agent depends on it
+ --cleanup-space                   Remove only CID-managed Space dashboard resources that are no longer referenced by any agent's dependencies
+```
+
 #### Delete Dashboard and all dependencies unused by other
 Delete Dashboards and all dependencies unused by other CID-managed dashboards.(including QuickSight datasets, Athena views and tables)
 ```bash
