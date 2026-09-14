@@ -775,7 +775,7 @@ views:
          , *
          , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_line_item_type" = 'RIFee')) THEN 0 ELSE "pricing_public_on_demand_cost" END) "pricing_public_on_demand_cost_adjusted"
          FROM
-           "${cur2_table_name}"
+           "${cur2_database}"."${cur2_table_name}"
          WHERE ("line_item_product_code" = 'AWSElementalMediaLive')
       )
       , "pre_process" AS (
@@ -962,7 +962,7 @@ views:
          , "reservation_effective_cost"
          , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_line_item_type" = 'RIFee')) THEN 0 ELSE "pricing_public_on_demand_cost" END) "pricing_public_on_demand_cost"
          FROM
-           "${cur2_table_name}"
+           "${cur2_database}"."${cur2_table_name}"
          WHERE (CAST("line_item_usage_end_date" AS date) >= ("date_trunc"('month', current_timestamp) - INTERVAL  '36' MONTH))
       )
       , eml_ri_first_start_time AS (
@@ -1110,7 +1110,7 @@ views:
          , TRY_CAST(SPLIT_PART("reservation_end_time", 'T', 1) AS date) "reservation_end_date"
          , (CASE WHEN (("line_item_product_code" = 'AWSElementalMediaLive') AND ("line_item_line_item_type" = 'RIFee')) THEN 0 ELSE "pricing_public_on_demand_cost" END) "pricing_public_on_demand_cost_adjusted"
          FROM
-           "${cur2_table_name}"
+           "${cur2_database}"."${cur2_table_name}"
          WHERE (("line_item_product_code" LIKE '%Media%') AND ("line_item_product_code" <> 'AWSElementalMediaStore') AND (NOT ("line_item_product_code" LIKE '%MediaSupport')) AND ("bill_billing_period_start_date" >= (date_trunc('month', current_timestamp) - INTERVAL  '13' MONTH)) AND (CAST(concat("billing_period", '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '13' MONTH)) AND (NOT ("line_item_line_item_type" IN ('Tax', 'Refund', 'Credit'))))
       )
       , "cur_pre_processing" AS (
