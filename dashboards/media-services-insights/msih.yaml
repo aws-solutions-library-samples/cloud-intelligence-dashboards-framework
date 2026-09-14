@@ -1098,6 +1098,7 @@ views:
       - reservation_start_time
       - reservation_unused_amortized_upfront_fee_for_billing_period
       - reservation_unused_recurring_fee
+      - resource_tags
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".msih_view AS
       WITH
