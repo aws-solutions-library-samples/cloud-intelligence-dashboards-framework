@@ -2,6 +2,32 @@ CalculatedFields:
 - DataSetIdentifier: kiro_user_activity
   Expression: ifelse({monthly_plan_utilization_pct} >= 0.75, 1, 0)
   Name: at_risk_flag
+# The mirror image of at_risk_flag, for the "Users Below 25% of Plan" KPI that sits
+# beside it. Both read the same MONTHLY utilization figure, so the two counts are
+# directly comparable and the thresholds cannot drift apart.
+#
+# The plan_credits > 0 guard is required and is NOT symmetric with at_risk_flag.
+# monthly_plan_utilization_pct returns 0 when the tier is unrecognised (plan_credits
+# = 0 means the tier ladder in the dataset has no entry for it), and a 0 fails the
+# >= 0.75 test harmlessly - an unknown tier simply never counts as at risk. Here 0
+# would PASS the < 0.25 test, so without the guard every user on a tier the dashboard
+# does not know about would be reported as under-using an allowance nobody knows.
+#
+# Free tier is deliberately included: 50 credits is a real known allowance, and the
+# purpose of this KPI per the customer is to hand managers a list of people who are
+# not using the tool, which is a question about people rather than about cost. What to
+# DO about it is the job of tier_recommendation_monthly, which does exclude the tiers
+# with no smaller plan to move to.
+#
+# KNOWN CAVEAT, inherited from monthly_plan_utilization_pct: with the Model control
+# narrowed to a single model, PRE_AGG sees only that model's rows, and the source
+# report writes credits_used on just one model row per user-day. Utilization then
+# reads near 0 and this KPI OVER-counts. at_risk_flag has the same root cause but
+# fails safe by under-counting. Read this KPI with Model set to all values.
+- DataSetIdentifier: kiro_user_activity
+  Expression: ifelse({plan_credits} > 0 AND {monthly_plan_utilization_pct} < 0.25, 1,
+    0)
+  Name: underutilized_flag
 - DataSetIdentifier: kiro_user_activity
   Expression: ifelse({plan_credits} > 0, sumOver({credits_used_num}, [userid, truncDate("MM",
     {usage_date})], PRE_AGG) / {plan_credits}, 0)
@@ -10,6 +36,25 @@ CalculatedFields:
   Expression: sumOver({overage_credits_used_num}, [userid, truncDate("MM", {usage_date})],
     PRE_AGG)
   Name: monthly_overage_credits
+# A ratio must be divided AFTER summing, so both sides are summed over the same
+# [userid, month] partition here rather than aggregated in the field well. The
+# dataset column credits_per_message CANNOT be used for this: it is per row, this
+# dataset is one row per user per day per MODEL, and the source report writes
+# credits_used on only ONE of those model rows (zero on the rest), so averaging it
+# divides a real ratio by the model-row count. Measured on 2026-09-08,
+# AVERAGE(credits_per_message) read 0.161 dataset-wide against a true
+# SUM(credits)/SUM(messages) of 0.388, understated 2.4x.
+#
+# Constant within a user-month by construction, so the field wells take MIN of it,
+# exactly as they do for monthly_plan_utilization_pct. PRE_AGG for the same reason
+# and with the same caveat: it sees only rows surviving the row-level filters, so
+# filtering to a single Model can exclude the credits carrier row and read 0.
+- DataSetIdentifier: kiro_user_activity
+  Expression: ifelse(sumOver({total_messages_num}, [userid, truncDate("MM", {usage_date})],
+    PRE_AGG) > 0, sumOver({credits_used_num}, [userid, truncDate("MM", {usage_date})],
+    PRE_AGG) / sumOver({total_messages_num}, [userid, truncDate("MM", {usage_date})],
+    PRE_AGG), 0)
+  Name: monthly_credits_per_message
 # Tier right-sizing based on MONTHLY utilization (Kiro bills per calendar month).
 # Ladder: Pro (1k) < ProPlus (2k) < ProMax (5k) < Power (10k).
 #  - Any overage this month => plan too small. Not on Power => Upgrade Candidate.
@@ -28,18 +73,282 @@ CalculatedFields:
       'Right-Sized'
     )
   Name: tier_recommendation_monthly
-# CUR-backed active/inactive split, ported from the CUDOS "Kiro and Amazon Q
-# Developer Summary" widget. A subscribed user (one resource_id) is "Active" if
-# they have at least one Credits line in the window, "False" (inactive) if none.
-# The activity CSV can't express this - it only has users who did something.
+# One Kiro licence = one resource_id IN ONE ACCOUNT. The same person (one
+# Identity Center resource_id) subscribed in two accounts is billed twice and holds
+# two licences, either of which can be idle and reclaimable independently, so the
+# unit of counting has to be the pair. DISTINCT_COUNT({resource_id}) alone would
+# collapse those two licences into one and hide the wasted spend. Verified against
+# real data: 29 distinct resource_ids but 30 account+resource_id licences.
 - DataSetIdentifier: kiro_cur_view
-  Expression: |-
+  Expression: concat({account_id}, '|', {resource_id})
+  Name: subscription_key
+# THE TWO PERIOD-SCOPED FIELDS BELOW ARE THE ACTIVE/INACTIVE TEST. Both are PRE_AGG,
+# which is evaluated AFTER filters, so both see exactly the rows inside the Billing
+# period the user selected (see fg-date-global). That is the whole point: "inactive in
+# August" has to be answered from August's rows and nothing else.
+#
+# PRE_FILTER would be wrong here - it is evaluated BEFORE filters, so it cannot see the
+# billing period at all. An earlier revision used PRE_FILTER precisely because the test
+# it was expressing then ("idle for 30 days as of today") was an out-of-window question.
+# Now that the question is entirely within-period, PRE_AGG is the correct level. Do not
+# "fix" these to PRE_FILTER: it silently detaches them from the date picker.
+#
+# Partitioned by account_id AND resource_id, not resource_id alone: a subscription is
+# billed per account, so someone subscribed in two accounts but only working in one has
+# a genuinely idle subscription in the other. Partitioning on resource_id alone would
+# let the active account mask the wasted subscription.
+#
+# period_fees is what a licence was CHARGED in the selected period, and it replaces the
+# old months_since_last_bill guard. "Was this licence billed in the month I am looking
+# at?" is both a sharper question than "was it billed recently?" and the one that keeps
+# cancelled licences out of the roster automatically - no <= 1 month fudge factor.
+# Excludes Credits lines so that a licence which somehow consumed credits without being
+# billed a fee cannot masquerade as a subscription.
+- DataSetIdentifier: kiro_cur_view
+  Expression: sumOver(ifelse({pricing_unit} <> 'Credits', {unblended_cost}, 0), [{account_id},
+    {resource_id}], PRE_AGG)
+  Name: period_fees
+# Credits actually consumed in the selected period. Only pricing_unit='Credits' with a
+# positive quantity means "the user did something": fee lines are dated by billing
+# convention (on the 1st, or every day through month end) rather than by when anyone
+# worked, so their presence says nothing at all about activity.
+- DataSetIdentifier: kiro_cur_view
+  Expression: sumOver(ifelse({pricing_unit} = 'Credits' AND {usage_quantity} > 0, {usage_quantity},
+    0), [{account_id}, {resource_id}], PRE_AGG)
+  Name: period_credits
+# Billed in the selected period, consumed nothing in it. This is the definition the
+# dashboard acts on, and it is deliberately self-contained per month: August's answer is
+# computed from August's rows, so it does not drift as time passes or as new data lands.
+#
+# A licence with no fee line in the period is neither active nor inactive - it is not on
+# this month's bill and so is not part of the roster at all (see period_fees).
+- DataSetIdentifier: kiro_cur_view
+  Expression: ifelse({period_fees} > 0 AND {period_credits} = 0, 1, 0)
+  Name: inactive_in_period
+# ALL-TIME staleness, for the two informational columns in the idle table. These two are
+# PRE_FILTER on purpose and are the ONLY fields here that ignore the billing period: the
+# question they answer is "when did this person last do anything, ever?", which is what
+# makes an idle licence in August worth chasing today. A licence inactive in August that
+# came back to life in September shows Last Activity in September, and that context is
+# the point - it stops someone reclaiming a licence that is now in use.
+#
+# Verified in Athena against real subscription data: for every subscription present in
+# both sources this matches the activity dataset's last active date exactly, and CUR
+# additionally covers accounts whose activity report is not collected.
+- DataSetIdentifier: kiro_cur_view
+  Expression: maxOver(ifelse({pricing_unit} = 'Credits' AND {usage_quantity} > 0,
+    {usage_date}, NULL), [{account_id}, {resource_id}], PRE_FILTER)
+  Name: last_activity_date
+# THE BOUNDS OF THE SELECTED BILLING PERIOD, recovered from the data rather than from the
+# filter. QuickSight gives an expression no way to read a filter's start and end dates, so
+# these take the min and max usage_date among the rows that SURVIVED the filter (PRE_AGG,
+# empty partition = across the whole filtered dataset) and round out to whole calendar
+# months. Rounding is what makes them stable: for a one-month selection the answer is that
+# month's 1st and last day no matter which fee-line shape the licences use or which
+# Account / User is selected, even though the raw min and max move around.
+#
+# The honest limitation: these describe the period AS COVERED BY DATA, not the literal
+# filter bounds. Selecting "This year" in September yields 1 Jan to 30 Sep, not 31 Dec,
+# because no later rows exist yet. For the whole-month selections this dashboard is built
+# around, which is what the text boxes ask for, the two coincide.
+#
+# The alternative was a pair of date parameters plus their own controls, which would have
+# meant a second date picker on every sheet. Reconsider that if the literal bounds ever
+# matter more than having one control.
+- DataSetIdentifier: kiro_cur_view
+  Expression: truncDate("MM", minOver({usage_date}, [], PRE_AGG))
+  Name: period_start
+- DataSetIdentifier: kiro_cur_view
+  Expression: addDateTime(-1, "DD", addDateTime(1, "MM", truncDate("MM", maxOver({usage_date},
+    [], PRE_AGG))))
+  Name: period_end
+- DataSetIdentifier: kiro_cur_view
+  Expression: dateDiff({period_start}, {period_end}, "DD") + 1
+  Name: period_days
+# Days idle AS AT THE END OF THE SELECTED PERIOD, not as at today. Looking at August has
+# to give August's answer, and a figure measured from now() silently grew every day and
+# reported the same number whichever month you were reviewing.
+#
+# Three branches:
+#  1. Never consumed credits in any period -> the full length of the period. This is the
+#     case that used to render as an empty cell, because dateDiff on a NULL date is NULL:
+#     the licences with NOTHING on record, the most reclaimable ones, were the only ones
+#     showing no number at all. The period length is a floor, not the true figure - the
+#     licence has been idle at least this long - and it is the most that can be said from
+#     the selected period alone.
+#  2. Active AFTER the period ended -> the full length of the period, the same floor as
+#     branch 1. This happens whenever a licence idle in August comes back to life in
+#     September, because last_activity_date is all-time. Measured on real data for
+#     dseroka+dariusjs@amazon.com in account 654654305283, reviewing August: Last Activity
+#     read 2026-09-04, later than the 31 August period end.
+#
+#     This branch returned 0 first, to avoid the negative number a raw dateDiff would give.
+#     That was wrong, and provably so from the row itself: the licence is ON this table,
+#     which means it consumed no credits in the whole selected period, so it cannot have
+#     been idle for zero days. It also made Inactivity Cost read 0.00 for a month that was
+#     genuinely paid for and unused, and pushed Months Active to the full licensed life.
+#
+#     The exact figure - days since the last activity ON OR BEFORE the period end - is not
+#     reachable here. It needs a window over rows the Billing period filter has already
+#     removed, and a PRE_FILTER window cannot be used because period_end is itself PRE_AGG,
+#     evaluated after filters. Only a date parameter would give it, at the price of a second
+#     date control. The period length is exact for the period and a floor for all time,
+#     which is the honest reading and never contradicts the row's presence in the table.
+#  3. Otherwise the days from the last activity to the end of the period.
+- DataSetIdentifier: kiro_cur_view
+  Expression: >-
     ifelse(
-        sumOver(ifelse({pricing_unit} = 'Credits', 1, 0), [{resource_id}], PRE_AGG) = 0,
-        'False',
-        'True'
+      isNull({last_activity_date}), {period_days},
+      {last_activity_date} > {period_end}, {period_days},
+      dateDiff({last_activity_date}, {period_end}, "DD")
     )
-  Name: Kiro User Has Credits Usage
+  Name: days_idle
+# The first day this licence was ever charged a fee, PRE_FILTER so it reaches back past
+# the selected period into the full 18 months the view holds. Needed for a licence that
+# has NEVER consumed credits: there is no last-activity date to count idle months from, so
+# the count runs from the day the money started going out instead.
+#
+# Credits lines are excluded, same as period_fees - a fee is what makes a licence cost
+# something, and it is fees that get wasted.
+- DataSetIdentifier: kiro_cur_view
+  Expression: minOver(ifelse({pricing_unit} <> 'Credits', {usage_date}, NULL), [{account_id},
+    {resource_id}], PRE_FILTER)
+  Name: first_billed_date
+# How many distinct calendar months this licence was charged a fee in, WITHIN the selected
+# period. This is the divisor that turns period_fees into a monthly rate.
+#
+# Counting billed months rather than using period_days is what makes the rate correct for
+# a multi-month selection: a licence billed in only 2 months of a 9-month window has its
+# fee divided by 2, not by 9, so the monthly figure is the real monthly figure.
+- DataSetIdentifier: kiro_cur_view
+  Expression: distinctCountOver(ifelse({pricing_unit} <> 'Credits', truncDate("MM", {usage_date}),
+    NULL), [{account_id}, {resource_id}], PRE_AGG)
+  Name: billed_months_in_period
+# What this licence costs per month, derived from what it was ACTUALLY charged rather than
+# from a hardcoded price ladder - so tier changes, discounts and private pricing are all
+# picked up automatically, and nothing has to be maintained when Kiro changes its prices.
+- DataSetIdentifier: kiro_cur_view
+  Expression: ifelse({billed_months_in_period} > 0, {period_fees} / {billed_months_in_period},
+    0)
+  Name: monthly_fee
+# WHOLE MONTHS this licence has sat idle, as at the end of the selected period. The
+# multiplier for inactivity_cost, and shown as its own column so the arithmetic in that column
+# is checkable by eye: monthly_fee x months_idle.
+#
+# Deliberately cumulative, NOT capped at the selected period. A licence last used in March
+# and still being billed in September has wasted six months of fees, and reporting only
+# September's one month understated the case for reclaiming it by a factor of six. days_idle
+# beside it is the same span expressed in days.
+#
+# The branches, in order:
+#  1. Never consumed credits -> count from the first day it was ever billed, +1 because
+#     that first month was itself never used. Without this the licences that have NEVER
+#     been touched would report 0 wasted months, which is exactly backwards.
+#  2. Last activity predates the first fee line -> same treatment. Guards against reporting
+#     more wasted months than the licence has actually existed for.
+#  3. Active again AFTER the period ended -> the number of months in the selected period.
+#     A licence on this table consumed nothing across the whole period, so the period's own
+#     months are idle regardless of what happened afterwards. This returned 0 first, which
+#     contradicted the row's presence in the table and zeroed a genuine Inactivity Cost -
+#     see the equivalent branch of days_idle for the measurement that is not reachable here
+#     and why.
+#  4. Otherwise whole months from last activity to the end of the period. No +1 here: the
+#     month they last worked in was used, so it is not wasted.
+#
+# Both dates are truncated to the 1st before the subtraction, which is the same idiom the
+# retired months_since_last_bill used. Without it, dateDiff on "MM" leaves it open whether
+# March 26th to September 10th is five elapsed months or six month boundaries; truncating
+# makes it unambiguously six, counting April through September as the wasted months.
+# Activity on the 5th and activity on the 28th of the same month must give the same answer,
+# because Kiro bills by the calendar month either way.
+- DataSetIdentifier: kiro_cur_view
+  Expression: >-
+    ifelse(
+      isNull({last_activity_date}), dateDiff(truncDate("MM", {first_billed_date}), truncDate("MM", {period_end}), "MM") + 1,
+      {last_activity_date} < {first_billed_date}, dateDiff(truncDate("MM", {first_billed_date}), truncDate("MM", {period_end}), "MM") + 1,
+      {last_activity_date} > {period_end}, {months_in_period},
+      dateDiff(truncDate("MM", {last_activity_date}), truncDate("MM", {period_end}), "MM")
+    )
+  Name: months_idle
+# Whole calendar months spanned by the selected Billing period - 1 for a single month, 9 for
+# a January-to-September window. The floor used by branch 3 of months_idle above.
+- DataSetIdentifier: kiro_cur_view
+  Expression: dateDiff(truncDate("MM", {period_start}), truncDate("MM", {period_end}), "MM")
+    + 1
+  Name: months_in_period
+# THE COST OF THE IDLE MONTHS: monthly fee times whole months idle. Both factors are
+# explained above, and both are shown as their own columns in the idle table so this number
+# can be checked by eye - Months Idle x Monthly Fee = Inactivity Cost.
+#
+# Surfaced as "Inactivity Cost". Two earlier names were both wrong in the same direction.
+# "Wasted Since Last Use" passed a verdict the dashboard cannot support: it can see that
+# nobody consumed credits, but not whether the spend was justified - parental leave, a
+# contractor between projects, a licence held for a role rather than a person. "Spend Since
+# Last Use" then read as every dollar spent on the licence since that date, which is not
+# what the arithmetic produces: the month of last activity is excluded, because that month
+# was used. This is specifically the cost attributable to the months of inactivity, which is
+# both what it computes and what a customer needs in order to act.
+#
+# CUMULATIVE, NOT PERIOD-SCOPED, and that is the point of it. Two earlier versions were
+# both scoped to the selected period and both understated the case for reclaiming a
+# licence:
+#   1. Sum of the fee lines dated after the last day of activity. Exact for daily-prorated
+#      subscriptions, but all-or-nothing for month-anchored ones - 28 of the 29 licences
+#      seen in real data. A month-anchored fee is one line dated the 1st, so any activity
+#      at all in the month put the whole fee before the last-activity date and the licence
+#      reported 0.00 wasted. Someone active on the 2nd and idle for 29 days looked
+#      perfectly efficient.
+#   2. The period's fee pro-rated by idle days in the period. Fixed that, but still only
+#      ever reported ONE month. The licence last used 2026-03-26 and still billed in
+#      September showed 20.00 - September's fee - when six months of fees had actually gone
+#      out since anyone touched it.
+# This version reports the whole waste: 20.00 x 6 = 120.00 for that licence.
+#
+# The approximation, worth knowing: it applies the CURRENT monthly fee to every idle month.
+# A licence that changed tier while idle is valued at today's tier for the whole stretch.
+# Reconstructing the fee month by month would need a window per month, and the tier of an
+# untouched licence rarely changes, so the simpler reading wins.
+#
+# Constant per licence, so the field well MUST take MAX. SUM would multiply it by the
+# licence's CUR row count - about 30x for a daily-prorated subscription. The idle table has
+# no subtotals or grand total (TableOptions carries no TotalOptions), so MAX at the row
+# grain is all that is displayed; adding totals later would need this revisited, because a
+# total across licences genuinely wants the sum of these per-licence values.
+- DataSetIdentifier: kiro_cur_view
+  Expression: '{monthly_fee} * {months_idle}'
+  Name: inactivity_cost
+# How many whole calendar months this licence has been paid for, counting the first billed
+# month itself. Not displayed on its own - it exists to give months_active something to
+# subtract from.
+#
+# TRUNCATED BY THE VIEW WINDOW. kiro_cur_view keeps 18 months of CUR, so a licence bought
+# before that reports 18 rather than its true age, and first_billed_date beside it reads as
+# the oldest date the view can see rather than the real start. A licence sitting exactly at
+# the window edge is the tell. Widening the view's INTERVAL is the only fix, at the cost of
+# SPICE refresh and Athena scan time.
+- DataSetIdentifier: kiro_cur_view
+  Expression: dateDiff(truncDate("MM", {first_billed_date}), truncDate("MM", {period_end}),
+    "MM") + 1
+  Name: months_licensed
+# HOW LONG THIS PERSON ACTUALLY USED KIRO, in whole months, ending the month they last
+# consumed credits. The point of it is proportion: a licence used steadily for a year and
+# quiet for two months is a very different conversation from one used for a fortnight and
+# quiet for six, and the idle figures alone cannot tell those apart. Someone on parental
+# leave or between projects looks identical to an abandoned licence until you can see how
+# long they were productive first.
+#
+# Derived by subtraction - months licensed minus months idle - so it needs no window of its
+# own and cannot disagree with the two columns either side of it. It is a SPAN, from the
+# first bill to the last activity, so a user who worked in January and again in December
+# reads as 12 rather than 2. Consistency of use is a question for the Credit & Overage
+# sheet; this column answers how long they have been on the tool.
+#
+# Clamped at 0 for the licence that has never consumed credits at all, where months_idle
+# covers the entire licensed life and the subtraction would otherwise go negative.
+- DataSetIdentifier: kiro_cur_view
+  Expression: ifelse({months_licensed} - {months_idle} > 0, {months_licensed} - {months_idle},
+    0)
+  Name: months_active
 ColumnConfigurations:
 - Column:
     ColumnName: credits_per_message
@@ -103,6 +412,44 @@ DataSetIdentifierDeclarations:
 - DataSetArn: arn:aws:quicksight:::dataset/3d6c8f21-4b9a-4e77-8f0c-1a2b3c4d5e6f
   Identifier: kiro_cur_view
 FilterGroups:
+# THE BILLING PERIOD. This one control scopes everything: the activity widgets AND the
+# three subscription KPIs and the idle-licence table. ALL_DATASETS works because
+# usage_date exists under the same name in both kiro_user_activity and kiro_cur_view,
+# which is what QuickSight matches a cross-dataset filter on.
+#
+# Every subscription visual is deliberately PERIOD-SCOPED, answering "who was billed in
+# the selected month but consumed nothing in it?" - the question asked once per billing
+# cycle when deciding which licences to reclaim. Selecting August gives August's answer
+# and it never changes afterwards.
+#
+# WHY THE DEFAULT IS PREVIOUS MONTH. This filter group was briefly SINGLE_DATASET,
+# cutting the kiro_cur_view visuals loose from the picker and measuring idleness as a
+# fixed 30 days from now(), because a window-scoped subscription roster broke badly:
+# measured on real data on 2026-09-08, Total Kiro Subscriptions read 1 of 29 on
+# month-to-date. The cause was the PARTIAL month, not the picker. Kiro fee lines are
+# dated either on the 1st (month-anchored) or through month end (daily-prorated, i.e.
+# future-dated relative to today), and CUR delivery lag means the current month's fee
+# lines may not have landed at all yet - so 28 of 29 subscriptions had no billing row
+# anywhere inside a window ending today.
+#
+# Over a COMPLETE calendar month every line shape falls inside the window: fees on the
+# 1st, prorated fees through month end, and credits lines on the actual day of
+# consumption. Line-date scoping and billing-period scoping therefore agree for a whole
+# month, which is why no bill_billing_period_start_date column is needed in the view.
+#
+# A PARTIAL window still reads low, and the dashboard CANNOT prevent one from being
+# selected. MinimumGranularity: MONTH was tried and QuickSight rejects it outright -
+# "Filter only supports [DAY, HOUR, MINUTE] as minimum granularity" from UpdateDashboard -
+# so day-grain windows are always offered whether or not they make sense here. The only
+# defences are therefore soft: RelativeDateType PREVIOUS opens the dashboard on the most
+# recent fully delivered bill, and the text box on every sheet says to pick a whole
+# calendar month. Selecting the current month is legitimate, it just shows a bill still
+# being written.
+#
+# CONSEQUENCE FOR ANYONE EDITING THE kiro_cur_view CALCULATED FIELDS: because this
+# control reaches that dataset, its window functions must be PRE_AGG, which is evaluated
+# AFTER filters. A PRE_FILTER window is invisible to this control by definition and would
+# silently ignore the billing period. See period_credits / period_fees.
 - CrossDataset: ALL_DATASETS
   FilterGroupId: fg-date-global
   Filters:
@@ -121,16 +468,27 @@ FilterGroups:
                   FontSize:
                     Relative: MEDIUM
                 Visibility: VISIBLE
-        Title: Lookback period
+        Title: Billing period
       FilterId: filter-date
       MinimumGranularity: DAY
       NullOption: NON_NULLS_ONLY
-      RelativeDateType: THIS
+      RelativeDateType: PREVIOUS
       TimeGranularity: MONTH
   ScopeConfiguration:
     AllSheets: {}
   Status: ENABLED
-- CrossDataset: SINGLE_DATASET
+# ALL_DATASETS, not SINGLE_DATASET: account_id and user_email exist under the same
+# names in both kiro_user_activity and kiro_cur_view, so a cross-dataset filter
+# scopes the subscription KPIs and the idle-licence table too. As SINGLE_DATASET
+# these controls silently did nothing to those visuals - picking one AWS Account
+# still listed idle licences from every account.
+#
+# These two stay cross-dataset while fg-date-global above is deliberately
+# SINGLE_DATASET, and the difference is intentional: narrowing to an account or a
+# person narrows WHICH licences you are asking about, which every visual should
+# honour, whereas narrowing the date range would change what "idle" MEANS for the
+# CUR visuals, which is the thing that made them contradict the table.
+- CrossDataset: ALL_DATASETS
   FilterGroupId: fg-account-id
   Filters:
   - CategoryFilter:
@@ -159,7 +517,7 @@ FilterGroups:
   ScopeConfiguration:
     AllSheets: {}
   Status: ENABLED
-- CrossDataset: SINGLE_DATASET
+- CrossDataset: ALL_DATASETS
   FilterGroupId: fg-user
   Filters:
   - CategoryFilter:
@@ -284,6 +642,40 @@ FilterGroups:
         VisualIds:
         - 4fbadc81-c9c5-4be9-8168-2d1796bead55
   Status: ENABLED
+# Same shape as fg-users-at-risk above, on the under-25% KPI beside it. These two
+# counts do NOT sum to the user total and are not meant to - the 25-75% band is the
+# healthy middle and is deliberately not called out anywhere.
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-users-underutilized
+  Filters:
+  - NumericEqualityFilter:
+      Column:
+        ColumnName: underutilized_flag
+        DataSetIdentifier: kiro_user_activity
+      FilterId: filter-underutilized-flag
+      MatchOperator: EQUALS
+      NullOption: NON_NULLS_ONLY
+      Value: 1.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 40968fcc-5b4e-4e37-990e-0b4d73d00a1d
+        VisualIds:
+        - kpi-users-underutilized
+  Status: ENABLED
+# Top-N users for the "Top 50 Users by Message Count (by Model)" bar chart.
+#
+# Ranks on SUM(model_messages_num), NOT COUNT. COUNT counts ROWS, and this dataset
+# has one row per user per day per MODEL, so ranking by COUNT ranked users by how
+# many models they had touched rather than by how much they used Kiro. Measured on
+# 2026-09-08: tom_haddad ranked 6th on row count but 18th on real messages (874),
+# and priya_garcia 10th versus 24th (262 messages). Harmless while there are fewer
+# users than the limit, wrong as soon as there are more.
+#
+# model_messages_num rather than total_messages_num so this matches the measure the
+# chart actually plots. The two agree per user (both sum to 138,840 dataset-wide);
+# total_messages_num is only populated on one of each user-day's model rows.
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 707f9762-b778-456a-a299-c3e8d31f03eb
   Filters:
@@ -291,13 +683,19 @@ FilterGroups:
       AggregationSortConfigurations:
       - AggregationFunction:
           NumericalAggregationFunction:
-            SimpleNumericalAggregation: COUNT
+            SimpleNumericalAggregation: SUM
         Column:
-          ColumnName: total_messages_num
+          ColumnName: model_messages_num
           DataSetIdentifier: kiro_user_activity
         SortDirection: DESC
+      # `user`, not user_email: this must be the SAME column the chart it scopes
+      # (1d7afd39) groups by, or the filter picks its top 50 in one identity space and
+      # the chart draws bars in another. user_email is also blank on rows where the
+      # source report omitted it, so a Top-N on it produced a blank category that did
+      # not correspond to any bar. `user` falls back to the userid for a user with no
+      # email at all, so it is never blank.
       Column:
-        ColumnName: user_email
+        ColumnName: user
         DataSetIdentifier: kiro_user_activity
       FilterId: 0f5feab3-7947-47c3-8347-4bcf31c9edb6
       Limit: 50
@@ -309,21 +707,82 @@ FilterGroups:
         VisualIds:
         - 1d7afd39-eec5-40fc-9da3-2f060a0648a8
   Status: ENABLED
-# Active-user scope for the "Total Active Kiro Users" KPI: users (resource_id)
-# with at least one Credits line in the window. Ported from CUDOS.
+# BILLED-IN-PERIOD GUARD. Defines the subscription roster as "licences that appear on
+# the selected billing period's bill", which is what makes every kiro_cur_view visual
+# answer a question about that month. It also does what the old months_since_last_bill
+# <= 1 guard did, but without the fudge: a licence cancelled in July simply has no fee
+# line in August and drops out of an August view by itself.
+#
+# Without this the KPIs would count every licence in the 18-month view window.
+#
+# This has to be duplicated per sheet: QuickSight rejects a single FilterGroup that
+# spans multiple sheets with SELECTED_VISUALS scope (it requires ALL_VISUALS on each
+# sheet in that case). The two groups below are otherwise identical.
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-kiro-current-subs-exec
+  Filters:
+  - NumericRangeFilter:
+      Column:
+        ColumnName: period_fees
+        DataSetIdentifier: kiro_cur_view
+      FilterId: filter-kiro-current-subs-exec
+      IncludeMinimum: false
+      NullOption: NON_NULLS_ONLY
+      RangeMinimum:
+        StaticValue: 0.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 8b044d5a-3941-4e30-be58-fa08a3770aba
+        VisualIds:
+        - kpi-total-subs
+        - kpi-active-users
+        - kpi-inactive-users
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: fg-kiro-current-subs-engagement
+  Filters:
+  - NumericRangeFilter:
+      Column:
+        ColumnName: period_fees
+        DataSetIdentifier: kiro_cur_view
+      FilterId: filter-kiro-current-subs-engagement
+      IncludeMinimum: false
+      NullOption: NON_NULLS_ONLY
+      RangeMinimum:
+        StaticValue: 0.0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 6be25593-1f88-4d18-891d-5b8aa3828fa6
+        VisualIds:
+        - table-inactive-users
+  Status: ENABLED
+# ACTIVE / INACTIVE SPLIT, both within the selected billing period. Active consumed
+# credits in the period, Inactive was billed in it and consumed nothing. The KPIs and the
+# User Engagement table apply the same test, so they cannot contradict each other.
+#
+# The split stays exhaustive, so Active + Inactive = Total Subscriptions still holds. On
+# top of the billed-in-period guard above, period_credits is either > 0 or = 0 and the
+# boundary is claimed exactly once. Note that no NULL handling is needed anywhere now:
+# period_credits is a sumOver, so a licence that consumed nothing has 0 rather than the
+# NULL that the old dateDiff-based days_idle produced. That NULL used to need
+# NullOption: ALL_VALUES on the inactive side to avoid discarding never-used licences -
+# the most reclaimable ones - and getting that wrong silently hid them.
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: fg-kiro-active-users
   Filters:
-  - CategoryFilter:
+  - NumericRangeFilter:
       Column:
-        ColumnName: Kiro User Has Credits Usage
+        ColumnName: period_credits
         DataSetIdentifier: kiro_cur_view
-      Configuration:
-        CustomFilterConfiguration:
-          CategoryValue: 'True'
-          MatchOperator: EQUALS
-          NullOption: NON_NULLS_ONLY
       FilterId: filter-kiro-active-users
+      IncludeMinimum: false
+      NullOption: NON_NULLS_ONLY
+      RangeMinimum:
+        StaticValue: 0.0
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
@@ -332,25 +791,17 @@ FilterGroups:
         VisualIds:
         - kpi-active-users
   Status: ENABLED
-# Inactive-user scope for the "Total Inactive Kiro Users" KPI: subscribed users
-# (resource_id) with zero Credits lines in the window. Ported from CUDOS.
-# The inactive-users filter must live in two separate FilterGroups, one per
-# sheet: QuickSight rejects a single FilterGroup that spans multiple sheets
-# with SELECTED_VISUALS scope (it requires ALL_VISUALS on each sheet in that
-# case). Both apply the identical "Kiro User Has Credits Usage = False" filter.
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: fg-kiro-inactive-users
   Filters:
-  - CategoryFilter:
+  - NumericEqualityFilter:
       Column:
-        ColumnName: Kiro User Has Credits Usage
+        ColumnName: inactive_in_period
         DataSetIdentifier: kiro_cur_view
-      Configuration:
-        CustomFilterConfiguration:
-          CategoryValue: 'False'
-          MatchOperator: EQUALS
-          NullOption: NON_NULLS_ONLY
       FilterId: filter-kiro-inactive-users
+      MatchOperator: EQUALS
+      NullOption: NON_NULLS_ONLY
+      Value: 1.0
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
@@ -359,19 +810,19 @@ FilterGroups:
         VisualIds:
         - kpi-inactive-users
   Status: ENABLED
+# Same test as fg-kiro-inactive-users above, on the User Engagement table. Separate
+# group because a FilterGroup cannot span sheets with SELECTED_VISUALS scope.
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: fg-kiro-inactive-users-table
   Filters:
-  - CategoryFilter:
+  - NumericEqualityFilter:
       Column:
-        ColumnName: Kiro User Has Credits Usage
+        ColumnName: inactive_in_period
         DataSetIdentifier: kiro_cur_view
-      Configuration:
-        CustomFilterConfiguration:
-          CategoryValue: 'False'
-          MatchOperator: EQUALS
-          NullOption: NON_NULLS_ONLY
       FilterId: filter-kiro-inactive-users-table
+      MatchOperator: EQUALS
+      NullOption: NON_NULLS_ONLY
+      Value: 1.0
   ScopeConfiguration:
     SelectedSheets:
       SheetVisualScopingConfigurations:
@@ -407,12 +858,18 @@ Sheets:
             OptimizedViewPortWidth: 1600px
             ResizeOption: FIXED
         Elements:
+        # RowSpan 4, not 2: this text box carries the definitions that used to sit in
+        # each KPI's subtitle. At 6 grid columns wide a KPI tile has no room for a
+        # sentence - the Idle Kiro Licences subtitle pushed its own number out of the
+        # tile and QuickSight replaced the figure with an information icon. Every
+        # visual on this sheet now has its subtitle hidden and is explained here
+        # instead. Roughly two wrapped lines of text fit per grid row at 1600px.
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: bf7f0bcb-5618-40f2-b256-c858633a5218
           ElementType: TEXT_BOX
           RowIndex: 0
-          RowSpan: 2
+          RowSpan: 3
         # Headline KPI row. First three are CUR-backed subscription counts
         # (ported from the CUDOS Kiro summary widget); the "Active" count
         # replaces the former activity-CSV "Active Users" KPI, which undercounted
@@ -423,89 +880,102 @@ Sheets:
           ColumnSpan: 6
           ElementId: kpi-total-subs
           ElementType: VISUAL
-          RowIndex: 2
+          RowIndex: 3
           RowSpan: 3
         - ColumnIndex: 6
           ColumnSpan: 6
           ElementId: kpi-active-users
           ElementType: VISUAL
-          RowIndex: 2
+          RowIndex: 3
           RowSpan: 3
         - ColumnIndex: 12
           ColumnSpan: 6
           ElementId: kpi-inactive-users
           ElementType: VISUAL
-          RowIndex: 2
+          RowIndex: 3
           RowSpan: 3
         - ColumnIndex: 18
           ColumnSpan: 6
           ElementId: 5ed267ef-42db-4175-ae58-15852829ce13
           ElementType: VISUAL
-          RowIndex: 2
+          RowIndex: 3
           RowSpan: 3
         - ColumnIndex: 24
           ColumnSpan: 6
           ElementId: de966e5f-2d57-4931-8e15-dc8bd47cbdea
           ElementType: VISUAL
-          RowIndex: 2
+          RowIndex: 3
           RowSpan: 3
         - ColumnIndex: 30
           ColumnSpan: 6
           ElementId: a400ed3d-9038-4a09-a22d-4a9c92a2da12
           ElementType: VISUAL
-          RowIndex: 2
+          RowIndex: 3
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 8
           ElementId: 7910f186-0b2e-4d42-8ca1-3f61968e7c21
           ElementType: VISUAL
-          RowIndex: 5
+          RowIndex: 6
           RowSpan: 10
         - ColumnIndex: 8
           ColumnSpan: 28
           ElementId: b8f44aa5-2af1-4796-940f-8d7de571b595
           ElementType: VISUAL
-          RowIndex: 5
+          RowIndex: 6
           RowSpan: 10
         - ColumnIndex: 0
           ColumnSpan: 8
           ElementId: f7f9dcd6-2572-4849-a5c8-c037454edbfc
           ElementType: VISUAL
-          RowIndex: 15
+          RowIndex: 16
           RowSpan: 9
         - ColumnIndex: 8
           ColumnSpan: 28
           ElementId: 48b9b262-67d7-4e07-bd1f-5442f1374645
           ElementType: VISUAL
-          RowIndex: 15
+          RowIndex: 16
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 8
           ElementId: 7a8495fb-ee61-4876-a8e3-39fbaa223aeb
           ElementType: VISUAL
-          RowIndex: 24
+          RowIndex: 25
           RowSpan: 9
         - ColumnIndex: 8
           ColumnSpan: 28
           ElementId: b7ef9535-2a44-404f-92c4-6c17b3b231ab
           ElementType: VISUAL
-          RowIndex: 24
+          RowIndex: 25
           RowSpan: 9
   Name: Executive Summary
   SheetId: 8b044d5a-3941-4e30-be58-fa08a3770aba
   TextBoxes:
-  - Content: "<text-box>\n  &#128197; Kiro billing is calculated per calendar month\
-      \ - plans and credit allowances reset at the start of each month.\n  <br/>\n\
-      \  &#128270; For accurate usage deep-dives, set the Lookback period above to\
-      \ a full calendar month (e.g. \"This month\" or \"Previous month\").\n  <br/>\n\
-      \  \u26A0\uFE0F Partial or rolling date ranges will understate plan utilization\
-      \ and overage.\n</text-box>"
+  # Carries what the KPI subtitles used to say. Kept to four lines so it fits the
+  # RowSpan 4 allotted above; if a line is added, grow that span or something clips.
+  - Content: |-
+      <text-box>
+        &#128197; Kiro bills per calendar month - plans and credit allowances reset on the 1st.
+        <br/>
+        &#128270; Billing period scopes every widget here and opens on the previous month. Use whole months; partial windows understate usage and can miss billing lines.
+        <br/>
+        &#128179; From billing: Total = licences billed in the period, Active = consumed credits, Idle = billed but unused. Active + Idle = Total.
+        <br/>
+        &#128100; From the activity report: Active Users, Total Messages, Credits Used, Overage Credits. A different population from the licence counts, so they will not tie.
+      </text-box>
     SheetTextBoxId: bf7f0bcb-5618-40f2-b256-c858633a5218
   Visuals:
   # CUR-backed subscription KPIs, ported from the CUDOS "Kiro and Amazon Q
-  # Developer Summary" widget. Each subscribed user is one distinct resource_id
-  # in CUR; the active/inactive split comes from the Kiro User Has Credits Usage
-  # calc field. These scope to the shared Lookback period via usage_date.
+  # Developer Summary" widget. One licence = one resource_id in one account, counted
+  # as DISTINCT_COUNT(subscription_key).
+  #
+  # All three are scoped to the selected Billing period (see fg-date-global): the
+  # roster is "licences billed in that month" and the split is "consumed credits in
+  # that month" vs "did not". The User Engagement idle table applies the identical
+  # test, so the two sheets always agree.
+  #
+  # Total = Active + Inactive holds by construction: period_credits is either > 0 or
+  # = 0 within the billed-in-period roster, and the boundary is claimed exactly once.
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -516,17 +986,17 @@ Sheets:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
               Column:
-                ColumnName: resource_id
+                ColumnName: subscription_key
                 DataSetIdentifier: kiro_cur_view
               FieldId: kpi-total-subs-val
         KPIOptions:
           PrimaryValueDisplayType: ACTUAL
         SortConfiguration: {}
       ColumnHierarchies: []
+      # Subtitle hidden: defined in the sheet text box instead. A 6-column KPI tile
+      # cannot hold a sentence without squeezing out its own number.
       Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Selected period</visual-subtitle>
-        Visibility: VISIBLE
+        Visibility: HIDDEN
       Title:
         FormatText:
           RichText: |-
@@ -545,7 +1015,7 @@ Sheets:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
               Column:
-                ColumnName: resource_id
+                ColumnName: subscription_key
                 DataSetIdentifier: kiro_cur_view
               FieldId: kpi-active-users-val
         KPIOptions:
@@ -553,14 +1023,12 @@ Sheets:
         SortConfiguration: {}
       ColumnHierarchies: []
       Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Selected period</visual-subtitle>
-        Visibility: VISIBLE
+        Visibility: HIDDEN
       Title:
         FormatText:
           RichText: |-
             <visual-title>
-              <inline font-size="14px">Total Active Kiro Users</inline>
+              <inline font-size="14px">Active Kiro Licences</inline>
             </visual-title>
         Visibility: VISIBLE
       VisualId: kpi-active-users
@@ -574,7 +1042,7 @@ Sheets:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
               Column:
-                ColumnName: resource_id
+                ColumnName: subscription_key
                 DataSetIdentifier: kiro_cur_view
               FieldId: kpi-inactive-users-val
         KPIOptions:
@@ -587,16 +1055,14 @@ Sheets:
             TextColor:
               Solid:
                 Color: '#DE3B00'
-                Expression: DISTINCT_COUNT({resource_id}) > 0
+                Expression: DISTINCT_COUNT({subscription_key}) > 0
       Subtitle:
-        FormatText:
-          RichText: <visual-subtitle>Selected period</visual-subtitle>
-        Visibility: VISIBLE
+        Visibility: HIDDEN
       Title:
         FormatText:
           RichText: |-
             <visual-title>
-              <inline font-size="14px">Total Inactive Kiro Users</inline>
+              <inline font-size="14px">Idle Kiro Licences</inline>
             </visual-title>
         Visibility: VISIBLE
       VisualId: kpi-inactive-users
@@ -776,6 +1242,10 @@ Sheets:
             </visual-title>
         Visibility: VISIBLE
       VisualId: 48b9b262-67d7-4e07-bd1f-5442f1374645
+  # Distinct users per client type over the WHOLE selected period. There is no date
+  # dimension here, so this is not a daily figure - it was titled "Daily Active Users
+  # by Client Type", duplicating the title of the bar chart beside it (b8f44aa5),
+  # which does break down by day and is the one that earns the word "Daily".
   - PieChartVisual:
       Actions:
       - ActionOperations:
@@ -838,13 +1308,15 @@ Sheets:
           SelectedTooltipType: BASIC
           TooltipVisibility: VISIBLE
       ColumnHierarchies: []
+      # Subtitle hidden: the activity-vs-billing distinction is explained in the sheet
+      # text box, where it does not eat half of an 8-column pie chart.
       Subtitle:
-        Visibility: VISIBLE
+        Visibility: HIDDEN
       Title:
         FormatText:
           RichText: |-
             <visual-title>
-              <inline font-size="14px">Daily Active Users by Client Type</inline>
+              <inline font-size="14px">Active Users by Client Type</inline>
             </visual-title>
         Visibility: VISIBLE
       VisualId: 7910f186-0b2e-4d42-8ca1-3f61968e7c21
@@ -1015,7 +1487,7 @@ Sheets:
           DrillDownFilters: []
           HierarchyId: a5ae67bd-2802-46e9-8109-4358d0f193e4
       Subtitle:
-        Visibility: VISIBLE
+        Visibility: HIDDEN
       Title:
         FormatText:
           RichText: |-
@@ -1178,12 +1650,13 @@ Sheets:
             OptimizedViewPortWidth: 1600px
             ResizeOption: FIXED
         Elements:
+        # RowSpan 3, taking the row that was already empty between here and row 3.
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 5182d033-0600-4690-8e0f-1e9579b6f965
           ElementType: TEXT_BOX
           RowIndex: 0
-          RowSpan: 2
+          RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 11
           ElementId: 1d7afd39-eec5-40fc-9da3-2f060a0648a8
@@ -1211,12 +1684,18 @@ Sheets:
   Name: User Engagement
   SheetId: 6be25593-1f88-4d18-891d-5b8aa3828fa6
   TextBoxes:
-  - Content: "<text-box>\n  &#128197; Kiro billing is calculated per calendar month\
-      \ - plans and credit allowances reset at the start of each month.\n  <br/>\n\
-      \  &#128270; For accurate usage deep-dives, set the Lookback period above to\
-      \ a full calendar month (e.g. \"This month\" or \"Previous month\").\n  <br/>\n\
-      \  \u26A0\uFE0F Partial or rolling date ranges will understate plan utilization\
-      \ and overage.\n</text-box>"
+  # Four lines in a RowSpan 3 box, using the row that was already spare between this box
+  # and the charts at row 3. Adding a fifth line means shifting every visual below down.
+  - Content: |-
+      <text-box>
+        &#128197; Kiro bills per calendar month - plans and credit allowances reset on the 1st.
+        <br/>
+        &#128270; Billing period scopes every widget here and opens on the previous month. Use whole months.
+        <br/>
+        &#128336; Licence Since and Months Active come from billing data, retained for 18 months - read Months Active as a minimum, not an exact tenure.
+        <br/>
+        &#128161; Weigh Months Active against the idle figures: a year of use then two quiet months is not the same case as a licence barely touched since purchase.
+      </text-box>
     SheetTextBoxId: 5182d033-0600-4690-8e0f-1e9579b6f965
   Visuals:
   - BarChartVisual:
@@ -1350,8 +1829,11 @@ Sheets:
                 FieldId: field-msgs-b1
         Orientation: HORIZONTAL
         SortConfiguration:
+          # 50 to agree with the visual title and with the Top-N filter
+          # (707f9762) that scopes this visual. It was 20, so a chart titled
+          # "Top 50" drew 20 bars plus an "Other" bucket.
           CategoryItemsLimit:
-            ItemsLimit: 20
+            ItemsLimit: 50
             OtherCategories: INCLUDE
           CategorySort:
           - FieldSort:
@@ -1382,10 +1864,6 @@ Sheets:
               FieldValue: tier_recommendation_monthly
             Width: 253px
           - DataPathList:
-            - FieldId: field-cpm-t1
-              FieldValue: credits_per_message
-            Width: 242px
-          - DataPathList:
             - FieldId: field-user-t1
               FieldValue: user
             Width: 228px
@@ -1397,16 +1875,19 @@ Sheets:
             - FieldId: col-report-date.10.1783423815272
               FieldValue: usage_date
             Width: 132px
+          # FieldValue must name the column the field well actually uses. This said
+          # plan_utilization_pct while the measure below is monthly_plan_utilization_pct,
+          # so the width was silently ignored.
           - DataPathList:
             - FieldId: field-util-t1
-              FieldValue: plan_utilization_pct
+              FieldValue: monthly_plan_utilization_pct
             Width: 123px
           - DataPathList:
             - FieldId: field-msgs-t1
               FieldValue: total_messages_num
             Width: 120px
           SelectedFieldOptions:
-          - CustomLabel: Report Date
+          - CustomLabel: Month
             FieldId: col-report-date.10.1783423815272
             Visibility: VISIBLE
           - CustomLabel: Account ID
@@ -1418,7 +1899,7 @@ Sheets:
           - CustomLabel: Current Subscription Tier
             FieldId: field-tier-t1
             Visibility: VISIBLE
-          - CustomLabel: 'Subscription Tier Recommendation '
+          - CustomLabel: Subscription Tier Recommendation
             FieldId: field-rec-t1
             Visibility: VISIBLE
           - CustomLabel: Total Messages
@@ -1440,10 +1921,16 @@ Sheets:
           PivotTableAggregatedFieldWells:
             Columns: []
             Rows:
+            # MONTH, not the default (day). Two of the measures on this row are
+            # monthly by construction - monthly_plan_utilization_pct sums credits
+            # over [userid, month], and tier_recommendation_monthly reasons on that
+            # - so a daily row put a single day's messages and credits beside a
+            # whole month's utilization and called the column "Report Date".
             - DateDimensionField:
                 Column:
                   ColumnName: usage_date
                   DataSetIdentifier: kiro_user_activity
+                DateGranularity: MONTH
                 FieldId: col-report-date.10.1783423815272
             - CategoricalDimensionField:
                 Column:
@@ -1510,11 +1997,21 @@ Sheets:
                       DecimalPlacesConfiguration:
                         DecimalPlaces: 1
                       Suffix: '%'
+            # MIN of the monthly_credits_per_message calculated field, NOT
+            # AVERAGE(credits_per_message) - see that field's comment for why the
+            # dataset column cannot be aggregated here. The value is constant within
+            # a user-month, so MIN returns it exactly, same as plan utilization above.
+            #
+            # This was briefly a CalculatedMeasureField with an inline
+            # sum(credits)/sum(messages) expression. QuickSight would not bind it: it
+            # deployed as Column "MissingColumnId_kiro_user_activity_field-cpm-t1" and
+            # the whole visual rendered "Fields for this visual no longer in analysis".
+            # Use a named CalculatedFields entry, which is the pattern that works here.
             - NumericalMeasureField:
                 AggregationFunction:
-                  SimpleNumericalAggregation: AVERAGE
+                  SimpleNumericalAggregation: MIN
                 Column:
-                  ColumnName: credits_per_message
+                  ColumnName: monthly_credits_per_message
                   DataSetIdentifier: kiro_user_activity
                 FieldId: field-cpm-t1
                 FormatConfiguration:
@@ -1535,20 +2032,32 @@ Sheets:
           RowFieldNamesStyle: {}
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Select Current Month or Previous Month in the
-            lookback period to monitor Usage Patterns</visual-subtitle>
+          RichText: <visual-subtitle>&#128198; Pick a single month in the Billing period
+            control to read utilization correctly.</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: "<visual-title>\n  <inline font-size=\"14px\">User Summary \u2014\
-            \ with Tier Recommendation for specified lookback period</inline>\n</visual-title>"
+            \ with Tier Recommendation for the selected billing period</inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: 193498d7-0142-423d-95cc-606c5d86c46f
   - PivotTableVisual:
       # Inactive Kiro subscribers, sourced from kiro_cur_view (the authoritative
       # subscription roster from CUR). Scoped by fg-kiro-inactive-users-table to
-      # rows where "Kiro User Has Credits Usage" = False. user_email is resolved
-      # via the activity-table join in the view; it falls back to the resource_id
+      # inactive_in_period = 1: billed in the selected Billing period, consumed no
+      # credits in it. Selecting August lists August's reclaim candidates, and that
+      # answer is computed from August's rows so it does not drift over time.
+      #
+      # Last Activity / Days Idle are the ALL-TIME fields, deliberately: they are
+      # PRE_FILTER so they ignore the billing period. A licence idle in August that
+      # came back to life in September shows a September Last Activity, which is the
+      # context that stops someone reclaiming a licence now back in use. Both take the
+      # newest 'Kiro Enterprise Credits' line per account + subscription. Verified in
+      # Athena: those Credits lines carry the real day of consumption and match the
+      # activity dataset's last active date exactly, and CUR also covers accounts whose
+      # Kiro activity report is not collected.
+      #
+      # user_email is resolved via the same join; it falls back to the resource_id
       # UUID when the user has never generated activity (see manifest comment).
       # Rendered as a pivot so account_id groups (collapsible) and the whole
       # table can be sorted by account or cost.
@@ -1565,8 +2074,39 @@ Sheets:
           - CustomLabel: Subscription Type
             FieldId: field-inactive-subtype
             Visibility: VISIBLE
-          - CustomLabel: Cost
+          # Columns read as a narrative: how long they have been on the tool, then how
+          # long they have been off it, then what that has cost.
+          #
+          # Licence Since and Last Activity are all-time and so can fall outside the
+          # selected period. Days Idle is measured TO THE END of the selected period, so
+          # it does move with the control even though its starting point does not.
+          - CustomLabel: Licence Since
+            FieldId: field-inactive-licence-since
+            Visibility: VISIBLE
+          - CustomLabel: Last Activity (all-time)
+            FieldId: field-inactive-last-activity
+            Visibility: VISIBLE
+          - CustomLabel: Months Active
+            FieldId: field-inactive-months-active
+            Visibility: VISIBLE
+          - CustomLabel: Days Idle at Period End
+            FieldId: field-inactive-days-idle
+            Visibility: VISIBLE
+          # Inactivity Cost is the number to act on, so it sits last, closest to
+          # the eye, with its own two factors immediately before it: Months Idle x
+          # Monthly Fee. Showing the factors means nobody has to trust the total.
+          #
+          # Named for what it measures rather than for a verdict on it. "Wasted" reads
+          # as an accusation in a review with the licence holder's manager, and the
+          # dashboard cannot actually know whether the spend was justified.
+          - CustomLabel: Months Idle
+            FieldId: field-inactive-months-idle
+            Visibility: VISIBLE
+          - CustomLabel: Monthly Fee
             FieldId: field-inactive-cost
+            Visibility: VISIBLE
+          - CustomLabel: Inactivity Cost
+            FieldId: field-inactive-unused-cost
             Visibility: VISIBLE
         FieldWells:
           PivotTableAggregatedFieldWells:
@@ -1588,16 +2128,112 @@ Sheets:
                   DataSetIdentifier: kiro_cur_view
                 FieldId: field-inactive-subtype
             Values:
+            # Every field below is a window function partitioned by account_id +
+            # resource_id, so each returns the same value on every CUR row for that
+            # subscription. They MUST aggregate with MIN or MAX - SUM would multiply the
+            # value by the subscription's row count. MIN on the "first" date and MAX on
+            # the "last" one purely so the intent reads correctly; on a constant the two
+            # are equivalent.
+            - DateMeasureField:
+                AggregationFunction: MIN
+                Column:
+                  ColumnName: first_billed_date
+                  DataSetIdentifier: kiro_cur_view
+                FieldId: field-inactive-licence-since
+                FormatConfiguration:
+                  DateTimeFormat: YYYY-MM-DD
+                  NullValueFormatConfiguration:
+                    NullString: '-'
+            - DateMeasureField:
+                AggregationFunction: MAX
+                Column:
+                  ColumnName: last_activity_date
+                  DataSetIdentifier: kiro_cur_view
+                FieldId: field-inactive-last-activity
+                FormatConfiguration:
+                  # Display formats use moment.js tokens, which are case
+                  # sensitive and differ from the Java-style pattern accepted by
+                  # parseDate() in the dataset. Lowercase yyyy-MM-dd renders as
+                  # "yyyy-03-Th": yyyy is not a token so it passes through
+                  # literally, and dd is the minimal day-of-week name, not the
+                  # day of month. Year is YYYY and day of month is DD.
+                  DateTimeFormat: YYYY-MM-DD
+                  NullValueFormatConfiguration:
+                    NullString: No activity on record
             - NumericalMeasureField:
                 AggregationFunction:
-                  SimpleNumericalAggregation: SUM
+                  SimpleNumericalAggregation: MAX
                 Column:
-                  ColumnName: unblended_cost
+                  ColumnName: months_active
+                  DataSetIdentifier: kiro_cur_view
+                FieldId: field-inactive-months-active
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+                      NullValueFormatConfiguration:
+                        NullString: '-'
+                      SeparatorConfiguration: {}
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: days_idle
+                  DataSetIdentifier: kiro_cur_view
+                FieldId: field-inactive-days-idle
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+                      NullValueFormatConfiguration:
+                        NullString: '-'
+                      SeparatorConfiguration: {}
+            # The two factors of Inactivity Cost, so the total below is checkable
+            # by eye. Both are per-licence window values, hence MAX.
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: months_idle
+                  DataSetIdentifier: kiro_cur_view
+                FieldId: field-inactive-months-idle
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 0
+                      SeparatorConfiguration: {}
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: monthly_fee
                   DataSetIdentifier: kiro_cur_view
                 FieldId: field-inactive-cost
                 FormatConfiguration:
                   FormatConfiguration:
                     NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 2
+                      Prefix: $
+                      SeparatorConfiguration: {}
+            # MAX, not SUM: inactivity_cost is a per-licence figure rather
+            # than a per-row cost, so SUM would multiply it by the licence's CUR row
+            # count - roughly 30x for a daily-prorated subscription.
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: inactivity_cost
+                  DataSetIdentifier: kiro_cur_view
+                FieldId: field-inactive-unused-cost
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 2
                       Prefix: $
                       SeparatorConfiguration: {}
         SortConfiguration:
@@ -1607,16 +2243,36 @@ Sheets:
               Field:
                 Direction: ASC
                 FieldId: field-inactive-account
+          # Within an account, stalest subscriptions first - those are the ones
+          # worth reclaiming.
+          - FieldId: field-inactive-user
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: field-inactive-days-idle
         TableOptions:
           CellStyle: {}
           ColumnHeaderStyle: {}
           RowFieldNamesStyle: {}
       Subtitle:
+        FormatText:
+          RichText: |-
+            <visual-subtitle>
+              &#128269; Billed in the selected billing period with no credit usage in it. Matches the Idle Kiro Licences KPI.
+              <br/>
+              &#128336; Months Active is how long they used Kiro before going quiet - weigh it against the idle columns before acting.
+              <br/>
+              &#8987; Days Idle and Months Idle both run to the last day of the selected period.
+              <br/>
+              &#10134; A blank Last Activity means the licence was never used; Months Idle then counts from its first charge.
+              <br/>
+              &#128176; Inactivity Cost = Months Idle x Monthly Fee, valued at the current fee.
+            </visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: "<visual-title>\n  <inline font-size=\"14px\">Inactive Kiro Users\
-            \ \u2014 subscribed with no credits usage in the lookback period</inline>\n\
+          RichText: "<visual-title>\n  <inline font-size=\"14px\">Idle Kiro Licences\
+            \ - billed in the selected period with no credit usage in it</inline>\n\
             </visual-title>"
         Visibility: VISIBLE
       VisualId: table-inactive-users
@@ -1645,6 +2301,8 @@ Sheets:
             OptimizedViewPortWidth: 1600px
             ResizeOption: FIXED
         Elements:
+        # RowSpan 3: carries the three KPI definitions that used to sit in their
+        # subtitles. Grow this if another line is added, or the text clips.
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 47013b01-0973-4e30-be88-dd75a4fdd124
@@ -1663,6 +2321,13 @@ Sheets:
           ElementType: VISUAL
           RowIndex: 2
           RowSpan: 4
+        # Third KPI in the row, filling columns 18-26 that were previously empty.
+        - ColumnIndex: 18
+          ColumnSpan: 9
+          ElementId: kpi-users-underutilized
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 36
           ElementId: 61ed25c6-9005-4783-903b-752e45e5088f
@@ -1678,12 +2343,14 @@ Sheets:
   Name: Credit & Overage Tracking
   SheetId: 40968fcc-5b4e-4e37-990e-0b4d73d00a1d
   TextBoxes:
-  - Content: "<text-box>\n  &#128197; Kiro billing is calculated per calendar month\
-      \ - plans and credit allowances reset at the start of each month.\n  <br/>\n\
-      \  \_&#128270; For accurate usage deep-dives, set the Lookback period above\
-      \ to a full calendar month (e.g. \"This month\" or \"Previous month\").\n  <br/>\n\
-      \  \u26A0\uFE0F Partial or rolling date ranges will understate plan utilization\
-      \ and overage.\n</text-box>"
+  - Content: |-
+      <text-box>
+        &#128197; Kiro bills per calendar month - plans and credit allowances reset on the 1st.
+        <br/>
+        &#128270; Billing period scopes every widget here. Use whole months; across several months a user counts once if any of them qualifies.
+        <br/>
+        &#128202; At Risk used 75% or more of their allowance, In Overage went past it, Below 25% used under a quarter - share that group with managers rather than actioning it directly.
+      </text-box>
     SheetTextBoxId: 47013b01-0973-4e30-be88-dd75a4fdd124
   Visuals:
   - BarChartVisual:
@@ -1809,6 +2476,43 @@ Sheets:
             </visual-title>
         Visibility: VISIBLE
       VisualId: a50caeef-2e66-4531-b4a1-45dc3647be77
+  # The low end of the same utilization scale as "Users at Risk" beside it. Per the
+  # customer, these users are NOT to be actioned directly the way idle licences are -
+  # the list goes to their managers to judge whether the tool is landing. Low credit
+  # consumption is not the same as low productivity: a strong developer can be
+  # effective on few credits.
+  #
+  # DISTINCT_COUNT of userid, matching the two KPIs beside it, so all three count
+  # people rather than rows in a dataset that is one row per user per day per model.
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: userid
+                DataSetIdentifier: kiro_user_activity
+              FieldId: kpi-underutilized-val
+        KPIOptions:
+          PrimaryValueDisplayType: ACTUAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      # Subtitle hidden: explained in the sheet text box, matching the two KPIs beside
+      # it which carry no subtitle either.
+      Subtitle:
+        Visibility: HIDDEN
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline font-size="14px">Users Below 25% of Plan</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: kpi-users-underutilized
   - PivotTableVisual:
       Actions:
       - ActionOperations:
@@ -1834,9 +2538,12 @@ Sheets:
             - FieldId: field-user-ov1
               FieldValue: user
             Width: 282px
+          # FieldValue must name the column the field well actually uses. This said
+          # plan_utilization_pct (the row-level dataset column) while the measure
+          # below reads monthly_plan_utilization_pct, so the width was ignored.
           - DataPathList:
             - FieldId: field-util-ov1
-              FieldValue: plan_utilization_pct
+              FieldValue: monthly_plan_utilization_pct
             Width: 198px
           - DataPathList:
             - FieldId: field-rec-ov1
@@ -1847,6 +2554,9 @@ Sheets:
               FieldValue: credits_used_num
             Width: 124px
           SelectedFieldOptions:
+          - CustomLabel: Month
+            FieldId: field-month-ov1
+            Visibility: VISIBLE
           - CustomLabel: Account ID
             FieldId: field-acct-ov1
             Visibility: VISIBLE
@@ -1875,6 +2585,18 @@ Sheets:
           PivotTableAggregatedFieldWells:
             Columns: []
             Rows:
+            # Outermost row, at MONTH granularity, so the title's "Monthly" is
+            # actually true. Without it the SUMs below covered the entire selected
+            # lookback while MIN(monthly_plan_utilization_pct) is scoped to one
+            # calendar month, so on any multi-month window Credits Used and Plan
+            # Utilization described different periods on the same row. Kiro bills
+            # per calendar month, so the month is the unit that matters here.
+            - DateDimensionField:
+                Column:
+                  ColumnName: usage_date
+                  DataSetIdentifier: kiro_user_activity
+                DateGranularity: MONTH
+                FieldId: field-month-ov1
             - CategoricalDimensionField:
                 Column:
                   ColumnName: account_id
@@ -1966,7 +2688,13 @@ Sheets:
               TextColor:
                 Solid:
                   Color: '#DE3B00'
-                  Expression: minOver({monthly_plan_utilization_pct}, [userid, truncDate("MM", {usage_date})], PRE_AGG) > 0.75
+                  # Must match the cell it colours, which is MIN(monthly_plan_utilization_pct),
+                  # and must match at_risk_flag's threshold, which is >= 0.75. It was
+                  # `> 0.75`, so a user sitting exactly on 75% was flagged at risk by the
+                  # KPI but left uncoloured here. The minOver(...) window was redundant:
+                  # monthly_plan_utilization_pct already sums credits over exactly
+                  # [userid, month], so re-partitioning it on the same keys returned itself.
+                  Expression: min({monthly_plan_utilization_pct}) >= 0.75
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -2023,12 +2751,12 @@ Sheets:
   Name: Model & Client Breakdown
   SheetId: 6b42ae1f-864d-49ad-ae0f-fc92cd7e6154
   TextBoxes:
-  - Content: "<text-box>\n  &#128197; Kiro billing is calculated per calendar month\
-      \ - plans and credit allowances reset at the start of each month.\n  <br/>\n\
-      \  &#128270; For accurate usage deep-dives, set the Lookback period above to\
-      \ a full calendar month (e.g. \"This month\" or \"Previous month\").\n  <br/>\n\
-      \  \u26A0\uFE0F Partial or rolling date ranges will understate plan utilization\
-      \ and overage.\n</text-box>"
+  - Content: |-
+      <text-box>
+        &#128197; Kiro bills per calendar month - plans and credit allowances reset on the 1st.
+        <br/>
+        &#128270; Billing period scopes every widget here and opens on the previous month. Use whole months for accurate per-user figures.
+      </text-box>
     SheetTextBoxId: 87916338-f161-4968-9ff1-bf6eefeec96e
   Visuals:
   - BarChartVisual:
@@ -2120,10 +2848,6 @@ Sheets:
         FieldOptions:
           DataPathOptions:
           - DataPathList:
-            - FieldId: field-cpm-t1
-              FieldValue: credits_per_message
-            Width: 410px
-          - DataPathList:
             - FieldId: field-msgs-t2
               FieldValue: model_messages_num
             Width: 219px
@@ -2144,14 +2868,10 @@ Sheets:
           - CustomLabel: User Count
             FieldId: field-users-t1
             Visibility: VISIBLE
-          - CustomLabel: Total Messages
+          # "Model Messages", not "Total Messages": this is model_messages_num at
+          # model grain, so a row is one model's share, never a user's total.
+          - CustomLabel: Model Messages
             FieldId: field-msgs-t2
-            Visibility: VISIBLE
-          - CustomLabel: Credits Used
-            FieldId: field-credits-t1
-            Visibility: VISIBLE
-          - CustomLabel: Credits per Message
-            FieldId: field-cpm-t1
             Visibility: VISIBLE
         FieldWells:
           PivotTableAggregatedFieldWells:
@@ -2186,37 +2906,22 @@ Sheets:
                   ColumnName: model_messages_num
                   DataSetIdentifier: kiro_user_activity
                 FieldId: field-msgs-t2
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: SUM
-                Column:
-                  ColumnName: credits_used_num
-                  DataSetIdentifier: kiro_user_activity
-                FieldId: field-credits-t1
-                FormatConfiguration:
-                  FormatConfiguration:
-                    NumberDisplayFormatConfiguration:
-                      DecimalPlacesConfiguration:
-                        DecimalPlaces: 0
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: AVERAGE
-                Column:
-                  ColumnName: credits_per_message
-                  DataSetIdentifier: kiro_user_activity
-                FieldId: field-cpm-t1
-                FormatConfiguration:
-                  FormatConfiguration:
-                    NumberDisplayFormatConfiguration:
-                      DecimalPlacesConfiguration:
-                        DecimalPlaces: 3
+            # NO CREDITS COLUMNS HERE, DELIBERATELY. Credits are only ever known per
+            # user-day: the source report writes credits_used on ONE of that user-day's
+            # model rows and zero on the rest, and it does not say which model spent
+            # them. Grouping credits by model_name therefore does not split them, it
+            # just reports which model happened to be the carrier row. Measured on
+            # 2026-09-08 that put 53,819.13 of 53,928.91 credits (99.8%) on the single
+            # model "Auto" and 0.00 on every other model despite tens of thousands of
+            # messages. Credits per Message had the same problem twice over. Credits
+            # live on the User Summary and Credit & Overage sheets, at user grain.
         SortConfiguration:
           FieldSortOptions:
           - FieldId: field-model-t1
             SortBy:
               Field:
                 Direction: DESC
-                FieldId: field-credits-t1
+                FieldId: field-msgs-t2
         TableOptions:
           CellStyle: {}
           ColumnHeaderStyle: {}
@@ -2276,6 +2981,10 @@ Sheets:
     SheetTextBoxId: 8982dad8-c41f-45be-a383-2a662eeacbac
   # Center-aligned dashboard name / version block, mirroring CUDOS v5 (40px,
   # teal #61d1d6 name).
+  #
+  # KEEP THIS VERSION IN SYNC WITH `version:` IN kiro-user-activity.yaml. Nothing
+  # templates it - every dashboard in this repo hardcodes its About version - so it
+  # silently drifts on a release. It was left at v1.0.0 through the v1.1.0 release.
   - Content: |-
       <text-box>
         <block align="center">
@@ -2283,7 +2992,7 @@ Sheets:
         </block>
         <br/>
         <block align="center">
-          <inline font-size="40px"><b>v1.0.0</b></inline>
+          <inline font-size="40px"><b>v1.1.0</b></inline>
         </block>
       </text-box>
     SheetTextBoxId: fdd229b0-07cb-4b93-b634-0a2357c4b4b1
