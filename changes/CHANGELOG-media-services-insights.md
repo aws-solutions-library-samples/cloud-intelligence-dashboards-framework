@@ -1,5 +1,9 @@
 # What's new in the Media Services Insights Hub (MSIH)
 
+## Media Services Insights Hub - v2.2.2
+
+- EMC Mods for refining add-on analysis
+
 ## Media Services Insights Hub - v2.2.1
 
 - EML Reservations: Handle savings calculation estimations for EML profiles where there is no OD cost to reference
