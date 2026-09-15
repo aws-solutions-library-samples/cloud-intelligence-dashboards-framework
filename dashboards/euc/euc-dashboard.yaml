@@ -23281,7 +23281,7 @@ datasets:
         af7cf4fe-a3b4-418b-a4e0-fe6dd8160686:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: euc_metrics_view
             InputColumns:
@@ -23409,7 +23409,7 @@ datasets:
         d77685e6-5f78-44cf-8310-061e54960433:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -23518,7 +23518,7 @@ datasets:
         9cbddd15-14cb-427f-8fec-e97abbc35a62:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: euc_view
             InputColumns:
@@ -23642,7 +23642,7 @@ datasets:
         ce1f1217-e441-438b-bd14-2e0e54d00f77:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:

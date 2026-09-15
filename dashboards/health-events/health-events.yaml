@@ -18,7 +18,7 @@ datasets:
         b6e834d2-c61b-4327-a27a-e1d4b53d3d92:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: health_events_view
             InputColumns:
@@ -107,7 +107,7 @@ datasets:
         fcf163c9-994b-477d-ace3-2c0873880793:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
