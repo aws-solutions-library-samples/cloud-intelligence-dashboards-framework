@@ -162,47 +162,6 @@ CalculatedFields:
   Expression: addDateTime(-1, "DD", addDateTime(1, "MM", truncDate("MM", maxOver({usage_date},
     [], PRE_AGG))))
   Name: period_end
-- DataSetIdentifier: kiro_cur_view
-  Expression: dateDiff({period_start}, {period_end}, "DD") + 1
-  Name: period_days
-# Days idle AS AT THE END OF THE SELECTED PERIOD, not as at today. Looking at August has
-# to give August's answer, and a figure measured from now() silently grew every day and
-# reported the same number whichever month you were reviewing.
-#
-# Three branches:
-#  1. Never consumed credits in any period -> the full length of the period. This is the
-#     case that used to render as an empty cell, because dateDiff on a NULL date is NULL:
-#     the licences with NOTHING on record, the most reclaimable ones, were the only ones
-#     showing no number at all. The period length is a floor, not the true figure - the
-#     licence has been idle at least this long - and it is the most that can be said from
-#     the selected period alone.
-#  2. Active AFTER the period ended -> the full length of the period, the same floor as
-#     branch 1. This happens whenever a licence idle in August comes back to life in
-#     September, because last_activity_date is all-time. Measured on real data for
-#     dseroka+dariusjs@amazon.com in account 654654305283, reviewing August: Last Activity
-#     read 2026-09-04, later than the 31 August period end.
-#
-#     This branch returned 0 first, to avoid the negative number a raw dateDiff would give.
-#     That was wrong, and provably so from the row itself: the licence is ON this table,
-#     which means it consumed no credits in the whole selected period, so it cannot have
-#     been idle for zero days. It also made Inactivity Cost read 0.00 for a month that was
-#     genuinely paid for and unused, and pushed Months Active to the full licensed life.
-#
-#     The exact figure - days since the last activity ON OR BEFORE the period end - is not
-#     reachable here. It needs a window over rows the Billing period filter has already
-#     removed, and a PRE_FILTER window cannot be used because period_end is itself PRE_AGG,
-#     evaluated after filters. Only a date parameter would give it, at the price of a second
-#     date control. The period length is exact for the period and a floor for all time,
-#     which is the honest reading and never contradicts the row's presence in the table.
-#  3. Otherwise the days from the last activity to the end of the period.
-- DataSetIdentifier: kiro_cur_view
-  Expression: >-
-    ifelse(
-      isNull({last_activity_date}), {period_days},
-      {last_activity_date} > {period_end}, {period_days},
-      dateDiff({last_activity_date}, {period_end}, "DD")
-    )
-  Name: days_idle
 # The first day this licence was ever charged a fee, PRE_FILTER so it reaches back past
 # the selected period into the full 18 months the view holds. Needed for a licence that
 # has NEVER consumed credits: there is no last-activity date to count idle months from, so
@@ -217,7 +176,7 @@ CalculatedFields:
 # How many distinct calendar months this licence was charged a fee in, WITHIN the selected
 # period. This is the divisor that turns period_fees into a monthly rate.
 #
-# Counting billed months rather than using period_days is what makes the rate correct for
+# Counting billed months rather than the period's own length is what makes the rate correct for
 # a multi-month selection: a licence billed in only 2 months of a 9-month window has its
 # fee divided by 2, not by 9, so the monthly figure is the real monthly figure.
 - DataSetIdentifier: kiro_cur_view
@@ -235,10 +194,16 @@ CalculatedFields:
 # multiplier for inactivity_cost, and shown as its own column so the arithmetic in that column
 # is checkable by eye: monthly_fee x months_idle.
 #
+# THE ONLY IDLENESS MEASURE ON THE TABLE. A day-grain twin, days_idle, was carried here for
+# a while and then removed: Kiro bills by the calendar month, every other column on this
+# table is month-grain, and 188 days told a reader nothing that 6 months did not. Last
+# Activity is still displayed, so anyone who wants days can subtract. Note that the CSV
+# export of a pivot contains only the displayed columns, so days will not be in the download
+# either - it has to be derived from Last Activity.
+#
 # Deliberately cumulative, NOT capped at the selected period. A licence last used in March
 # and still being billed in September has wasted six months of fees, and reporting only
-# September's one month understated the case for reclaiming it by a factor of six. days_idle
-# beside it is the same span expressed in days.
+# September's one month understated the case for reclaiming it by a factor of six.
 #
 # The branches, in order:
 #  1. Never consumed credits -> count from the first day it was ever billed, +1 because
@@ -248,10 +213,21 @@ CalculatedFields:
 #     more wasted months than the licence has actually existed for.
 #  3. Active again AFTER the period ended -> the number of months in the selected period.
 #     A licence on this table consumed nothing across the whole period, so the period's own
-#     months are idle regardless of what happened afterwards. This returned 0 first, which
-#     contradicted the row's presence in the table and zeroed a genuine Inactivity Cost -
-#     see the equivalent branch of days_idle for the measurement that is not reachable here
-#     and why.
+#     months are idle regardless of what happened afterwards.
+#
+#     This branch returned 0 first, which was wrong and provably so from the row itself: the
+#     licence is ON this table, so it consumed no credits in the whole period and cannot have
+#     been idle for zero months. It also zeroed a genuine Inactivity Cost and pushed Months
+#     Active to the full licensed life. Measured on real data for dseroka+dariusjs@amazon.com
+#     in account 654654305283, reviewing August: Last Activity read 2026-09-04, later than
+#     the 31 August period end.
+#
+#     The exact figure - months since the last activity ON OR BEFORE the period end - is not
+#     reachable here. It needs a window over rows the Billing period filter has already
+#     removed, and PRE_FILTER cannot be used because period_end is itself PRE_AGG, evaluated
+#     after filters. Only a date parameter would give it, at the price of a second date
+#     control. The period is exact for the period and a floor for all time, which never
+#     contradicts the row's presence in the table.
 #  4. Otherwise whole months from last activity to the end of the period. No +1 here: the
 #     month they last worked in was used, so it is not wasted.
 #
@@ -2048,10 +2024,10 @@ Sheets:
       # credits in it. Selecting August lists August's reclaim candidates, and that
       # answer is computed from August's rows so it does not drift over time.
       #
-      # Last Activity / Days Idle are the ALL-TIME fields, deliberately: they are
-      # PRE_FILTER so they ignore the billing period. A licence idle in August that
-      # came back to life in September shows a September Last Activity, which is the
-      # context that stops someone reclaiming a licence now back in use. Both take the
+      # Licence Since and Last Activity are ALL-TIME, deliberately: they are PRE_FILTER
+      # so they ignore the billing period. A licence idle in August that came back to
+      # life in September shows a September Last Activity, which is the context that
+      # stops someone reclaiming a licence now back in use. Last Activity takes the
       # newest 'Kiro Enterprise Credits' line per account + subscription. Verified in
       # Athena: those Credits lines carry the real day of consumption and match the
       # activity dataset's last active date exactly, and CUR also covers accounts whose
@@ -2075,10 +2051,12 @@ Sheets:
             FieldId: field-inactive-subtype
             Visibility: VISIBLE
           # Columns read as a narrative: how long they have been on the tool, then how
-          # long they have been off it, then what that has cost.
+          # long they have been off it, then what that has cost. Everything after the two
+          # dates is month-grain, matching how Kiro bills - a day-grain "Days Idle at
+          # Period End" column was dropped as redundant with Months Idle.
           #
           # Licence Since and Last Activity are all-time and so can fall outside the
-          # selected period. Days Idle is measured TO THE END of the selected period, so
+          # selected period. Months Idle is measured TO THE END of the selected period, so
           # it does move with the control even though its starting point does not.
           - CustomLabel: Licence Since
             FieldId: field-inactive-licence-since
@@ -2088,9 +2066,6 @@ Sheets:
             Visibility: VISIBLE
           - CustomLabel: Months Active
             FieldId: field-inactive-months-active
-            Visibility: VISIBLE
-          - CustomLabel: Days Idle at Period End
-            FieldId: field-inactive-days-idle
             Visibility: VISIBLE
           # Inactivity Cost is the number to act on, so it sits last, closest to
           # the eye, with its own two factors immediately before it: Months Idle x
@@ -2175,21 +2150,6 @@ Sheets:
                       NullValueFormatConfiguration:
                         NullString: '-'
                       SeparatorConfiguration: {}
-            - NumericalMeasureField:
-                AggregationFunction:
-                  SimpleNumericalAggregation: MAX
-                Column:
-                  ColumnName: days_idle
-                  DataSetIdentifier: kiro_cur_view
-                FieldId: field-inactive-days-idle
-                FormatConfiguration:
-                  FormatConfiguration:
-                    NumberDisplayFormatConfiguration:
-                      DecimalPlacesConfiguration:
-                        DecimalPlaces: 0
-                      NullValueFormatConfiguration:
-                        NullString: '-'
-                      SeparatorConfiguration: {}
             # The two factors of Inactivity Cost, so the total below is checkable
             # by eye. Both are per-licence window values, hence MAX.
             - NumericalMeasureField:
@@ -2244,12 +2204,13 @@ Sheets:
                 Direction: ASC
                 FieldId: field-inactive-account
           # Within an account, stalest subscriptions first - those are the ones
-          # worth reclaiming.
+          # worth reclaiming. Sorts on Months Idle since the day-grain field this used
+          # to point at was removed; the ordering is the same, at coarser resolution.
           - FieldId: field-inactive-user
             SortBy:
               Field:
                 Direction: DESC
-                FieldId: field-inactive-days-idle
+                FieldId: field-inactive-months-idle
         TableOptions:
           CellStyle: {}
           ColumnHeaderStyle: {}
@@ -2262,7 +2223,7 @@ Sheets:
               <br/>
               &#128336; Months Active is how long they used Kiro before going quiet - weigh it against the idle columns before acting.
               <br/>
-              &#8987; Days Idle and Months Idle both run to the last day of the selected period.
+              &#8987; Months Idle runs to the last day of the selected period.
               <br/>
               &#10134; A blank Last Activity means the licence was never used; Months Idle then counts from its first charge.
               <br/>
