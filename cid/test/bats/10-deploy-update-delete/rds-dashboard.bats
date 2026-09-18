@@ -7,7 +7,7 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
 
 @test "Install RDS Dashboard" {
   run cid-cmd -vv deploy  \
-    --dashboard-id rds-dashboard \
+    --dashboard-id droid \
     --athena-database $database_name\
     --athena-workgroup primary\
     --quicksight-group $quicksight_group \
@@ -122,14 +122,14 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
 @test "Dashboard created" {
   run aws quicksight describe-dashboard \
     --aws-account-id $account_id \
-    --dashboard-id rds-dashboard
+    --dashboard-id droid
 
   [ "$status" -eq 0 ]
 }
 
 @test "Update works" {
   run cid-cmd -vv --yes update --force --recursive  \
-    --dashboard-id rds-dashboard \
+    --dashboard-id droid \
     --athena-database $database_name\
     --athena-workgroup primary\
     --quicksight-group $quicksight_group \
@@ -143,7 +143,7 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
   run cid-cmd -vv --yes delete \
     --athena-database $database_name\
     --athena-workgroup primary\
-    --dashboard-id rds-dashboard
+    --dashboard-id droid
 
   [ "$status" -eq 0 ]
 }
@@ -151,7 +151,7 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
 @test "Dashboard is deleted" {
   run aws quicksight describe-dashboard \
     --aws-account-id $account_id \
-    --dashboard-id rds-dashboard
+    --dashboard-id droid
 
   [ "$status" -ne 0 ]
 }

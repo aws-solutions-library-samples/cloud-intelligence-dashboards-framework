@@ -1,15 +1,15 @@
 dashboards:
-  rds-dashboard:
+  droid:
     dependsOn:
       datasets:
+      - rds_aurora_io_optimized_view
       - rds_backup_view
+      - rds_cost_summary_view
       - rds_inventory_view
       - rds_maintenance_view
       - rds_tags_view
-      - rds_aurora_io_optimized_view
-      - rds_cost_summary_view
-    name: RDS Dashboard
-    dashboardId: rds-dashboard
+    name: DROID - Database Resilience, Operations & Insights
+    dashboardId: droid
     category: Custom
     theme: MIDNIGHT
     version: v0.0.0
@@ -125,11 +125,21 @@ datasets:
               Type: STRING
             - Name: day
               Type: STRING
+            - Name: latest_collection_date
+              Type: STRING
+            - Name: latest_collection_date_flag
+              Type: INTEGER
       ImportMode: SPICE
       LogicalTableMap:
         rds-dailybackup-logical:
           Alias: rds_backup_view
           DataTransforms:
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: collection_date_filter
+                ColumnId: 12a96595-ee09-4671-8a9d-1fdbcaea0264
+                Expression: formatDate(parseDate(collection_date, 'yyyy-MM-dd HH:mm:ss'),
+                  'yyyy-MM-dd')
           - ProjectOperation:
               ProjectedColumns:
               - dbinstanceidentifier
@@ -181,6 +191,9 @@ datasets:
               - year
               - month
               - day
+              - collection_date_filter
+              - latest_collection_date
+              - latest_collection_date_flag
           Source:
             PhysicalTableId: rds-dailybackup-table
     dependsOn:
@@ -304,11 +317,21 @@ datasets:
               Type: STRING
             - Name: dbparametergroups
               Type: STRING
+            - Name: latest_collection_date
+              Type: STRING
+            - Name: latest_collection_date_flag
+              Type: INTEGER
       ImportMode: SPICE
       LogicalTableMap:
         rds-analysis-logical:
           Alias: rds_inventory_view
           DataTransforms:
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: collection_date_filter
+                ColumnId: 5305a66c-8d25-4136-b578-a6123637ac0a
+                Expression: formatDate(parseDate(collection_date, 'yyyy-MM-dd HH:mm:ss'),
+                  'yyyy-MM-dd')
           - ProjectOperation:
               ProjectedColumns:
               - dbinstanceidentifier
@@ -363,6 +386,9 @@ datasets:
               - day
               - dbparametergroups
               - dbsecuritygroups
+              - collection_date_filter
+              - latest_collection_date
+              - latest_collection_date_flag
           Source:
             PhysicalTableId: rds-analysis-table
     dependsOn:
@@ -434,11 +460,21 @@ datasets:
               Type: STRING
             - Name: day
               Type: STRING
+            - Name: latest_collection_date
+              Type: STRING
+            - Name: latest_collection_date_flag
+              Type: INTEGER
       ImportMode: SPICE
       LogicalTableMap:
         rds-maintenance-logical:
           Alias: rds_maintenance_view
           DataTransforms:
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: collection_date_filter
+                ColumnId: da629466-0ac8-4288-bb27-aeb62812b56b
+                Expression: formatDate(parseDate(collection_date, 'yyyy-MM-dd HH:mm:ss'),
+                  'yyyy-MM-dd')
           - ProjectOperation:
               ProjectedColumns:
               - dbinstanceidentifier
@@ -467,6 +503,9 @@ datasets:
               - year
               - month
               - day
+              - collection_date_filter
+              - latest_collection_date
+              - latest_collection_date_flag
           Source:
             PhysicalTableId: rds-maintenance-table
     dependsOn:
@@ -859,6 +898,8 @@ views:
       , i.year
       , i.month
       , i.day
+      , date_format(date_parse(max(i.collection_date) OVER (PARTITION BY i.accountid, i.region), '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') latest_collection_date
+      , (CASE WHEN (i.collection_date = max(i.collection_date) OVER (PARTITION BY i.accountid, i.region)) THEN 1 ELSE 0 END) latest_collection_date_flag
       FROM
         ((((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
@@ -871,8 +912,11 @@ views:
     parameters:
       data_collection_database_name:
         type: athena
-        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_instances_data'
-        error: "Prerequisites not found. Ensure CID Data Collection is installed with RDS inventory module enabled."
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_clusters_data'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
   rds_inventory_view:
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".rds_inventory_view AS
@@ -981,7 +1025,7 @@ views:
       , i.maxallocatedstorage
       , i.latestrestorabletime
       , i.readreplicasourcedbinstanceidentifier
-      , (CASE WHEN i.taglist IS NULL OR i.taglist = '[]' THEN NULL ELSE array_join(transform(CAST(json_parse(i.taglist) AS ARRAY(ROW(Key varchar, Value varchar))), x -> concat(x.Key, ':', x.Value)), ', ') END) taglist
+      , (CASE WHEN ((i.taglist IS NULL) OR (i.taglist = '[]')) THEN null ELSE array_join(transform(CAST(json_parse(i.taglist) AS ARRAY(ROW(Key varchar, Value varchar))), (x) -> concat(x.Key, ':', x.Value)), ', ') END) taglist
       , org.name accountname
       , i.collection_date
       , i.region
@@ -995,7 +1039,7 @@ views:
       , emin."latest_minor_version_N-1"
       , emin."latest_minor_version_N-2"
       , COALESCE(vs.engine_version_status, 'Unknown') engine_version_status
-      , (CASE WHEN (eos.standard_support_end IS NULL) THEN 'Standard Support' WHEN (CAST(eos.standard_support_end AS DATE) > current_date) THEN 'Standard Support' WHEN ((eos.extended_support_end IS NOT NULL) AND (CAST(eos.extended_support_end AS DATE) > current_date)) THEN 'Extended Support' ELSE 'End of Extended Support' END) rds_support_status
+      , (CASE WHEN (eos.standard_support_end IS NULL) THEN 'Standard Support' WHEN (CAST(eos.standard_support_end AS DATE) > current_date) THEN 'Standard Support' WHEN (eos.extended_support_end IS NULL) THEN 'End of Standard Support' WHEN ((eos.extended_support_end IS NOT NULL) AND (CAST(eos.extended_support_end AS DATE) > current_date)) THEN 'Extended Support' ELSE 'End of Extended Support' END) rds_support_status
       , eos.standard_support_start
       , eos.standard_support_end
       , eos.extended_support_start
@@ -1004,6 +1048,8 @@ views:
       , i.year
       , i.month
       , i.day
+      , date_format(date_parse(max(i.collection_date) OVER (PARTITION BY i.accountid, i.region), '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') latest_collection_date
+      , (CASE WHEN (i.collection_date = max(i.collection_date) OVER (PARTITION BY i.accountid, i.region)) THEN 1 ELSE 0 END) latest_collection_date_flag
       FROM
         (((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
@@ -1015,8 +1061,11 @@ views:
     parameters:
       data_collection_database_name:
         type: athena
-        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_instances_data'
-        error: "Prerequisites not found. Ensure CID Data Collection is installed with RDS inventory module enabled."
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_clusters_data'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
   rds_maintenance_view:
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".rds_maintenance_view AS
@@ -1105,6 +1154,8 @@ views:
       , i.year
       , i.month
       , i.day
+      , date_format(date_parse(max(i.collection_date) OVER (PARTITION BY i.accountid, i.region), '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') latest_collection_date
+      , (CASE WHEN (i.collection_date = max(i.collection_date) OVER (PARTITION BY i.accountid, i.region)) THEN 1 ELSE 0 END) latest_collection_date_flag
       FROM
         (((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
@@ -1116,8 +1167,11 @@ views:
     parameters:
       data_collection_database_name:
         type: athena
-        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_instances_data'
-        error: "Prerequisites not found. Ensure CID Data Collection is installed with RDS inventory module enabled."
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_clusters_data'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
   rds_tags_view:
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".rds_tags_view AS
@@ -1133,8 +1187,13 @@ views:
       data_collection_database_name:
         type: athena
         query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_instances_data'
-        error: "Prerequisites not found. Ensure CID Data Collection is installed with RDS inventory module enabled."
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
   rds_aurora_io_optimized_view:
+    dependsOn:
+      cur2: true
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".rds_aurora_io_optimized_view AS
       WITH
@@ -1151,9 +1210,9 @@ views:
          , (CASE WHEN ((r.line_item_usage_type LIKE '%-Aurora:StorageIOUsage') OR (r.line_item_usage_type LIKE 'Aurora:StorageIOUsage')) THEN 'io' WHEN ((r.line_item_usage_type LIKE '%-Aurora:StorageUsage') OR (r.line_item_usage_type LIKE 'Aurora:StorageUsage')) THEN 'storage' WHEN ((r.line_item_usage_type LIKE '%-InstanceUsage:%') OR (r.line_item_usage_type LIKE 'InstanceUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-AlwaysOnUsage:%') OR (r.line_item_usage_type LIKE 'AlwaysOnUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-BoxUsage:%') OR (r.line_item_usage_type LIKE 'BoxUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-DedicatedUsage:%') OR (r.line_item_usage_type LIKE 'DedicatedUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-HighUsage:%') OR (r.line_item_usage_type LIKE 'HighUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-MirrorUsage:%') OR (r.line_item_usage_type LIKE 'MirrorUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-Multi-AZUsage:%') OR (r.line_item_usage_type LIKE 'Multi-AZUsage:%')) THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-SpotUsage:%') OR (r.line_item_usage_type LIKE 'SpotUsage:%')) THEN 'compute' WHEN (r.line_item_usage_type LIKE '%Aurora:ServerlessV2Usage') THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-InstanceUsageIOOptimized:%') OR (r.line_item_usage_type LIKE 'InstanceUsageIOOptimized:%')) THEN 'compute' WHEN (r.line_item_usage_type LIKE '%Aurora:ServerlessV2IOOptimizedUsage') THEN 'compute' WHEN ((r.line_item_usage_type LIKE '%-Aurora:IO-OptimizedStorageUsage') OR (r.line_item_usage_type LIKE 'Aurora:IO-OptimizedStorageUsage')) THEN 'storage' ELSE 'other' END) cost_category
          , (CASE WHEN (r.line_item_resource_id LIKE 'arn:aws:rds:%:cluster-snapshot:%') THEN 'snapshot' WHEN (r.line_item_resource_id LIKE 'arn:aws:rds:%:cluster:%') THEN 'cluster' WHEN (r.line_item_resource_id LIKE 'arn:aws:rds:%:db:%') THEN 'instance' ELSE 'unknown' END) resource_type
          , (CASE WHEN ((r.line_item_resource_id LIKE 'arn:aws:rds:%:cluster:%') AND (NOT (r.line_item_resource_id LIKE 'arn:aws:rds:%:cluster-snapshot:%'))) THEN REGEXP_EXTRACT(r.line_item_resource_id, 'arn:aws:rds:[^:]+:[^:]+:cluster:(.+)', 1) WHEN (r.line_item_resource_id LIKE 'arn:aws:rds:%:db:%') THEN REGEXP_EXTRACT(r.line_item_resource_id, 'arn:aws:rds:[^:]+:[^:]+:db:(.+)', 1) ELSE r.line_item_resource_id END) extracted_name
-         , r.line_item_unblended_cost unblended_cost
+         , (CASE WHEN r.line_item_line_item_type = 'SavingsPlanCoveredUsage' THEN r.savings_plan_savings_plan_effective_cost WHEN r.line_item_line_item_type = 'DiscountedUsage' THEN r.reservation_effective_cost ELSE r.line_item_unblended_cost END) amortized_cost
          FROM
-           cid_data_export.cur2 r
+           "${cur2_database}"."${cur2_table_name}" r
          WHERE ((r.line_item_product_code = 'AmazonRDS') AND ((r.product['database_engine'] LIKE '%Aurora%') OR (r.line_item_usage_type LIKE '%Aurora%')) AND (line_item_line_item_type IN ('Usage', 'DiscountedUsage', 'SavingsPlanCoveredUsage')) AND (line_item_usage_start_date >= DATE_ADD('month', -6, current_date)))
       )
       , cluster_instance_map AS (
@@ -1165,8 +1224,8 @@ views:
          , a.region
          , a.engine
          FROM
-           (optimization_data.inventory_rds_db_clusters_data a
-         INNER JOIN optimization_data.inventory_rds_db_instances_data b ON ((a.accountid = b.accountid) AND (a.dbclusteridentifier = b.dbclusteridentifier) AND (a.region = b.region)))
+           ("${data_collection_database_name}".inventory_rds_db_clusters_data a
+         INNER JOIN "${data_collection_database_name}".inventory_rds_db_instances_data b ON ((a.accountid = b.accountid) AND (a.dbclusteridentifier = b.dbclusteridentifier) AND (a.region = b.region)))
          WHERE (a.dbclusterresourceid IS NOT NULL)
       )
       , cluster_map AS (
@@ -1198,7 +1257,7 @@ views:
          , COALESCE(cm.engine, im.engine, ar.database_engine) database_engine
          , ar.usage_month
          , ar.cost_category
-         , ar.unblended_cost
+         , ar.amortized_cost
          , ar.resource_type
          , ar.extracted_name
          , (CASE WHEN (ar.resource_type = 'cluster') THEN cm.dbclusteridentifier WHEN (ar.resource_type = 'instance') THEN im.dbclusteridentifier END) dbclusteridentifier
@@ -1218,15 +1277,15 @@ views:
          , database_engine
          , dbclusteridentifier
          , ARRAY_JOIN(ARRAY_AGG(DISTINCT (CASE WHEN (resource_type = 'instance') THEN extracted_name END)), ', ') dbinstanceidentifiers
-         , SUM((CASE WHEN (cost_category = 'compute') THEN unblended_cost ELSE 0 END)) compute_cost
-         , SUM((CASE WHEN (cost_category = 'io') THEN unblended_cost ELSE 0 END)) io_cost
-         , SUM((CASE WHEN (cost_category = 'storage') THEN unblended_cost ELSE 0 END)) storage_cost
-         , SUM((CASE WHEN (cost_category = 'other') THEN unblended_cost ELSE 0 END)) other_cost
-         , SUM(unblended_cost) total_cost
+         , SUM((CASE WHEN (cost_category = 'compute') THEN amortized_cost ELSE 0 END)) compute_cost
+         , SUM((CASE WHEN (cost_category = 'io') THEN amortized_cost ELSE 0 END)) io_cost
+         , SUM((CASE WHEN (cost_category = 'storage') THEN amortized_cost ELSE 0 END)) storage_cost
+         , SUM((CASE WHEN (cost_category = 'other') THEN amortized_cost ELSE 0 END)) other_cost
+         , SUM(amortized_cost) total_cost
          FROM
            aurora_with_cluster
          GROUP BY usage_month, payer_account_id, account_id, account_name, region, database_engine, dbclusteridentifier
-         HAVING (SUM((CASE WHEN (cost_category = 'compute') THEN unblended_cost ELSE 0 END)) > 0)
+         HAVING (SUM((CASE WHEN (cost_category = 'compute') THEN amortized_cost ELSE 0 END)) > 0)
       )
       SELECT
         usage_month
@@ -1250,28 +1309,68 @@ views:
     parameters:
       data_collection_database_name:
         type: athena
-        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_instances_data'
-        error: "Prerequisites not found. Ensure CID Data Collection is installed with RDS inventory module enabled."
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_clusters_data'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
   rds_cost_summary_view:
     dependsOn:
-      views:
-      - resource_view
-      - summary_view
+      cur2: true
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".rds_cost_summary_view AS
       WITH
-        resource_agg AS (
+        summary AS (
          SELECT
-           linked_account_id
-         , usage_date
-         , region
-         , product_code
-         , usage_type
-         , ARRAY_JOIN(ARRAY_AGG(DISTINCT resource_id), ', ') resource_ids
+           split_part(billing_period, '-', 1) year
+         , split_part(billing_period, '-', 2) month
+         , bill_billing_period_start_date billing_period
+         , (CASE WHEN (date_trunc('month', line_item_usage_start_date) >= (date_trunc('month', current_timestamp) - INTERVAL  '3' MONTH)) THEN date_trunc('day', line_item_usage_start_date) ELSE date_trunc('month', line_item_usage_start_date) END) usage_date
+         , bill_payer_account_id payer_account_id
+         , line_item_usage_account_id linked_account_id
+         , line_item_line_item_type charge_type
+         , (CASE WHEN (line_item_line_item_type IN ('DiscountedUsage', 'SavingsPlanCoveredUsage', 'Usage')) THEN 'Running_Usage' ELSE 'non_usage' END) charge_category
+         , (CASE WHEN (savings_plan_savings_plan_a_r_n <> '') THEN 'SavingsPlan' WHEN (reservation_reservation_a_r_n <> '') THEN 'Reserved' WHEN (line_item_usage_type LIKE '%Spot%') THEN 'Spot' ELSE 'OnDemand' END) purchase_option
+         , (CASE WHEN (savings_plan_savings_plan_a_r_n <> '') THEN savings_plan_savings_plan_a_r_n WHEN (reservation_reservation_a_r_n <> '') THEN reservation_reservation_a_r_n ELSE CAST('' AS varchar) END) ri_sp_arn
+         , line_item_product_code product_code
+         , product['product_name'] product_name
+         , (CASE WHEN (product_servicecode = '') THEN line_item_product_code ELSE product_servicecode END) service
+         , product_product_family product_family
+         , line_item_usage_type usage_type
+         , line_item_operation operation
+         , line_item_availability_zone availability_zone
+         , product['region'] region
+         , product['instance_type_family'] instance_type_family
+         , product_instance_type instance_type
+         , product['operating_system'] platform
+         , product['physical_processor'] processor
+         , product['processor_features'] processor_features
+         , product['database_engine'] database_engine
+         , product['current_generation'] current_generation
+         , pricing_unit pricing_unit
+         , sum((CASE WHEN (line_item_line_item_type IN ('SavingsPlanCoveredUsage', 'DiscountedUsage', 'Usage')) THEN line_item_usage_amount ELSE 0 END)) usage_quantity
+         , sum(line_item_unblended_cost) unblended_cost
+         , sum((CASE WHEN (line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN savings_plan_savings_plan_effective_cost WHEN (line_item_line_item_type = 'SavingsPlanRecurringFee') THEN (savings_plan_total_commitment_to_date - savings_plan_used_commitment) WHEN (line_item_line_item_type IN ('SavingsPlanNegation', 'SavingsPlanUpfrontFee')) THEN 0 WHEN (line_item_line_item_type = 'DiscountedUsage') THEN reservation_effective_cost WHEN (line_item_line_item_type = 'RIFee') THEN (reservation_unused_amortized_upfront_fee_for_billing_period + reservation_unused_recurring_fee) WHEN ((line_item_line_item_type = 'Fee') AND (reservation_reservation_a_r_n <> '')) THEN 0 WHEN ((line_item_line_item_type = 'Refund') AND (line_item_product_code = 'ComputeSavingsPlans')) THEN 0 ELSE line_item_unblended_cost END)) amortized_cost
+         , sum((CASE WHEN (line_item_line_item_type = 'SavingsPlanRecurringFee') THEN -(savings_plan_amortized_upfront_commitment_for_billing_period) WHEN (line_item_line_item_type = 'RIFee') THEN -(reservation_amortized_upfront_fee_for_billing_period) ELSE 0 END)) ri_sp_trueup
+         , sum((CASE WHEN (line_item_line_item_type = 'SavingsPlanUpfrontFee') THEN line_item_unblended_cost WHEN ((line_item_line_item_type = 'Fee') AND (reservation_reservation_a_r_n <> '')) THEN line_item_unblended_cost ELSE 0 END)) ri_sp_upfront_fees
+         , sum((CASE WHEN (line_item_line_item_type <> 'SavingsPlanNegation') THEN pricing_public_on_demand_cost ELSE 0 END)) public_cost
          FROM
-           "cid_cur".resource_view
-         WHERE (product_code = 'AmazonRDS')
-         GROUP BY linked_account_id, usage_date, region, product_code, usage_type
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE ((line_item_product_code = 'AmazonRDS') AND (bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (NOT (COALESCE(line_item_operation, '') IN ('EKSPod-EC2', 'ECSTask-EC2'))))
+         GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26
+      )
+      , resource_agg AS (
+         SELECT
+           line_item_usage_account_id linked_account_id
+         , date_trunc('day', line_item_usage_start_date) usage_date
+         , product['region'] region
+         , line_item_product_code product_code
+         , line_item_usage_type usage_type
+         , ARRAY_JOIN(ARRAY_AGG(DISTINCT line_item_resource_id), ', ') resource_ids
+         FROM
+           "${cur2_database}"."${cur2_table_name}"
+         WHERE ((line_item_product_code = 'AmazonRDS') AND ((current_date - INTERVAL  '30' DAY) <= line_item_usage_start_date) AND (line_item_resource_id <> ''))
+         GROUP BY 1, 2, 3, 4, 5
       )
       SELECT
         a.account_id
@@ -1309,99 +1408,7 @@ views:
       , s.year
       , s.month
       FROM
-        (("cid_cur".summary_view s
-      INNER JOIN "cid_cur".account_map a ON (s.linked_account_id = a.account_id))
+        ((summary s
+      INNER JOIN "${athena_database_name}"."account_map" a ON (s.linked_account_id = a.account_id))
       LEFT JOIN resource_agg r ON ((s.linked_account_id = r.linked_account_id) AND (s.usage_date = r.usage_date) AND (s.region = r.region) AND (s.product_code = r.product_code) AND (s.usage_type = r.usage_type)))
       WHERE (s.product_code = 'AmazonRDS')
-  resource_view:
-    data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".resource_view AS
-      SELECT DISTINCT
-        "date_trunc"('day', "line_item_usage_start_date") "usage_date"
-      , "bill_payer_account_id" "payer_account_id"
-      , '{}' tags_json
-      , "line_item_usage_account_id" "linked_account_id"
-      , "bill_billing_entity" "billing_entity"
-      , product['product_name'] "product_name"
-      , "line_item_resource_id" "resource_id"
-      , "line_item_product_code" "product_code"
-      , "line_item_operation" "operation"
-      , "line_item_line_item_type" "charge_type"
-      , "line_item_usage_type" "usage_type"
-      , "pricing_unit" "pricing_unit"
-      , product['region'] "region"
-      , "line_item_line_item_description" "item_description"
-      , "line_item_legal_entity" "legal_entity"
-      , "pricing_term" "pricing_term"
-      , product['database_engine'] "database_engine"
-      , product['deployment_option'] "product_deployment_option"
-      , "product_from_location" "product_from_location"
-      , product['group'] "product_group"
-      , "product_instance_type" "instance_type"
-      , product['instance_type_family'] "instance_type_family"
-      , product['operating_system'] "platform"
-      , "product_product_family" "product_family"
-      , "product_servicecode" "service"
-      , product['storage'] "product_storage"
-      , "product_to_location" "product_to_location"
-      , product['volume_api_name'] "product_volume_api_name"
-      , "reservation_reservation_a_r_n" "reservation_a_r_n"
-      , "savings_plan_savings_plan_a_r_n" "savings_plan_a_r_n"
-      , "sum"("savings_plan_savings_plan_effective_cost") "savings_plan_effective_cost"
-      , "sum"("reservation_effective_cost") "reservation_effective_cost"
-      , "sum"("line_item_usage_amount") "usage_quantity"
-      , "sum"("line_item_unblended_cost") "unblended_cost"
-      FROM
-        "cid_data_export"."cur2"
-      WHERE (((current_date - INTERVAL  '30' DAY) <= line_item_usage_start_date) AND (line_item_resource_id <> '') AND (NOT (COALESCE("line_item_operation", '') IN ('EKSPod-EC2', 'ECSTask-EC2'))))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30
-  summary_view:
-    data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".summary_view AS
-      SELECT
-        split_part("billing_period", '-', 1) "year"
-      , split_part("billing_period", '-', 2) "month"
-      , '{}' tags_json
-      , "bill_billing_period_start_date" "billing_period"
-      , (CASE WHEN ("date_trunc"('month', "line_item_usage_start_date") >= ("date_trunc"('month', current_timestamp) - INTERVAL  '3' MONTH)) THEN "date_trunc"('day', "line_item_usage_start_date") ELSE "date_trunc"('month', "line_item_usage_start_date") END) "usage_date"
-      , "bill_payer_account_id" "payer_account_id"
-      , "line_item_usage_account_id" "linked_account_id"
-      , "bill_invoice_id" "invoice_id"
-      , "line_item_line_item_type" "charge_type"
-      , (CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN 'Running_Usage' WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN 'Running_Usage' WHEN ("line_item_line_item_type" = 'Usage') THEN 'Running_Usage' ELSE 'non_usage' END) "charge_category"
-      , (CASE WHEN ("savings_plan_savings_plan_a_r_n" <> '') THEN 'SavingsPlan' WHEN ("reservation_reservation_a_r_n" <> '') THEN 'Reserved' WHEN ("line_item_usage_type" LIKE '%Spot%') THEN 'Spot' ELSE 'OnDemand' END) "purchase_option"
-      , (CASE WHEN ("savings_plan_savings_plan_a_r_n" <> '') THEN "savings_plan_savings_plan_a_r_n" WHEN ("reservation_reservation_a_r_n" <> '') THEN "reservation_reservation_a_r_n" ELSE CAST('' AS varchar) END) "ri_sp_arn"
-      , "line_item_product_code" "product_code"
-      , product['product_name'] "product_name"
-      , (CASE WHEN (("bill_billing_entity" = 'AWS Marketplace') AND (NOT ("line_item_line_item_type" LIKE '%Discount%'))) THEN product['product_name'] WHEN ("product_servicecode" = '') THEN "line_item_product_code" ELSE "product_servicecode" END) "service"
-      , "product_product_family" "product_family"
-      , "line_item_usage_type" "usage_type"
-      , "line_item_operation" "operation"
-      , "line_item_line_item_description" "item_description"
-      , "line_item_availability_zone" "availability_zone"
-      , product['region'] "region"
-      , (CASE WHEN (("line_item_usage_type" LIKE '%Spot%') AND ("line_item_product_code" = 'AmazonEC2') AND ("line_item_line_item_type" = 'Usage')) THEN "split_part"("line_item_line_item_description", '.', 1) ELSE product['instance_type_family'] END) "instance_type_family"
-      , (CASE WHEN (("line_item_usage_type" LIKE '%Spot%') AND ("line_item_product_code" = 'AmazonEC2') AND ("line_item_line_item_type" = 'Usage')) THEN "split_part"("line_item_line_item_description", ' ', 1) ELSE "product_instance_type" END) "instance_type"
-      , (CASE WHEN (("line_item_usage_type" LIKE '%Spot%') AND ("line_item_product_code" = 'AmazonEC2') AND ("line_item_line_item_type" = 'Usage')) THEN "split_part"("split_part"("line_item_line_item_description", ' ', 2), '/', 1) ELSE product['operating_system'] END) "platform"
-      , product['tenancy'] "tenancy"
-      , product['physical_processor'] "processor"
-      , product['processor_features'] "processor_features"
-      , product['database_engine'] "database_engine"
-      , product['group'] "product_group"
-      , "product_from_location" "product_from_location"
-      , "product_to_location" "product_to_location"
-      , product['current_generation'] "current_generation"
-      , "line_item_legal_entity" "legal_entity"
-      , "bill_billing_entity" "billing_entity"
-      , "pricing_unit" "pricing_unit"
-      , approx_distinct("line_item_resource_id") "resource_id_count"
-      , sum((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "line_item_usage_amount" WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "line_item_usage_amount" WHEN ("line_item_line_item_type" = 'Usage') THEN "line_item_usage_amount" ELSE 0 END)) "usage_quantity"
-      , sum("line_item_unblended_cost") "unblended_cost"
-      , sum((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost" WHEN ("line_item_line_item_type" = 'SavingsPlanRecurringFee') THEN ("savings_plan_total_commitment_to_date" - "savings_plan_used_commitment") WHEN ("line_item_line_item_type" = 'SavingsPlanNegation') THEN 0 WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN 0 WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_effective_cost" WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee") WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0 WHEN (("line_item_line_item_type" = 'Refund') AND ("line_item_product_code" = 'ComputeSavingsPlans')) THEN 0 ELSE "line_item_unblended_cost" END)) "amortized_cost"
-      , sum((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanRecurringFee') THEN -("savings_plan_amortized_upfront_commitment_for_billing_period") WHEN ("line_item_line_item_type" = 'RIFee') THEN -("reservation_amortized_upfront_fee_for_billing_period") ELSE 0 END)) "ri_sp_trueup"
-      , sum((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN "line_item_unblended_cost" WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN "line_item_unblended_cost" ELSE 0 END)) "ri_sp_upfront_fees"
-      , sum((CASE WHEN ("line_item_line_item_type" <> 'SavingsPlanNegation') THEN "pricing_public_on_demand_cost" ELSE 0 END)) "public_cost"
-      FROM
-        "cid_data_export"."cur2"
-      WHERE (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST("concat"("billing_period", '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH)) AND (NOT (COALESCE("line_item_operation", '') IN ('EKSPod-EC2', 'ECSTask-EC2'))))
-      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
