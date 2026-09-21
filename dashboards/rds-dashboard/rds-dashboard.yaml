@@ -813,7 +813,7 @@ views:
          SELECT DISTINCT
            engine
          , majorengineversion
-         , DENSE_RANK() OVER (PARTITION BY engine ORDER BY CAST(SPLIT_PART(majorengineversion, '.', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(SPLIT_PART(majorengineversion, '.', 2), ''), '0') AS INTEGER) DESC) major_rank
+         , DENSE_RANK() OVER (PARTITION BY engine ORDER BY TRY_CAST(SPLIT_PART(majorengineversion, '.', 1) AS INTEGER) DESC NULLS LAST, TRY_CAST(COALESCE(NULLIF(SPLIT_PART(majorengineversion, '.', 2), ''), '0') AS INTEGER) DESC NULLS LAST) major_rank
          FROM
            "${data_collection_database_name}".rds_db_engine_versions
          WHERE ((status = 'available') AND ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL)))
@@ -938,7 +938,7 @@ views:
          SELECT DISTINCT
            engine
          , majorengineversion
-         , DENSE_RANK() OVER (PARTITION BY engine ORDER BY CAST(SPLIT_PART(majorengineversion, '.', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(SPLIT_PART(majorengineversion, '.', 2), ''), '0') AS INTEGER) DESC) major_rank
+         , DENSE_RANK() OVER (PARTITION BY engine ORDER BY TRY_CAST(SPLIT_PART(majorengineversion, '.', 1) AS INTEGER) DESC NULLS LAST, TRY_CAST(COALESCE(NULLIF(SPLIT_PART(majorengineversion, '.', 2), ''), '0') AS INTEGER) DESC NULLS LAST) major_rank
          FROM
            "${data_collection_database_name}".rds_db_engine_versions
          WHERE ((status = 'available') AND ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL)))
@@ -1098,7 +1098,7 @@ views:
          SELECT DISTINCT
            engine
          , majorengineversion
-         , DENSE_RANK() OVER (PARTITION BY engine ORDER BY CAST(SPLIT_PART(majorengineversion, '.', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(SPLIT_PART(majorengineversion, '.', 2), ''), '0') AS INTEGER) DESC) major_rank
+         , DENSE_RANK() OVER (PARTITION BY engine ORDER BY TRY_CAST(SPLIT_PART(majorengineversion, '.', 1) AS INTEGER) DESC NULLS LAST, TRY_CAST(COALESCE(NULLIF(SPLIT_PART(majorengineversion, '.', 2), ''), '0') AS INTEGER) DESC NULLS LAST) major_rank
          FROM
            "${data_collection_database_name}".rds_db_engine_versions
          WHERE ((status = 'available') AND ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL)))
