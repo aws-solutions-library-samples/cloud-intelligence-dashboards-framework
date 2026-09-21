@@ -1,0 +1,410 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Daily automated Athena query execution for S3 cost data extraction with monitoring'
+
+Parameters:
+  SourceDatabase:
+    Type: String
+    Default: 'cid_data_export'
+    Description: 'Source Athena database containing CUR data - DO NOT CHANGE'
+  
+  SourceTable:
+    Type: String
+    Default: 'cur2'
+    Description: 'Source table name in Athena database - DO NOT CHANGE'
+  
+  TargetS3Bucket:
+    Type: String
+    Description: 'Target S3 bucket for extracted data'
+  
+  PayerAccountId:
+    Type: String
+    Description: 'Payer account ID for partitioning'
+  
+  FilterAccountIds:
+    Type: CommaDelimitedList
+    Description: 'Comma-separated list of account IDs to filter'
+  
+  ScheduleExpression:
+    Type: String
+    Default: 'cron(0 6 * * ? *)'
+    Description: 'Schedule expression for daily execution (default: 6 AM UTC daily)'
+
+Resources:
+  # S3 Bucket for Athena query results
+  AthenaResultsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-athena-results-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldResults
+            Status: Enabled
+            ExpirationInDays: 30
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # IAM Role for Lambda execution
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: AthenaS3AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:DeleteObject
+                  - s3:GetBucketLocation
+                  - s3:ListBucket
+                  - s3:DeleteObject
+                Resource:
+                  - !Sub 'arn:aws:s3:::${TargetS3Bucket}'
+                  - !Sub 'arn:aws:s3:::${TargetS3Bucket}/*'
+                  - !Sub 'arn:aws:s3:::cid-${AWS::AccountId}-data-exports'
+                  - !Sub 'arn:aws:s3:::cid-${AWS::AccountId}-data-exports/*'                  
+                  - !GetAtt AthenaResultsBucket.Arn
+                  - !Sub '${AthenaResultsBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - athena:StartQueryExecution
+                  - athena:GetQueryExecution
+                  - athena:GetQueryResults
+                  - athena:StopQueryExecution
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - glue:GetDatabase
+                  - glue:GetTable
+                  - glue:GetPartitions
+                Resource: "*"
+
+  # Lambda function for Athena query execution
+  AthenaQueryLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-athena-query-executor'
+      Runtime: python3.9
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 900
+      Environment:
+        Variables:
+          SOURCE_DATABASE: !Ref SourceDatabase
+          SOURCE_TABLE: !Ref SourceTable
+          TARGET_S3_BUCKET: !Ref TargetS3Bucket
+          PAYER_ACCOUNT_ID: !Ref PayerAccountId
+          FILTER_ACCOUNT_IDS: !Join [',', !Ref FilterAccountIds]
+          ATHENA_RESULTS_BUCKET: !Ref AthenaResultsBucket
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import os
+          import time
+          from datetime import datetime, timedelta
+          
+          athena = boto3.client('athena')
+          s3 = boto3.client('s3')
+          
+          def delete_all_files(bucket, prefix):
+              """Delete all files under the specified prefix"""
+              paginator = s3.get_paginator('list_objects_v2')
+              pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
+              objects_to_delete = []
+              for page in pages:
+                  if 'Contents' in page:
+                      objects_to_delete.extend([{'Key': obj['Key']} for obj in page['Contents']])
+              if objects_to_delete:
+                  for i in range(0, len(objects_to_delete), 1000):
+                      s3.delete_objects(Bucket=bucket, Delete={'Objects': objects_to_delete[i:i+1000]})
+                  print(f"Deleted {len(objects_to_delete)} files from {prefix}")
+          
+          def lambda_handler(event, context):
+              try:
+                  # Get environment variables
+                  source_db = os.environ['SOURCE_DATABASE']
+                  source_table = os.environ['SOURCE_TABLE']
+                  target_bucket = os.environ['TARGET_S3_BUCKET']
+                  payer_account = os.environ['PAYER_ACCOUNT_ID']
+                  filter_accounts = os.environ['FILTER_ACCOUNT_IDS'].split(',')
+                  results_bucket = os.environ['ATHENA_RESULTS_BUCKET']
+                  
+                  # Build account filter
+                  account_filter = "', '".join([acc.strip() for acc in filter_accounts])
+                  
+                  # Delete all existing files under data directory
+                  prefix = f'cur2/{payer_account}/cid-cur2/data/'
+                  delete_all_files(target_bucket, prefix)
+                  
+                  # Construct the UNLOAD query
+                  query = f"""
+                  UNLOAD (
+                      SELECT
+                          "bill_bill_type" , 
+                          "bill_billing_entity" , 
+                          "bill_billing_period_end_date" , 
+                          "bill_billing_period_start_date" , 
+                          "bill_invoice_id", 
+                          "bill_payer_account_id", 
+                          "bill_payer_account_name", 
+                          "cost_category", 
+                          "discount", 
+                          "discount_bundled_discount", 
+                          "discount_total_discount", 
+                          "identity_line_item_id",
+                          "identity_time_interval", 
+                          "line_item_availability_zone", 
+                          "line_item_legal_entity", 
+                          "line_item_line_item_description", 
+                          "line_item_line_item_type", 
+                          "line_item_operation", 
+                          "line_item_product_code", 
+                          "line_item_resource_id", 
+                          "line_item_unblended_cost", 
+                          "line_item_usage_account_id" , 
+                          "line_item_usage_account_name", 
+                          "line_item_usage_amount", 
+                          "line_item_usage_end_date", 
+                          "line_item_usage_start_date", 
+                          "line_item_usage_type", 
+                          "pricing_lease_contract_length", 
+                          "pricing_offering_class", 
+                          "pricing_public_on_demand_cost", 
+                          "pricing_purchase_option", 
+                          "pricing_term", 
+                          "pricing_unit", 
+                          "product", 
+                          "product_from_location", 
+                          "product_instance_type", 
+                          "product_product_family", 
+                          "product_servicecode", 
+                          "product_to_location" , 
+                          "reservation_amortized_upfront_fee_for_billing_period" , 
+                          "reservation_effective_cost" , 
+                          "reservation_end_time" , 
+                          "reservation_reservation_a_r_n" , 
+                          "reservation_start_time", 
+                          "reservation_unused_amortized_upfront_fee_for_billing_period" , 
+                          "reservation_unused_recurring_fee" , 
+                          "resource_tags", 
+                          "savings_plan_amortized_upfront_commitment_for_billing_period" , 
+                          "savings_plan_end_time" , 
+                          "savings_plan_offering_type" , 
+                          "savings_plan_payment_option" , 
+                          "savings_plan_purchase_term" , 
+                          "savings_plan_savings_plan_a_r_n" , 
+                          "savings_plan_savings_plan_effective_cost" , 
+                          "savings_plan_start_time" , 
+                          "savings_plan_total_commitment_to_date" , 
+                          "savings_plan_used_commitment" , 
+                          "split_line_item_parent_resource_id" , 
+                          "split_line_item_reserved_usage" , 
+                          "split_line_item_actual_usage" , 
+                          "split_line_item_split_usage" , 
+                          "split_line_item_split_usage_ratio" , 
+                          "split_line_item_split_cost" , 
+                          "split_line_item_unused_cost" , 
+                          "split_line_item_net_split_cost" , 
+                          "split_line_item_net_unused_cost" , 
+                          "split_line_item_public_on_demand_split_cost" , 
+                          "split_line_item_public_on_demand_unused_cost" , 
+                          "tags" , 
+                          "bill_invoicing_entity" , 
+                          "line_item_blended_cost" , 
+                          "line_item_blended_rate" , 
+                          "line_item_currency_code" , 
+                          "line_item_net_unblended_cost" , 
+                          "line_item_net_unblended_rate" , 
+                          "line_item_normalization_factor" , 
+                          "line_item_normalized_usage_amount" , 
+                          "line_item_tax_type" , 
+                          "line_item_unblended_rate" , 
+                          "pricing_currency" , 
+                          "pricing_public_on_demand_rate" , 
+                          "pricing_rate_code" , 
+                          "pricing_rate_id" , 
+                          "product_comment" , 
+                          "product_fee_code" , 
+                          "product_fee_description" , 
+                          "product_from_location_type" , 
+                          "product_from_region_code" , 
+                          "product_instance_family" , 
+                          "product_instancesku" , 
+                          "product_location" , 
+                          "product_location_type" , 
+                          "product_operation" , 
+                          "product_pricing_unit" , 
+                          "product_region_code" , 
+                          "product_sku" , 
+                          "product_to_location_type" , 
+                          "product_to_region_code" , 
+                          "product_usagetype" , 
+                          "reservation_amortized_upfront_cost_for_usage" , 
+                          "reservation_availability_zone" , 
+                          "reservation_modification_status" , 
+                          "reservation_net_amortized_upfront_cost_for_usage" , 
+                          "reservation_net_amortized_upfront_fee_for_billing_period" , 
+                          "reservation_net_effective_cost" , 
+                          "reservation_net_recurring_fee_for_usage" , 
+                          "reservation_net_unused_amortized_upfront_fee_for_billing_period" , 
+                          "reservation_net_unused_recurring_fee" , 
+                          "reservation_net_upfront_value" , 
+                          "reservation_normalized_units_per_reservation" , 
+                          "reservation_number_of_reservations" , 
+                          "reservation_recurring_fee_for_usage" , 
+                          "reservation_subscription_id" , 
+                          "reservation_total_reserved_normalized_units" , 
+                          "reservation_total_reserved_units" , 
+                          "reservation_units_per_reservation" , 
+                          "reservation_unused_normalized_unit_quantity" , 
+                          "reservation_unused_quantity" , 
+                          "reservation_upfront_value" , 
+                          "savings_plan_instance_type_family" , 
+                          "savings_plan_net_amortized_upfront_commitment_for_billing_period" , 
+                          "savings_plan_net_recurring_commitment_for_billing_period" , 
+                          "savings_plan_net_savings_plan_effective_cost" , 
+                          "savings_plan_recurring_commitment_for_billing_period" , 
+                          "savings_plan_region" , 
+                          "savings_plan_savings_plan_rate",                                
+                          "billing_period"                
+                      FROM {source_db}.{source_table}
+                      WHERE line_item_usage_account_id IN ('{account_filter}')
+                  )
+                  TO 's3://{target_bucket}/cur2/{payer_account}/cid-cur2/data'
+                  WITH (
+                      format = 'PARQUET',                      
+                      partitioned_by = ARRAY['billing_period']
+                  )
+                  """
+                  
+                  # Execute query
+                  response = athena.start_query_execution(
+                      QueryString=query,
+                      ResultConfiguration={
+                          'OutputLocation': f's3://{results_bucket}/query-results/'
+                      },
+                      WorkGroup='primary'
+                  )
+                  
+                  query_execution_id = response['QueryExecutionId']
+                  print(f"Started query execution: {query_execution_id}")
+                  
+                  # Wait for query completion
+                  max_wait_time = 600  # 10 minutes
+                  wait_interval = 10   # 10 seconds
+                  elapsed_time = 0
+                  
+                  while elapsed_time < max_wait_time:
+                      response = athena.get_query_execution(QueryExecutionId=query_execution_id)
+                      status = response['QueryExecution']['Status']['State']
+                      
+                      if status in ['SUCCEEDED']:
+                          success_message = f"Athena query completed successfully. Query ID: {query_execution_id}"
+                          print(success_message)
+                          
+                          return {
+                              'statusCode': 200,
+                              'body': json.dumps({
+                                  'message': 'Query executed successfully',
+                                  'queryExecutionId': query_execution_id,
+                                  'status': status
+                              })
+                          }
+                      
+                      elif status in ['FAILED', 'CANCELLED']:
+                          error_reason = response['QueryExecution']['Status'].get('StateChangeReason', 'Unknown error')
+                          error_message = f"Athena query failed. Query ID: {query_execution_id}. Reason: {error_reason}"
+                          print(error_message)
+                          
+                          raise Exception(error_message)
+                      
+                      time.sleep(wait_interval)
+                      elapsed_time += wait_interval
+                  
+                  # Timeout case
+                  timeout_message = f"Query execution timed out after {max_wait_time} seconds. Query ID: {query_execution_id}"
+                  print(timeout_message)
+                  
+                  raise Exception(timeout_message)
+                  
+              except Exception as e:
+                  error_message = f"Lambda execution failed: {str(e)}"
+                  print(error_message)
+                  
+                  return {
+                      'statusCode': 500,
+                      'body': json.dumps({
+                          'error': error_message
+                      })
+                      }
+
+  # EventBridge rule for daily scheduling
+  DailyScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub '${AWS::StackName}-daily-schedule'
+      Description: 'Daily trigger for Athena data extraction'
+      ScheduleExpression: !Ref ScheduleExpression
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt AthenaQueryLambda.Arn
+          Id: 'AthenaQueryTarget'
+
+  # Permission for EventBridge to invoke Lambda
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AthenaQueryLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt DailyScheduleRule.Arn
+
+  # CloudWatch Log Group for Lambda
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${AthenaQueryLambda}'
+      RetentionInDays: 14
+
+Outputs:
+  cidrole:
+    Description: 'ARN of the Lambda execution role'
+    Value: !GetAtt LambdaExecutionRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-lambda-role'
+  
+  LambdaFunctionArn:
+    Description: 'ARN of the Lambda function'
+    Value: !GetAtt AthenaQueryLambda.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-lambda-arn'
+  
+  AthenaResultsBucket:
+    Description: 'S3 bucket for Athena query results'
+    Value: !Ref AthenaResultsBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-results-bucket'
+  
+  ScheduleRuleArn:
+    Description: 'ARN of the EventBridge schedule rule'
+    Value: !GetAtt DailyScheduleRule.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-schedule-rule'
