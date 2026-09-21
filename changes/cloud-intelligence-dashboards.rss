@@ -8,6 +8,23 @@
     <lastBuildDate>Thu, 14 Aug 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Media Services Information Hub - v2.2.2</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md
+      </link>
+      <pubDate>Fri, 18 Sep 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">07952055-44aa-43b5-817d-1c6b0f379b95</guid>
+      <description>Media Services Information Hub - v2.2.2</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Elemental Media Convert:</strong> EMC Mods for refining add-on analysis</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
       <title>[Update] cid-cmd v4.4.17</title>
       <link>
         https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/CHANGELOG.md
