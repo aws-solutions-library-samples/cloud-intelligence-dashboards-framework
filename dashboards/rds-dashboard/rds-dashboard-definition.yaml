@@ -1719,8 +1719,6 @@ Sheets:
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 5
-          SelectedBorderStyle:
-            Visibility: VISIBLE
         - ColumnIndex: 11
           ColumnSpan: 25
           ElementId: c276a6fc-73e4-4eee-9c3e-7abb917d3402
@@ -3412,8 +3410,6 @@ Sheets:
           ElementType: VISUAL
           RowIndex: 7
           RowSpan: 5
-          SelectedBorderStyle:
-            Visibility: VISIBLE
         - ColumnIndex: 10
           ColumnSpan: 26
           ElementId: 00e0fe82-76d1-4721-8c5b-c9ff14f18adf
@@ -5474,8 +5470,6 @@ Sheets:
           ElementType: VISUAL
           RowIndex: 4
           RowSpan: 5
-          SelectedBorderStyle:
-            Visibility: VISIBLE
         - ColumnIndex: 9
           ColumnSpan: 27
           ElementId: ce1d5a13-33dc-43d7-9dc7-c2b053a5de6d
@@ -7153,8 +7147,6 @@ Sheets:
           ElementType: VISUAL
           RowIndex: 10
           RowSpan: 5
-          SelectedBorderStyle:
-            Visibility: VISIBLE
         - ColumnIndex: 10
           ColumnSpan: 26
           ElementId: 5cb5bbf7-3655-48e8-a61b-07ada3ebf75c
