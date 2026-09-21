@@ -170,7 +170,7 @@ CalculatedFields:
         'True',
         ifelse(
             isNull({current_major_version}) or {current_major_version} = '',
-            'True',
+            'False',
             ifelse(
             contains(toString({current_major_version}), '.'),
             ifelse(
@@ -190,11 +190,16 @@ CalculatedFields:
   Name: Selected Major Version Status
 - DataSetIdentifier: rds_inventory_dataset
   Expression: |-
-    // Compare the normalized versions
-    ifelse(
-      {extracted_current_minor_version} >= {extracted_compare_minor_version},'True','False'
-    )
+    ifelse(isNull({current_minor_rank}), 'False',
+      ifelse({current_minor_rank} <= {Selected Minor Rank Threshold}, 'True', 'False'))
   Name: Selected Minor Version Status
+- DataSetIdentifier: rds_inventory_dataset
+  Expression: |-
+    ifelse(${pMinorVersionCompare}='Latest_Minor_Version_N', 1,
+    ${pMinorVersionCompare}='Latest_Minor_Version_N-1', 2,
+    ${pMinorVersionCompare}='Latest_Minor_Version_N-2', 3,
+    1)
+  Name: Selected Minor Rank Threshold
 - DataSetIdentifier: rds_inventory_dataset
   Expression: ifelse(maxallocatedstorage <> 0,'True','False')
   Name: Storage Autoscaling Status
@@ -217,46 +222,6 @@ CalculatedFields:
 - DataSetIdentifier: rds_inventory_dataset
   Expression: concat(accountid, '|', dbinstanceidentifier, '|', region)
   Name: distinct-dbinstanceidentifier
-- DataSetIdentifier: rds_inventory_dataset
-  Expression: |-
-    ifelse(
-        contains({Selected Latest Minor Version}, 'ru-'),
-        {Selected Latest Minor Version},
-        ifelse(
-            contains({Selected Latest Minor Version}, 'aurora'),
-            {Selected Latest Minor Version},
-            ifelse(
-                contains({Selected Latest Minor Version}, 'rur'),
-                {Selected Latest Minor Version},
-                toString(
-                    coalesce(parseInt(split({Selected Latest Minor Version}, '.', 1)), 0) * 1000000 +
-                    coalesce(parseInt(split({Selected Latest Minor Version}, '.', 2)), 0) * 1000 +
-                    coalesce(parseInt(split({Selected Latest Minor Version}, '.', 3)), 0)
-                )
-            )
-        )
-    )
-  Name: extracted_compare_minor_version
-- DataSetIdentifier: rds_inventory_dataset
-  Expression: |-
-    ifelse(
-        contains({current_minor_version}, 'ru-'),
-        {current_minor_version},
-        ifelse(
-            contains({current_minor_version}, 'aurora'),
-            {current_minor_version},
-            ifelse(
-                contains({current_minor_version}, 'rur'),
-                {current_minor_version},
-                toString(
-                    coalesce(parseInt(split({current_minor_version}, '.', 1)), 0) * 1000000 +
-                    coalesce(parseInt(split({current_minor_version}, '.', 2)), 0) * 1000 +
-                    coalesce(parseInt(split({current_minor_version}, '.', 3)), 0)
-                )
-            )
-        )
-    )
-  Name: extracted_current_minor_version
 - DataSetIdentifier: rds_inventory_dataset
   Expression: ifelse(isNull(dbclusteridentifier) or dbclusteridentifier='','false','true')
   Name: is_cluster
@@ -5797,7 +5762,7 @@ Sheets:
             <inline font-size="20px">Schedule maintenance windows during low-traffic periods</inline>
           </li>
           <li class="ql-indent-0">
-            <inline font-size="20px">Activate performance Insights for monitoring database load and troubleshooting</inline>
+            <inline font-size="20px">Activate Database/Performance Insights for monitoring database load and troubleshooting</inline>
           </li>
           <li class="ql-indent-0">
             <inline font-size="20px">Encrypt in transit using SSL/TLS connections with Active CA Certificates</inline>
@@ -7421,23 +7386,6 @@ Sheets:
       SourceParameterName: pRegion
       Title: Region
       Type: MULTI_SELECT
-  - Dropdown:
-      DisplayOptions:
-        SelectAllOptions:
-          Visibility: VISIBLE
-        TitleOptions:
-          FontConfiguration:
-            FontSize:
-              Relative: MEDIUM
-          Visibility: VISIBLE
-      ParameterControlId: 76bc4dde-4ff6-4f2d-8251-ce7f29e9a8f7
-      SelectableValues:
-        LinkToDataSetColumn:
-          ColumnName: tag_info
-          DataSetIdentifier: rds_tags_dataset
-      SourceParameterName: pTaglist
-      Title: Taglist
-      Type: SINGLE_SELECT
   SheetControlLayouts:
   - Configuration:
       GridLayout:
@@ -7465,10 +7413,6 @@ Sheets:
           ElementId: 72d43fa8-1530-444f-b183-0fa76b7f968b
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
-          RowSpan: 1
-        - ColumnSpan: 3
-          ElementId: 76bc4dde-4ff6-4f2d-8251-ce7f29e9a8f7
-          ElementType: PARAMETER_CONTROL
           RowSpan: 1
   SheetId: 5eb32d1b-aa2b-422b-abc4-6bb6e8c8489d
   TextBoxes:
@@ -13228,3 +13172,53 @@ Sheets:
             and instance class for last 30 days</visual-title>
         Visibility: VISIBLE
       VisualId: 1da5e3db-fc29-425b-9971-baeed8d2cf55
+- ContentType: INTERACTIVE
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 44473593-924f-430c-b7e3-d3948eb03327
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 8
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: a82cf698-8ff2-4ded-b59b-3de929a7dc7d
+          ElementType: TEXT_BOX
+          RowIndex: 8
+          RowSpan: 10
+  Name: About
+  SheetId: eace803a-5620-479a-8a53-253193cf0409
+  TextBoxes:
+  - Content: |-
+      <text-box>
+        <inline font-size="54.88px">Notices</inline>
+        <br/>
+        <br/>
+        <inline font-size="22.4px">Customers are responsible for making their own independent assessment of this dashboard and its content. This dashboard and its content: (a) is for informational purposes only, (b) represents current AWS product offerings and practices, which are subject to change without notice, and (c) does not create any commitments or assurances from AWS and its affiliates, suppliers or licensors. AWS content, products or services are provided "as is" without warranties, representations, or conditions of any kind, whether express or implied. The responsibilities and liabilities of AWS to its customers are controlled by AWS agreements, and this document is not part of, nor does it modify, any agreement between AWS and its customers.</inline>
+      </text-box>
+    SheetTextBoxId: 44473593-924f-430c-b7e3-d3948eb03327
+  - Content: |-
+      <text-box>
+        <block align="center"><inline color="#61d1d6" font-size="40px"><b>DROID – Database Resilience, Operations, and Insights Dashboard</b></inline></block>
+        <br/>
+        <block align="center"><inline font-size="40px"><b>v1.0.0</b></inline></block>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <block align="right">Built by: Anish Kumar Gopal, Yuriy Prykhodko, Eric Christensen, Prashob Krishnan</block>
+        <br/>
+        <block align="right">Learn more about AWS Cloud Intelligence Dashboards (CID) in <inline color="#61d1d6"><a href="https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/getting-started.html" target="_blank"><u>AWS Well-Architected Labs</u></a></inline></block>
+        <br/>
+        <block align="right">To provide feedback or report an error, email: <inline color="#61d1d6">cloud-intelligence-dashboards@amazon.com</inline></block>
+        <br/>
+        <block align="right">Powered by: Amazon Quick Suite, Amazon Athena, Amazon S3</block>
+      </text-box>
+    SheetTextBoxId: a82cf698-8ff2-4ded-b59b-3de929a7dc7d

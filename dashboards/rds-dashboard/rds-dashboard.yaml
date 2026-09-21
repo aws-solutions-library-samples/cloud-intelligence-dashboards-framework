@@ -291,6 +291,8 @@ datasets:
               Type: STRING
             - Name: latest_minor_version_n-2
               Type: STRING
+            - Name: current_minor_rank
+              Type: INTEGER
             - Name: dbclusteridentifier
               Type: STRING
             - Name: engine_version_status
@@ -373,6 +375,7 @@ datasets:
               - latest_minor_version
               - latest_minor_version_n-1
               - latest_minor_version_n-2
+              - current_minor_rank
               - dbclusteridentifier
               - engine_version_status
               - rds_support_status
@@ -831,7 +834,7 @@ views:
            engine
          , majorengineversion
          , engineversion
-         , DENSE_RANK() OVER (PARTITION BY engine, majorengineversion ORDER BY CAST(REGEXP_EXTRACT(engineversion, '^(\d+)', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, engineversion DESC) minor_rank
+         , DENSE_RANK() OVER (PARTITION BY engine, majorengineversion ORDER BY array_join(transform(regexp_extract_all(engineversion, '\d+'), x -> lpad(x, 15, '0')), '') DESC, engineversion DESC) minor_rank
          FROM
            "${data_collection_database_name}".rds_db_engine_versions
          WHERE ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL))
@@ -956,7 +959,7 @@ views:
            engine
          , majorengineversion
          , engineversion
-         , DENSE_RANK() OVER (PARTITION BY engine, majorengineversion ORDER BY CAST(REGEXP_EXTRACT(engineversion, '^(\d+)', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, engineversion DESC) minor_rank
+         , DENSE_RANK() OVER (PARTITION BY engine, majorengineversion ORDER BY array_join(transform(regexp_extract_all(engineversion, '\d+'), x -> lpad(x, 15, '0')), '') DESC, engineversion DESC) minor_rank
          FROM
            "${data_collection_database_name}".rds_db_engine_versions
          WHERE ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL))
@@ -1039,6 +1042,7 @@ views:
       , emin."latest_minor_version_N-1"
       , emin."latest_minor_version_N-2"
       , COALESCE(vs.engine_version_status, 'Unknown') engine_version_status
+      , rmv.minor_rank current_minor_rank
       , (CASE WHEN (eos.standard_support_end IS NULL) THEN 'Standard Support' WHEN (CAST(eos.standard_support_end AS DATE) > current_date) THEN 'Standard Support' WHEN (eos.extended_support_end IS NULL) THEN 'End of Standard Support' WHEN ((eos.extended_support_end IS NOT NULL) AND (CAST(eos.extended_support_end AS DATE) > current_date)) THEN 'Extended Support' ELSE 'End of Extended Support' END) rds_support_status
       , eos.standard_support_start
       , eos.standard_support_end
@@ -1051,13 +1055,14 @@ views:
       , date_format(date_parse(max(i.collection_date) OVER (PARTITION BY i.accountid, i.region), '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') latest_collection_date
       , (CASE WHEN (i.collection_date = max(i.collection_date) OVER (PARTITION BY i.accountid, i.region)) THEN 1 ELSE 0 END) latest_collection_date_flag
       FROM
-        (((((("${data_collection_database_name}".inventory_rds_db_instances_data i
+        ((((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
       LEFT JOIN "${data_collection_database_name}".organization_data org ON (i.accountid = org.id))
       LEFT JOIN version_status_lookup vs ON ((i.engine = vs.engine) AND (i.engineversion = vs.engineversion)))
       LEFT JOIN engine_major_versions emaj ON (i.engine = emaj.engine))
       LEFT JOIN engine_minor_versions emin ON ((i.engine = emin.engine) AND (vs.majorengineversion = emin.majorengineversion)))
       LEFT JOIN eos_data eos ON ((i.engine = eos.engine) AND (vs.majorengineversion = eos.majorengineversion)))
+      LEFT JOIN ranked_minor_versions rmv ON ((i.engine = rmv.engine) AND (i.engineversion = rmv.engineversion)))
     parameters:
       data_collection_database_name:
         type: athena
@@ -1112,7 +1117,7 @@ views:
            engine
          , majorengineversion
          , engineversion
-         , DENSE_RANK() OVER (PARTITION BY engine, majorengineversion ORDER BY CAST(REGEXP_EXTRACT(engineversion, '^(\d+)', 1) AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, CAST(COALESCE(NULLIF(REGEXP_EXTRACT(engineversion, '^\d+\.\d+\.(\d+)', 1), ''), '0') AS INTEGER) DESC, engineversion DESC) minor_rank
+         , DENSE_RANK() OVER (PARTITION BY engine, majorengineversion ORDER BY array_join(transform(regexp_extract_all(engineversion, '\d+'), x -> lpad(x, 15, '0')), '') DESC, engineversion DESC) minor_rank
          FROM
            "${data_collection_database_name}".rds_db_engine_versions
          WHERE ((supportslimitlessdatabase = false) OR (supportslimitlessdatabase IS NULL))
