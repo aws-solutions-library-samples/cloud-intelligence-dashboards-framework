@@ -1,0 +1,265 @@
+dashboards:
+  UNIT COST DASHBOARD:
+    dependsOn:
+      datasets:
+      - unitcost_view
+    name: Unit Cost Dashboard
+    dashboardId: unit-cost-dashboard
+    category: Custom
+    theme: MIDNIGHT
+    version: v1.0.0
+    file: ./Unit-Cost-Dashboard-definition.yaml
+datasets:
+  unitcost_view:
+    data:
+      DataSetId: 46bbb72c-ba83-410b-83a5-aea06dba07cd
+      Name: unitcost_view
+      PhysicalTableMap:
+        700593a6-2e53-466b-81b6-8ac852fd32ea:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: unitcost_view
+            InputColumns:
+            - Name: year
+              Type: STRING
+            - Name: month
+              Type: STRING
+            - Name: billing_period
+              Type: DATETIME
+            - Name: usage_date
+              Type: DATETIME
+            - Name: payer_account_id
+              Type: STRING
+            - Name: linked_account_id
+              Type: STRING
+            - Name: charge_type
+              Type: STRING
+            - Name: charge_category
+              Type: STRING
+            - Name: purchase_option
+              Type: STRING
+            - Name: product_code
+              Type: STRING
+            - Name: product_name
+              Type: STRING
+            - Name: service
+              Type: STRING
+            - Name: product_family
+              Type: STRING
+            - Name: usage_type
+              Type: STRING
+            - Name: operation
+              Type: STRING
+            - Name: availability_zone
+              Type: STRING
+            - Name: region
+              Type: STRING
+            - Name: instance_type_family
+              Type: STRING
+            - Name: instance_type
+              Type: STRING
+            - Name: platform
+              Type: STRING
+            - Name: tenancy
+              Type: STRING
+            - Name: product_vcpu
+              Type: DECIMAL
+              SubType: FIXED
+            - Name: processor
+              Type: STRING
+            - Name: processor_features
+              Type: STRING
+            - Name: database_engine
+              Type: STRING
+            - Name: product_group
+              Type: STRING
+            - Name: current_generation
+              Type: STRING
+            - Name: product_storage_class
+              Type: STRING
+            - Name: product_operation
+              Type: STRING
+            - Name: pricing_unit
+              Type: STRING
+            - Name: resource_id_count
+              Type: INTEGER
+            - Name: usage_quantity
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unblended_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: amortized_cost
+              Type: DECIMAL
+              SubType: FLOAT
+        e25bcf6f-d78e-47c4-b730-cb0e0242cda2:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
+            - Name: parent_account_id
+              Type: STRING
+            - Name: account_email_id
+              Type: STRING
+      ImportMode: SPICE
+      LogicalTableMap:
+        700593a6-left-logical:
+          Alias: unitcost_view
+          Source:
+            PhysicalTableId: 700593a6-2e53-466b-81b6-8ac852fd32ea
+        a1b2c3d4-join-table:
+          Alias: Intermediate Table
+          DataTransforms:
+          - ProjectOperation:
+              ProjectedColumns:
+              - year
+              - month
+              - billing_period
+              - usage_date
+              - payer_account_id
+              - linked_account_id
+              - charge_type
+              - charge_category
+              - purchase_option
+              - product_code
+              - product_name
+              - service
+              - product_family
+              - usage_type
+              - operation
+              - availability_zone
+              - region
+              - instance_type_family
+              - instance_type
+              - platform
+              - tenancy
+              - product_vcpu
+              - processor
+              - processor_features
+              - database_engine
+              - product_group
+              - current_generation
+              - product_storage_class
+              - product_operation
+              - pricing_unit
+              - resource_id_count
+              - usage_quantity
+              - unblended_cost
+              - amortized_cost
+              - account_id
+              - account_name
+              - account_email_id
+              - parent_account_id
+          Source:
+            JoinInstruction:
+              LeftOperand: 700593a6-left-logical
+              RightOperand: e25bcf6f-right-logical
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+        e25bcf6f-right-logical:
+          Alias: account_map
+          Source:
+            PhysicalTableId: e25bcf6f-d78e-47c4-b730-cb0e0242cda2
+    dependsOn:
+      views:
+      - unitcost_view
+      - account_map
+    schedules:
+    - default
+crawlers: {}
+views:
+  unitcost_view:
+    dependsOn:
+      cur1:
+      - year
+      - month
+      - bill_billing_period_start_date
+      - line_item_usage_start_date
+      - bill_billing_entity
+      - bill_payer_account_id
+      - line_item_usage_account_id
+      - line_item_line_item_type
+      - line_item_product_code
+      - line_item_usage_type
+      - line_item_operation
+      - line_item_availability_zone
+      - line_item_usage_amount
+      - line_item_unblended_cost
+      - line_item_line_item_description
+      - product_product_name
+      - product_current_generation
+      - product_database_engine
+      - product_group
+      - product_instance_type
+      - product_instance_type_family
+      - product_operating_system
+      - product_operation
+      - product_physical_processor
+      - product_processor_features
+      - product_product_family
+      - product_region
+      - product_servicecode
+      - product_storage
+      - product_storage_class
+      - product_tenancy
+      - product_vcpu
+      - pricing_unit
+      - reservation_effective_cost
+      - reservation_unused_amortized_upfront_fee_for_billing_period
+      - reservation_unused_recurring_fee
+      - savings_plan_total_commitment_to_date
+      - savings_plan_savings_plan_a_r_n
+      - savings_plan_used_commitment
+      - savings_plan_savings_plan_effective_cost
+      - reservation_reservation_a_r_n
+      - product_instance
+    data: |-
+      CREATE OR REPLACE VIEW "${athena_database_name}".unitcost_view AS
+      SELECT
+        "year"
+      , "month"
+      , "bill_billing_period_start_date" "billing_period"
+      , "date_trunc"('day', "line_item_usage_start_date") "usage_date"
+      ,  ${cur_tags_json} tags_json
+      , "bill_payer_account_id" "payer_account_id"
+      , "line_item_usage_account_id" "linked_account_id"
+      , "line_item_line_item_type" "charge_type"
+      , (CASE WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN 'Running_Usage' WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN 'Running_Usage' WHEN ("line_item_line_item_type" = 'Usage') THEN 'Running_Usage' ELSE 'non_usage' END) "charge_category"
+      , (CASE WHEN ("savings_plan_savings_plan_a_r_n" <> '') THEN 'SavingsPlan' WHEN ("reservation_reservation_a_r_n" <> '') THEN 'Reserved' WHEN ("line_item_usage_type" LIKE '%Spot%') THEN 'Spot' ELSE 'OnDemand' END) "purchase_option"
+      , "line_item_product_code" "product_code"
+      , "product_product_name" "product_name"
+      , (CASE WHEN (("bill_billing_entity" = 'AWS Marketplace') AND (NOT ("line_item_line_item_type" LIKE '%Discount%'))) THEN "Product_Product_Name" WHEN ("product_servicecode" = '') THEN "line_item_product_code" ELSE "product_servicecode" END) "service"
+      , "product_product_family" "product_family"
+      , "line_item_usage_type" "usage_type"
+      , "line_item_operation" "operation"
+      , "line_item_availability_zone" "availability_zone"
+      , "product_region" "region"
+      , (CASE WHEN ((("line_item_usage_type" LIKE '%Spot%') AND ("line_item_product_code" = 'AmazonEC2')) AND ("line_item_line_item_type" = 'Usage')) THEN "split_part"("line_item_line_item_description", '.', 1) ELSE "product_instance_type_family" END) "instance_type_family"
+      , (CASE WHEN ((("line_item_usage_type" LIKE '%Spot%') AND ("line_item_product_code" = 'AmazonEC2')) AND ("line_item_line_item_type" = 'Usage')) THEN "split_part"("line_item_line_item_description", ' ', 1) ELSE "product_instance_type" END) "instance_type"
+      , (CASE WHEN ((("line_item_usage_type" LIKE '%Spot%') AND ("line_item_product_code" = 'AmazonEC2')) AND ("line_item_line_item_type" = 'Usage')) THEN "split_part"("split_part"("line_item_line_item_description", ' ', 2), '/', 1) ELSE "product_operating_system" END) "platform"
+      , "product_tenancy" "tenancy"
+      , CAST(NULLIF("product_vcpu", '') AS decimal) "product_vcpu"
+      , "product_physical_processor" "processor"
+      , "product_processor_features" "processor_features"
+      , "product_database_engine" "database_engine"
+      , "product_group" "product_group"
+      , "product_current_generation" "current_generation"
+      , "product_storage_class" "product_storage_class"
+      , "product_operation" "product_operation"
+      , "pricing_unit" "pricing_unit"
+      , "approx_distinct"("Line_item_resource_id") "resource_id_count"
+      , "sum"((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "line_item_usage_amount" WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "line_item_usage_amount" WHEN ("line_item_line_item_type" = 'Usage') THEN "line_item_usage_amount" ELSE 0 END)) "usage_quantity"
+      , "sum"("line_item_unblended_cost") "unblended_cost"
+      , "sum"((CASE WHEN ("line_item_line_item_type" = 'SavingsPlanCoveredUsage') THEN "savings_plan_savings_plan_effective_cost" WHEN ("line_item_line_item_type" = 'SavingsPlanRecurringFee') THEN ("savings_plan_total_commitment_to_date" - "savings_plan_used_commitment") WHEN ("line_item_line_item_type" = 'SavingsPlanNegation') THEN 0 WHEN ("line_item_line_item_type" = 'SavingsPlanUpfrontFee') THEN 0 WHEN ("line_item_line_item_type" = 'DiscountedUsage') THEN "reservation_effective_cost" WHEN ("line_item_line_item_type" = 'RIFee') THEN ("reservation_unused_amortized_upfront_fee_for_billing_period" + "reservation_unused_recurring_fee") WHEN (("line_item_line_item_type" = 'Fee') AND ("reservation_reservation_a_r_n" <> '')) THEN 0 ELSE "line_item_unblended_cost" END)) "amortized_cost"
+      FROM
+        "${cur_database}".${cur_table_name}
+      WHERE ((line_item_product_code IN ('AmazonEC2', 'AmazonS3', 'AmazonEFS', 'AmazonFSx', 'AmazonRDS', 'AmazonDynamoDB', 'AmazonRedshift', 'AmazonES', 'AmazonNeptune', 'AmazonMemoryDB', 'AmazonDocDB', 'AmazonElastiCache')) AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '8' MONTH)) AND (CAST("concat"("year", '-', "month", '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '8' MONTH))))
+      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30
