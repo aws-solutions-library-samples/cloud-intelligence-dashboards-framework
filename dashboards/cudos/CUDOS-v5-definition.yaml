@@ -352,7 +352,7 @@ CalculatedFields:
     {product_code} = 'AmazonDynamoDB' AND in({pricing_unit},['ReadCapacityUnit-Hrs','WriteCapacityUnit-Hrs','ReplicatedWriteCapacityUnit-Hrs','WriteRequestUnits','ReadRequestUnits','ReplicatedWriteRequestUnits']), 1,
     0
     )
-  Name: Databases RI/SP Commitable Spend
+  Name: Databases RI/SP Committable Spend
 - DataSetIdentifier: hourly_view
   Expression: |-
     ifelse(
@@ -1441,7 +1441,7 @@ CalculatedFields:
     replace(
     {pricing_term},
     'Reserved', '1_Reserved'),
-    'OnDemand', '2_Commited Throughput')
+    'OnDemand', '2_Committed Throughput')
   Name: DynamoDB Pricing Term Sorted
 - DataSetIdentifier: resource_view
   Expression: split({resource_id},'/',2)
@@ -2301,7 +2301,7 @@ CalculatedFields:
     {S3 Insight Type} = 'S3 Storage Lens Advanced Metrics',
         'Shows S3 Storage Lens Advanced Metrics cost and usage per bucket. With advanced metrics and recommendations, you can access additional metrics and features like advanced metric categories, prefix-level aggregation, contextual recommendations, and Amazon CloudWatch publishing. Enable advanced metrics only if you use them, otherwise use free metrics.',
     {S3 Insight Type} = 'S3 Storage Class Analysis',
-        'Shows S3 Storage Class Analysis cost and usage per bucket. Storage Class Analysis you can analyze storage access patterns to help you decide when to transition the right data to the right storage class. Keep S3 Storage Class Analysis enabled only if you are using or plan to use analysis data',
+        'Shows S3 Storage Class Analysis cost and usage per bucket. With Storage Class Analysis you can analyze storage access patterns to help you decide when to transition the right data to the right storage class. Keep S3 Storage Class Analysis enabled only if you are using or plan to use analysis data',
     {S3 Insight Type} = 'S3 Object Tagging',
         'Shows S3 Object Tags cost and usage per bucket',
     {S3 Insight Type} = 'S3 Replication Time Control',
@@ -2342,17 +2342,17 @@ CalculatedFields:
   Expression: |-
     ifelse(
         operation = 'StandardStorage','Standard [Storage]',
-        operation = 'IntelligentTieringAAStorage','Inteligent Tiering (Archive Access) [Storage]',
-        operation = 'IntelligentTieringAIAStorage','Inteligent Tiering (Archive Instant Access) [Storage]',
-        operation = 'IntelligentTieringDAAStorage','Inteligent Tiering (Deep Archive Access) [Storage]',
-        operation = 'IntelligentTieringFAStorage','Inteligent Tiering (Frequent Access) [Storage]',
-        operation = 'IntelligentTieringIAStorage','Inteligent Tiering (Infrequent Access) [Storage]',
+        operation = 'IntelligentTieringAAStorage','Intelligent Tiering (Archive Access) [Storage]',
+        operation = 'IntelligentTieringAIAStorage','Intelligent Tiering (Archive Instant Access) [Storage]',
+        operation = 'IntelligentTieringDAAStorage','Intelligent Tiering (Deep Archive Access) [Storage]',
+        operation = 'IntelligentTieringFAStorage','Intelligent Tiering (Frequent Access) [Storage]',
+        operation = 'IntelligentTieringIAStorage','Intelligent Tiering (Infrequent Access) [Storage]',
         operation = 'StandardIAStorage','Infrequent Access  [Storage]',
         operation = 'StandardIASizeOverhead','Infrequent Access  [Overhead]',
         operation = 'IntAAObjectOverhead','Infrequent Access  [Overhead]',
-        operation = 'IntAAS3ObjectOverhead','Inteligent Tiering (Archive Access) [Overhead]',
-        operation = 'IntDAAObjectOverhead','Inteligent Tiering (Deep Archive Access) [Overhead]',
-        operation = 'IntDAAS3ObjectOverhead','Inteligent Tiering (Deep Archive Access) [Overhead]',
+        operation = 'IntAAS3ObjectOverhead','Intelligent Tiering (Archive Access) [Overhead]',
+        operation = 'IntDAAObjectOverhead','Intelligent Tiering (Deep Archive Access) [Overhead]',
+        operation = 'IntDAAS3ObjectOverhead','Intelligent Tiering (Deep Archive Access) [Overhead]',
         operation = 'OneZoneIAStorage','Infrequent Access  (One Zone) [Storage]',
         operation = 'OneZoneIASizeOverhead','Infrequent Access  (One Zone) [Overhead]',
         operation = 'ReducedRedundancyStorage','Reduced Redundancy [Storage]',
@@ -2366,8 +2366,8 @@ CalculatedFields:
         operation = 'DeepArchiveObjectOverhead','Glacier Deep Archive [Overhead]',
         operation = 'DeepArchiveS3ObjectOverhead','Glacier Deep Archive [Overhead]',
         operation = 'DeepArchiveStagingStorage','Glacier Deep Archive [Storage]',
-        operation = 'S3-INTTransition','Inteligent Tiering [Initial Transition]',
-        operation = 'IntelligentTieringStorage','Inteligent Tiering [Monitoring & Automation]',
+        operation = 'S3-INTTransition','Intelligent Tiering [Initial Transition]',
+        operation = 'IntelligentTieringStorage','Intelligent Tiering [Monitoring & Automation]',
         operation = 'S3-GlacierTransition','Glacier [Initial Transition]',
         operation = 'S3-SIATransition','Infrequent Access [Initial Transition]',
         operation = 'S3-ZIATransition','Infrequent Access (One Zone) [Initial Transition]',
@@ -3719,7 +3719,7 @@ CalculatedFields:
   Name: DDB Usage Type Group
 - DataSetIdentifier: summary_view
   Expression: '{usage_quantity} * daysinmonth'
-  Name: Daily Subscriptons
+  Name: Daily Subscriptions
 - DataSetIdentifier: summary_view
   Expression: |-
     ifelse(
@@ -3843,7 +3843,7 @@ CalculatedFields:
     {product_code} = 'AmazonDynamoDB' AND in({pricing_unit},['ReadCapacityUnit-Hrs','WriteCapacityUnit-Hrs','ReplicatedWriteCapacityUnit-Hrs','WriteRequestUnits','ReadRequestUnits','ReplicatedWriteRequestUnits']), 1,
     0
     )
-  Name: Databases RI/SP Commitable Spend
+  Name: Databases RI/SP Committable Spend
 - DataSetIdentifier: summary_view
   Expression: |-
     ifelse(
@@ -4974,17 +4974,17 @@ CalculatedFields:
   Expression: |-
     ifelse(
         operation = 'StandardStorage','Standard [Storage]',
-        operation = 'IntelligentTieringAAStorage','Inteligent Tiering (Archive Access) [Storage]',
-        operation = 'IntelligentTieringAIAStorage','Inteligent Tiering (Archive Instant Access) [Storage]',
-        operation = 'IntelligentTieringDAAStorage','Inteligent Tiering (Deep Archive Access) [Storage]',
-        operation = 'IntelligentTieringFAStorage','Inteligent Tiering (Frequent Access) [Storage]',
-        operation = 'IntelligentTieringIAStorage','Inteligent Tiering (Infrequent Access) [Storage]',
+        operation = 'IntelligentTieringAAStorage','Intelligent Tiering (Archive Access) [Storage]',
+        operation = 'IntelligentTieringAIAStorage','Intelligent Tiering (Archive Instant Access) [Storage]',
+        operation = 'IntelligentTieringDAAStorage','Intelligent Tiering (Deep Archive Access) [Storage]',
+        operation = 'IntelligentTieringFAStorage','Intelligent Tiering (Frequent Access) [Storage]',
+        operation = 'IntelligentTieringIAStorage','Intelligent Tiering (Infrequent Access) [Storage]',
         operation = 'StandardIAStorage','Infrequent Access  [Storage]',
         operation = 'StandardIASizeOverhead','Infrequent Access  [Overhead]',
         operation = 'IntAAObjectOverhead','Infrequent Access  [Overhead]',
-        operation = 'IntAAS3ObjectOverhead','Inteligent Tiering (Archive Access) [Overhead]',
-        operation = 'IntDAAObjectOverhead','Inteligent Tiering (Deep Archive Access) [Overhead]',
-        operation = 'IntDAAS3ObjectOverhead','Inteligent Tiering (Deep Archive Access) [Overhead]',
+        operation = 'IntAAS3ObjectOverhead','Intelligent Tiering (Archive Access) [Overhead]',
+        operation = 'IntDAAObjectOverhead','Intelligent Tiering (Deep Archive Access) [Overhead]',
+        operation = 'IntDAAS3ObjectOverhead','Intelligent Tiering (Deep Archive Access) [Overhead]',
         operation = 'OneZoneIAStorage','Infrequent Access  (One Zone) [Storage]',
         operation = 'OneZoneIASizeOverhead','Infrequent Access  (One Zone) [Overhead]',
         operation = 'ReducedRedundancyStorage','Reduced Redundancy [Storage]',
@@ -4998,8 +4998,8 @@ CalculatedFields:
         operation = 'DeepArchiveObjectOverhead','Glacier Deep Archive [Overhead]',
         operation = 'DeepArchiveS3ObjectOverhead','Glacier Deep Archive [Overhead]',
         operation = 'DeepArchiveStagingStorage','Glacier Deep Archive [Storage]',
-        operation = 'S3-INTTransition','Inteligent Tiering [Initial Transition]',
-        operation = 'IntelligentTieringStorage','Inteligent Tiering [Monitoring & Automation]',
+        operation = 'S3-INTTransition','Intelligent Tiering [Initial Transition]',
+        operation = 'IntelligentTieringStorage','Intelligent Tiering [Monitoring & Automation]',
         operation = 'S3-GlacierTransition','Glacier [Initial Transition]',
         operation = 'S3-SIATransition','Infrequent Access [Initial Transition]',
         operation = 'S3-ZIATransition','Infrequent Access (One Zone) [Initial Transition]',
@@ -5480,7 +5480,7 @@ CalculatedFields:
     contains({RI_SP Type},'Elastic Compute Cloud'), concat({EC2 Usage Family Type},' | ',{OS Details}),
     contains({RI_SP Type},'EC2InstanceSavingsPlans'), {instance_type},
     contains({RI_SP Type},'ComputeSavingsPlan'), "Compute Savings Plan",
-    contains({RI_SP Type},'SageMaker'), "Sagemaker Savings Plan",
+    contains({RI_SP Type},'SageMaker'), "SageMaker Savings Plan",
     contains({RI_SP Type},'DatabaseSavingsPlan'), "Database Savings Plan",
     {usage_type})
   Name: Unused Commitment Dimension
@@ -33348,7 +33348,7 @@ FilterGroups:
       FilterId: 580cfeff-d884-4f18-b108-18248a3b3e6c
   - NumericEqualityFilter:
       Column:
-        ColumnName: Databases RI/SP Commitable Spend
+        ColumnName: Databases RI/SP Committable Spend
         DataSetIdentifier: summary_view
       FilterId: 5e6a584e-b768-48c9-b347-85802c2fb653
       MatchOperator: EQUALS
@@ -35239,7 +35239,7 @@ FilterGroups:
   Filters:
   - NumericEqualityFilter:
       Column:
-        ColumnName: Databases RI/SP Commitable Spend
+        ColumnName: Databases RI/SP Committable Spend
         DataSetIdentifier: summary_view
       FilterId: a7fa24a1-df1b-4359-aae0-afaee4b56507
       MatchOperator: EQUALS
@@ -36301,7 +36301,7 @@ FilterGroups:
   Filters:
   - NumericEqualityFilter:
       Column:
-        ColumnName: Databases RI/SP Commitable Spend
+        ColumnName: Databases RI/SP Committable Spend
         DataSetIdentifier: hourly_view
       FilterId: bf2e1dcd-1619-4838-908c-932604142dee
       MatchOperator: EQUALS
@@ -37606,7 +37606,7 @@ Sheets:
             \ width=\"11\"/>\n  <br/>\n  <ul>\n    <li>\n      <inline font-size=\"\
             19.2px\">\"Amortized Spend\" may\_</inline>\n      <inline font-size=\"\
             19.2px\">\n        <i>slightly</i>\n      </inline>\n      <inline font-size=\"\
-            19.2px\">\_differ from the \"Invoice Spend\" as it takes in to account\
+            19.2px\">\_differ from the \"Invoice Spend\" as it takes into account\
             \ upfront payments.</inline>\n    </li>\n  </ul>\n</narrative>"
       Subtitle:
         Visibility: VISIBLE
@@ -38575,7 +38575,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          PlainText: Invoice Two Month Ago
+          PlainText: Invoice Two Months Ago
         Visibility: VISIBLE
       VisualId: bb8cace9-0eab-4696-b378-b8521788ba26
   - KPIVisual:
@@ -38602,7 +38602,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          PlainText: Invoice Three Month Ago
+          PlainText: Invoice Three Months Ago
         Visibility: VISIBLE
       VisualId: d0bd3613-ab90-4d59-8729-9f567e6ce63d
   - ComboChartVisual:
@@ -38863,7 +38863,7 @@ Sheets:
         Visibility: VISIBLE
       VisualId: 8868b08e-8716-40a6-8580-be37476d3c4e
 - ContentType: INTERACTIVE
-  Description: Detailed statistics in to reservations and savings plan utilisation
+  Description: Detailed statistics into reservations and savings plan utilization
   FilterControls:
   - CrossSheet:
       FilterControlId: 0d4e29c1-8c1e-48ef-8b67-8d8bd3fdc79b
@@ -39267,7 +39267,7 @@ Sheets:
         FormatText:
           RichText: |-
             <visual-title>
-              Databases Savings Plans Eligeble Spend
+              Databases Savings Plans Eligible Spend
               <inline font-size="14px">(Select Payer Account in Controls)</inline>
             </visual-title>
         Visibility: VISIBLE
@@ -41276,7 +41276,7 @@ Sheets:
           Narrative: "<narrative>\n  <if condition=\"TotalAggregate.totalAggregate.value&gt;0\"\
             \ level=\"block\">\n    <inline font-size=\"22.4px\">Insight:\_</inline>\n\
             \    <br/>\n    <inline font-size=\"19.2px\">Total amount of discounts\
-            \ and chargeback is estimate until invoice is finalized.</inline>\n  \
+            \ and chargeback is an estimate until invoice is finalized.</inline>\n  \
             \  <br/>\n    <inline font-size=\"19.2px\">Invoice state for Previous\
             \ Month (</inline>\n    <inline font-size=\"19.2px\">\n      <expression>Maximum.timeValue.formattedValue</expression>\n\
             \    </inline>\n    <inline font-size=\"19.2px\">):\_</inline>\n    <inline\
@@ -41284,7 +41284,7 @@ Sheets:
             \  <br/>\n  <if condition=\"TotalAggregate.totalAggregate.value=0\" level=\"\
             block\">\n    <inline font-size=\"22.4px\">Insight:\_</inline>\n    <br/>\n\
             \    <inline font-size=\"19.2px\">Total amount of discounts and chargeback\
-            \ is estimate until invoice is finalized.</inline>\n    <br/>\n    <inline\
+            \ is an estimate until invoice is finalized.</inline>\n    <br/>\n    <inline\
             \ font-size=\"19.2px\">Invoice state for Previous Month (</inline>\n \
             \   <inline font-size=\"19.2px\">\n      <expression>Maximum.timeValue.formattedValue</expression>\n\
             \    </inline>\n    <inline font-size=\"19.2px\">):\_\_</inline>\n   \
@@ -42609,7 +42609,7 @@ Sheets:
             BackgroundColor: '#0A87AF'
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Last 6 month</visual-subtitle>
+          RichText: <visual-subtitle>Last 6 months</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -44336,7 +44336,7 @@ Sheets:
       \     <a href=\"https://aws.amazon.com/savingsplans/pricing/\" target=\"_blank\"\
       >\n          <u>Savings Plans</u>\n        </a>\n      </inline>\n      \_is\
       \ the most flexible option that provides up to 66% savings for EC2 cost without\
-      \ locking you in to specific Region or Instance Type.\n    </li>\n    <li class=\"\
+      \ locking you into specific Region or Instance Type.\n    </li>\n    <li class=\"\
       ql-indent-0\">Compute Savings Plans also cover ECS, EKS and EMR for EC2 cost,\
       \ Fargate (up to 52%) and Lambda (up to 17%).</li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline font-size=\"16px\">Normalized Hours are hours of compute time\
@@ -44426,7 +44426,7 @@ Sheets:
   - Content: "<text-box>\n  <inline font-size=\"32px\">EKS Extended Support Cost</inline>\n\
       \  <br/>\n  <br/>\n  <inline font-size=\"20px\">Insight</inline>\n  <br/>\n\
       \  <ul>\n    <li>\n      <inline font-size=\"16px\">Amazon EKS Extended Support\
-      \ gives an 12 additional months of support for each Kubernetes minor version,\
+      \ gives 12 additional months of support for each Kubernetes minor version,\
       \ for a total of 26 months of support. Learn more\_</inline>\n      <inline\
       \ color=\"#61d1d6\" font-size=\"16px\">\n        <a href=\"https://aws.amazon.com/blogs/containers/amazon-eks-extended-support-for-kubernetes-versions-pricing/\"\
       \ target=\"_blank\">here</a>\n      </inline>\n    </li>\n    <li>\n      <inline\
@@ -45137,8 +45137,7 @@ Sheets:
         FormatText:
           RichText: |-
             <visual-title>
-              <inline font-size="14px">Lambda Spend per P</inline>
-              rocessor Architecture
+              <inline font-size="14px">Lambda Spend per Processor Architecture</inline>
             </visual-title>
         Visibility: VISIBLE
       VisualId: ccb40f54-b100-49db-9f83-5de9069e26f9
@@ -46902,7 +46901,7 @@ Sheets:
         FormatText:
           RichText: |-
             <visual-title>
-              <inline font-size="14px">EC2 Running Hours Cost by Purchase Option Two Month Ago</inline>
+              <inline font-size="14px">EC2 Running Hours Cost by Purchase Option Two Months Ago</inline>
             </visual-title>
         Visibility: VISIBLE
       VisualId: dd39da0c-7598-4514-b6e8-75fe68e7ab9a
@@ -47048,7 +47047,7 @@ Sheets:
         FormatText:
           RichText: |-
             <visual-title>
-              <inline font-size="14px">EC2 Running Hours Cost by Purchase Option Three Month Ago</inline>
+              <inline font-size="14px">EC2 Running Hours Cost by Purchase Option Three Months Ago</inline>
             </visual-title>
         Visibility: VISIBLE
       VisualId: 1f059a85-8608-4b41-a14b-4a790789ad8b
@@ -47174,7 +47173,7 @@ Sheets:
       Subtitle:
         FormatText:
           RichText: <visual-subtitle>Select Lambda function on top 50 visual to see
-            it's daily cost</visual-subtitle>
+            its daily cost</visual-subtitle>
         Visibility: VISIBLE
       Title:
         FormatText:
@@ -48338,7 +48337,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          PlainText: Top 10 EC2 Running Hours Spending Accounts Two Month Ago
+          PlainText: Top 10 EC2 Running Hours Spending Accounts Two Months Ago
         Visibility: VISIBLE
       VisualId: fda80ada-fe62-4253-925b-2aec8514ccdc
   - BarChartVisual:
@@ -48468,7 +48467,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          PlainText: Top 10 EC2 Running Hours Spending Accounts Three Month Ago
+          PlainText: Top 10 EC2 Running Hours Spending Accounts Three Months Ago
         Visibility: VISIBLE
       VisualId: ad47adba-cc92-43c6-b606-077d3c13303c
   - ComboChartVisual:
@@ -49272,7 +49271,7 @@ Sheets:
       \   </inline>\n      <inline font-size=\"16px\">: AWS Backup provides a lifecycle\
       \ feature that allows you to automatically transition your EFS recovery points\
       \ from a warm storage tier to lower-cost cold storage. You can also automatically\
-      \ expire the backups of tall the supported resource as per the lifecycle rule.\
+      \ expire the backups of all the supported resources as per the lifecycle rule.\
       \ Learn more\_</inline>\n      <inline color=\"#61d1d6\" font-size=\"16px\"\
       >\n        <a href=\"https://aws.amazon.com/blogs/storage/automating-backups-and-optimizing-backup-costs-for-amazon-efs-using-aws-backup/\"\
       \ target=\"_blank\">here</a>\n      </inline>\n    </li>\n  </ul>\n</text-box>"
@@ -50639,10 +50638,9 @@ Sheets:
       InsightConfiguration:
         Computations: []
         CustomNarrative:
-          Narrative: "<narrative>\n  <inline font-size=\"68.8px\">Amazon Elastic Bl</inline>\n\
+          Narrative: "<narrative>\n  <inline font-size=\"68.8px\">Amazon Elastic Block Store (EBS)</inline>\n\
             \  <inline font-size=\"68.8px\">\n    <img src=\"https://d66mvi2kszsvt.cloudfront.net/resources/dashboard-visual-analytics/Storage%20Summary/header.png\"\
-            \ width=\"1\"/>\n  </inline>\n  <inline font-size=\"68.8px\">ock Storage\
-            \ (EBS)</inline>\n  <img src=\"https://d66mvi2kszsvt.cloudfront.net/resources/dashboard-visual-analytics/Storage%20Summary/header.png\"\
+            \ width=\"1\"/>\n  </inline>\n  <inline font-size=\"68.8px\"></inline>\n  <img src=\"https://d66mvi2kszsvt.cloudfront.net/resources/dashboard-visual-analytics/Storage%20Summary/header.png\"\
             \ width=\"11\"/>\n  <br/>\n  <br/>\n  <inline font-size=\"22.4px\">Recommendations:</inline>\n\
             \  <br/>\n  <ul>\n    <li>\n      <inline color=\"#61d1d6\" font-size=\"\
             19.2px\">\n        <a href=\"https://console.aws.amazon.com/trustedadvisor/home?region=us-east-1#/category/cost-optimizing\"\
@@ -51664,7 +51662,7 @@ Sheets:
         Visibility: VISIBLE
       VisualId: 68f67016-68cd-4c92-815b-6a4893adfb2d
 - ContentType: INTERACTIVE
-  Description: Gain insights in to Amazon S3 spend and trends
+  Description: Gain insights into Amazon S3 spend and trends
   FilterControls:
   - CrossSheet:
       FilterControlId: 3aeafc4f-7f84-4918-9ad9-8c604a4df4a6
@@ -52002,9 +52000,9 @@ Sheets:
   TextBoxes:
   - Content: "<text-box>\n  <inline font-size=\"24px\">How to use:\_</inline>\n  <br/>\n\
       \  <br/>\n  <inline font-size=\"16px\">1. Select S3 Insight\_</inline>\n  <br/>\n\
-      \  <inline font-size=\"16px\">2. Review top buckets per selcted S3 Insight and\
+      \  <inline font-size=\"16px\">2. Review top buckets per selected S3 Insight and\
       \ check the S3 Insight Details to identify optimization opportunities</inline>\n\
-      \  <br/>\n  <inline font-size=\"16px\">3. Select any bucket and explore it's\
+      \  <br/>\n  <inline font-size=\"16px\">3. Select any bucket and explore its\
       \ daily cost and usage on the visuals above</inline>\n</text-box>"
     SheetTextBoxId: 47ebdab8-1a83-43f9-a3a0-df40cfea0df3
   - Content: |-
@@ -52710,7 +52708,7 @@ Sheets:
             \ deliver data from S3 in a more cost effective way with a lower latency.\
             \ Also there is no\_data transfer\_fee from\_S3 to CloudFront.\_</inline>\n\
             \    </li>\n    <li>\n      <inline font-size=\"19.2px\">Moving objects\
-            \ in to different storage classes helps save on storage costs. Consider\
+            \ into different storage classes helps save on storage costs. Consider\
             \ applying\_</inline>\n      <inline color=\"#26c2c9\" font-size=\"19.2px\"\
             >\n        <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-lifecycle.html\"\
             \ target=\"_blank\">\n          <u>Lifecycle Policies</u>\n        </a>\n\
@@ -53420,7 +53418,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          PlainText: S3 Storage Spend Two Month Ago
+          PlainText: S3 Storage Spend Two Months Ago
         Visibility: VISIBLE
       VisualId: 8d50db00-f094-4044-bdb1-d28768978dc6
   - KPIVisual:
@@ -53447,7 +53445,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          PlainText: S3 Storage Spend Three Month Ago
+          PlainText: S3 Storage Spend Three Months Ago
         Visibility: VISIBLE
       VisualId: 3790e6bf-b1cc-49a4-9f2e-e9e08769fc6d
   - InsightVisual:
@@ -54147,9 +54145,9 @@ Sheets:
       >Restore backups on a regular basis to check data sanity.</inline>\n    </li>\n\
       \  </ul>\n</text-box>"
     SheetTextBoxId: b84ee651-cb59-4f3f-aa88-fe8d24a523e4
-  - Content: "<text-box>\n  <inline font-size=\"36px\">RDS, Elasticache, Opensearch,\
+  - Content: "<text-box>\n  <inline font-size=\"36px\">RDS, ElastiCache, OpenSearch,\
       \ and DocumentDB Extended Support</inline>\n  <br/>\n  <br/>\n  <inline font-size=\"\
-      15px\">Extended Support Costs for RDS, Elasticache, Opensearch, and DocumentDB</inline>\n\
+      15px\">Extended Support Costs for RDS, ElastiCache, OpenSearch, and DocumentDB</inline>\n\
       \  <br/>\n  <br/>\n  <inline color=\"Warning\" font-size=\"15px\">RDS</inline>\n\
       \  <inline font-size=\"15px\">: After the RDS end of standard support date,\
       \ if you didn't disable RDS Extended Support during the\_</inline>\n  <inline\
@@ -54198,9 +54196,9 @@ Sheets:
       </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
       16px\">Review clusters and accounts with high % of usage time.</inline>\n  \
       \  </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">Consider\
-      \ usitng\_</inline>\n      <inline color=\"#61d1d6\" font-size=\"16px\">Instance\
+      \ using\_</inline>\n      <inline color=\"#61d1d6\" font-size=\"16px\">Instance\
       \ Scheduler on AWS</inline>\n      <inline font-size=\"16px\">\_solution to\
-      \ automate sheduled stop/start RDS clusters in accounts with high % of usage\
+      \ automate scheduled stop/start RDS clusters in accounts with high % of usage\
       \ time for workloads that you don't need to run 24/7. Example: Development or\
       \ Test environment.\_</inline>\n    </li>\n    <li class=\"ql-indent-0\">\n\
       \      <inline font-size=\"16px\">Stop instances in the clusters when you don't\
@@ -54254,7 +54252,7 @@ Sheets:
       \  <inline color=\"#ff9c00\" font-size=\"15px\">\n    <b>20%</b>\n  </inline>\n\
       \  <inline color=\"#ff9c00\" font-size=\"15px\">\_</inline>\n  <inline font-size=\"\
       15px\">lower than other supported engines.\_</inline>\n  <br/>\n  <br/>\n  <inline\
-      \ font-size=\"15px\">Your Redis OSS reserved node discount are aplied to Valkey\
+      \ font-size=\"15px\">Your Redis OSS reserved node discounts are applied to Valkey\
       \ cache engine.\_</inline>\n  <inline font-size=\"15px\">\n    <b>You can upgrade\
       \ from Redis OSS to Valkey while still benefitting from existing reservations</b>\n\
       \  </inline>\n  <inline font-size=\"15px\">. In addition to being able to apply\
@@ -56941,7 +56939,7 @@ Sheets:
         Visibility: HIDDEN
       Title:
         FormatText:
-          RichText: "<visual-title>\n  <inline font-size=\"14px\">Total Amortised\
+          RichText: "<visual-title>\n  <inline font-size=\"14px\">Total Amortized\
             \ Cost by\_</inline>\n  <inline font-size=\"14px\">\n    <parameter>${DatabasesSummaryGroupBy}</parameter>\n\
             \  </inline>\n  <inline font-size=\"14px\">\_for\_</inline>\n  <inline\
             \ font-size=\"14px\">\n    <parameter>${ProductNameMulti}</parameter>\n\
@@ -57297,7 +57295,7 @@ Sheets:
         Visibility: VISIBLE
       VisualId: 9ae3fc15-b21e-4453-93fc-28bd28a092fb
 - ContentType: INTERACTIVE
-  Description: Gain insights in to Amazon DynamoDB usage spend and trends
+  Description: Gain insights into Amazon DynamoDB usage spend and trends
   FilterControls:
   - CrossSheet:
       FilterControlId: 5181cb53-2047-494e-b413-48ebf4c1be1b
@@ -57971,7 +57969,7 @@ Sheets:
       \      <u>Simulate Higher Commitments</u>\n    </b>\n  </inline>\n  <br/>\n\
       \  <inline font-size=\"16px\">If your usage peaks more often than it dips, consider\
       \ simulating higher reserves. Look for the red bars on the graph to identify\
-      \ potential hour intervals of underutilization on past days, weeks or month.</inline>\n\
+      \ potential hour intervals of underutilization on past days, weeks or months.</inline>\n\
       \  <br/>\n  <br/>\n  <inline color=\"Accent\" font-size=\"16px\">\n    <b>\n\
       \      <u>Check Reservations recommendations in AWS Cost Explorer</u>\n    </b>\n\
       \  </inline>\n  <br/>\n  <inline font-size=\"16px\">Check\_</inline>\n  <inline\
@@ -59950,7 +59948,7 @@ Sheets:
                   Expression: SUM({DDB IA Table Savings}) > 0
       Subtitle:
         FormatText:
-          RichText: <visual-subtitle>Select table to see it's daily cost and usage
+          RichText: <visual-subtitle>Select table to see its daily cost and usage
             on the visual above</visual-subtitle>
         Visibility: VISIBLE
       Title:
@@ -61345,8 +61343,8 @@ Sheets:
   - Dropdown:
       DisplayOptions:
         InfoIconLabelOptions:
-          InfoIconText: Acclerated Computing instances on SageMaker can be used to
-            help islolate generative AI workloads
+          InfoIconText: Accelerated Computing instances on SageMaker can be used to
+            help isolate generative AI workloads
           Visibility: VISIBLE
         SelectAllOptions:
           Visibility: VISIBLE
@@ -61400,7 +61398,7 @@ Sheets:
       \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
       16px\">Choose the right pricing model by selecting On-Demand pricing for variable\
       \ workloads or Provisioned Throughput for predictable usage patterns, and leveraging\
-      \ batch mode for non-real-time workloads to achieve at a 50% lower price compared\
+      \ batch mode for non-real-time workloads to achieve a 50% lower price compared\
       \ to On-Demand inference.\_</inline>\n      <inline color=\"#61d1d6\" font-size=\"\
       16px\">\n        <a href=\"https://aws.amazon.com/blogs/machine-learning/effective-cost-optimization-strategies-for-amazon-bedrock/\"\
       \ target=\"_blank\">Learn more</a>\n      </inline>\n    </li>\n    <li class=\"\
@@ -61473,7 +61471,7 @@ Sheets:
       \ width=\"11\"/>\n  <br/>\n  <br/>\n  <inline color=\"Warning\" font-size=\"\
       20px\">Recommendations</inline>\n  <inline font-size=\"20px\">:</inline>\n \
       \ <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
-      17px\">Save Up to 90% On Your Amazon SageMaker Training Jobs with using\_</inline>\n\
+      17px\">Save Up to 90% On Your Amazon SageMaker Training Jobs by using\_</inline>\n\
       \      <inline color=\"#61d1d6\" font-size=\"19.2px\">\n        <a href=\"https://aws.amazon.com/blogs/aws/managed-spot-training-save-up-to-90-on-your-amazon-sagemaker-training-jobs/\"\
       \ target=\"_blank\">\n          <u>Managed Spot Training</u>\n        </a>\n\
       \      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
@@ -62823,7 +62821,7 @@ Sheets:
                 AggregationFunction:
                   SimpleNumericalAggregation: SUM
                 Column:
-                  ColumnName: Daily Subscriptons
+                  ColumnName: Daily Subscriptions
                   DataSetIdentifier: summary_view
                 FieldId: fe6f61b5-a975-4ddf-8365-8ac6533fc7cf.3.1774360267169
             Category:
@@ -63158,7 +63156,7 @@ Sheets:
       Title:
         FormatText:
           RichText: "<visual-title>\n  <inline font-size=\"14px\">Kiro and Amazon\
-            \ Q Developer</inline>\n  \_S\n  <inline font-size=\"14px\">pend per\_\
+            \ Q Developer</inline>\n  \_\n  <inline font-size=\"14px\">Spend per\_\
             </inline>\n  <inline font-size=\"14px\">\n    <parameter>${AIMLDevExpirienceGroupBy}</parameter>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
@@ -64806,7 +64804,7 @@ Sheets:
                 Column:
                   ColumnName: Bedrock Normalized Pricing Unit
                   DataSetIdentifier: summary_view
-                Label: Pricng Unit
+                Label: Pricing Unit
                 TooltipTarget: BAR
                 Visibility: VISIBLE
             TooltipTitleType: PRIMARY_VALUE
@@ -65514,7 +65512,7 @@ Sheets:
             \ is counted as a page processed.</inline>\n    </li>\n  </ul>\n  <br/>\n\
             \  <br/>\n  <inline font-size=\"19.2px\">Rekognition</inline>\n  <br/>\n\
             \  <ul>\n    <li>\n      <inline font-size=\"19.2px\">The service offers\
-            \ multiple API's to allow not only processing of images but also video\
+            \ multiple APIs to allow not only processing of images but also video\
             \ allowing you to detect objects, people, text, scenes and activities.</inline>\n\
             \    </li>\n    <li>\n      <inline font-size=\"19.2px\">Pricing varies\
             \ based on the features you are using, see the\_</inline>\n      <inline\
@@ -65980,7 +65978,7 @@ Sheets:
         FormatText:
           RichText: |-
             <visual-title>
-              <inline font-size="14px">Sage Maker Daily Cost</inline>
+              <inline font-size="14px">SageMaker Daily Cost</inline>
             </visual-title>
         Visibility: VISIBLE
       VisualId: 83d91710-b4f9-4bb7-b5eb-8df98d41d34b
@@ -67538,11 +67536,11 @@ Sheets:
       \    </li>\n    <li>Any public IPv4 address associated with a resource launched\
       \ in an Amazon VPC, and public IPv4 addresses assigned to AWS Global Accelerator\
       \ and AWS Site-to-Site VPN tunnel endpoints are charged as in-use public IPv4\
-      \ address after February 1, 2024.\_</li>\n    <li>Visals below show current\
+      \ address after February 1, 2024.\_</li>\n    <li>Visuals below show current\
       \ charges for Elastic IP idle and additional addresses and projected cost increase\
       \ for Public IPv4 addresses after February 1, 2024. Use these visuals to estimate\
       \ Public IPv4 charges which will take effect on February 1, 2024 and control\
-      \ your use of idle Elastic IP aggresses</li>\n  </ul>\n  <br/>\n  <inline font-size=\"\
+      \ your use of idle Elastic IP addresses</li>\n  </ul>\n  <br/>\n  <inline font-size=\"\
       20px\">Recommendations:</inline>\n  <br/>\n  <ul>\n    <li>\n      To monitor,\
       \ analyze, and audit your use of public IPv4 addresses, use\n      <inline color=\"\
       #61d1d6\">\n        <a href=\"https://aws.amazon.com/about-aws/whats-new/2023/07/aws-public-ip-insights-vpc-ip-address-manager/\"\
@@ -67558,7 +67556,7 @@ Sheets:
         <inline font-size="48.02px">Amazon CloudFront Summary</inline>
       </text-box>
     SheetTextBoxId: 2d5b0b6d-ecdc-4391-960d-a153defe840d
-  - Content: "<text-box>\n  <inline font-size=\"48px\">Network Resource Utilisation\
+  - Content: "<text-box>\n  <inline font-size=\"48px\">Network Resource Utilization\
       \ Summary</inline>\n  <br/>\n  <br/>\n  <inline font-size=\"20px\">Recommendations:</inline>\n\
       \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
       17px\">Check out\_</inline>\n      <inline color=\"#61d1d6\" font-size=\"19.2px\"\
@@ -69868,7 +69866,7 @@ Sheets:
             \      </inline>\n      <inline font-size=\"19.2px\">\_to accelerate TCP/UDP\
             \ connections.</inline>\n    </li>\n  </ul>\n  <br/>\n  <br/>\n  <inline\
             \ font-size=\"19.2px\">\n    <i>Note: Only\_</i>\n  </inline>\n  <i>chargeable\
-            \ data transfer is visualised. Example:\_</i>\n  <inline font-size=\"\
+            \ data transfer is visualized. Example:\_</i>\n  <inline font-size=\"\
             14px\">\n    <i>If you are using an AWS origin, effective December 1,\
             \ 2014, data transferred from origin to edge locations (</i>\n  </inline>\n\
             \  <inline color=\"#61d1d6\" font-size=\"14px\">\n    <a href=\"https://aws.amazon.com/cloudfront/pricing/\"\
@@ -70201,7 +70199,7 @@ Sheets:
             \  <li>\n      <inline font-size=\"19.2px\">Discover\_</inline>\n    \
             \  <inline color=\"#61d1d6\" font-size=\"19.2px\">\n        <a href=\"\
             https://docs.aws.amazon.com/msk/latest/developerguide/bestpractices.html\"\
-            \ target=\"_blank\">\n          <u>Amazon MSK Best Practicies</u>\n  \
+            \ target=\"_blank\">\n          <u>Amazon MSK Best Practices</u>\n  \
             \      </a>\n      </inline>\n    </li>\n  </ul>\n</narrative>"
       Subtitle:
         Visibility: VISIBLE
@@ -71109,7 +71107,7 @@ Sheets:
             \ Analytics for SQL Applications</u>\n        </a>\n      </inline>\n\
             \    </li>\n    <li>\n      <inline font-size=\"19.2px\">Review Idle Kinesis\
             \ Data Streams and Consumers</inline>\n    </li>\n    <li>\n      <inline\
-            \ font-size=\"19.2px\">Lear more about\_</inline>\n      <inline color=\"\
+            \ font-size=\"19.2px\">Learn more about\_</inline>\n      <inline color=\"\
             #61d1d6\" font-size=\"19.2px\">\n        <a href=\"https://docs.aws.amazon.com/streams/latest/dev/kinesis-kpl-concepts.html\"\
             \ target=\"_blank\">\n          <u>KPL Key Concepts</u>\n        </a>\n\
             \      </inline>\n    </li>\n  </ul>\n</narrative>"
@@ -71732,7 +71730,7 @@ Sheets:
       \ &amp; Observability</inline>\n  <br/>\n  <br/>\n  <inline font-size=\"16px\"\
       >Insights and recommendations for the following AWS services:\_\_</inline>\n\
       \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">\n      <inline font-size=\"\
-      16px\">Amazon Cloud Watch</inline>\n    </li>\n    <li class=\"ql-indent-0\"\
+      16px\">Amazon CloudWatch</inline>\n    </li>\n    <li class=\"ql-indent-0\"\
       >\n      <inline font-size=\"16px\">AWS CloudTrail</inline>\n    </li>\n   \
       \ <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">AWS DevOps Agent</inline>\n    </li>\n\
       \    <li class=\"ql-indent-0\">\n      <inline font-size=\"16px\">AWS Config</inline>\n\
@@ -72054,7 +72052,7 @@ Sheets:
         FormatText:
           RichText: |-
             <visual-title>
-              <inline font-size="14px">AWS DevOps Agent Detailed VIew</inline>
+              <inline font-size="14px">AWS DevOps Agent Detailed View</inline>
             </visual-title>
         Visibility: VISIBLE
       VisualId: 69f21ebe-5fc0-4fa5-958d-c4dc38ac8e63
@@ -78421,7 +78419,7 @@ Sheets:
         Visibility: HIDDEN
       Title:
         FormatText:
-          RichText: <visual-title>Shield Advanced Subscriptions per Payer Accout</visual-title>
+          RichText: <visual-title>Shield Advanced Subscriptions per Payer Account</visual-title>
         Visibility: VISIBLE
       VisualId: 2390dcdf-0c9e-4497-ae74-5c3c8d08bf22
   - SankeyDiagramVisual:
@@ -82752,7 +82750,7 @@ Sheets:
         Visibility: VISIBLE
       VisualId: 59bfcb55-64ad-436f-87a6-d614b66e8861
 - ContentType: INTERACTIVE
-  Description: Gain insights in to Cost per different dimensions of organizational
+  Description: Gain insights into Cost per different dimensions of organizational
     taxonomy
   FilterControls:
   - CrossSheet:
@@ -83594,7 +83592,7 @@ Sheets:
               FieldValue: Cost
             Width: 85px
           SelectedFieldOptions:
-          - CustomLabel: Resouce
+          - CustomLabel: Resource
             FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.resource_id.1.1748737379709
             Visibility: VISIBLE
           - CustomLabel: Account
@@ -84374,7 +84372,7 @@ Sheets:
           RichText: |-
             <visual-title>
               <block align="center">
-                <inline font-size="16px">Cost per Resouce (Top 20)</inline>
+                <inline font-size="16px">Cost per Resource (Top 20)</inline>
               </block>
             </visual-title>
         Visibility: VISIBLE
@@ -85625,8 +85623,8 @@ Sheets:
       \    </inline>\n    \_and\n    <inline color=\"#61d1d6\">\n      <a href=\"\
       https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\" target=\"_blank\"\
       >\n        <u>CID YouTube Channel</u>\n      </a>\n    </inline>\n  </block>\n\
-      \  <br/>\n  <block align=\"right\">\n    If you wish to provide feedback please\
-      \ or report an error please email:\n    <inline color=\"#61d1d6\">\_</inline>\n\
+      \  <br/>\n  <block align=\"right\">\n    If you wish to provide feedback\
+      \ or report an error, please email:\n    <inline color=\"#61d1d6\">\_</inline>\n\
       \    <inline background-color=\"PrimaryBackground\" color=\"#61d1d6\">\n   \
       \   <a href=\"mailto:cloud-intelligence-dashboards@amazon.com?subject=CUDOS%20Dashboard%20Feedback\"\
       \ target=\"_blank\">cloud-intelligence-dashboards@amazon.com</a>\n    </inline>\n\
