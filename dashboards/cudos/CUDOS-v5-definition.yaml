@@ -2861,8 +2861,8 @@ CalculatedFields:
   Expression: |-
     ifelse(
     {Database Engine} = 'ElastiCache Valkey' and {Databases Product Family} = 'ElastiCache Serverless', 'ElastiCache Valkey Serverless',
-    {Database Engine} = 'ElastiCache Valkey' and {Databases Product Family} = 'Cache Instance', 'ElastiCache Valkey Instance',
-    {Database Engine} = 'ElastiCache Redis' and {Databases Product Family} = 'Cache Instance', 'ElastiCache Redis Instance',
+    {Database Engine} = 'ElastiCache Valkey' and {Databases Product Family} = 'ElastiCache Chache Instance', 'ElastiCache Chache Instance',
+    {Database Engine} = 'ElastiCache Redis' and {Databases Product Family} = 'ElastiCache Chache Instance', 'ElastiCache Redis Instance',
     {Database Engine} = 'ElastiCache Redis' and {Databases Product Family} = 'ElastiCache Serverless', 'ElastiCache Redis Serverless',
     {Database Engine}
     )
@@ -5512,8 +5512,8 @@ CalculatedFields:
   Expression: |-
     ifelse(
     {Database Engine} = 'ElastiCache Valkey' and {Databases Product Family} = 'ElastiCache Serverless', 'ElastiCache Valkey Serverless',
-    {Database Engine} = 'ElastiCache Valkey' and {Databases Product Family} = 'Cache Instance', 'ElastiCache Valkey Instance',
-    {Database Engine} = 'ElastiCache Redis' and {Databases Product Family} = 'Cache Instance', 'ElastiCache Redis Instance',
+    {Database Engine} = 'ElastiCache Valkey' and {Databases Product Family} = 'ElastiCache Chache Instance', 'ElastiCache Chache Instance',
+    {Database Engine} = 'ElastiCache Redis' and {Databases Product Family} = 'ElastiCache Chache Instance', 'ElastiCache Redis Instance',
     {Database Engine} = 'ElastiCache Redis' and {Databases Product Family} = 'ElastiCache Serverless', 'ElastiCache Redis Serverless',
     {Database Engine}
     )
