@@ -1,6 +1,12 @@
 CalculatedFields:
+# The plan_credits > 0 guard is not cosmetic, and its absence was a real defect. A tier whose
+# name the dataset ladder does not recognize gets plan_credits 0, which makes
+# monthly_plan_utilization_pct 0, which fails this test - so the licence silently vanishes from
+# Users at Risk instead of being flagged. Under-counting is the worst failure mode here, because
+# nothing on the sheet looks wrong. Found 2026-09-23 while investigating PRO_PLUS / PRO_MAX
+# falling through the ladder; see tier_key in the manifest.
 - DataSetIdentifier: kiro_user_activity
-  Expression: ifelse({monthly_plan_utilization_pct} >= 0.75, 1, 0)
+  Expression: ifelse({plan_credits} > 0 AND {monthly_plan_utilization_pct} >= 0.75, 1, 0)
   Name: at_risk_flag
 # The mirror image of at_risk_flag, for the "Users Below 25% of Plan" KPI that sits
 # beside it. Both read the same MONTHLY utilization figure, so the two counts are
@@ -63,12 +69,23 @@ CalculatedFields:
 #  - Consistently low monthly utilization (<30%) and not already on the smallest
 #    plan (Pro) => Downgrade Candidate.
 #  - Otherwise Right-Sized.
+#
+# Compares on {tier_key}, the normalized tier from the manifest, never on the raw
+# subscription_tier - see the comment on that column for why the raw value cannot be matched
+# directly.
+#
+# The FIRST branch is a safety net added 2026-09-23. Without it, a tier with no known allowance
+# produced utilization 0, satisfied the < 0.3 test, and came out as "Downgrade Candidate" - so a
+# Pro Max licence at 98% of its allowance was recommended for downgrade, and the underlying
+# problem hid behind a plausible-looking answer for two releases. An unknown tier must announce
+# itself rather than borrow the meaning of a known one.
 - DataSetIdentifier: kiro_user_activity
   Expression: >-
     ifelse(
+      {plan_credits} = 0, 'Unknown Tier',
       {monthly_overage_credits} > 0,
-        ifelse(toLower({subscription_tier}) = 'power', 'Review Overage Settings', 'Upgrade Candidate'),
-      {monthly_plan_utilization_pct} < 0.3 AND toLower({subscription_tier}) <> 'pro' AND toLower({subscription_tier}) <> 'free',
+        ifelse({tier_key} = 'power', 'Review Overage Settings', 'Upgrade Candidate'),
+      {monthly_plan_utilization_pct} < 0.3 AND {tier_key} <> 'pro' AND {tier_key} <> 'free',
         'Downgrade Candidate',
       'Right-Sized'
     )
@@ -98,6 +115,18 @@ CalculatedFields:
 # a genuinely idle subscription in the other. Partitioning on resource_id alone would
 # let the active account mask the wasted subscription.
 #
+# EVERY pricing_unit comparison in this file is case-normalized, and must stay that way. This
+# literal carries the highest blast radius in the dashboard: 'Credits' is the only thing
+# separating "the user did something" from "the user was billed". If a case change ever made it
+# stop matching, period_credits would read 0 for every licence, so Active Kiro Licences would
+# read 0, every licence would move to Idle, and the idle table would list the entire estate with
+# a full Inactivity Cost against each one. That failure presents as a plausible catastrophic
+# finding rather than as a bug, which is what makes it worth guarding against in advance.
+#
+# Verified against real CUR on 2026-09-23: the values are 'Credits' and 'Count'. Normalized
+# anyway, after PRO_PLUS / PRO_MAX demonstrated that a source spelling can differ from both the
+# vendor documentation and the value another part of the same product emits.
+#
 # period_fees is what a licence was CHARGED in the selected period, and it replaces the
 # old months_since_last_bill guard. "Was this licence billed in the month I am looking
 # at?" is both a sharper question than "was it billed recently?" and the one that keeps
@@ -105,7 +134,7 @@ CalculatedFields:
 # Excludes Credits lines so that a licence which somehow consumed credits without being
 # billed a fee cannot masquerade as a subscription.
 - DataSetIdentifier: kiro_cur_view
-  Expression: sumOver(ifelse({pricing_unit} <> 'Credits', {unblended_cost}, 0), [{account_id},
+  Expression: sumOver(ifelse(toLower({pricing_unit}) <> 'credits', {unblended_cost}, 0), [{account_id},
     {resource_id}], PRE_AGG)
   Name: period_fees
 # Credits actually consumed in the selected period. Only pricing_unit='Credits' with a
@@ -113,7 +142,7 @@ CalculatedFields:
 # convention (on the 1st, or every day through month end) rather than by when anyone
 # worked, so their presence says nothing at all about activity.
 - DataSetIdentifier: kiro_cur_view
-  Expression: sumOver(ifelse({pricing_unit} = 'Credits' AND {usage_quantity} > 0, {usage_quantity},
+  Expression: sumOver(ifelse(toLower({pricing_unit}) = 'credits' AND {usage_quantity} > 0, {usage_quantity},
     0), [{account_id}, {resource_id}], PRE_AGG)
   Name: period_credits
 # Billed in the selected period, consumed nothing in it. This is the definition the
@@ -136,7 +165,7 @@ CalculatedFields:
 # both sources this matches the activity dataset's last active date exactly, and CUR
 # additionally covers accounts whose activity report is not collected.
 - DataSetIdentifier: kiro_cur_view
-  Expression: maxOver(ifelse({pricing_unit} = 'Credits' AND {usage_quantity} > 0,
+  Expression: maxOver(ifelse(toLower({pricing_unit}) = 'credits' AND {usage_quantity} > 0,
     {usage_date}, NULL), [{account_id}, {resource_id}], PRE_FILTER)
   Name: last_activity_date
 # THE BOUNDS OF THE SELECTED BILLING PERIOD, recovered from the data rather than from the
@@ -170,7 +199,7 @@ CalculatedFields:
 # Credits lines are excluded, same as period_fees - a fee is what makes a licence cost
 # something, and it is fees that get wasted.
 - DataSetIdentifier: kiro_cur_view
-  Expression: minOver(ifelse({pricing_unit} <> 'Credits', {usage_date}, NULL), [{account_id},
+  Expression: minOver(ifelse(toLower({pricing_unit}) <> 'credits', {usage_date}, NULL), [{account_id},
     {resource_id}], PRE_FILTER)
   Name: first_billed_date
 # How many distinct calendar months this licence was charged a fee in, WITHIN the selected
@@ -180,7 +209,7 @@ CalculatedFields:
 # a multi-month selection: a licence billed in only 2 months of a 9-month window has its
 # fee divided by 2, not by 9, so the monthly figure is the real monthly figure.
 - DataSetIdentifier: kiro_cur_view
-  Expression: distinctCountOver(ifelse({pricing_unit} <> 'Credits', truncDate("MM", {usage_date}),
+  Expression: distinctCountOver(ifelse(toLower({pricing_unit}) <> 'credits', truncDate("MM", {usage_date}),
     NULL), [{account_id}, {resource_id}], PRE_AGG)
   Name: billed_months_in_period
 # What this licence costs per month, derived from what it was ACTUALLY charged rather than
@@ -2953,7 +2982,7 @@ Sheets:
         </block>
         <br/>
         <block align="center">
-          <inline font-size="40px"><b>v1.1.0</b></inline>
+          <inline font-size="40px"><b>v1.1.1</b></inline>
         </block>
       </text-box>
     SheetTextBoxId: fdd229b0-07cb-4b93-b634-0a2357c4b4b1

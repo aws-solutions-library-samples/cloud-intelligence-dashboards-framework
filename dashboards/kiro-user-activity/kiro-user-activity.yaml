@@ -8,7 +8,7 @@ dashboards:
     dashboardId: kiro-user-activity
     category: Advanced
     theme: MIDNIGHT
-    version: v1.1.0
+    version: v1.1.1
     file: ./kiro-user-activity-definition.yaml
     nonTaxonomyColumns:
     - date
@@ -17,6 +17,7 @@ dashboards:
     - user_email
     - client_type
     - subscription_tier
+    - tier_key
     - profileid
     - account_id
     - region
@@ -124,11 +125,45 @@ datasets:
               - ColumnName: model_messages_num
                 ColumnId: col-model-messages-num
                 Expression: parseInt({model_messages})
+          # Tier name normalized to a comparison key: lowercased with separators stripped, so
+          # every spelling Kiro has been observed to emit collapses to the same value. Match on
+          # THIS, never on the raw subscription_tier.
+          #
+          # Kiro writes the tier differently in different places, and its own documentation is
+          # wrong about it. Verified 2026-09-23 from real activity report CSVs:
+          #   activity report (enterprise) ... PRO, PRO_PLUS, PRO_MAX      screaming snake case
+          #   CUR line_item_usage_type ....... KiroEnterprise-ProPlus      camel case
+          #   kiro.dev documentation ......... Pro, ProPlus, ProMax        camel case, WRONG
+          # Matching 'proplus' therefore missed every real PRO_PLUS row, plan_credits fell to
+          # the 0 fallback, and every Pro Plus and Pro Max licence was reported at 0% utilization
+          # and recommended for downgrade. Single-word tiers survived toLower() by accident,
+          # which is why only the two-word tiers broke and why it went unnoticed.
+          #
+          # This was nearly dismissed as not reproducible, because the synthetic test data spells
+          # the tiers Pro / ProPlus / Power and so resolves correctly. Never settle a data-format
+          # question against the synthetic dataset - filter to real rows or read a real file.
+          #
+          # Hyphens and spaces are stripped as well as underscores. They have not been observed,
+          # but the format has already proven unstable across sources, and the cost is nothing.
+          - CreateColumnsOperation:
+              Columns:
+              - ColumnName: tier_key
+                ColumnId: col-tier-key
+                Expression: replace(replace(replace(toLower({subscription_tier}), '_', ''), '-', ''), ' ', '')
+          # Kiro allocates these per calendar month. The values are confirmed correct: the
+          # activity report now also carries a Usage_Limit column, and it read 2000 for PRO_PLUS
+          # and 5000 for PRO_MAX, matching this ladder exactly. Only the matching was broken.
+          #
+          # FUTURE: prefer Usage_Limit over this ladder, so a new tier needs no code change. It
+          # is not collected yet - the Glue table has 15 columns and usage_limit is not among
+          # them - so adopting it needs the collector, the table schema, InputColumns and
+          # ProjectOperation to carry it. Keep this ladder as the fallback regardless, because
+          # historical partitions predate the column.
           - CreateColumnsOperation:
               Columns:
               - ColumnName: plan_credits
                 ColumnId: col-plan-credits
-                Expression: ifelse(toLower({subscription_tier}) = 'power', 10000, toLower({subscription_tier}) = 'promax', 5000, toLower({subscription_tier}) = 'proplus', 2000, toLower({subscription_tier}) = 'pro', 1000, toLower({subscription_tier}) = 'free', 50, 0)
+                Expression: ifelse({tier_key} = 'power', 10000, {tier_key} = 'promax', 5000, {tier_key} = 'proplus', 2000, {tier_key} = 'pro', 1000, {tier_key} = 'free', 50, 0)
           - CreateColumnsOperation:
               Columns:
               - ColumnName: plan_utilization_pct
@@ -168,6 +203,7 @@ datasets:
               - user_email
               - client_type
               - subscription_tier
+              - tier_key
               - profileid
               - account_id
               - region

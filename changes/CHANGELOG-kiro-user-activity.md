@@ -1,5 +1,51 @@
 # What's new in Kiro User Activity Dashboard
 
+## Kiro User Activity Dashboard v1.1.1
+
+Corrects plan-credit and utilization reporting for the Pro Plus and Pro Max tiers, which read as
+0 in v1.0.0 and v1.1.0. Anyone with users on those tiers should update: the affected figures were
+wrong rather than missing, and the tier recommendation derived from them was wrong with them.
+
+Reported by Shingo Horisawa, who also supplied the real activity report files that identified the
+cause.
+
+### Fixed
+
+* **Plan Credits read 0 for Pro Plus and Pro Max, and every figure derived from it was wrong.**
+  The activity report writes the tier in screaming snake case (`PRO_PLUS`, `PRO_MAX`) while the
+  tier ladder matched `proplus` and `promax`, so those tiers fell through to the 0 fallback.
+  Single-word tiers such as `PRO` and `POWER` matched by accident, which is why only the two-word
+  tiers were affected. Consequences, all now corrected:
+  * `Plan Credits` and `Plan Utilization Percentage` read 0 for those licences
+  * `Subscription Tier Recommendation` always read `Downgrade Candidate`, including for a Pro Max
+    licence at 98% of its allowance
+  * **`Users at Risk` silently under-counted**, because a licence with no known allowance
+    computes 0% utilization and so fails the 75% test. Nothing on the sheet looked wrong
+  * conditional formatting on utilization never fired for those tiers
+
+  The tier is now normalized once into a dedicated `tier_key` column, lowercased with
+  underscores, hyphens and spaces stripped, and every comparison matches on that. This accepts
+  the report's `PRO_MAX`, the CUR usage type's `ProMax`, and the `ProMax` that kiro.dev documents,
+  so it is robust to the spelling differing again between sources.
+* **`Users at Risk` is now guarded against an unknown tier**, matching the guard
+  `Users Below 25% of Plan` already had. A tier with no known allowance can no longer be
+  silently excluded from the at-risk count.
+* **An unrecognized tier now reports `Unknown Tier`** instead of `Downgrade Candidate`. A missing
+  plan allowance is no longer able to masquerade as low utilization, which is what let this defect
+  survive two releases behind a plausible-looking recommendation.
+* **`pricing_unit` comparisons are case-normalized.** Not a live defect, but `Credits` is the only
+  literal separating "the user consumed credits" from "the user was billed": had it stopped
+  matching, every licence would have been reported as idle with a full Inactivity Cost against it.
+
+### Notes
+
+* No Athena view changed, so this update needs no `--recursive`. A SPICE refresh is required for
+  the new `tier_key` column to materialize.
+* The activity report now also carries a `Usage_Limit` column holding the plan allowance directly.
+  It confirms the ladder's values are correct (2000 for Pro Plus, 5000 for Pro Max) and is the
+  intended future source of truth, which would remove the hardcoded ladder entirely. It is not
+  collected yet.
+
 ## Kiro User Activity Dashboard v1.1.0
 
 Reworks the CUR-backed subscription reporting from a user-centric view into a licence-centric one, and adds cost attribution for licences nobody is using. The `kiro_cur_view` dataset and the subscription KPIs existed in v1.0.0; what changes here is what they count, how they are scoped, and what the idle-licence table tells you.
