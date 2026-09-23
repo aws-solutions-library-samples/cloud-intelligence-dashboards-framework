@@ -36,6 +36,27 @@ cause.
 * **`pricing_unit` comparisons are case-normalized.** Not a live defect, but `Credits` is the only
   literal separating "the user consumed credits" from "the user was billed": had it stopped
   matching, every licence would have been reported as idle with a full Inactivity Cost against it.
+* **A duplicate field identifier that had been reporting an error since v1.0.0.** The Overage
+  Credits KPI and the Users in Overage KPI both used the identifier `kpi-overage-val` for
+  different columns. QuickSight binds an identifier once, so `DescribeDashboardDefinition`
+  returned a `COLUMN_NOT_FOUND` error for one of the two visuals on every deployment since the
+  initial release. Both sheets rendered, which is why it went unnoticed.
+
+* **Overage spend was invisible.** Overage reached the dashboard only as a credit *count* from the
+  activity report, never as money, and no visual used the CUR cost column at all - so a licence
+  running $200 of overage looked identical to one running none. Credit & Overage Tracking gains an
+  **Overage Cost** KPI, the first figure on that sheet expressed in currency.
+* **Fee versus consumption is now decided by the billing operation, not the pricing unit.** CUR
+  records the same credit consumption under two different pricing units, and the second variant
+  carries real usage. Those rows were counted as a subscription fee *and* excluded from
+  consumption, so an affected licence showed an inflated Monthly Fee and a blank Last Activity -
+  reading as "billed but never used" for someone who had used it. Confirmed against a real
+  subscriber, whose first consumption record takes that form.
+* **The subscription roster now counts every charge rather than only the recurring fee.**
+  Roster membership and the monthly rate are different questions: the first needs to catch any
+  charge, the second only the subscription fee. Serving both from one measure meant a charge under
+  an unrecognised billing operation would have removed the licence from Total, Active and Idle
+  entirely, with its cost figures reading zero. They are now separate measures.
 
 ### Notes
 

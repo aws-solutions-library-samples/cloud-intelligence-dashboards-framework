@@ -372,8 +372,9 @@ views:
     # Kiro billing slice of CUR 2.0, modeled on the CUDOS `resource_view` (NOT
     # `summary_view`): rows stay at one-per-resource_id granularity because each
     # subscribed Kiro user surfaces as a distinct line_item_resource_id, and the
-    # KPIs need DISTINCT_COUNT(resource_id) plus a per-user pricing_unit='Credits'
-    # test. `summary_view` aggregates resource_id away, so it can't drive these.
+    # KPIs need DISTINCT_COUNT of account_id + resource_id, plus a per-licence
+    # consumption test. `summary_view` aggregates resource_id away, so it can't drive
+    # these.
     #
     # Started as a port of the "Kiro and Amazon Q Developer Summary" logic from
     # CUDOS, which counts distinct resource_id and splits Active/Inactive on whether
@@ -383,20 +384,27 @@ views:
     #
     # THE ACTIVE/INACTIVE SPLIT IS SCOPED TO THE SELECTED BILLING PERIOD, and no extra
     # columns are needed here to achieve that. A licence is inactive in a month when it
-    # has a fee line on that month's bill and consumed zero credits during it, which the
-    # analysis definition derives from these 14 columns:
-    #   - period_fees              fees billed per account + resource_id, PRE_AGG
-    #   - period_credits           credits consumed per account + resource_id, PRE_AGG
-    #   - inactive_in_period       period_fees > 0 AND period_credits = 0
-    #   - last_activity_in_period  newest Credits line inside the period, PRE_AGG
-    #   - last_activity_date       newest Credits line all-time, PRE_FILTER (display only)
-    #   - days_idle                dateDiff(last_activity_date, now()), PRE_FILTER
-    #   - subscription_key         account_id|resource_id, the licence counting unit
+    # was charged on that month's bill and consumed zero credits during it. The analysis
+    # definition derives that from the 14 columns below, with no extra column needed here.
+    # The fields that carry it, all defined in the definition file:
+    #   - subscription_key          account_id|resource_id, the licence counting unit
+    #   - period_total_cost         EVERY charge per licence, unfiltered, PRE_AGG. The roster
+    #   - period_subscription_cost  operation='monthly-subscription' only, PRE_AGG. The rate
+    #   - period_credits           consumed credits per licence, PRE_AGG. The active test
+    #   - inactive_in_period       period_total_cost > 0 AND period_credits = 0
+    #   - overage_cost             cost of consumption lines, ROW-LEVEL so it can be SUMmed
+    #   - last_activity_date       newest consumption line all-time, PRE_FILTER
+    #   - first_billed_date        oldest fee line all-time, PRE_FILTER
     #
-    # PRE_AGG is what makes them follow the dashboard's date control, which is
+    # The roster deliberately counts EVERY charge while the rate counts only the recurring
+    # fee. They are different questions, and serving both from one measure meant a charge
+    # under an unrecognised operation would have removed the licence from Total, Active and
+    # Idle entirely rather than merely skewing a number.
+    #
+    # PRE_AGG is what makes these follow the dashboard's date control, which is
     # ALL_DATASETS and so reaches this view. A PRE_FILTER window is evaluated BEFORE
     # filters and would silently ignore the billing period, which is why only the two
-    # display-only all-time fields use it.
+    # all-time fields use it.
     #
     # The one hazard, worth knowing before changing the date control: a PARTIAL month
     # breaks the roster. Measured on real data on 2026-09-08, a month-to-date window made
@@ -427,9 +435,10 @@ views:
     #     billing month, i.e. dated in the FUTURE relative to today (the 1 real
     #     subscription, billed 0.0333 qty / 0.6667 USD per day).
     # So neither the presence of a fee line nor max(usage_date) tells you anything
-    # about activity, and code must tolerate future-dated rows. Only
-    # pricing_unit='Credits' with a positive usage amount means "the user actually
-    # did something on this date".
+    # about activity, and code must tolerate future-dated rows. Only a line with
+    # line_item_operation='Credits' and a positive usage amount means "the user actually
+    # did something on this date". NOT pricing_unit - the same consumption arrives under
+    # two different pricing units, so that column cannot classify it.
     #
     # user_email: CUR only identifies a subscriber by line_item_resource_id, which
     # is an Identity Center ARN (arn:aws:identitystore:::user/<uuid>). The <uuid>
