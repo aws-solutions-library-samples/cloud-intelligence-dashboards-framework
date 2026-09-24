@@ -58,6 +58,12 @@ cause.
   an unrecognised billing operation would have removed the licence from Total, Active and Idle
   entirely, with its cost figures reading zero. They are now separate measures.
 
+* **Subscription Type now shows the tier for every tier, including new ones.** It enumerated four
+  tiers and Pro Max was not among them, so a Pro Max licence rendered as "monthly-subscription" in
+  the Idle Kiro Licences table - losing the one thing the column exists to show. The tier is now
+  derived from the billing usage type, so a tier Kiro adds appears without a dashboard change. This
+  also distinguishes the Individual product line from Enterprise, which was previously impossible.
+
 ### Notes
 
 * No Athena view changed, so this update needs no `--recursive`. A SPICE refresh is required for

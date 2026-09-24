@@ -479,13 +479,25 @@ views:
       , "line_item_line_item_type" "charge_type"
       , "line_item_usage_type" "usage_type"
       , "pricing_unit" "pricing_unit"
-      , CASE
-          WHEN "line_item_usage_type" LIKE '%KiroEnterprise-Pro' THEN 'Kiro Enterprise Pro Subscription'
-          WHEN "line_item_usage_type" LIKE '%KiroEnterprise-ProPlus' THEN 'Kiro Enterprise Pro Plus Subscription'
-          WHEN "line_item_usage_type" LIKE '%KiroEnterprise-Power' THEN 'Kiro Enterprise Power Subscription'
-          WHEN "line_item_usage_type" LIKE '%KiroEnterprise-Credits' THEN 'Kiro Enterprise Credits'
-          ELSE "line_item_operation"
-        END "subscription_type"
+      -- The tier, taken from the trailing segment of the usage type: Pro, ProPlus, ProMax,
+      -- Power, Credits. Generic on purpose, so a tier Kiro adds appears without a code change.
+      --
+      -- This replaced a CASE enumerating four tiers with ELSE line_item_operation. ProMax was
+      -- missing from that list, so a ProMax licence fell through and rendered as
+      -- "monthly-subscription" - it lost the very thing the column exists to show. Enumerating
+      -- tiers here had the same weakness as enumerating tier spellings in plan_credits, and Kiro
+      -- has already added a tier once.
+      --
+      -- Using line_item_operation alone was considered and rejected: it holds only
+      -- 'monthly-subscription' and 'Credits', so every subscription row regardless of tier would
+      -- read "monthly-subscription" and a 20 dollar Pro licence would be indistinguishable from a
+      -- 200 dollar Power one in the idle table. It is also 'Credits' on both KiroEnterprise-Pro and
+      -- KiroEnterprise-Power consumption rows, so it collapses tiers wherever it appears.
+      --
+      -- Splitting on the last hyphen rather than matching 'KiroEnterprise-' also distinguishes the
+      -- Individual product line: USE1-Kiro-IndividualProMax yields 'IndividualProMax'. The old CASE
+      -- could not represent that at all.
+      , "regexp_extract"("line_item_usage_type", '[^-]+$') "subscription_type"
       , "sum"("line_item_usage_amount") "usage_quantity"
       , "sum"("line_item_unblended_cost") "unblended_cost"
       FROM
