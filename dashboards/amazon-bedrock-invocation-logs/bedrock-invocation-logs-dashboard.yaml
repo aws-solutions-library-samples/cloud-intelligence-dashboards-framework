@@ -25,9 +25,6 @@ datasets:
             - Name: account_id
               Id: bedrock_i-account_i-4ae2b4
               Type: STRING
-            - Name: payer_id
-              Id: bedrock_i-payer_id-930585
-              Type: STRING
             - Name: timestamp
               Id: bedrock_i-timestamp-f1c25f
               Type: DATETIME
@@ -133,7 +130,6 @@ views:
       CREATE OR REPLACE VIEW "${athena_database_name}".bedrock_invocations_view AS
       SELECT
         accountid account_id
-      , accountid payer_id
       , timestamp
       , region
       , requestid

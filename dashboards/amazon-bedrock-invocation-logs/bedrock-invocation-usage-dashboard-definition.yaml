@@ -121,27 +121,6 @@ FilterGroups:
         - 5caa6468-d24f-4d6e-ab9e-e3233b5950e9
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
-  FilterGroupId: 8bc3e1fa-202d-4388-b8a6-a51c1d3b6e4c
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: payer_id
-        DataSetIdentifier: bedrock_invocations_view
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: CONTAINS
-          NullOption: NON_NULLS_ONLY
-          SelectAllOptions: FILTER_ALL_VALUES
-      FilterId: 5c933823-0ccc-4405-9f34-d5dec66abfab
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: 71ed5ac1-a083-4956-aa48-fe842ef999e3
-        VisualIds:
-        - 5caa6468-d24f-4d6e-ab9e-e3233b5950e9
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
   FilterGroupId: e6ed1e9c-c8a1-47b8-b4fd-408229170d69
   Filters:
   - TimeRangeFilter:
@@ -223,21 +202,6 @@ Sheets:
       FilterControlId: 1390ee60-eca5-44fa-a16c-410f62dec368
       SourceFilterId: 435f463f-ce47-49ed-bef8-57de13a504f9
       Title: Account ID
-      Type: MULTI_SELECT
-  - Dropdown:
-      DisplayOptions:
-        InfoIconLabelOptions:
-          Visibility: HIDDEN
-        SelectAllOptions:
-          Visibility: VISIBLE
-        TitleOptions:
-          FontConfiguration:
-            FontSize:
-              Relative: MEDIUM
-          Visibility: VISIBLE
-      FilterControlId: 97605e8a-d7fb-4ccb-bf19-17d97f7ceab4
-      SourceFilterId: 5c933823-0ccc-4405-9f34-d5dec66abfab
-      Title: Payer ID
       Type: MULTI_SELECT
   - Dropdown:
       DisplayOptions:
@@ -408,35 +372,29 @@ Sheets:
         Elements:
         - ColumnIndex: 0
           ColumnSpan: 2
-          ElementId: 97605e8a-d7fb-4ccb-bf19-17d97f7ceab4
+          ElementId: 1390ee60-eca5-44fa-a16c-410f62dec368
           ElementType: FILTER_CONTROL
           RowIndex: 0
           RowSpan: 1
         - ColumnIndex: 2
           ColumnSpan: 2
-          ElementId: 1390ee60-eca5-44fa-a16c-410f62dec368
+          ElementId: control_id_sheet-885725c7_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
           ElementType: FILTER_CONTROL
           RowIndex: 0
           RowSpan: 1
         - ColumnIndex: 4
           ColumnSpan: 2
-          ElementId: control_id_sheet-885725c7_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
+          ElementId: control_id_sheet-885725c7_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
           ElementType: FILTER_CONTROL
           RowIndex: 0
           RowSpan: 1
         - ColumnIndex: 6
           ColumnSpan: 2
-          ElementId: control_id_sheet-885725c7_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
-          ElementType: FILTER_CONTROL
-          RowIndex: 0
-          RowSpan: 1
-        - ColumnIndex: 8
-          ColumnSpan: 2
           ElementId: 6373529f-ad21-472f-8c5a-fc0ea5dfad63
           ElementType: FILTER_CONTROL
           RowIndex: 0
           RowSpan: 1
-        - ColumnIndex: 10
+        - ColumnIndex: 8
           ColumnSpan: 2
           ElementId: 835b31e3-7025-4831-b1e6-392971c96529
           ElementType: FILTER_CONTROL
