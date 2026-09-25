@@ -29,6 +29,7 @@ Metadata:
       - Label:
           default: 'Technical Parameters. Please do not change.'
         Parameters:
+          - ResourcePrefix
           - AthenaWorkgroup
           - AthenaQueryResultsBucket
           - DatabaseName
@@ -90,6 +91,8 @@ Metadata:
         default: "QuickSight DataSet Refresh Schedule [DEPRECATED]"
       ShareDashboard:
         default: "Share Dashboards"
+      ResourcePrefix:
+        default: "Resource Prefix - Must match the ResourcePrefix used in data-exports-aggregation stack"
       LambdaLayerBucketPrefix:
         default: "LambdaLayerBucketPrefix - Please do not change"
       GlueDataCatalog:
@@ -211,6 +214,12 @@ Parameters:
     Description: The S3 path to the bucket created by the Cost Optimization Data Collection Lab. The path will need point to a folder containing /trusted-advisor and/or /compute-optimizer folders. You can leave the variable {account_id} in place, it will be replaced by current account ID automatically.
     Default: "s3://cid-data-{account_id}"
     AllowedPattern: '^s3://[a-zA-Z0-9-_{}/]*$'
+  ResourcePrefix:
+    Type: String
+    Default: "cid"
+    Description: "Prefix used for named resources in the data-exports-aggregation stack. Must match the ResourcePrefix value used when deploying data-exports-aggregation.yaml."
+    MaxLength: 37
+    AllowedPattern: "^[a-z0-9]+[a-z0-9-]{1,61}[a-z0-9]+$"
   LambdaLayerBucketPrefix:
     Type: String
     Description: An S3 bucket with a Lambda layer
@@ -1338,8 +1347,12 @@ Resources:
                   - !Sub arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/optimization_data
                   - !Sub arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/cid_data_collection/*
                   - !Sub arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/cid_data_collection
-                  - !Sub arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/cid_data_export/* # prefix for data-exports hardcoded here
-                  - !Sub arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/cid_data_export # prefix for data-exports hardcoded here
+                  - !Sub
+                      - arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/${DbName}/*
+                      - DbName: !Join ['_', !Split ['-', !Sub '${ResourcePrefix}_data_export']]
+                  - !Sub
+                      - arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/${DbName}
+                      - DbName: !Join ['_', !Split ['-', !Sub '${ResourcePrefix}_data_export']]
               - Sid: AllowAthena
                 Effect: Allow
                 Action:
@@ -1388,7 +1401,7 @@ Resources:
                 Effect: Allow
                 Action: s3:ListBucket
                 Resource:
-                  - !Sub arn:${AWS::Partition}:s3:::cid-${AWS::AccountId}-data-exports # prefix for data-exports hardcoded here
+                  - !Sub arn:${AWS::Partition}:s3:::${ResourcePrefix}-${AWS::AccountId}-data-exports
                   - !Sub arn:${AWS::Partition}:s3:::${ODCPath.Bucket}
                   - !If
                       - NeedQuickSightDataSourceRoleAndLegacyCUR
@@ -1401,7 +1414,7 @@ Resources:
                   - s3:GetObject
                   - s3:GetObjectVersion
                 Resource:
-                  - !Sub arn:${AWS::Partition}:s3:::cid-${AWS::AccountId}-data-exports/*  # prefix for data-exports hardcoded here
+                  - !Sub arn:${AWS::Partition}:s3:::${ResourcePrefix}-${AWS::AccountId}-data-exports/*
                   - !Sub arn:${AWS::Partition}:s3:::${ODCPath.Bucket}/*
                   - !If
                       - NeedQuickSightDataSourceRoleAndLegacyCUR
