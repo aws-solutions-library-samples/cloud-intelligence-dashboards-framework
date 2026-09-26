@@ -20,7 +20,7 @@ datasets:
         208c509d-f59c-44d2-96d2-3e146f100734:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -31,7 +31,7 @@ datasets:
         a2826a94-1e6d-4bd1-8cac-5e35c9124af0:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: marketplace_view
             InputColumns:
@@ -145,7 +145,7 @@ datasets:
         1ecbb2ac-1ceb-4653-ab08-dc11fdfeb1b1:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -156,7 +156,7 @@ datasets:
         623cef5c-7541-4cb2-9474-53cb0e222d67:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: marketplace_licenses_grants_view
             InputColumns:
@@ -205,7 +205,7 @@ datasets:
         d16218ab-6c10-4003-8a81-b34b069e67b3:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -296,7 +296,7 @@ datasets:
         46ae6d3a-5d24-4e0b-a0dc-efa4ff57d116:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: agreements
             InputColumns:
@@ -361,7 +361,7 @@ datasets:
         cca4b668-6e89-4734-b32d-44f853c796b9:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: terms
             InputColumns:

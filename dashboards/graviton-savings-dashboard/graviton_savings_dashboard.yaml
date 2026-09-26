@@ -24,7 +24,7 @@ datasets:
         25ebc7a6-65b7-47a5-abd8-003128d25bbc:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -35,7 +35,7 @@ datasets:
         545587c0-8fb4-4299-9ecd-b6d8987626fa:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: graviton_opensearch_view
             InputColumns:
@@ -175,7 +175,7 @@ datasets:
         1200c855-886f-45ad-b974-f8e1cc1c4241:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: graviton_elasticache_view
             InputColumns:
@@ -253,7 +253,7 @@ datasets:
         17470ef2-0a70-405c-8e06-e9ed2d4186cf:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -336,7 +336,7 @@ datasets:
         f21ec750-639f-4f51-9ca0-f39b7ff449f3:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: graviton_mapping
             InputColumns:
@@ -449,7 +449,7 @@ datasets:
         22b8a470-d369-4904-ab86-203f79fd69b4:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -460,7 +460,7 @@ datasets:
         999e0f84-a1e1-4241-8698-17abb947484d:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: graviton_ec2_view
             InputColumns:
@@ -691,7 +691,7 @@ datasets:
         8881bb67-3603-4d41-a2a4-bc0752d99e7e:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -702,7 +702,7 @@ datasets:
         acc44c01-556f-450c-9f77-9932c0a76468:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: graviton_rds_view
             InputColumns:
