@@ -1,5 +1,11 @@
 # What's new in the Graviton Savings Dashboard
 
+## Graviton Savings Dashboard v3.0.3:
+```
+cid-cmd update --dashboard-id graviton-savings --force --recursive
+```
+* Modernization mapping: Remove invalid Graviton (g5g/T4G) targets for NVIDIA/AMD GPU families (g2, g3, g3s, g4ad, g5, g6, g6e, g6f, gr6, gr6f) so they report 'No equivalent graviton instance' instead of inflating On-Demand eligible savings; retain g4dn -> g5g as a like-for-like T4 to T4G mapping
+
 ## Graviton Savings Dashboard v3.0.2:
 ```
 cid-cmd update --dashboard-id graviton-savings --force --recursive
