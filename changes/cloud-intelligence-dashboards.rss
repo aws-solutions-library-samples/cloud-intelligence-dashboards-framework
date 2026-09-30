@@ -8,6 +8,23 @@
     <lastBuildDate>Thu, 14 Aug 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] Graviton Savings Dashboard v3.0.3</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-graviton-savings.md
+      </link>
+      <pubDate>Tue, 29 Sep 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">6d5196c5-30c2-4585-ae4e-0e77d550af6d</guid>
+      <description>Graviton Savings Dashboard v3.0.3</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Modernization Mapping:</strong> Removed invalid Graviton (g5g / NVIDIA T4G) targets for NVIDIA and AMD GPU families (g2, g3, g3s, g4ad, g5, g6, g6e, g6f, gr6, gr6f) so they are reported as 'No equivalent graviton instance' instead of inflating On-Demand eligible savings. Retained g4dn to g5g as a like-for-like T4 to T4G mapping.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
       <title>[Update] Media Services Information Hub - v2.2.2</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md
