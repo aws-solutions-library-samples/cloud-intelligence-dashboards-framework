@@ -11,7 +11,7 @@ dashboards:
     dashboardId: graviton-savings
     category: Advanced
     theme: MIDNIGHT
-    version: v3.0.2
+    version: v3.0.3
     file: ./graviton_savings_dashboard-definition.yaml
     nonTaxonomyDatasets:
     - graviton_mapping
@@ -1503,10 +1503,10 @@ views:
           , ROW ('c7gn', 'Graviton3', '', '', 'c8g', 'c6in', '', 'c6gn', 'c7gn', 'c8g')
           , ROW ('c7i', 'Latest', '', '', 'c8g', '', '', 'c6g', 'c7g', 'c8g')
           , ROW ('c8g', 'Graviton4', '', '', 'c8g', 'c7i', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('g4ad', 'Preceding', '', '', 'g5g', '', '', 'g5g', '', '')
+          , ROW ('g4ad', 'Preceding', '', '', '', '', '', '', '', '')
           , ROW ('g4dn', 'Preceding', '', '', 'g5g', '', '', 'g5g', '', '')
-          , ROW ('g5', 'Latest', '', '', 'g5g', '', '', 'g5g', '', '')
-          , ROW ('g5g', 'Graviton2', '', '', 'g5g', 'g4dn', '', 'g5g', '', '')
+          , ROW ('g5', 'Latest', '', '', '', '', '', '', '', '')
+          , ROW ('g5g', 'Graviton2', '', '', '', 'g4dn', '', '', '', '')
           , ROW ('i3', 'Previous', 'i4i', '', 'i4g', '', '', '', 'i4g', '')
           , ROW ('i3en', 'Latest', '', '', 'i4g', '', '', '', 'i4g', '')
           , ROW ('i4g', 'Graviton3', '', '', 'i4g', 'i3', '', '', 'i4g', '')
@@ -1570,14 +1570,14 @@ views:
           , ROW ('dl2q', 'Latest', 'dl2q', '', '', '', '', '', '', '')
           , ROW ('f1', 'Latest', 'f2', '', '', '', '', '', '', '')
           , ROW ('f2', 'Latest', 'f2', '', '', '', '', '', '', '')
-          , ROW ('g2', 'Previous', 'g5', '', 'g5g', '', '', 'g5g', '', '')
-          , ROW ('g3', 'Previous', 'g5', '', 'g5g', '', '', 'g5g', '', '')
-          , ROW ('g3s', 'Previous', 'g5', '', 'g5g', '', '', 'g5g', '', '')
-          , ROW ('g6', 'Latest', 'g6', '', 'g5g', '', '', 'g5g', '', '')
-          , ROW ('g6e', 'Latest', 'g6e', '', 'g5g', '', '', 'g5g', '', '')
-          , ROW ('g6f', 'Latest', 'g6f', '', 'g5g', '', '', 'g5g', '', '')
-          , ROW ('gr6', 'Latest', 'gr6', '', 'g5g', '', '', 'g5g', '', '')
-          , ROW ('gr6f', 'Latest', 'gr6f', '', 'g5g', '', '', 'g5g', '', '')
+          , ROW ('g2', 'Previous', 'g5', '', '', '', '', '', '', '')
+          , ROW ('g3', 'Previous', 'g5', '', '', '', '', '', '', '')
+          , ROW ('g3s', 'Previous', 'g5', '', '', '', '', '', '', '')
+          , ROW ('g6', 'Latest', 'g6', '', '', '', '', '', '', '')
+          , ROW ('g6e', 'Latest', 'g6e', '', '', '', '', '', '', '')
+          , ROW ('g6f', 'Latest', 'g6f', '', '', '', '', '', '', '')
+          , ROW ('gr6', 'Latest', 'gr6', '', '', '', '', '', '', '')
+          , ROW ('gr6f', 'Latest', 'gr6f', '', '', '', '', '', '', '')
           , ROW ('hpc6a', 'Latest', '', 'hpc7a', 'hpc7g', '', '', '', 'hpc7g', '')
           , ROW ('hpc6id', 'Latest', 'hpc7a', 'hpc7a', 'hpc7g', '', '', '', 'hpc7g', '')
           , ROW ('hpc7a', 'Latest', '', 'hpc7a', 'hpc7g', '', '', '', 'hpc7g', '')
