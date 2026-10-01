@@ -11,7 +11,7 @@ dashboards:
     dashboardId: graviton-savings
     category: Advanced
     theme: MIDNIGHT
-    version: v3.0.3
+    version: v3.0.4
     file: ./graviton_savings_dashboard-definition.yaml
     nonTaxonomyDatasets:
     - graviton_mapping
@@ -381,6 +381,8 @@ datasets:
               Type: STRING
             - Name: g4_instance_type
               Type: STRING
+            - Name: g5_instance_type
+              Type: STRING
             - Name: g2_price
               Type: DECIMAL
               SubType: FLOAT
@@ -390,6 +392,9 @@ datasets:
             - Name: g4_price
               Type: DECIMAL
               SubType: FLOAT
+            - Name: g5_price
+              Type: DECIMAL
+              SubType: FLOAT
             - Name: g2_savings_percentage
               Type: DECIMAL
               SubType: FLOAT
@@ -397,6 +402,9 @@ datasets:
               Type: DECIMAL
               SubType: FLOAT
             - Name: g4_savings_percentage
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: g5_savings_percentage
               Type: DECIMAL
               SubType: FLOAT
       LogicalTableMap:
@@ -427,12 +435,15 @@ datasets:
               - g2_instance_type
               - g3_instance_type
               - g4_instance_type
+              - g5_instance_type
               - g2_price
               - g3_price
               - g4_price
+              - g5_price
               - g2_savings_percentage
               - g3_savings_percentage
               - g4_savings_percentage
+              - g5_savings_percentage
           Source:
             PhysicalTableId: f21ec750-639f-4f51-9ca0-f39b7ff449f3
       ImportMode: SPICE
@@ -581,6 +592,17 @@ datasets:
             - Name: g4_savings_percentage
               Type: DECIMAL
               SubType: FLOAT
+            - Name: g5_instance_type
+              Type: STRING
+            - Name: g5_price
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: g5_amortized_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: g5_savings_percentage
+              Type: DECIMAL
+              SubType: FLOAT
             - Name: graviton_savings_potential
               Type: DECIMAL
               SubType: FLOAT
@@ -594,6 +616,9 @@ datasets:
               Type: DECIMAL
               SubType: FLOAT
             - Name: g4_savings_potential
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: g5_savings_potential
               Type: DECIMAL
               SubType: FLOAT
       LogicalTableMap:
@@ -654,11 +679,16 @@ datasets:
               - g4_price
               - g4_amortized_cost
               - g4_savings_percentage
+              - g5_instance_type
+              - g5_price
+              - g5_amortized_cost
+              - g5_savings_percentage
               - graviton_savings_potential
               - default_g_savings_potential
               - g2_savings_potential
               - g3_savings_potential
               - g4_savings_potential
+              - g5_savings_potential
               - account_id
               - account_name
           Source:
@@ -1159,6 +1189,7 @@ views:
          , m.graviton2 g2_family
          , m.graviton3 g3_family
          , m.graviton4 g4_family
+         , m.graviton5 g5_family
          FROM
            (ec2_base_pricing p
          INNER JOIN modernization_mapping m ON (SPLIT_PART(p."instance type", '.', 1) = m.family))
@@ -1171,7 +1202,7 @@ views:
          , p.effective_priceperunit mapped_price
          FROM
            ((base_instance b
-         CROSS JOIN UNNEST(ARRAY['prev_intel','graviton_n','graviton2','graviton3','graviton4'], ARRAY[prev_intel_family,gn_family,g2_family,g3_family,g4_family]) t (generation_name, family_prefix))
+         CROSS JOIN UNNEST(ARRAY['prev_intel','graviton_n','graviton2','graviton3','graviton4','graviton5'], ARRAY[prev_intel_family,gn_family,g2_family,g3_family,g4_family,g5_family]) t (generation_name, family_prefix))
          LEFT JOIN ec2_base_pricing p ON ((p."instance type" = CONCAT(family_prefix, '.', SPLIT_PART(b."instance type", '.', 2))) AND (p.location = b.location) AND (p.operation = b.operation) AND (p.leasecontractlength = b.leasecontractlength) AND (p.purchaseoption = b.purchaseoption) AND (p.region_code = b.region_code) AND (p.offeringclass = b.offeringclass)))
          WHERE (family_prefix IS NOT NULL)
       )
@@ -1195,12 +1226,15 @@ views:
          , MAX((CASE WHEN (generation_name = 'graviton2') THEN mapped_instance_type END)) g2_instance_type
          , MAX((CASE WHEN (generation_name = 'graviton3') THEN mapped_instance_type END)) g3_instance_type
          , MAX((CASE WHEN (generation_name = 'graviton4') THEN mapped_instance_type END)) g4_instance_type
+         , MAX((CASE WHEN (generation_name = 'graviton5') THEN mapped_instance_type END)) g5_instance_type
          , MAX((CASE WHEN (generation_name = 'graviton2') THEN mapped_price END)) g2_price
          , MAX((CASE WHEN (generation_name = 'graviton3') THEN mapped_price END)) g3_price
          , MAX((CASE WHEN (generation_name = 'graviton4') THEN mapped_price END)) g4_price
+         , MAX((CASE WHEN (generation_name = 'graviton5') THEN mapped_price END)) g5_price
          , MAX((CASE WHEN (generation_name = 'graviton2') THEN ROUND((((base_price - mapped_price) / base_price) * 100), 2) END)) g2_savings_percentage
          , MAX((CASE WHEN (generation_name = 'graviton3') THEN ROUND((((base_price - mapped_price) / base_price) * 100), 2) END)) g3_savings_percentage
          , MAX((CASE WHEN (generation_name = 'graviton4') THEN ROUND((((base_price - mapped_price) / base_price) * 100), 2) END)) g4_savings_percentage
+         , MAX((CASE WHEN (generation_name = 'graviton5') THEN ROUND((((base_price - mapped_price) / base_price) * 100), 2) END)) g5_savings_percentage
          FROM
            graviton_prices g
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9
@@ -1310,6 +1344,10 @@ views:
          , g4_price
          , (CAST(g4_price AS double) * summary_view.usage_quantity) g4_amortized_cost
          , g4_savings_percentage
+         , g5_instance_type
+         , g5_price
+         , (CAST(g5_price AS double) * summary_view.usage_quantity) g5_amortized_cost
+         , g5_savings_percentage
          FROM
            (summary_view
          LEFT JOIN graviton_mapping price_map ON ((price_map.location = summary_view.location) AND (price_map.region_code = summary_view.region) AND (price_map.source_instance_type = summary_view.existing_instance) AND (price_map.operation = summary_view.line_item_operation) AND (price_map.leasecontractlength = summary_view.contract_length) AND (price_map.purchaseoption = summary_view.payment_option) AND (price_map.offeringclass = summary_view.offering_type)))
@@ -1322,6 +1360,7 @@ views:
       , (amortized_cost - g2_amortized_cost) "g2_savings_potential"
       , (amortized_cost - g3_amortized_cost) "g3_savings_potential"
       , (amortized_cost - g4_amortized_cost) "g4_savings_potential"
+      , (amortized_cost - g5_amortized_cost) "g5_savings_potential"
       FROM
         summary_view_final fi
   graviton_rds_view:
@@ -1478,282 +1517,290 @@ views:
         , graviton2
         , graviton3
         , graviton4
+        , graviton5
         FROM
           (
         VALUES 
           -- EC2 Instances - Original Families
-            ROW ('a1', 'Graviton', '', '', 'c6g', 'c4', '', 'a1', '', '')
-          , ROW ('c1', 'Previous', 'c6i', 'c6a', 'c7g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c3', 'Previous', 'c6i', 'c6a', 'c7g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c4', 'Preceding', 'c6i', 'c6a', 'c7g', 'c5', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c5', 'Preceding', 'c6i', 'c6a', 'c6g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c5a', 'Preceding', '', 'c6a', 'c6g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c5ad', 'Latest', '', '', 'c6gd', '', '', 'c6gd', 'c7gd', '')
-          , ROW ('c5d', 'Preceding', 'c6id', 'c5ad', 'c6gd', '', '', 'c6gd', 'c7gd', '')
-          , ROW ('c5n', 'Latest', '', '', 'c6gn', '', '', 'c6gn', 'c7gn', '')
-          , ROW ('c6a', 'Latest', '', '', 'c7g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c6g', 'Graviton2', '', '', 'c7g', 'c5', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c6gd', 'Graviton2', '', '', 'c7gd', 'c5d', '', 'c6gd', 'c7gd', '')
-          , ROW ('c6gn', 'Graviton2', '', '', 'c7gn', 'c5n', '', 'c6gn', 'c7gn', '')
-          , ROW ('c6i', 'Latest', '', '', 'c7g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c6id', 'Latest', '', '', 'c7gd', '', '', 'c6gd', 'c7gd', 'c8g')
-          , ROW ('c6in', 'Latest', '', '', 'c7gn', '', '', 'c6gn', 'c7gn', 'c8g')
-          , ROW ('c7g', 'Graviton3', 'c6i', '', 'c8g', 'c6i', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c7gd', 'Graviton3', '', '', 'c8gd', 'c6id', '', 'c6gd', 'c7gd', 'c8gd')
-          , ROW ('c7gn', 'Graviton3', '', '', 'c8g', 'c6in', '', 'c6gn', 'c7gn', 'c8g')
-          , ROW ('c7i', 'Latest', '', '', 'c8g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c8g', 'Graviton4', '', '', 'c8g', 'c7i', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('g4ad', 'Preceding', '', '', '', '', '', '', '', '')
-          , ROW ('g4dn', 'Preceding', '', '', 'g5g', '', '', 'g5g', '', '')
-          , ROW ('g5', 'Latest', '', '', '', '', '', '', '', '')
-          , ROW ('g5g', 'Graviton2', '', '', '', 'g4dn', '', '', '', '')
-          , ROW ('i3', 'Previous', 'i4i', '', 'i4g', '', '', '', 'i4g', '')
-          , ROW ('i3en', 'Latest', '', '', 'i4g', '', '', '', 'i4g', '')
-          , ROW ('i4g', 'Graviton3', '', '', 'i4g', 'i3', '', '', 'i4g', '')
-          , ROW ('im4gn', 'Graviton2', '', '', 'im4gn', '', '', 'im4gn', '', '')
-          , ROW ('is4gen', 'Graviton2', '', '', 'is4gen', '', '', 'is4gen', '', '')
-          , ROW ('m1', 'Previous', 'm6i', 'm6a', 'm7g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m2', 'Previous', 'm6i', 'm6a', 'm7g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m3', 'Previous', 'm6i', 'm6a', 'm7g', 'm4', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m4', 'Preceding', 'm6i', 'm6a', 'm7g', 'm5', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m5', 'Preceding', 'm6i', 'm6a', 'm6g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m5a', 'Preceding', '', 'm6a', 'm6g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m5ad', 'Latest', '', '', 'm6gd', '', '', 'm6gd', '', '')
-          , ROW ('m5d', 'Preceding', 'm6id', 'm6a', 'm6gd', '', '', 'm6gd', '', '')
-          , ROW ('m6a', 'Latest', '', '', 'm7g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m6g', 'Graviton2', '', '', 'm7g', 'm5', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m6gd', 'Graviton2', '', '', 'm7gd', 'm5d', '', 'm6gd', '', '')
-          , ROW ('m6i', 'Latest', '', '', 'm7g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m6id', 'Latest', '', '', 'm7gd', '', '', 'm6gd', 'm7gd', 'm8gd')
-          , ROW ('m7g', 'Graviton3', '', '', 'm8g', 'm6i', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m7i', 'Latest', '', '', 'm8g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m8g', 'Graviton4', '', '', 'm8g', 'm7i', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('r3', 'Previous', 'r6i', 'r6a', 'r7g', 'r5', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r4', 'Preceding', 'r6i', 'r6a', 'r7g', 'r5', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r5', 'Preceding', 'r6i', 'r6a', 'r6g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r5a', 'Preceding', '', 'r6a', 'r6g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r5ad', 'Latest', '', '', 'r6gd', '', '', 'r6gd', '', '')
-          , ROW ('r5d', 'Preceding', 'r6id', 'r5ad', 'r6gd', '', '', 'r6gd', '', '')
-          , ROW ('r6a', 'Latest', '', '', 'r7g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r6g', 'Graviton2', 'r7i', '', 'r7g', 'r5', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r6gd', 'Graviton2', '', '', 'r7gd', 'r5d', '', 'r6gd', '', '')
-          , ROW ('r6i', 'Latest', '', '', 'r7g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r6id', 'Latest', '', '', 'r7gd', '', '', 'r6gd', '', '')
-          , ROW ('r7g', 'Graviton3', 'r6i', '', 'r8g', 'r6i', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r7i', 'Latest', '', '', 'r8g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r8g', 'Graviton4', '', '', 'r8g', 'r7i', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('t1', 'Previous', 't3', 't3a', 't4g', 't3', '', 't4g', '', '')
-          , ROW ('t2', 'Preceding', 't3', 't3a', 't4g', 't3', '', 't4g', '', '')
-          , ROW ('t3', 'Latest', '', '', 't4g', '', '', 't4g', '', '')
-          , ROW ('t3a', 'Latest', '', '', 't4g', '', '', 't4g', '', '')
-          , ROW ('t4g', 'Graviton2', '', '', 't4g', 't3', '', 't4g', '', '')
-          , ROW ('x1', 'Latest', '', '', 'x2gd', '', '', 'x2gd', '', '')
-          , ROW ('x1e', 'Latest', '', '', 'x2gd', '', '', 'x2gd', '', '')
-          , ROW ('x2gd', 'Graviton2', '', '', 'x2gd', 'x1', '', 'x2gd', '', '')
+            ROW ('a1', 'Graviton', '', '', 'c6g', 'c4', '', 'a1', '', '', '')
+          , ROW ('c1', 'Previous', 'c6i', 'c6a', 'c7g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c3', 'Previous', 'c6i', 'c6a', 'c7g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c4', 'Preceding', 'c6i', 'c6a', 'c7g', 'c5', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c5', 'Preceding', 'c6i', 'c6a', 'c6g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c5a', 'Preceding', '', 'c6a', 'c6g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c5ad', 'Latest', '', '', 'c6gd', '', '', 'c6gd', 'c7gd', '', '')
+          , ROW ('c5d', 'Preceding', 'c6id', 'c5ad', 'c6gd', '', '', 'c6gd', 'c7gd', '', '')
+          , ROW ('c5n', 'Latest', '', '', 'c6gn', '', '', 'c6gn', 'c7gn', '', '')
+          , ROW ('c6a', 'Latest', '', '', 'c7g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c6g', 'Graviton2', '', '', 'c7g', 'c5', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c6gd', 'Graviton2', '', '', 'c7gd', 'c5d', '', 'c6gd', 'c7gd', '', '')
+          , ROW ('c6gn', 'Graviton2', '', '', 'c7gn', 'c5n', '', 'c6gn', 'c7gn', '', '')
+          , ROW ('c6i', 'Latest', '', '', 'c7g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c6id', 'Latest', '', '', 'c7gd', '', '', 'c6gd', 'c7gd', 'c8g', 'c9g')
+          , ROW ('c6in', 'Latest', '', '', 'c7gn', '', '', 'c6gn', 'c7gn', 'c8g', 'c9g')
+          , ROW ('c7g', 'Graviton3', 'c6i', '', 'c8g', 'c6i', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c7gd', 'Graviton3', '', '', 'c8gd', 'c6id', '', 'c6gd', 'c7gd', 'c8gd', 'c9gd')
+          , ROW ('c7gn', 'Graviton3', '', '', 'c8g', 'c6in', '', 'c6gn', 'c7gn', 'c8g', 'c9g')
+          , ROW ('c7i', 'Latest', '', '', 'c8g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c8g', 'Graviton4', '', '', 'c8g', 'c7i', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('g4ad', 'Preceding', '', '', '', '', '', '', '', '', '')
+          , ROW ('g4dn', 'Preceding', '', '', 'g5g', '', '', 'g5g', '', '', '')
+          , ROW ('g5', 'Latest', '', '', '', '', '', '', '', '', '')
+          , ROW ('g5g', 'Graviton2', '', '', '', 'g4dn', '', '', '', '', '')
+          , ROW ('i3', 'Previous', 'i4i', '', 'i4g', '', '', '', 'i4g', '', '')
+          , ROW ('i3en', 'Latest', '', '', 'i4g', '', '', '', 'i4g', '', '')
+          , ROW ('i4g', 'Graviton3', '', '', 'i4g', 'i3', '', '', 'i4g', '', '')
+          , ROW ('im4gn', 'Graviton2', '', '', 'im4gn', '', '', 'im4gn', '', '', '')
+          , ROW ('is4gen', 'Graviton2', '', '', 'is4gen', '', '', 'is4gen', '', '', '')
+          , ROW ('m1', 'Previous', 'm6i', 'm6a', 'm7g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m2', 'Previous', 'm6i', 'm6a', 'm7g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m3', 'Previous', 'm6i', 'm6a', 'm7g', 'm4', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m4', 'Preceding', 'm6i', 'm6a', 'm7g', 'm5', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m5', 'Preceding', 'm6i', 'm6a', 'm6g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m5a', 'Preceding', '', 'm6a', 'm6g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m5ad', 'Latest', '', '', 'm6gd', '', '', 'm6gd', '', '', '')
+          , ROW ('m5d', 'Preceding', 'm6id', 'm6a', 'm6gd', '', '', 'm6gd', '', '', '')
+          , ROW ('m6a', 'Latest', '', '', 'm7g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m6g', 'Graviton2', '', '', 'm7g', 'm5', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m6gd', 'Graviton2', '', '', 'm7gd', 'm5d', '', 'm6gd', '', '', '')
+          , ROW ('m6i', 'Latest', '', '', 'm7g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m6id', 'Latest', '', '', 'm7gd', '', '', 'm6gd', 'm7gd', 'm8gd', 'm9gd')
+          , ROW ('m7g', 'Graviton3', '', '', 'm8g', 'm6i', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m7i', 'Latest', '', '', 'm8g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m8g', 'Graviton4', '', '', 'm8g', 'm7i', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('r3', 'Previous', 'r6i', 'r6a', 'r7g', 'r5', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r4', 'Preceding', 'r6i', 'r6a', 'r7g', 'r5', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r5', 'Preceding', 'r6i', 'r6a', 'r6g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r5a', 'Preceding', '', 'r6a', 'r6g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r5ad', 'Latest', '', '', 'r6gd', '', '', 'r6gd', '', '', '')
+          , ROW ('r5d', 'Preceding', 'r6id', 'r5ad', 'r6gd', '', '', 'r6gd', '', '', '')
+          , ROW ('r6a', 'Latest', '', '', 'r7g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r6g', 'Graviton2', 'r7i', '', 'r7g', 'r5', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r6gd', 'Graviton2', '', '', 'r7gd', 'r5d', '', 'r6gd', '', '', '')
+          , ROW ('r6i', 'Latest', '', '', 'r7g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r6id', 'Latest', '', '', 'r7gd', '', '', 'r6gd', '', '', '')
+          , ROW ('r7g', 'Graviton3', 'r6i', '', 'r8g', 'r6i', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r7i', 'Latest', '', '', 'r8g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r8g', 'Graviton4', '', '', 'r8g', 'r7i', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('t1', 'Previous', 't3', 't3a', 't4g', 't3', '', 't4g', '', '', '')
+          , ROW ('t2', 'Preceding', 't3', 't3a', 't4g', 't3', '', 't4g', '', '', '')
+          , ROW ('t3', 'Latest', '', '', 't4g', '', '', 't4g', '', '', '')
+          , ROW ('t3a', 'Latest', '', '', 't4g', '', '', 't4g', '', '', '')
+          , ROW ('t4g', 'Graviton2', '', '', 't4g', 't3', '', 't4g', '', '', '')
+          , ROW ('x1', 'Latest', '', '', 'x2gd', '', '', 'x2gd', '', '', '')
+          , ROW ('x1e', 'Latest', '', '', 'x2gd', '', '', 'x2gd', '', '', '')
+          , ROW ('x2gd', 'Graviton2', '', '', 'x2gd', 'x1', '', 'x2gd', '', '', '')
           -- EC2 Instances - New Families Added October 2025
-          , ROW ('c7a', 'Latest', '', 'c7a', 'c7g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c7i-flex', 'Latest', 'c7i-flex', '', 'c8g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c8gd', 'Graviton4', '', '', 'c8gd', 'c7i', '', 'c6gd', 'c7gd', 'c8gd')
-          , ROW ('c8gn', 'Graviton4', '', '', 'c8gn', 'c7i', '', 'c6gn', 'c7gn', 'c8gn')
-          , ROW ('c8i', 'Latest', 'c8i', '', 'c8g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('c8i-flex', 'Latest', 'c8i-flex', '', 'c8g', '', '', 'c6g', 'c7g', 'c8g')
-          , ROW ('cc', 'Previous', 'c6i', '', '', '', '', '', '', '')
-          , ROW ('cc1', 'Previous', 'c6i', '', '', '', '', '', '', '')
-          , ROW ('cc2', 'Previous', 'c6i', '', '', '', '', '', '', '')
-          , ROW ('cg1', 'Previous', 'g5', '', '', '', '', '', '', '')
-          , ROW ('cr', 'Previous', '', '', '', '', '', '', '', '')
-          , ROW ('cr1', 'Previous', '', '', '', '', '', '', '', '')
-          , ROW ('d2', 'Previous', '', '', '', '', '', '', '', '')
-          , ROW ('d3', 'Latest', '', '', '', '', '', '', '', '')
-          , ROW ('d3en', 'Latest', '', '', '', '', '', '', '', '')
-          , ROW ('dl1', 'Latest', 'dl2q', '', '', '', '', '', '', '')
-          , ROW ('dl2q', 'Latest', 'dl2q', '', '', '', '', '', '', '')
-          , ROW ('f1', 'Latest', 'f2', '', '', '', '', '', '', '')
-          , ROW ('f2', 'Latest', 'f2', '', '', '', '', '', '', '')
-          , ROW ('g2', 'Previous', 'g5', '', '', '', '', '', '', '')
-          , ROW ('g3', 'Previous', 'g5', '', '', '', '', '', '', '')
-          , ROW ('g3s', 'Previous', 'g5', '', '', '', '', '', '', '')
-          , ROW ('g6', 'Latest', 'g6', '', '', '', '', '', '', '')
-          , ROW ('g6e', 'Latest', 'g6e', '', '', '', '', '', '', '')
-          , ROW ('g6f', 'Latest', 'g6f', '', '', '', '', '', '', '')
-          , ROW ('gr6', 'Latest', 'gr6', '', '', '', '', '', '', '')
-          , ROW ('gr6f', 'Latest', 'gr6f', '', '', '', '', '', '', '')
-          , ROW ('hpc6a', 'Latest', '', 'hpc7a', 'hpc7g', '', '', '', 'hpc7g', '')
-          , ROW ('hpc6id', 'Latest', 'hpc7a', 'hpc7a', 'hpc7g', '', '', '', 'hpc7g', '')
-          , ROW ('hpc7a', 'Latest', '', 'hpc7a', 'hpc7g', '', '', '', 'hpc7g', '')
-          , ROW ('hpc7g', 'Graviton3', '', '', 'hpc7g', 'hpc6a', '', '', 'hpc7g', '')
-          , ROW ('i2', 'Previous', 'i4i', '', 'i4g', 'i3', '', '', 'i4g', '')
-          , ROW ('i4i', 'Latest', 'i4i', '', 'i4g', '', '', '', 'i4g', '')
-          , ROW ('i7i', 'Latest', 'i7i', '', 'i8g', '', '', '', 'i4g', 'i8g')
-          , ROW ('i7ie', 'Latest', 'i7ie', '', 'i8ge', '', '', '', 'i4g', 'i8ge')
-          , ROW ('i8g', 'Graviton4', '', '', 'i8g', 'i7i', '', '', 'i4g', 'i8g')
-          , ROW ('i8ge', 'Graviton4', '', '', 'i8ge', 'i7ie', '', '', 'i4g', 'i8ge')
-          , ROW ('inf1', 'Latest', 'inf2', '', '', '', '', '', '', '')
-          , ROW ('inf2', 'Latest', 'inf2', '', '', '', '', '', '', '')
-          , ROW ('m5dn', 'Latest', 'm6idn', 'm6a', 'm6gd', '', '', 'm6gd', 'm7g', 'm8g')
-          , ROW ('m5n', 'Latest', 'm6in', 'm6a', 'm6g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m5zn', 'Latest', 'm7i', 'm7a', 'm7g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m6idn', 'Latest', 'm6idn', '', 'm7gd', '', '', 'm6gd', 'm7gd', 'm8gd')
-          , ROW ('m6in', 'Latest', 'm6in', '', 'm7g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m7a', 'Latest', '', 'm7a', 'm7g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m7gd', 'Graviton3', '', '', 'm8gd', 'm6id', '', 'm6gd', 'm7gd', 'm8gd')
-          , ROW ('m7i-flex', 'Latest', 'm7i-flex', '', 'm8g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m8a', 'Latest', '', 'm8a', 'm8g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m8gd', 'Graviton4', '', '', 'm8gd', 'm7i', '', 'm6gd', 'm7gd', 'm8gd')
-          , ROW ('m8i', 'Latest', 'm8i', '', 'm8g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('m8i-flex', 'Latest', 'm8i-flex', '', 'm8g', '', '', 'm6g', 'm7g', 'm8g')
-          , ROW ('mac-m4', 'Latest', 'mac-m4', '', '', '', '', '', '', '')
-          , ROW ('mac-m4pro', 'Latest', 'mac-m4pro', '', '', '', '', '', '', '')
-          , ROW ('mac1', 'Latest', 'mac2', '', '', '', '', '', '', '')
-          , ROW ('mac2', 'Latest', 'mac2', '', '', '', '', '', '', '')
-          , ROW ('mac2-m1ultra', 'Latest', 'mac2-m1ultra', '', '', '', '', '', '', '')
-          , ROW ('mac2-m2', 'Latest', 'mac2-m2', '', '', '', '', '', '', '')
-          , ROW ('mac2-m2pro', 'Latest', 'mac2-m2pro', '', '', '', '', '', '', '')
-          , ROW ('p2', 'Previous', 'p5', '', '', 'p3', '', '', '', '')
-          , ROW ('p3', 'Previous', 'p5', '', '', 'p4d', '', '', '', '')
-          , ROW ('p3dn', 'Latest', 'p5', '', '', '', '', '', '', '')
-          , ROW ('p4d', 'Latest', 'p5', '', '', '', '', '', '', '')
-          , ROW ('p5', 'Latest', 'p5', '', '', '', '', '', '', '')
-          , ROW ('p5e', 'Latest', 'p5e', '', '', '', '', '', '', '')
-          , ROW ('p5en', 'Latest', 'p5en', '', '', '', '', '', '', '')
-          , ROW ('p6-b200', 'Latest', 'p6-b200', '', '', '', '', '', '', '')
-          , ROW ('r5b', 'Latest', 'r6i', 'r6a', 'r7g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r5dn', 'Latest', 'r6idn', 'r6a', 'r6gd', '', '', 'r6gd', 'r7g', 'r8g')
-          , ROW ('r5n', 'Latest', 'r6in', 'r6a', 'r6g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r6idn', 'Latest', 'r6idn', '', 'r7gd', '', '', 'r6gd', 'r7gd', 'r8gd')
-          , ROW ('r6in', 'Latest', 'r6in', '', 'r7g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r7a', 'Latest', '', 'r7a', 'r7g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r7gd', 'Graviton3', '', '', 'r8gd', 'r6id', '', 'r6gd', 'r7gd', 'r8gd')
-          , ROW ('r7iz', 'Latest', 'r7iz', '', 'r8g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r8gb', 'Graviton4', '', '', 'r8gb', 'r7i', '', '', '', 'r8gb')
-          , ROW ('r8gd', 'Graviton4', '', '', 'r8gd', 'r7i', '', 'r6gd', 'r7gd', 'r8gd')
-          , ROW ('r8gn', 'Graviton4', '', '', 'r8gn', 'r7i', '', '', '', 'r8gn')
-          , ROW ('r8i', 'Latest', 'r8i', '', 'r8g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('r8i-flex', 'Latest', 'r8i-flex', '', 'r8g', '', '', 'r6g', 'r7g', 'r8g')
-          , ROW ('trn1', 'Latest', 'trn2', '', '', '', '', '', '', '')
-          , ROW ('trn1n', 'Latest', 'trn2', '', '', '', '', '', '', '')
-          , ROW ('trn2', 'Latest', 'trn2', '', '', '', '', '', '', '')
-          , ROW ('trn2u', 'Latest', 'trn2u', '', '', '', '', '', '', '')
-          , ROW ('u-12tb1', 'Latest', 'u7i-12tb', '', '', '', '', '', '', '')
-          , ROW ('u-18tb1', 'Latest', 'u7in-16tb', '', '', '', '', '', '', '')
-          , ROW ('u-24tb1', 'Latest', 'u7in-24tb', '', '', '', '', '', '', '')
-          , ROW ('u-3tb1', 'Latest', 'u7i-6tb', '', '', '', '', '', '', '')
-          , ROW ('u-6tb1', 'Latest', 'u7i-6tb', '', '', '', '', '', '', '')
-          , ROW ('u-9tb1', 'Latest', 'u7i-8tb', '', '', '', '', '', '', '')
-          , ROW ('u7i-12tb', 'Latest', 'u7i-12tb', '', '', '', '', '', '', '')
-          , ROW ('u7i-6tb', 'Latest', 'u7i-6tb', '', '', '', '', '', '', '')
-          , ROW ('u7i-8tb', 'Latest', 'u7i-8tb', '', '', '', '', '', '', '')
-          , ROW ('u7in-16tb', 'Latest', 'u7in-16tb', '', '', '', '', '', '', '')
-          , ROW ('u7in-24tb', 'Latest', 'u7in-24tb', '', '', '', '', '', '', '')
-          , ROW ('u7in-32tb', 'Latest', 'u7in-32tb', '', '', '', '', '', '', '')
-          , ROW ('u7inh-32tb', 'Latest', 'u7inh-32tb', '', '', '', '', '', '', '')
-          , ROW ('vt1', 'Latest', 'vt1', '', '', '', '', '', '', '')
-          , ROW ('x2idn', 'Latest', 'x2idn', '', 'x8g', '', '', 'x2gd', '', 'x8g')
-          , ROW ('x2iedn', 'Latest', 'x2iedn', '', 'x8g', '', '', '', '', '')
-          , ROW ('x2iezn', 'Latest', 'x2iezn', '', 'x8g', '', '', '', '', '')
-          , ROW ('x8g', 'Graviton4', '', '', 'x8g', 'x2idn', '', '', '', '')
-          , ROW ('z1', 'Latest', 'z1d', '', '', '', '', '', '', '')
-          , ROW ('z1d', 'Latest', 'z1d', '', '', '', '', '', '', '')
+          , ROW ('c7a', 'Latest', '', 'c7a', 'c7g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c7i-flex', 'Latest', 'c7i-flex', '', 'c8g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c8gd', 'Graviton4', '', '', 'c8gd', 'c7i', '', 'c6gd', 'c7gd', 'c8gd', 'c9gd')
+          , ROW ('c8gn', 'Graviton4', '', '', 'c8gn', 'c7i', '', 'c6gn', 'c7gn', 'c8gn', '')
+          , ROW ('c8i', 'Latest', 'c8i', '', 'c8g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c8i-flex', 'Latest', 'c8i-flex', '', 'c8g', '', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('cc', 'Previous', 'c6i', '', '', '', '', '', '', '', '')
+          , ROW ('cc1', 'Previous', 'c6i', '', '', '', '', '', '', '', '')
+          , ROW ('cc2', 'Previous', 'c6i', '', '', '', '', '', '', '', '')
+          , ROW ('cg1', 'Previous', 'g5', '', '', '', '', '', '', '', '')
+          , ROW ('cr', 'Previous', '', '', '', '', '', '', '', '', '')
+          , ROW ('cr1', 'Previous', '', '', '', '', '', '', '', '', '')
+          , ROW ('d2', 'Previous', '', '', '', '', '', '', '', '', '')
+          , ROW ('d3', 'Latest', '', '', '', '', '', '', '', '', '')
+          , ROW ('d3en', 'Latest', '', '', '', '', '', '', '', '', '')
+          , ROW ('dl1', 'Latest', 'dl2q', '', '', '', '', '', '', '', '')
+          , ROW ('dl2q', 'Latest', 'dl2q', '', '', '', '', '', '', '', '')
+          , ROW ('f1', 'Latest', 'f2', '', '', '', '', '', '', '', '')
+          , ROW ('f2', 'Latest', 'f2', '', '', '', '', '', '', '', '')
+          , ROW ('g2', 'Previous', 'g5', '', '', '', '', '', '', '', '')
+          , ROW ('g3', 'Previous', 'g5', '', '', '', '', '', '', '', '')
+          , ROW ('g3s', 'Previous', 'g5', '', '', '', '', '', '', '', '')
+          , ROW ('g6', 'Latest', 'g6', '', '', '', '', '', '', '', '')
+          , ROW ('g6e', 'Latest', 'g6e', '', '', '', '', '', '', '', '')
+          , ROW ('g6f', 'Latest', 'g6f', '', '', '', '', '', '', '', '')
+          , ROW ('gr6', 'Latest', 'gr6', '', '', '', '', '', '', '', '')
+          , ROW ('gr6f', 'Latest', 'gr6f', '', '', '', '', '', '', '', '')
+          , ROW ('hpc6a', 'Latest', '', 'hpc7a', 'hpc7g', '', '', '', 'hpc7g', '', '')
+          , ROW ('hpc6id', 'Latest', 'hpc7a', 'hpc7a', 'hpc7g', '', '', '', 'hpc7g', '', '')
+          , ROW ('hpc7a', 'Latest', '', 'hpc7a', 'hpc7g', '', '', '', 'hpc7g', '', '')
+          , ROW ('hpc7g', 'Graviton3', '', '', 'hpc7g', 'hpc6a', '', '', 'hpc7g', '', '')
+          , ROW ('i2', 'Previous', 'i4i', '', 'i4g', 'i3', '', '', 'i4g', '', '')
+          , ROW ('i4i', 'Latest', 'i4i', '', 'i4g', '', '', '', 'i4g', '', '')
+          , ROW ('i7i', 'Latest', 'i7i', '', 'i8g', '', '', '', 'i4g', 'i8g', '')
+          , ROW ('i7ie', 'Latest', 'i7ie', '', 'i8ge', '', '', '', 'i4g', 'i8ge', '')
+          , ROW ('i8g', 'Graviton4', '', '', 'i8g', 'i7i', '', '', 'i4g', 'i8g', '')
+          , ROW ('i8ge', 'Graviton4', '', '', 'i8ge', 'i7ie', '', '', 'i4g', 'i8ge', '')
+          , ROW ('inf1', 'Latest', 'inf2', '', '', '', '', '', '', '', '')
+          , ROW ('inf2', 'Latest', 'inf2', '', '', '', '', '', '', '', '')
+          , ROW ('m5dn', 'Latest', 'm6idn', 'm6a', 'm6gd', '', '', 'm6gd', 'm7g', 'm8g', 'm9g')
+          , ROW ('m5n', 'Latest', 'm6in', 'm6a', 'm6g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m5zn', 'Latest', 'm7i', 'm7a', 'm7g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m6idn', 'Latest', 'm6idn', '', 'm7gd', '', '', 'm6gd', 'm7gd', 'm8gd', 'm9gd')
+          , ROW ('m6in', 'Latest', 'm6in', '', 'm7g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m7a', 'Latest', '', 'm7a', 'm7g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m7gd', 'Graviton3', '', '', 'm8gd', 'm6id', '', 'm6gd', 'm7gd', 'm8gd', 'm9gd')
+          , ROW ('m7i-flex', 'Latest', 'm7i-flex', '', 'm8g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m8a', 'Latest', '', 'm8a', 'm8g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m8gd', 'Graviton4', '', '', 'm8gd', 'm7i', '', 'm6gd', 'm7gd', 'm8gd', 'm9gd')
+          , ROW ('m8i', 'Latest', 'm8i', '', 'm8g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m8i-flex', 'Latest', 'm8i-flex', '', 'm8g', '', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('mac-m4', 'Latest', 'mac-m4', '', '', '', '', '', '', '', '')
+          , ROW ('mac-m4pro', 'Latest', 'mac-m4pro', '', '', '', '', '', '', '', '')
+          , ROW ('mac1', 'Latest', 'mac2', '', '', '', '', '', '', '', '')
+          , ROW ('mac2', 'Latest', 'mac2', '', '', '', '', '', '', '', '')
+          , ROW ('mac2-m1ultra', 'Latest', 'mac2-m1ultra', '', '', '', '', '', '', '', '')
+          , ROW ('mac2-m2', 'Latest', 'mac2-m2', '', '', '', '', '', '', '', '')
+          , ROW ('mac2-m2pro', 'Latest', 'mac2-m2pro', '', '', '', '', '', '', '', '')
+          , ROW ('p2', 'Previous', 'p5', '', '', 'p3', '', '', '', '', '')
+          , ROW ('p3', 'Previous', 'p5', '', '', 'p4d', '', '', '', '', '')
+          , ROW ('p3dn', 'Latest', 'p5', '', '', '', '', '', '', '', '')
+          , ROW ('p4d', 'Latest', 'p5', '', '', '', '', '', '', '', '')
+          , ROW ('p5', 'Latest', 'p5', '', '', '', '', '', '', '', '')
+          , ROW ('p5e', 'Latest', 'p5e', '', '', '', '', '', '', '', '')
+          , ROW ('p5en', 'Latest', 'p5en', '', '', '', '', '', '', '', '')
+          , ROW ('p6-b200', 'Latest', 'p6-b200', '', '', '', '', '', '', '', '')
+          , ROW ('r5b', 'Latest', 'r6i', 'r6a', 'r7g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r5dn', 'Latest', 'r6idn', 'r6a', 'r6gd', '', '', 'r6gd', 'r7g', 'r8g', 'r9g')
+          , ROW ('r5n', 'Latest', 'r6in', 'r6a', 'r6g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r6idn', 'Latest', 'r6idn', '', 'r7gd', '', '', 'r6gd', 'r7gd', 'r8gd', 'r9gd')
+          , ROW ('r6in', 'Latest', 'r6in', '', 'r7g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r7a', 'Latest', '', 'r7a', 'r7g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r7gd', 'Graviton3', '', '', 'r8gd', 'r6id', '', 'r6gd', 'r7gd', 'r8gd', 'r9gd')
+          , ROW ('r7iz', 'Latest', 'r7iz', '', 'r8g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r8gb', 'Graviton4', '', '', 'r8gb', 'r7i', '', '', '', 'r8gb', '')
+          , ROW ('r8gd', 'Graviton4', '', '', 'r8gd', 'r7i', '', 'r6gd', 'r7gd', 'r8gd', 'r9gd')
+          , ROW ('r8gn', 'Graviton4', '', '', 'r8gn', 'r7i', '', '', '', 'r8gn', '')
+          , ROW ('r8i', 'Latest', 'r8i', '', 'r8g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r8i-flex', 'Latest', 'r8i-flex', '', 'r8g', '', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('trn1', 'Latest', 'trn2', '', '', '', '', '', '', '', '')
+          , ROW ('trn1n', 'Latest', 'trn2', '', '', '', '', '', '', '', '')
+          , ROW ('trn2', 'Latest', 'trn2', '', '', '', '', '', '', '', '')
+          , ROW ('trn2u', 'Latest', 'trn2u', '', '', '', '', '', '', '', '')
+          , ROW ('u-12tb1', 'Latest', 'u7i-12tb', '', '', '', '', '', '', '', '')
+          , ROW ('u-18tb1', 'Latest', 'u7in-16tb', '', '', '', '', '', '', '', '')
+          , ROW ('u-24tb1', 'Latest', 'u7in-24tb', '', '', '', '', '', '', '', '')
+          , ROW ('u-3tb1', 'Latest', 'u7i-6tb', '', '', '', '', '', '', '', '')
+          , ROW ('u-6tb1', 'Latest', 'u7i-6tb', '', '', '', '', '', '', '', '')
+          , ROW ('u-9tb1', 'Latest', 'u7i-8tb', '', '', '', '', '', '', '', '')
+          , ROW ('u7i-12tb', 'Latest', 'u7i-12tb', '', '', '', '', '', '', '', '')
+          , ROW ('u7i-6tb', 'Latest', 'u7i-6tb', '', '', '', '', '', '', '', '')
+          , ROW ('u7i-8tb', 'Latest', 'u7i-8tb', '', '', '', '', '', '', '', '')
+          , ROW ('u7in-16tb', 'Latest', 'u7in-16tb', '', '', '', '', '', '', '', '')
+          , ROW ('u7in-24tb', 'Latest', 'u7in-24tb', '', '', '', '', '', '', '', '')
+          , ROW ('u7in-32tb', 'Latest', 'u7in-32tb', '', '', '', '', '', '', '', '')
+          , ROW ('u7inh-32tb', 'Latest', 'u7inh-32tb', '', '', '', '', '', '', '', '')
+          , ROW ('vt1', 'Latest', 'vt1', '', '', '', '', '', '', '', '')
+          , ROW ('x2idn', 'Latest', 'x2idn', '', 'x8g', '', '', 'x2gd', '', 'x8g', '')
+          , ROW ('x2iedn', 'Latest', 'x2iedn', '', 'x8g', '', '', '', '', '', '')
+          , ROW ('x2iezn', 'Latest', 'x2iezn', '', 'x8g', '', '', '', '', '', '')
+          , ROW ('x8g', 'Graviton4', '', '', 'x8g', 'x2idn', '', '', '', '', '')
+          , ROW ('z1', 'Latest', 'z1d', '', '', '', '', '', '', '', '')
+          , ROW ('z1d', 'Latest', 'z1d', '', '', '', '', '', '', '', '')
+          -- EC2 Instances - Graviton5 Families
+          , ROW ('c9g', 'Graviton5', '', '', 'c9g', 'c8i', '', 'c6g', 'c7g', 'c8g', 'c9g')
+          , ROW ('c9gd', 'Graviton5', '', '', 'c9gd', 'c8i', '', 'c6gd', 'c7gd', 'c8gd', 'c9gd')
+          , ROW ('m9g', 'Graviton5', '', '', 'm9g', 'm8i', '', 'm6g', 'm7g', 'm8g', 'm9g')
+          , ROW ('m9gd', 'Graviton5', '', '', 'm9gd', 'm8i', '', 'm6gd', 'm7gd', 'm8gd', 'm9gd')
+          , ROW ('r9g', 'Graviton5', '', '', 'r9g', 'r8i', '', 'r6g', 'r7g', 'r8g', 'r9g')
+          , ROW ('r9gd', 'Graviton5', '', '', 'r9gd', 'r8i', '', 'r6gd', 'r7gd', 'r8gd', 'r9gd')
           -- RDS Database Instances - Original Families
-          , ROW ('db.cv11', 'Latest', '', '', '', '', '', '', '', '')
-          , ROW ('db.m1', 'Previous', 'db.m6i', '', 'db.m6g', '', '', '', '', '')
-          , ROW ('db.m2', 'Previous', 'db.m6i', '', 'db.m6g', '', '', '', '', '')
-          , ROW ('db.m3', 'Previous', 'db.m6i', '', 'db.m6g', '', '', '', '', '')
-          , ROW ('db.m4', 'Preceding', 'db.m6i', '', 'db.m6g', '', '', '', '', '')
-          , ROW ('db.m5', 'Preceding', 'db.m6i', '', 'db.m6g', '', '', '', '', '')
-          , ROW ('db.m5d', 'Latest', '', '', 'db.m6gd', '', '', '', '', '')
-          , ROW ('db.m6g', 'Graviton2', '', '', '', 'db.m6i', '', '', '', '')
-          , ROW ('db.m6gd', 'Graviton2', '', '', '', 'db.m5d', '', '', '', '')
-          , ROW ('db.m6i', 'Latest', '', '', 'db.m6g', '', '', '', '', '')
-          , ROW ('db.mv11', 'Latest', '', '', '', '', '', '', '', '')
-          , ROW ('db.r3', 'Previous', 'db.r6i', '', 'db.r7g', '', '', '', '', '')
-          , ROW ('db.r4', 'Preceding', 'db.r6i', '', 'db.r7g', '', '', '', '', '')
-          , ROW ('db.r5', 'Preceding', 'db.r6i', '', 'db.r7g', '', '', '', '', '')
-          , ROW ('db.r5b', 'Latest', '', '', 'db.r7g', '', '', '', '', '')
-          , ROW ('db.r5d', 'Latest', '', '', 'db.r6gd', '', '', '', '', '')
-          , ROW ('db.r6g', 'Graviton2', '', '', '', 'db.r6i', '', '', '', '')
-          , ROW ('db.r6gd', 'Graviton2', '', '', '', 'db.r5d', '', '', '', '')
-          , ROW ('db.r6i', 'Latest', '', '', 'db.r7g', '', '', '', '', '')
-          , ROW ('db.rv11', 'Latest', '', '', '', '', '', '', '', '')
-          , ROW ('db.t1', 'Previous', 'db.t3', '', 'db.t4g', '', '', '', '', '')
-          , ROW ('db.t2', 'Preceding', 'db.t3', '', 'db.t4g', '', '', '', '', '')
-          , ROW ('db.t3', 'Latest', '', '', 'db.t4g', '', '', '', '', '')
-          , ROW ('db.t4g', 'Graviton2', '', '', '', 'db.t3', '', '', '', '')
-          , ROW ('db.x2g', 'Graviton2', '', '', '', '', '', '', '', '')
+          , ROW ('db.cv11', 'Latest', '', '', '', '', '', '', '', '', '')
+          , ROW ('db.m1', 'Previous', 'db.m6i', '', 'db.m6g', '', '', '', '', '', '')
+          , ROW ('db.m2', 'Previous', 'db.m6i', '', 'db.m6g', '', '', '', '', '', '')
+          , ROW ('db.m3', 'Previous', 'db.m6i', '', 'db.m6g', '', '', '', '', '', '')
+          , ROW ('db.m4', 'Preceding', 'db.m6i', '', 'db.m6g', '', '', '', '', '', '')
+          , ROW ('db.m5', 'Preceding', 'db.m6i', '', 'db.m6g', '', '', '', '', '', '')
+          , ROW ('db.m5d', 'Latest', '', '', 'db.m6gd', '', '', '', '', '', '')
+          , ROW ('db.m6g', 'Graviton2', '', '', '', 'db.m6i', '', '', '', '', '')
+          , ROW ('db.m6gd', 'Graviton2', '', '', '', 'db.m5d', '', '', '', '', '')
+          , ROW ('db.m6i', 'Latest', '', '', 'db.m6g', '', '', '', '', '', '')
+          , ROW ('db.mv11', 'Latest', '', '', '', '', '', '', '', '', '')
+          , ROW ('db.r3', 'Previous', 'db.r6i', '', 'db.r7g', '', '', '', '', '', '')
+          , ROW ('db.r4', 'Preceding', 'db.r6i', '', 'db.r7g', '', '', '', '', '', '')
+          , ROW ('db.r5', 'Preceding', 'db.r6i', '', 'db.r7g', '', '', '', '', '', '')
+          , ROW ('db.r5b', 'Latest', '', '', 'db.r7g', '', '', '', '', '', '')
+          , ROW ('db.r5d', 'Latest', '', '', 'db.r6gd', '', '', '', '', '', '')
+          , ROW ('db.r6g', 'Graviton2', '', '', '', 'db.r6i', '', '', '', '', '')
+          , ROW ('db.r6gd', 'Graviton2', '', '', '', 'db.r5d', '', '', '', '', '')
+          , ROW ('db.r6i', 'Latest', '', '', 'db.r7g', '', '', '', '', '', '')
+          , ROW ('db.rv11', 'Latest', '', '', '', '', '', '', '', '', '')
+          , ROW ('db.t1', 'Previous', 'db.t3', '', 'db.t4g', '', '', '', '', '', '')
+          , ROW ('db.t2', 'Preceding', 'db.t3', '', 'db.t4g', '', '', '', '', '', '')
+          , ROW ('db.t3', 'Latest', '', '', 'db.t4g', '', '', '', '', '', '')
+          , ROW ('db.t4g', 'Graviton2', '', '', '', 'db.t3', '', '', '', '', '')
+          , ROW ('db.x2g', 'Graviton2', '', '', '', '', '', '', '', '', '')
           -- RDS Database Instances - New Families Added October 2025
-          , ROW ('db.m6id', 'Latest', 'db.m6id', '', 'db.m7g', '', '', '', '', '')
-          , ROW ('db.m6idn', 'Latest', 'db.m6idn', '', 'db.m7g', '', '', '', '', '')
-          , ROW ('db.m6in', 'Latest', 'db.m6in', '', 'db.m7g', '', '', '', '', '')
-          , ROW ('db.m7g', 'Graviton3', '', '', '', 'db.m6i', '', '', 'db.m7g', 'db.m8g')
-          , ROW ('db.m7i', 'Latest', 'db.m7i', '', 'db.m8g', '', '', '', 'db.m7g', 'db.m8g')
-          , ROW ('db.m8g', 'Graviton4', '', '', '', 'db.m7i', '', '', '', 'db.m8g')
-          , ROW ('db.r6id', 'Latest', 'db.r6id', '', 'db.r7g', '', '', '', '', '')
-          , ROW ('db.r6idn', 'Latest', 'db.r6idn', '', 'db.r7g', '', '', '', '', '')
-          , ROW ('db.r6in', 'Latest', 'db.r6in', '', 'db.r7g', '', '', '', '', '')
-          , ROW ('db.r7g', 'Graviton3', '', '', '', 'db.r6i', '', '', 'db.r7g', 'db.r8g')
-          , ROW ('db.r7i', 'Latest', 'db.r7i', '', 'db.r8g', '', '', '', 'db.r7g', 'db.r8g')
-          , ROW ('db.r8g', 'Graviton4', '', '', '', 'db.r7i', '', '', '', 'db.r8g')
-          , ROW ('db.x1', 'Latest', 'db.x1', '', 'db.x2g', '', '', 'db.x2g', '', '')
-          , ROW ('db.x1e', 'Latest', 'db.x1e', '', 'db.x2g', '', '', 'db.x2g', '', '')
-          , ROW ('db.x2idn', 'Latest', 'db.x2idn', '', '', '', '', '', '', '')
-          , ROW ('db.x2iedn', 'Latest', 'db.x2iedn', '', '', '', '', '', '', '')
-          , ROW ('db.x2iezn', 'Latest', 'db.x2iezn', '', '', '', '', '', '', '')
-          , ROW ('db.z1d', 'Latest', 'db.z1d', '', '', '', '', '', '', '')
+          , ROW ('db.m6id', 'Latest', 'db.m6id', '', 'db.m7g', '', '', '', '', '', '')
+          , ROW ('db.m6idn', 'Latest', 'db.m6idn', '', 'db.m7g', '', '', '', '', '', '')
+          , ROW ('db.m6in', 'Latest', 'db.m6in', '', 'db.m7g', '', '', '', '', '', '')
+          , ROW ('db.m7g', 'Graviton3', '', '', '', 'db.m6i', '', '', 'db.m7g', 'db.m8g', '')
+          , ROW ('db.m7i', 'Latest', 'db.m7i', '', 'db.m8g', '', '', '', 'db.m7g', 'db.m8g', '')
+          , ROW ('db.m8g', 'Graviton4', '', '', '', 'db.m7i', '', '', '', 'db.m8g', '')
+          , ROW ('db.r6id', 'Latest', 'db.r6id', '', 'db.r7g', '', '', '', '', '', '')
+          , ROW ('db.r6idn', 'Latest', 'db.r6idn', '', 'db.r7g', '', '', '', '', '', '')
+          , ROW ('db.r6in', 'Latest', 'db.r6in', '', 'db.r7g', '', '', '', '', '', '')
+          , ROW ('db.r7g', 'Graviton3', '', '', '', 'db.r6i', '', '', 'db.r7g', 'db.r8g', '')
+          , ROW ('db.r7i', 'Latest', 'db.r7i', '', 'db.r8g', '', '', '', 'db.r7g', 'db.r8g', '')
+          , ROW ('db.r8g', 'Graviton4', '', '', '', 'db.r7i', '', '', '', 'db.r8g', '')
+          , ROW ('db.x1', 'Latest', 'db.x1', '', 'db.x2g', '', '', 'db.x2g', '', '', '')
+          , ROW ('db.x1e', 'Latest', 'db.x1e', '', 'db.x2g', '', '', 'db.x2g', '', '', '')
+          , ROW ('db.x2idn', 'Latest', 'db.x2idn', '', '', '', '', '', '', '', '')
+          , ROW ('db.x2iedn', 'Latest', 'db.x2iedn', '', '', '', '', '', '', '', '')
+          , ROW ('db.x2iezn', 'Latest', 'db.x2iezn', '', '', '', '', '', '', '', '')
+          , ROW ('db.z1d', 'Latest', 'db.z1d', '', '', '', '', '', '', '', '')
           -- ElastiCache Instances - Original Families
-          , ROW ('cache.c1', 'Previous', '', '', '', '', '', '', '', '')
-          , ROW ('cache.m1', 'Previous', 'cache.m5', '', 'cache.m6g', '', '', '', '', '')
-          , ROW ('cache.m2', 'Previous', 'cache.m5', '', 'cache.m6g', '', '', '', '', '')
-          , ROW ('cache.m3', 'Previous', 'cache.m5', '', 'cache.m6g', '', '', '', '', '')
-          , ROW ('cache.m4', 'Preceding', 'cache.m5', '', 'cache.m6g', '', '', '', '', '')
-          , ROW ('cache.m5', 'Latest', '', '', 'cache.m6g', '', '', '', '', '')
-          , ROW ('cache.m6g', 'Graviton2', '', '', '', 'cache.m5', '', '', '', '')
-          , ROW ('cache.r3', 'Previous', 'cache.r5', '', 'cache.r6g', '', '', '', '', '')
-          , ROW ('cache.r4', 'Preceding', 'cache.r5', '', 'cache.r6g', '', '', '', '', '')
-          , ROW ('cache.r5', 'Latest', '', '', 'cache.r6g', '', '', '', '', '')
-          , ROW ('cache.r6g', 'Graviton2', '', '', '', 'cache.r5', '', '', '', '')
-          , ROW ('cache.r6gd', 'Graviton2', '', '', '', 'cache.r5', '', '', '', '')
-          , ROW ('cache.r7g', 'Graviton3', '', '', '', 'cache.r5', '', '', '', '')
-          , ROW ('cache.t1', 'Previous', 'cache.t3', '', 'cache.t4g', '', '', '', '', '')
-          , ROW ('cache.t2', 'Preceding', 'cache.t3', '', 'cache.t4g', '', '', '', '', '')
-          , ROW ('cache.t3', 'Latest', '', '', 'cache.t4g', '', '', '', '', '')
-          , ROW ('cache.t4g', 'Graviton2', '', '', '', 'cache.t3', '', '', '', '')
+          , ROW ('cache.c1', 'Previous', '', '', '', '', '', '', '', '', '')
+          , ROW ('cache.m1', 'Previous', 'cache.m5', '', 'cache.m6g', '', '', '', '', '', '')
+          , ROW ('cache.m2', 'Previous', 'cache.m5', '', 'cache.m6g', '', '', '', '', '', '')
+          , ROW ('cache.m3', 'Previous', 'cache.m5', '', 'cache.m6g', '', '', '', '', '', '')
+          , ROW ('cache.m4', 'Preceding', 'cache.m5', '', 'cache.m6g', '', '', '', '', '', '')
+          , ROW ('cache.m5', 'Latest', '', '', 'cache.m6g', '', '', '', '', '', '')
+          , ROW ('cache.m6g', 'Graviton2', '', '', '', 'cache.m5', '', '', '', '', '')
+          , ROW ('cache.r3', 'Previous', 'cache.r5', '', 'cache.r6g', '', '', '', '', '', '')
+          , ROW ('cache.r4', 'Preceding', 'cache.r5', '', 'cache.r6g', '', '', '', '', '', '')
+          , ROW ('cache.r5', 'Latest', '', '', 'cache.r6g', '', '', '', '', '', '')
+          , ROW ('cache.r6g', 'Graviton2', '', '', '', 'cache.r5', '', '', '', '', '')
+          , ROW ('cache.r6gd', 'Graviton2', '', '', '', 'cache.r5', '', '', '', '', '')
+          , ROW ('cache.r7g', 'Graviton3', '', '', '', 'cache.r5', '', '', '', '', '')
+          , ROW ('cache.t1', 'Previous', 'cache.t3', '', 'cache.t4g', '', '', '', '', '', '')
+          , ROW ('cache.t2', 'Preceding', 'cache.t3', '', 'cache.t4g', '', '', '', '', '', '')
+          , ROW ('cache.t3', 'Latest', '', '', 'cache.t4g', '', '', '', '', '', '')
+          , ROW ('cache.t4g', 'Graviton2', '', '', '', 'cache.t3', '', '', '', '', '')
           -- ElastiCache Instances - New Families Added October 2025
-          , ROW ('cache.c7gn', 'Graviton3', '', '', '', '', '', '', 'cache.c7gn', '')
-          , ROW ('cache.m7g', 'Graviton3', '', '', '', 'cache.m5', '', '', 'cache.m7g', '')
+          , ROW ('cache.c7gn', 'Graviton3', '', '', '', '', '', '', 'cache.c7gn', '', '')
+          , ROW ('cache.m7g', 'Graviton3', '', '', '', 'cache.m5', '', '', 'cache.m7g', '', '')
           -- OpenSearch Instances - Original Families
-          , ROW ('c4.search', 'Preceding', 'c5', '', 'c6g', '', '', '', '', '')
-          , ROW ('c5.search', 'Latest', '', '', 'c6g', '', '', '', '', '')
-          , ROW ('c6g.search', 'Graviton2', '', '', '', 'c5', '', '', '', '')
-          , ROW ('i2.search', 'Preceding', 'i3', '', '', '', '', '', '', '')
-          , ROW ('i3.search', 'Previous', 'i4i', '', 'i4g', '', '', '', 'i4g', '')
-          , ROW ('m3.search', 'Previous', 'm5', '', 'm6g', '', '', '', '', '')
-          , ROW ('m4.search', 'Preceding', 'm5', '', 'm6g', '', '', '', '', '')
-          , ROW ('m5.search', 'Latest', '', '', 'm6g', '', '', '', '', '')
-          , ROW ('m6g.search', 'Graviton2', '', '', '', 'm5', '', '', '', '')
-          , ROW ('r3.search', 'Preceding', 'r5', '', 'r6g', '', '', '', '', '')
-          , ROW ('r4.search', 'Previous', 'r5', '', 'r6g', '', '', '', '', '')
-          , ROW ('r5.search', 'Latest', '', '', 'r6g', '', '', '', '', '')
-          , ROW ('r6g.search', 'Graviton2', '', '', '', 'r5', '', '', '', '')
-          , ROW ('r6gd.search', 'Graviton2', '', '', '', 'r5', '', '', '', '')
-          , ROW ('t2.search', 'Preceding', 't3', '', '', '', '', '', '', '')
-          , ROW ('t3.search', 'Latest', '', '', '', '', '', '', '', '')
-          , ROW ('ultrawarm1', 'Latest', '', '', '', '', '', '', '', '')
-          , ROW ('ultrawarm1.search', 'Latest', '', '', '', '', '', '', '', '')
+          , ROW ('c4.search', 'Preceding', 'c5', '', 'c6g', '', '', '', '', '', '')
+          , ROW ('c5.search', 'Latest', '', '', 'c6g', '', '', '', '', '', '')
+          , ROW ('c6g.search', 'Graviton2', '', '', '', 'c5', '', '', '', '', '')
+          , ROW ('i2.search', 'Preceding', 'i3', '', '', '', '', '', '', '', '')
+          , ROW ('i3.search', 'Previous', 'i4i', '', 'i4g', '', '', '', 'i4g', '', '')
+          , ROW ('m3.search', 'Previous', 'm5', '', 'm6g', '', '', '', '', '', '')
+          , ROW ('m4.search', 'Preceding', 'm5', '', 'm6g', '', '', '', '', '', '')
+          , ROW ('m5.search', 'Latest', '', '', 'm6g', '', '', '', '', '', '')
+          , ROW ('m6g.search', 'Graviton2', '', '', '', 'm5', '', '', '', '', '')
+          , ROW ('r3.search', 'Preceding', 'r5', '', 'r6g', '', '', '', '', '', '')
+          , ROW ('r4.search', 'Previous', 'r5', '', 'r6g', '', '', '', '', '', '')
+          , ROW ('r5.search', 'Latest', '', '', 'r6g', '', '', '', '', '', '')
+          , ROW ('r6g.search', 'Graviton2', '', '', '', 'r5', '', '', '', '', '')
+          , ROW ('r6gd.search', 'Graviton2', '', '', '', 'r5', '', '', '', '', '')
+          , ROW ('t2.search', 'Preceding', 't3', '', '', '', '', '', '', '', '')
+          , ROW ('t3.search', 'Latest', '', '', '', '', '', '', '', '', '')
+          , ROW ('ultrawarm1', 'Latest', '', '', '', '', '', '', '', '', '')
+          , ROW ('ultrawarm1.search', 'Latest', '', '', '', '', '', '', '', '', '')
           -- OpenSearch Instances - New Families Added October 2025
-          , ROW ('c7g.search', 'Graviton3', '', '', '', 'c5', '', '', 'c7g.search', '')
-          , ROW ('c7i.search', 'Latest', 'c7i.search', '', 'c7g.search', '', 'c7i', '', 'c7g.search', '')
-          , ROW ('i4g.search', 'Graviton3', '', '', '', 'i3', '', '', 'i4g', '')
-          , ROW ('i4i.search', 'Latest', 'i4i.search', '', 'i4g.search', '', 'i4i', '', 'i4g.search', '')
-          , ROW ('i8g.search', 'Graviton4', '', '', '', '', '', '', '', 'i8g.search')
-          , ROW ('im4gn.search', 'Graviton2', '', '', '', '', '', 'im4gn.search', '', '')
-          , ROW ('m7g.search', 'Graviton3', '', '', '', 'm5', '', '', 'm7g.search', '')
-          , ROW ('m7i.search', 'Latest', 'm7i.search', '', 'm7g.search', '', 'm7i', '', 'm7g.search', '')
-          , ROW ('oi2.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '')
-          , ROW ('om2.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '')
-          , ROW ('or1.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '')
-          , ROW ('or2.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '')
-          , ROW ('r7g.search', 'Graviton3', '', '', '', 'r5', '', '', 'r7g.search', '')
-          , ROW ('r7gd.search', 'Graviton3', '', '', '', 'r5', '', '', 'r7gd.search', '')
-          , ROW ('r7i.search', 'Latest', 'r7i.search', '', 'r7g.search', '', 'r7i', '', 'r7g.search', '')
-        )  ignored_table_name (family, generation, latest_intel, latest_amd, latest_arm, previous_intel, latest_elasticsearch_intel, graviton2, graviton3, graviton4)
+          , ROW ('c7g.search', 'Graviton3', '', '', '', 'c5', '', '', 'c7g.search', '', '')
+          , ROW ('c7i.search', 'Latest', 'c7i.search', '', 'c7g.search', '', 'c7i', '', 'c7g.search', '', '')
+          , ROW ('i4g.search', 'Graviton3', '', '', '', 'i3', '', '', 'i4g', '', '')
+          , ROW ('i4i.search', 'Latest', 'i4i.search', '', 'i4g.search', '', 'i4i', '', 'i4g.search', '', '')
+          , ROW ('i8g.search', 'Graviton4', '', '', '', '', '', '', '', 'i8g.search', '')
+          , ROW ('im4gn.search', 'Graviton2', '', '', '', '', '', 'im4gn.search', '', '', '')
+          , ROW ('m7g.search', 'Graviton3', '', '', '', 'm5', '', '', 'm7g.search', '', '')
+          , ROW ('m7i.search', 'Latest', 'm7i.search', '', 'm7g.search', '', 'm7i', '', 'm7g.search', '', '')
+          , ROW ('oi2.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '', '')
+          , ROW ('om2.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '', '')
+          , ROW ('or1.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '', '')
+          , ROW ('or2.search', 'OpenSearch Optimized', '', '', '', '', '', '', '', '', '')
+          , ROW ('r7g.search', 'Graviton3', '', '', '', 'r5', '', '', 'r7g.search', '', '')
+          , ROW ('r7gd.search', 'Graviton3', '', '', '', 'r5', '', '', 'r7gd.search', '', '')
+          , ROW ('r7i.search', 'Latest', 'r7i.search', '', 'r7g.search', '', 'r7i', '', 'r7g.search', '', '')
+        )  ignored_table_name (family, generation, latest_intel, latest_amd, latest_arm, previous_intel, latest_elasticsearch_intel, graviton2, graviton3, graviton4, graviton5)
     dependsOn: {}
