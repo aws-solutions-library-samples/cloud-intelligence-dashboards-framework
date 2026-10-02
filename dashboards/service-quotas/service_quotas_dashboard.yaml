@@ -1,0 +1,167 @@
+dashboards:
+  SERVICE_QUOTAS:
+    dependsOn:
+      datasets:
+      - service_quotas_data
+    name: Service Quotas Dashboard
+    dashboardId: service-quotas
+    category: Advanced
+    theme: MIDNIGHT
+    version: v1.0.0
+    file: ./service_quotas_dashboard-definition.yaml
+datasets:
+  service_quotas_data:
+    data:
+      DataSetId: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Name: service_quotas_data
+      PhysicalTableMap:
+        966bf27f-3e95-47cb-abd3-c4deefafbcd6:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: service_quotas_data
+            InputColumns:
+            - Name: servicecode
+              Id: service_q-serviceco-38da35
+              Type: STRING
+            - Name: servicename
+              Id: service_q-servicena-fe3826
+              Type: STRING
+            - Name: quotacode
+              Id: service_q-quotacode-2f89d8
+              Type: STRING
+            - Name: quotaname
+              Id: service_q-quotaname-ccfe0f
+              Type: STRING
+            - Name: currentvalue
+              Id: service_q-currentva-08fe9f
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: defaultvalue
+              Id: service_q-defaultva-57fe2a
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: unit
+              Id: service_q-unit-db050e
+              Type: STRING
+            - Name: adjustable
+              Id: service_q-adjustabl-5ad7c6
+              Type: BOOLEAN
+            - Name: globalquota
+              Id: service_q-globalquo-953a91
+              Type: BOOLEAN
+            - Name: quotaarn
+              Id: service_q-quotaarn-371f13
+              Type: STRING
+            - Name: quotaappliedatlevel
+              Id: service_q-quotaappl-fb80cf
+              Type: STRING
+            - Name: collection_date
+              Id: service_q-collectio-f39d72
+              Type: STRING
+            - Name: utilization
+              Id: service_q-utilizati-87e691
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: namespace
+              Id: service_q-namespace-72554a
+              Type: STRING
+            - Name: periodvalue
+              Id: service_q-periodval-effc26
+              Type: INTEGER
+            - Name: periodunit
+              Id: service_q-perioduni-41c2ec
+              Type: STRING
+            - Name: payer_id
+              Id: service_q-payer_id-271a44
+              Type: STRING
+            - Name: account_id
+              Id: service_q-account_i-8c9fe3
+              Type: STRING
+            - Name: region
+              Id: service_q-region-48ba10
+              Type: STRING
+      ImportMode: SPICE
+      DataPrepConfiguration:
+        SourceTableMap:
+          febd19ba-5c8f-491f-9f54-a03f58a306e4:
+            PhysicalTableId: 966bf27f-3e95-47cb-abd3-c4deefafbcd6
+        TransformStepMap:
+          6e52ac76-4bca-46bc-8c2f-f8d20e23c599:
+            ImportTableStep:
+              Alias: service_quotas_data
+              Source:
+                SourceTableId: febd19ba-5c8f-491f-9f54-a03f58a306e4
+        DestinationTableMap:
+          6af30b97-4995-439d-8ae9-b503686d523b:
+            Alias: Destination Table 1
+            Source:
+              TransformOperationId: 6e52ac76-4bca-46bc-8c2f-f8d20e23c599
+      SemanticModelConfiguration:
+        TableMap:
+          63228fd9-12f9-4512-8793-c4fcfccdeb6a:
+            Alias: Semantic Table 1
+            DestinationTableId: 6af30b97-4995-439d-8ae9-b503686d523b
+    dependsOn:
+      views:
+      - service_quotas_data
+    schedules:
+    - default
+crawlers: {}
+views:
+  service_quotas_data:
+    data: |-
+      CREATE EXTERNAL TABLE `service_quotas_data`(
+        `servicecode` string COMMENT 'from deserializer',
+        `servicename` string COMMENT 'from deserializer',
+        `quotacode` string COMMENT 'from deserializer',
+        `quotaname` string COMMENT 'from deserializer',
+        `currentvalue` double COMMENT 'from deserializer',
+        `defaultvalue` double COMMENT 'from deserializer',
+        `unit` string COMMENT 'from deserializer',
+        `adjustable` boolean COMMENT 'from deserializer',
+        `globalquota` boolean COMMENT 'from deserializer',
+        `quotaarn` string COMMENT 'from deserializer',
+        `quotaappliedatlevel` string COMMENT 'from deserializer',
+        `collection_date` string COMMENT 'from deserializer',
+        `utilization` string COMMENT 'from deserializer',
+        `namespace` string COMMENT 'from deserializer',
+        `periodvalue` int COMMENT 'from deserializer',
+        `periodunit` string COMMENT 'from deserializer')
+      PARTITIONED BY (
+        `payer_id` string,
+        `account_id` string,
+        `region` string)
+      ROW FORMAT SERDE
+        'org.openx.data.jsonserde.JsonSerDe'
+      WITH SERDEPROPERTIES (
+        'paths'='Adjustable,CurrentValue,DefaultValue,GlobalQuota,Namespace,Period,QuotaAppliedAtLevel,QuotaArn,QuotaCode,QuotaName,ServiceCode,ServiceName,Unit,Utilization,collection_date')
+      STORED AS INPUTFORMAT
+        'org.apache.hadoop.mapred.TextInputFormat'
+      OUTPUTFORMAT
+        'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+      LOCATION
+        '${s3path}'
+      TBLPROPERTIES (
+        'CRAWL_RUN_ID'='60d235f4-57d6-424d-ac28-284d7c703196',
+        'CrawlerSchemaDeserializerVersion'='1.0',
+        'CrawlerSchemaSerializerVersion'='1.0',
+        'UPDATED_BY_CRAWLER'='CID-DC-service-quotas-Crawler',
+        'averageRecordSize'='1048',
+        'classification'='json',
+        'compressionType'='none',
+        'objectCount'='50',
+        'partition_filtering.enabled'='true',
+        'recordCount'='201649',
+        'sizeKey'='211349926',
+        'typeOfData'='file',
+        'use.null.for.invalid.data'='true')
+    parameters:
+      data_collection_database_name:
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'service_quotas_data'
+        error: "Prerequisites not found. Please make sure the Service Quotas data collection module is deployed and the Step Function has run successfully."
