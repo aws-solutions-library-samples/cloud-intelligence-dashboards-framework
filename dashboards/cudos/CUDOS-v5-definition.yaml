@@ -63156,8 +63156,7 @@ Sheets:
       Title:
         FormatText:
           RichText: "<visual-title>\n  <inline font-size=\"14px\">Kiro and Amazon\
-            \ Q Developer</inline>\n  \_\n  <inline font-size=\"14px\">Spend per\_\
-            </inline>\n  <inline font-size=\"14px\">\n    <parameter>${AIMLDevExpirienceGroupBy}</parameter>\n\
+            \ Q Developer Spend per\_</inline>\n  <inline font-size=\"14px\">\n    <parameter>${AIMLDevExpirienceGroupBy}</parameter>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
       VisualId: b491fc8e-8e92-461d-bab2-a1fc8ea7c62e

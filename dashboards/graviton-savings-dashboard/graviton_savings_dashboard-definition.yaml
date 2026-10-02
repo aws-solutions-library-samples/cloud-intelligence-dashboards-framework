@@ -65,6 +65,7 @@ CalculatedFields:
     ${GravitonGeneration} = 'Graviton2', {g2_amortized_cost},
     ${GravitonGeneration} = 'Graviton3', {g3_amortized_cost},
     ${GravitonGeneration} = 'Graviton4', {g4_amortized_cost},
+    ${GravitonGeneration} = 'Graviton5', {g5_amortized_cost},
     {default_grav_amortized_cost})
   Name: Dynamic Graviton Instance Amortized Cost
 - DataSetIdentifier: ec2_graviton_dashboard
@@ -74,6 +75,7 @@ CalculatedFields:
     ${GravitonGeneration} = 'Graviton2', {g2_price},
     ${GravitonGeneration} = 'Graviton3', {g3_price},
     ${GravitonGeneration} = 'Graviton4', {g4_price},
+    ${GravitonGeneration} = 'Graviton5', {g5_price},
     {default_grav_price})
   Name: Dynamic Graviton Instance Price
 - DataSetIdentifier: ec2_graviton_dashboard
@@ -83,6 +85,7 @@ CalculatedFields:
     ${GravitonGeneration} = 'Graviton2', {g2_instance_type},
     ${GravitonGeneration} = 'Graviton3', {g3_instance_type},
     ${GravitonGeneration} = 'Graviton4', {g4_instance_type},
+    ${GravitonGeneration} = 'Graviton5', {g5_instance_type},
     {default_grav_instance_type})
   Name: Dynamic Graviton Instance Type
 - DataSetIdentifier: ec2_graviton_dashboard
@@ -92,6 +95,7 @@ CalculatedFields:
     ${GravitonGeneration} = 'Graviton2', {g2_savings_potential},
     ${GravitonGeneration} = 'Graviton3', {g3_savings_potential},
     ${GravitonGeneration} = 'Graviton4', {g4_savings_potential},
+    ${GravitonGeneration} = 'Graviton5', {g5_savings_potential},
     {default_g_savings_potential})
   Name: Dynamic Graviton Savings Potential
 - DataSetIdentifier: ec2_graviton_dashboard
@@ -672,6 +676,31 @@ ColumnConfigurations:
   FormatConfiguration:
     StringFormatConfiguration: {}
 - Column:
+    ColumnName: g5_amortized_cost
+    DataSetIdentifier: ec2_graviton_dashboard
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        CurrencyDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 2
+          NegativeValueConfiguration:
+            DisplayMode: POSITIVE
+          NullValueFormatConfiguration:
+            NullString: 'null'
+          NumberScale: AUTO
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+          Symbol: USD
+- Column:
+    ColumnName: g5_instance_type
+    DataSetIdentifier: ec2_graviton_dashboard
+  FormatConfiguration:
+    StringFormatConfiguration: {}
+- Column:
     ColumnName: previous_intel_price
     DataSetIdentifier: ec2_graviton_dashboard
   FormatConfiguration:
@@ -889,6 +918,35 @@ ColumnConfigurations:
           Symbol: USD
 - Column:
     ColumnName: g4_savings_percentage
+    DataSetIdentifier: graviton_mapping
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        NumberDisplayFormatConfiguration: {}
+- Column:
+    ColumnName: g5_instance_type
+    DataSetIdentifier: graviton_mapping
+  FormatConfiguration:
+    StringFormatConfiguration: {}
+- Column:
+    ColumnName: g5_price
+    DataSetIdentifier: graviton_mapping
+  FormatConfiguration:
+    NumberFormatConfiguration:
+      FormatConfiguration:
+        CurrencyDisplayFormatConfiguration:
+          DecimalPlacesConfiguration:
+            DecimalPlaces: 2
+          NegativeValueConfiguration:
+            DisplayMode: POSITIVE
+          SeparatorConfiguration:
+            DecimalSeparator: DOT
+            ThousandsSeparator:
+              Symbol: COMMA
+              Visibility: VISIBLE
+          Symbol: USD
+- Column:
+    ColumnName: g5_savings_percentage
     DataSetIdentifier: graviton_mapping
   FormatConfiguration:
     NumberFormatConfiguration:
@@ -7774,6 +7832,7 @@ FilterGroups:
         SheetId: 07505eaa-8830-4ca1-9c45-4ae358ea70d0
         VisualIds:
         - 61713a91-3754-4815-be69-6c92b38b9b6c
+        - 3b5c9d7e-1a2b-4c5d-8e9f-5a5b5c5d5e5f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 4bc92dac-d0ce-4fb2-857b-dacb8ae8a543
@@ -7795,6 +7854,7 @@ FilterGroups:
         SheetId: 07505eaa-8830-4ca1-9c45-4ae358ea70d0
         VisualIds:
         - 61713a91-3754-4815-be69-6c92b38b9b6c
+        - 3b5c9d7e-1a2b-4c5d-8e9f-5a5b5c5d5e5f
   Status: ENABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: 38332a41-1111-482e-bf36-77e7c1f8c5ca
@@ -7816,6 +7876,7 @@ FilterGroups:
         SheetId: 07505eaa-8830-4ca1-9c45-4ae358ea70d0
         VisualIds:
         - 61713a91-3754-4815-be69-6c92b38b9b6c
+        - 3b5c9d7e-1a2b-4c5d-8e9f-5a5b5c5d5e5f
   Status: ENABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: fc16972d-cf17-43e1-9302-63614a7c0720
@@ -7837,6 +7898,7 @@ FilterGroups:
         SheetId: 07505eaa-8830-4ca1-9c45-4ae358ea70d0
         VisualIds:
         - 61713a91-3754-4815-be69-6c92b38b9b6c
+        - 3b5c9d7e-1a2b-4c5d-8e9f-5a5b5c5d5e5f
   Status: ENABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: 50b56b34-b8d6-42f7-bd35-5b78fdadbf20
@@ -7858,6 +7920,7 @@ FilterGroups:
         SheetId: 07505eaa-8830-4ca1-9c45-4ae358ea70d0
         VisualIds:
         - 61713a91-3754-4815-be69-6c92b38b9b6c
+        - 3b5c9d7e-1a2b-4c5d-8e9f-5a5b5c5d5e5f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: cfa47918-e409-4833-acc0-eff67ec5bb28
@@ -7880,6 +7943,7 @@ FilterGroups:
         SheetId: 07505eaa-8830-4ca1-9c45-4ae358ea70d0
         VisualIds:
         - 61713a91-3754-4815-be69-6c92b38b9b6c
+        - 3b5c9d7e-1a2b-4c5d-8e9f-5a5b5c5d5e5f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 71e2a491-4504-4efd-aa06-d58aa2f2cadd
@@ -7902,6 +7966,7 @@ FilterGroups:
         SheetId: 07505eaa-8830-4ca1-9c45-4ae358ea70d0
         VisualIds:
         - 61713a91-3754-4815-be69-6c92b38b9b6c
+        - 3b5c9d7e-1a2b-4c5d-8e9f-5a5b5c5d5e5f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: b2475d1e-365f-41fd-8897-620f967ee72e
@@ -11609,20 +11674,26 @@ Sheets:
           RowIndex: 6
           RowSpan: 3
         - ColumnIndex: 0
-          ColumnSpan: 11
+          ColumnSpan: 9
           ElementId: 0ce72899-7b01-4a32-b0e6-d375561c7478
           ElementType: VISUAL
           RowIndex: 9
           RowSpan: 3
-        - ColumnIndex: 11
-          ColumnSpan: 12
+        - ColumnIndex: 9
+          ColumnSpan: 9
           ElementId: ab6be0b3-eeac-4e3f-a5fb-ad16eb2fe4e4
           ElementType: VISUAL
           RowIndex: 9
           RowSpan: 3
-        - ColumnIndex: 23
-          ColumnSpan: 13
+        - ColumnIndex: 18
+          ColumnSpan: 9
           ElementId: 61713a91-3754-4815-be69-6c92b38b9b6c
+          ElementType: VISUAL
+          RowIndex: 9
+          RowSpan: 3
+        - ColumnIndex: 27
+          ColumnSpan: 9
+          ElementId: 3b5c9d7e-1a2b-4c5d-8e9f-5a5b5c5d5e5f
           ElementType: VISUAL
           RowIndex: 9
           RowSpan: 3
@@ -11837,7 +11908,7 @@ Sheets:
       \    <i>default next-gen</i>\n      </inline>\n      <inline color=\"#cccdce\"\
       \ font-size=\"12px\">\n        <i>\_shows next-gen  (e.g., c5 to c6g) upgrade\
       \ mapping, while\_</i>\n      </inline>\n      <inline color=\"#f9e813\" font-size=\"\
-      12px\">\n        <i>Graviton2/3/4</i>\n      </inline>\n      <inline color=\"\
+      12px\">\n        <i>Graviton2/3/4/5</i>\n      </inline>\n      <inline color=\"\
       #cccdce\" font-size=\"12px\">\n        <i>\_shows\_</i>\n      </inline>\n \
       \     <inline font-size=\"12px\">\n        <i>full migration to specific generations.\_\
       </i>\n      </inline>\n    </li>\n    <li class=\"ql-indent-0\">\n      <inline\
@@ -13215,6 +13286,66 @@ Sheets:
               AggregationFunction:
                 SimpleNumericalAggregation: SUM
               Column:
+                ColumnName: g5_savings_potential
+                DataSetIdentifier: ec2_graviton_dashboard
+              FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g5_savings_potential.0.1762800000000
+              FormatConfiguration:
+                FormatConfiguration:
+                  CurrencyDisplayFormatConfiguration:
+                    DecimalPlacesConfiguration:
+                      DecimalPlaces: 2
+                    NegativeValueConfiguration:
+                      DisplayMode: POSITIVE
+                    NullValueFormatConfiguration:
+                      NullString: 'null'
+                    NumberScale: AUTO
+                    SeparatorConfiguration:
+                      DecimalSeparator: DOT
+                      ThousandsSeparator:
+                        Symbol: COMMA
+                        Visibility: VISIBLE
+                    Symbol: USD
+        KPIOptions:
+          Comparison:
+            ComparisonMethod: PERCENT_DIFFERENCE
+          PrimaryValueDisplayType: ACTUAL
+          PrimaryValueFontConfiguration:
+            FontColor: '#EBEBEB'
+            FontSize:
+              Relative: MEDIUM
+          SecondaryValueFontConfiguration:
+            FontSize:
+              Relative: EXTRA_LARGE
+          Sparkline:
+            TooltipVisibility: HIDDEN
+            Type: AREA
+            Visibility: VISIBLE
+          VisualLayoutOptions:
+            StandardLayout:
+              Type: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        Visibility: HIDDEN
+      Title:
+        FormatText:
+          RichText: "<visual-title>\n  <inline font-size=\"15px\">\n    <b>Potential\_\
+            </b>\n  </inline>\n  <inline color=\"#f9e813\" font-size=\"15px\">\n \
+            \   <b>Graviton5</b>\n  </inline>\n  <inline font-size=\"15px\">\n   \
+            \ <b>\_Base Savings</b>\n  </inline>\n</visual-title>"
+        Visibility: VISIBLE
+      VisualId: 3b5c9d7e-1a2b-4c5d-8e9f-5a5b5c5d5e5f
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: SUM
+              Column:
                 ColumnName: g3_savings_potential
                 DataSetIdentifier: ec2_graviton_dashboard
               FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g3_savings_potential.1.1761750203361
@@ -13706,6 +13837,7 @@ Sheets:
         - Graviton2
         - Graviton3
         - Graviton4
+        - Graviton5
       SourceParameterName: GravitonGeneration
       Title: Select Preferred Graviton Generation
       Type: SINGLE_SELECT
@@ -14044,7 +14176,7 @@ Sheets:
       \      <inline color=\"#dec924\" font-size=\"12px\">Default next-gen</inline>\n\
       \      <inline color=\"#cccdce\" font-size=\"12px\">\_shows next-gen  (e.g.,\
       \ c5 to c6g).\_</inline>\n      <inline color=\"#dec924\" font-size=\"12px\"\
-      >Graviton2/3/4</inline>\n      <inline color=\"#cccdce\" font-size=\"12px\"\
+      >Graviton2/3/4/5</inline>\n      <inline color=\"#cccdce\" font-size=\"12px\"\
       >\_shows migrating all instances to that generation</inline>\n    </li>\n  \
       \  <li class=\"ql-indent-0\">\n      <inline color=\"#cccdce\" font-size=\"\
       12px\">Estimated NIH % Reduction slider: Adjust to estimate savings\_</inline>\n\
@@ -14120,7 +14252,7 @@ Sheets:
           - CustomLabel: Current Instance Type
             FieldId: d76c6ad6-0eab-4acb-b93b-9f33300a945a.existing_instance.3.1709750006973
             Visibility: VISIBLE
-          - CustomLabel: <<$GravitonGeneration>> Graviton
+          - CustomLabel: Default next-gen Graviton
             FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.default_grav_instance_type.15.1761592938911
             Visibility: VISIBLE
           - CustomLabel: Graviton2
@@ -14132,16 +14264,19 @@ Sheets:
           - CustomLabel: Graviton4
             FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g4_instance_type.18.1761593182496
             Visibility: VISIBLE
+          - CustomLabel: Graviton5
+            FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g5_instance_type.22.1762800000001
+            Visibility: VISIBLE
           - CustomLabel: Normalized Instance Hours
             FieldId: d76c6ad6-0eab-4acb-b93b-9f33300a945a.normalized_usage_quantity.7.1709750035355
             Visibility: VISIBLE
           - CustomLabel: Current Amortized Cost
             FieldId: d76c6ad6-0eab-4acb-b93b-9f33300a945a.amortized_cost.8.1709750040102
             Visibility: VISIBLE
-          - CustomLabel: <<$GravitonGeneration>>  Graviton Amortized Cost
+          - CustomLabel: Default next-gen Graviton Amortized Cost
             FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.default_grav_amortized_cost.19.1761609080908
             Visibility: VISIBLE
-          - CustomLabel: <<$GravitonGeneration>>  Graviton Savings %
+          - CustomLabel: Default next-gen Graviton Savings %
             FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.default_grav_savings_percentage.11.1761592668704
             Visibility: VISIBLE
           - CustomLabel: Graviton2 Amortized Cost
@@ -14161,6 +14296,12 @@ Sheets:
             Visibility: VISIBLE
           - CustomLabel: Graviton4 Savings %
             FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g4_savings_percentage.14.1761592680271
+            Visibility: VISIBLE
+          - CustomLabel: Graviton5 Amortized Cost
+            FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g5_amortized_cost.23.1762800000002
+            Visibility: VISIBLE
+          - CustomLabel: Graviton5 Savings %
+            FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g5_savings_percentage.24.1762800000003
             Visibility: VISIBLE
         FieldWells:
           PivotTableAggregatedFieldWells:
@@ -14212,6 +14353,11 @@ Sheets:
                   ColumnName: g4_instance_type
                   DataSetIdentifier: ec2_graviton_dashboard
                 FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g4_instance_type.18.1761593182496
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: g5_instance_type
+                  DataSetIdentifier: ec2_graviton_dashboard
+                FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g5_instance_type.22.1762800000001
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -14322,6 +14468,26 @@ Sheets:
                   ColumnName: g4_savings_percentage
                   DataSetIdentifier: ec2_graviton_dashboard
                 FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g4_savings_percentage.14.1761592680271
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      Suffix: '%'
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: SUM
+                Column:
+                  ColumnName: g5_amortized_cost
+                  DataSetIdentifier: ec2_graviton_dashboard
+                FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g5_amortized_cost.23.1762800000002
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: AVERAGE
+                Column:
+                  ColumnName: g5_savings_percentage
+                  DataSetIdentifier: ec2_graviton_dashboard
+                FieldId: b5c98a29-e7a2-4730-a4db-981062f73ed8.g5_savings_percentage.24.1762800000003
                 FormatConfiguration:
                   FormatConfiguration:
                     NumberDisplayFormatConfiguration:
@@ -29680,6 +29846,14 @@ Sheets:
             Width: 93px
           - CustomLabel: Graviton4 Savings %
             FieldId: graviton_-g4_saving-aeccf6.22.1761368071729
+          - CustomLabel: Graviton5
+            FieldId: graviton_-g5_instan-a5f5e5.23.1762800000011
+            Width: 98px
+          - CustomLabel: Graviton5 Price
+            FieldId: graviton_-g5_price-b5f5e5.24.1762800000012
+            Width: 93px
+          - CustomLabel: Graviton5 Savings %
+            FieldId: graviton_-g5_saving-c5f5e5.25.1762800000013
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -29853,6 +30027,42 @@ Sheets:
                       NullValueFormatConfiguration:
                         NullString: ' '
                       Suffix: '%'
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: g5_instance_type
+                  DataSetIdentifier: graviton_mapping
+                FieldId: graviton_-g5_instan-a5f5e5.23.1762800000011
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: g5_price
+                  DataSetIdentifier: graviton_mapping
+                FieldId: graviton_-g5_price-b5f5e5.24.1762800000012
+                FormatConfiguration:
+                  FormatConfiguration:
+                    CurrencyDisplayFormatConfiguration:
+                      DecimalPlacesConfiguration:
+                        DecimalPlaces: 2
+                      NegativeValueConfiguration:
+                        DisplayMode: POSITIVE
+                      NullValueFormatConfiguration:
+                        NullString: ' '
+                      SeparatorConfiguration:
+                        DecimalSeparator: DOT
+                        ThousandsSeparator:
+                          Symbol: COMMA
+                          Visibility: VISIBLE
+                      Symbol: USD
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: g5_savings_percentage
+                  DataSetIdentifier: graviton_mapping
+                FieldId: graviton_-g5_saving-c5f5e5.25.1762800000013
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      NullValueFormatConfiguration:
+                        NullString: ' '
+                      Suffix: '%'
             Values: []
         SortConfiguration: {}
         TableOptions:
@@ -29916,7 +30126,7 @@ Sheets:
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline color=\"#61d1d6\"\
       \ font-size=\"24px\">\n      <b>\n        <u>Graviton Savings Dashboard</u>\n\
       \      </b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n\
-      \    <inline font-size=\"20px\">\n      <b>v3.0.2</b>\n    </inline>\n  </block>\n\
+      \    <inline font-size=\"20px\">\n      <b>v3.0.4</b>\n    </inline>\n  </block>\n\
       \  <br/>\n  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n\
       \  <br/>\n  <block align=\"right\"/>\n  <br/>\n  <block align=\"center\"/>\n\
       \  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"right\">Authors:\

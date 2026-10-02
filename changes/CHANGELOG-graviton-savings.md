@@ -1,5 +1,17 @@
 # What's new in the Graviton Savings Dashboard
 
+## Graviton Savings Dashboard v3.0.4:
+```
+cid-cmd update --dashboard-id graviton-savings --force --recursive
+```
+* Add Graviton5 as a selectable generation (EC2 M9g/M9gd, C9g/C9gd, R9g/R9gd): modernization mapping, pricing/savings views, dataset schemas, the generation selector, a "Potential Graviton5 Base Savings" KPI, and Graviton5 columns in the EC2 and Graviton Instance Mapping tables
+* Pin the static "Default next-gen Graviton" columns in the Potential Savings Across Graviton Generations table so their labels no longer mirror the selected generation
+## Graviton Savings Dashboard v3.0.3:
+```
+cid-cmd update --dashboard-id graviton-savings --force --recursive
+```
+* Modernization mapping: Remove invalid Graviton (g5g/T4G) targets for NVIDIA/AMD GPU families (g2, g3, g3s, g4ad, g5, g6, g6e, g6f, gr6, gr6f) so they report 'No equivalent graviton instance' instead of inflating On-Demand eligible savings; retain g4dn -> g5g as a like-for-like T4 to T4G mapping
+
 ## Graviton Savings Dashboard v3.0.2:
 ```
 cid-cmd update --dashboard-id graviton-savings --force --recursive
