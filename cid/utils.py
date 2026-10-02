@@ -310,14 +310,16 @@ def get_parameter(param_name, message, choices=None, default=None, none_as_disab
             if not isatty():
                 raise Exception(f'Please set parameter {param_name}. Unable to request user in environment={exec_env()}')
             if isinstance(choices, dict):
-                choices = [Choice(name=key, value=value, enabled=not (none_as_disabled and value is None)) for key, value in choices.items()]
+                choices = [value if isinstance(value, Separator)
+                           else Choice(name=key, value=value, enabled=not (none_as_disabled and value is None))
+                           for key, value in choices.items()]
             elif isinstance(choices, list):
                 choices = [Choice(name=key, value=key, enabled=True) for key in choices]
 
             if fuzzy:
                 result = inquirer.fuzzy(
                     message=f'[{param_name}] {message}:',
-                    choices=sorted(choices, key=lambda x: (x.value != default)),  # Make default as the first one
+                    choices=sorted(choices, key=lambda x: (getattr(x, 'value', None) != default)),  # Make default as the first one
                     long_instruction='Type to search or use arrows ↑↓ to navigate',
                     match_exact=True,
                     exact_symbol='',
