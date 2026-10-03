@@ -11,7 +11,7 @@ dashboards:
     dashboardId: graviton-savings
     category: Advanced
     theme: MIDNIGHT
-    version: v3.0.4
+    version: v3.0.5
     file: ./graviton_savings_dashboard-definition.yaml
     nonTaxonomyDatasets:
     - graviton_mapping
@@ -621,6 +621,9 @@ datasets:
             - Name: g5_savings_potential
               Type: DECIMAL
               SubType: FLOAT
+            - Name: graviton_savings_realized
+              Type: DECIMAL
+              SubType: FLOAT
       LogicalTableMap:
         1da2b3b3-bbdf-4b99-9d9b-d7ed7c8a8ec1:
           Alias: Intermediate Table
@@ -689,6 +692,7 @@ datasets:
               - g3_savings_potential
               - g4_savings_potential
               - g5_savings_potential
+              - graviton_savings_realized
               - account_id
               - account_name
           Source:
@@ -1361,6 +1365,7 @@ views:
       , (amortized_cost - g3_amortized_cost) "g3_savings_potential"
       , (amortized_cost - g4_amortized_cost) "g4_savings_potential"
       , (amortized_cost - g5_amortized_cost) "g5_savings_potential"
+      , (previous_intel_price - amortized_cost) "graviton_savings_realized"
       FROM
         summary_view_final fi
   graviton_rds_view:
