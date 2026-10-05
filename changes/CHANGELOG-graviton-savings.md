@@ -1,5 +1,11 @@
 # What's new in the Graviton Savings Dashboard
 
+## Graviton Savings Dashboard v3.0.5:
+```
+cid-cmd update --dashboard-id graviton-savings --force --recursive
+```
+* Move the EC2 "Realized Graviton Savings" calculation into the Athena view as a new column (graviton_savings_realized), the same way potential savings are already calculated. Displayed numbers are unchanged
+* Correct display-label typos and inconsistent casing, including "Graviton Eligibility", a chart subtitle, and the "Account ID" and "Billing Period (Month)" labels
 ## Graviton Savings Dashboard v3.0.4:
 ```
 cid-cmd update --dashboard-id graviton-savings --force --recursive

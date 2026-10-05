@@ -150,10 +150,10 @@ CalculatedFields:
     {offering_type} )
   Name: Purchase Option
 - DataSetIdentifier: ec2_graviton_dashboard
-  Expression: '{previous_intel_price}-{amortized_cost}'
+  Expression: '{graviton_savings_realized}'
   Name: Realized Graviton Savings
 - DataSetIdentifier: ec2_graviton_dashboard
-  Expression: 1-SUM({amortized_cost})/SUM({previous_intel_price})
+  Expression: SUM({graviton_savings_realized})/SUM({previous_intel_price})
   Name: Realized Graviton Savings %
 - DataSetIdentifier: ec2_graviton_dashboard
   Expression: |-
@@ -14240,7 +14240,7 @@ Sheets:
           - CustomLabel: Account Name
             FieldId: c24cd10c-1927-4f3a-b06b-61d242508898.account_name.17.1762361660174
             Visibility: VISIBLE
-          - CustomLabel: Account Id
+          - CustomLabel: Account ID
             FieldId: c24cd10c-1927-4f3a-b06b-61d242508898.account_id.16.1762361657643
             Visibility: VISIBLE
           - CustomLabel: Purchase Option
@@ -16875,7 +16875,7 @@ Sheets:
                 ColumnName: billing_period
                 DataSetIdentifier: ec2_graviton_dashboard
               FieldId: d76c6ad6-0eab-4acb-b93b-9f33300a945a.billing_period.0.1709748053059
-            CustomLabel: Billing Period (month)
+            CustomLabel: Billing Period (Month)
           SortIconVisibility: HIDDEN
           Visibility: VISIBLE
         DataLabels:
@@ -17117,7 +17117,7 @@ Sheets:
                 ColumnName: billing_period
                 DataSetIdentifier: ec2_graviton_dashboard
               FieldId: d76c6ad6-0eab-4acb-b93b-9f33300a945a.billing_period.0.1709748278244
-            CustomLabel: Billing Period (month)
+            CustomLabel: Billing Period (Month)
           SortIconVisibility: HIDDEN
           Visibility: VISIBLE
         FieldWells:
@@ -17972,7 +17972,7 @@ Sheets:
           - CustomLabel: Account Name
             FieldId: 47626e9f-53d0-42ba-b193-a1a463746fca.account_name.10.1710859804154
             Visibility: VISIBLE
-          - CustomLabel: Account Id
+          - CustomLabel: Account ID
             FieldId: 47626e9f-53d0-42ba-b193-a1a463746fca.account_id.11.1710859806217
             Visibility: VISIBLE
           - CustomLabel: Region
@@ -25718,7 +25718,7 @@ Sheets:
                 ColumnName: graviton_eligibility
                 DataSetIdentifier: elasticache_graviton_dashboard
               FieldId: 07b00d3c-1514-4700-a4dc-3c466f317e67.graviton_eligibility.0.1709581875959
-            CustomLabel: Graviton Elgibility
+            CustomLabel: Graviton Eligibility
           Visibility: HIDDEN
         DataLabels:
           MeasureLabelVisibility: VISIBLE
@@ -25911,7 +25911,7 @@ Sheets:
           RichText: |-
             <visual-subtitle>
               <inline color="#7fd4b9">
-                <i>Based on Previous Month current equivocal non Graviton instance usage</i>
+                <i>Based on previous month's current non-Graviton instance usage</i>
               </inline>
             </visual-subtitle>
         Visibility: VISIBLE
@@ -30126,7 +30126,7 @@ Sheets:
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline color=\"#61d1d6\"\
       \ font-size=\"24px\">\n      <b>\n        <u>Graviton Savings Dashboard</u>\n\
       \      </b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n\
-      \    <inline font-size=\"20px\">\n      <b>v3.0.4</b>\n    </inline>\n  </block>\n\
+      \    <inline font-size=\"20px\">\n      <b>v3.0.5</b>\n    </inline>\n  </block>\n\
       \  <br/>\n  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n\
       \  <br/>\n  <block align=\"right\"/>\n  <br/>\n  <block align=\"center\"/>\n\
       \  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"right\">Authors:\
@@ -30141,7 +30141,7 @@ Sheets:
       \ target=\"_blank\">AWS Well-Architected Labs Implementation Guide</a>\n   \
       \ </inline>\n    \_and\n    <inline color=\"#61d1d6\">\n      <a href=\"https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\"\
       \ target=\"_blank\">CID YouTube Channel</a>\n    </inline>\n  </block>\n  <br/>\n\
-      \  <block align=\"right\">\n    If you wish to provide feedback please or report\
+      \  <block align=\"right\">\n    If you wish to provide feedback or report\
       \ an error please email:\n    <inline color=\"#61d1d6\">\_</inline>\n    <inline\
       \ color=\"#12c9d9\">\n      <a href=\"mailto:aws-cid-graviton-savings-dashboard@amazon.com\"\
       \ target=\"_blank\">aws-cid-graviton-savings-dashboard@amazon.com</a>\n    </inline>\n\
