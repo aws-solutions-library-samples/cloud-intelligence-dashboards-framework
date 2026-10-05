@@ -468,7 +468,7 @@ dashboards:
                   - CategoricalMeasureField:
                       AggregationFunction: COUNT
                       Column:
-                        ColumnName: account_id.2
+                        ColumnName: account_id
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_account_id_count_measure0
                   - CategoricalMeasureField:
@@ -605,7 +605,7 @@ dashboards:
                 - CategoricalMeasureField:
                     AggregationFunction: DISTINCT_COUNT
                     Column:
-                      ColumnName: account_id.2
+                      ColumnName: account_id
                       DataSetIdentifier: bedrock_invocations_view
                     FieldId: visual_b75c6406_account_id_distinct_count_measure0
                     FormatConfiguration:
@@ -1134,7 +1134,7 @@ dashboards:
                 AxisLabelOptions:
                 - ApplyTo:
                     Column:
-                      ColumnName: account_id.2
+                      ColumnName: account_id
                       DataSetIdentifier: bedrock_invocations_view
                     FieldId: visual_aa43a2f9_account_id_field
                   CustomLabel: Account ID
@@ -1146,7 +1146,7 @@ dashboards:
                   Category:
                   - CategoricalDimensionField:
                       Column:
-                        ColumnName: account_id.2
+                        ColumnName: account_id
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_aa43a2f9_account_id_field
                   Colors: []
@@ -1521,83 +1521,77 @@ dashboards:
               FieldWells:
                 TableAggregatedFieldWells:
                   GroupBy:
-                  - NumericalDimensionField:
+                  - DateDimensionField:
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-timestamp-f1c25f
+                        ColumnName: timestamp
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_timestamp_field
-                  - NumericalDimensionField:
+                  - CategoricalDimensionField:
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-prompt_pr-0e1109
+                        ColumnName: prompt_preview
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_prompt_preview_count_measure9
-                  - NumericalDimensionField:
+                  - CategoricalDimensionField:
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-response_-ea249c
+                        ColumnName: response_preview
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: bedrock_i-response_-db09d2.11.1786365116825
                   Values:
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
+                  - CategoricalMeasureField:
+                      AggregationFunction: COUNT
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-account_i-4ae2b4
+                        ColumnName: account_id
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_account_id_count_measure0
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
+                  - CategoricalMeasureField:
+                      AggregationFunction: COUNT
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-identity_-75f9a7
+                        ColumnName: identity_arn
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_identity_arn_count_measure1
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
+                  - CategoricalMeasureField:
+                      AggregationFunction: COUNT
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-modelid-721a3d
+                        ColumnName: modelid
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_modelid_count_measure2
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
+                  - CategoricalMeasureField:
+                      AggregationFunction: COUNT
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-operation-62d4aa
+                        ColumnName: operation
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_operation_count_measure3
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
+                  - CategoricalMeasureField:
+                      AggregationFunction: COUNT
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-region-a72554
+                        ColumnName: region
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_region_count_measure4
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: COUNT
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-input_tok-08bb0b
+                        ColumnName: input_token_count
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_input_token_count_count_measure5
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: COUNT
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-output_to-6fbdcb
+                        ColumnName: output_token_count
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_output_token_count_count_measure6
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: COUNT
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-usage_tot-220fc1
+                        ColumnName: usage_total_tokens
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_usage_total_tokens_count_measure7
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
+                  - CategoricalMeasureField:
+                      AggregationFunction: COUNT
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-stop_reas-d948e6
+                        ColumnName: stop_reason
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_0c29e820_stop_reason_count_measure8
               SortConfiguration: {}
@@ -1622,9 +1616,9 @@ dashboards:
               FieldWells:
                 TableAggregatedFieldWells:
                   GroupBy:
-                  - NumericalDimensionField:
+                  - CategoricalDimensionField:
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-requestid-d07db8
+                        ColumnName: requestid
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_1eab78ce_requestid_field
                   Values:
@@ -1632,21 +1626,21 @@ dashboards:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-input_tok-08bb0b
+                        ColumnName: input_token_count
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_1eab78ce_input_token_count_measure_0
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-output_to-6fbdcb
+                        ColumnName: output_token_count
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_1eab78ce_output_token_count_measure_1
                   - NumericalMeasureField:
                       AggregationFunction:
                         SimpleNumericalAggregation: SUM
                       Column:
-                        ColumnName: MissingColumnId_3c8cae3b-252e-4639-9f18-c03ebf8113a7_bedrock_i-usage_tot-220fc1
+                        ColumnName: usage_total_tokens
                         DataSetIdentifier: bedrock_invocations_view
                       FieldId: visual_1eab78ce_usage_total_tokens_measure_2
               SortConfiguration: {}
@@ -1784,14 +1778,10 @@ datasets:
                 TransformOperationId: bfac4c41-7334-4a0d-b64f-f3c4b7ffe890
               Type: LEFT
               OnClause: '{account_id} = {account_id}'
-              LeftOperandProperties:
-                OutputColumnNameOverrides:
-                - SourceColumnName: account_id
-                  OutputColumnName: account_id.2
               RightOperandProperties:
                 OutputColumnNameOverrides:
                 - SourceColumnName: account_id
-                  OutputColumnName: account_id.1
+                  OutputColumnName: map_account_id
           bfac4c41-7334-4a0d-b64f-f3c4b7ffe890:
             ImportTableStep:
               Alias: account_map
