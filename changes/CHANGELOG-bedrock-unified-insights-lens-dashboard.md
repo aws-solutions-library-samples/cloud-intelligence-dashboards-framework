@@ -1,6 +1,6 @@
-# What's new in Bedrock Invocation Usage Dashboard
+# What's new in Bedrock Unified Insights Lens Dashboard
 
-## Bedrock Invocation Usage Dashboard v1.0.0
+## Bedrock Unified Insights Lens Dashboard v1.0.0
 * Initial release
 * Usage Overview & Trends: KPI highlights for invocation count and token usage, daily trend charts, breakdown by model, user, and account, and operational details
 * Raw Data Explorer: Bedrock Invocation Records Detail and Total Token Usage by Request

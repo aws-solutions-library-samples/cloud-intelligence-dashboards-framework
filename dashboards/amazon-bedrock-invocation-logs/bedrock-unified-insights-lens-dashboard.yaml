@@ -133,35 +133,6 @@ dashboards:
               - de5714a9-504b-47d6-83cb-7f93fc4b2b80
         Status: ENABLED
       - CrossDataset: SINGLE_DATASET
-        FilterGroupId: b9dce09a-82a6-4ff9-8d18-e1e85d94c52a
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: parent_account_name
-              DataSetIdentifier: bedrock_invocations_view
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            DefaultFilterControlConfiguration:
-              ControlOptions:
-                DefaultDropdownOptions:
-                  DisplayOptions:
-                    SelectAllOptions:
-                      Visibility: VISIBLE
-                    TitleOptions:
-                      FontConfiguration:
-                        FontSize:
-                          Relative: MEDIUM
-                      Visibility: VISIBLE
-                  Type: MULTI_SELECT
-              Title: Payer Account Name
-            FilterId: f86c9a84-8b2d-4bfb-bda5-bda227e454e1
-        ScopeConfiguration:
-          AllSheets: {}
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
         FilterGroupId: 5ab5fa0e-9853-4681-ac39-91e54ada55ef
         Filters:
         - TimeRangeFilter:
@@ -213,9 +184,6 @@ dashboards:
         - CrossSheet:
             FilterControlId: control_id_sheet-885725c7_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
             SourceFilterId: list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
-        - CrossSheet:
-            FilterControlId: 010bd9fa-6428-4f58-819b-6e03158d1270
-            SourceFilterId: f86c9a84-8b2d-4bfb-bda5-bda227e454e1
         - DateTimePicker:
             DisplayOptions:
               DateIconVisibility: VISIBLE
@@ -408,23 +376,17 @@ dashboards:
                 RowSpan: 1
               - ColumnIndex: 2
                 ColumnSpan: 2
-                ElementId: 010bd9fa-6428-4f58-819b-6e03158d1270
+                ElementId: control_id_sheet-885725c7_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
                 ElementType: FILTER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
               - ColumnIndex: 4
                 ColumnSpan: 2
-                ElementId: control_id_sheet-885725c7_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
-                ElementType: FILTER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 6
-                ColumnSpan: 2
                 ElementId: control_id_sheet-885725c7_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
                 ElementType: FILTER_CONTROL
                 RowIndex: 0
                 RowSpan: 1
-              - ColumnIndex: 8
+              - ColumnIndex: 6
                 ColumnSpan: 2
                 ElementId: 388a4461-a5a5-4e66-ba3c-e78f2bdbadf0
                 ElementType: FILTER_CONTROL
@@ -1787,27 +1749,26 @@ datasets:
             - Name: prompt_preview
               Id: bedrock_i-prompt_pr-0e1109
               Type: STRING
+        account-map-physical:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Id: am-account-id
+              Type: STRING
+            - Name: account_name
+              Id: am-account-name
+              Type: STRING
       ImportMode: SPICE
       DataPrepConfiguration:
         SourceTableMap:
           b219fdf4-0b40-4057-abc4-e76dfced4dd1:
             PhysicalTableId: 6904e2c8-f3c6-4781-ad85-c6709faffa94
           eaa1d94a-7749-4dec-9ab4-17f925ff807d:
-            DataSet:
-              DataSetArn: arn:aws:quicksight:us-east-1:213485169607:dataset/account_map
-              InputColumns:
-              - Name: account_id
-                Id: account-map-logical.account_id
-                Type: STRING
-              - Name: account_name
-                Id: account-map-logical.account_name
-                Type: STRING
-              - Name: parent_account_id
-                Id: account-map-logical.parent_account_id
-                Type: STRING
-              - Name: parent_account_name
-                Id: account-map-logical.parent_account_name
-                Type: STRING
+            PhysicalTableId: account-map-physical
         TransformStepMap:
           6982f59a-6f96-41d4-b73f-1b2049e9d89d:
             ImportTableStep:
@@ -1818,19 +1779,19 @@ datasets:
             JoinStep:
               Alias: Join 1
               LeftOperand:
-                TransformOperationId: bfac4c41-7334-4a0d-b64f-f3c4b7ffe890
-              RightOperand:
                 TransformOperationId: 6982f59a-6f96-41d4-b73f-1b2049e9d89d
+              RightOperand:
+                TransformOperationId: bfac4c41-7334-4a0d-b64f-f3c4b7ffe890
               Type: LEFT
               OnClause: '{account_id} = {account_id}'
               LeftOperandProperties:
                 OutputColumnNameOverrides:
                 - SourceColumnName: account_id
-                  OutputColumnName: account_id.1
+                  OutputColumnName: account_id.2
               RightOperandProperties:
                 OutputColumnNameOverrides:
                 - SourceColumnName: account_id
-                  OutputColumnName: account_id.2
+                  OutputColumnName: account_id.1
           bfac4c41-7334-4a0d-b64f-f3c4b7ffe890:
             ImportTableStep:
               Alias: account_map
@@ -1849,6 +1810,7 @@ datasets:
     dependsOn:
       views:
       - bedrock_invocations_view
+      - account_map
     schedules:
     - default
 crawlers: {}
@@ -1874,12 +1836,12 @@ views:
       , input.inputcontenttype input_content_type
       , output.outputtokencount output_token_count
       , output.outputcontenttype output_content_type
-      , CAST(json_extract_scalar(output.outputbodyjson, '$.usage.inputTokens') AS INTEGER) usage_input_tokens
-      , CAST(json_extract_scalar(output.outputbodyjson, '$.usage.outputTokens') AS INTEGER) usage_output_tokens
-      , CAST(json_extract_scalar(output.outputbodyjson, '$.usage.totalTokens') AS INTEGER) usage_total_tokens
-      , CAST(json_extract_scalar(output.outputbodyjson, '$.usage.cacheReadInputTokenCount') AS INTEGER) usage_cache_read_tokens
-      , CAST(json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokenCount') AS INTEGER) usage_cache_write_tokens
-      , json_extract_scalar(output.outputbodyjson, '$.stopReason') stop_reason
+      , input.inputtokencount usage_input_tokens
+      , output.outputtokencount usage_output_tokens
+      , (input.inputtokencount + output.outputtokencount) usage_total_tokens
+      , CAST(COALESCE(json_extract_scalar(output.outputbodyjson, '$.usage.cacheReadInputTokens'), json_extract_scalar(output.outputbodyjson, '$.usage.cacheReadInputTokenCount'), json_extract_scalar(output.outputbodyjson, '$.usage.cache_read_input_tokens')) AS INTEGER) usage_cache_read_tokens
+      , CAST(COALESCE(json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokens'), json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokenCount'), json_extract_scalar(output.outputbodyjson, '$.usage.cache_creation_input_tokens')) AS INTEGER) usage_cache_write_tokens
+      , COALESCE(json_extract_scalar(output.outputbodyjson, '$.stopReason'), json_extract_scalar(output.outputbodyjson, '$.stop_reason')) stop_reason
       , COALESCE(json_extract_scalar(output.outputbodyjson, '$.output.message.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.completion'), json_extract_scalar(output.outputbodyjson, '$.outputText')) response_preview
       , COALESCE(json_extract_scalar(input.inputbodyjson, '$.messages[0].content[0].text'), json_extract_scalar(input.inputbodyjson, '$.messages[0].content'), json_extract_scalar(input.inputbodyjson, '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText')) prompt_preview
       FROM

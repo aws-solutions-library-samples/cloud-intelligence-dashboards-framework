@@ -8,18 +8,18 @@
     <lastBuildDate>Thu, 10 Sep 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
-      <title>[New Dashboard] Bedrock Invocation Usage Dashboard v1.0.0</title>
+      <title>[New Dashboard] Bedrock Unified Insights Lens Dashboard v1.0.0</title>
       <link>
-        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-amazon-bedrock-invocation-logs.md
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-bedrock-unified-insights-lens-dashboard.md
       </link>
       <pubDate>Thu, 10 Sep 2026 12:00:00 GMT</pubDate>
       <category><![CDATA[New Dashboard]]></category>
       <guid isPermaLink="false">84d27c3d-68ff-48ac-917b-15a74170be8f</guid>
-      <description>Bedrock Invocation Usage Dashboard v1.0.0 - Initial Release</description>
+      <description>Bedrock Unified Insights Lens Dashboard v1.0.0 - Initial Release</description>
       <content:encoded><![CDATA[
 <div>
   <p>
-    The <strong>Bedrock Invocation Usage Dashboard</strong> provides enterprise visibility into Amazon Bedrock model invocation activity across your AWS accounts, helping FinOps and engineering leaders monitor per-account token consumption, model usage, and cost attribution at scale.
+    The <strong>Bedrock Unified Insights Lens Dashboard</strong> provides enterprise visibility into Amazon Bedrock model invocation activity across your AWS accounts, helping FinOps and engineering leaders monitor per-account token consumption, model usage, and cost attribution at scale.
   </p>
   <h3>Key Features:</h3>
   <ul>
