@@ -1492,6 +1492,7 @@ class Cid():
                     workgroup=self.athena.WorkGroup,
                     buckets=buckets,
                     output_location_bucket = self.athena.workgroup_output_location().split('/')[2],
+                    catalog_name=self.athena.CatalogName,
                 )
                 cid_print(f'Role {role_name} was updated. https://console.aws.amazon.com/iam/home?#/roles/details/{role_name}')
                 role_arn = self.iam.get_role_arn(role_name)
@@ -1665,6 +1666,7 @@ class Cid():
         columns_tpl = {
             'athena_datasource_arn': athena_datasource.arn,
             'athena_database_name': self.athena.DatabaseName,
+            'athena_catalog_name': self.athena.CatalogName,
             'cur_database':    self.cur1.database   if cur1_required else None, # for backward compatibly
             'cur_table_name':  self.cur1.table_name if cur1_required else None, # for backward compatibly
             'cur1_database':   self.cur1.database   if cur1_required else None,

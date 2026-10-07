@@ -5,6 +5,7 @@
     "23c71fa5-4992-4c85-b267-07d05b4eb69b": {
       "RelationalTable": {
         "DataSourceArn": "${athena_datasource_arn}",
+        "Catalog": "${athena_catalog_name}",
         "Schema": "${athena_database_name}",
         "Name": "kpi_ebs_storage_all",
         "InputColumns": [
@@ -127,7 +128,7 @@
     "561b26dc-d85d-4523-a17b-939ac4f261ef": {
       "RelationalTable": {
         "DataSourceArn": "${athena_datasource_arn}",
-        "Catalog": "AwsDataCatalog",
+        "Catalog": "${athena_catalog_name}",
         "Schema": "${athena_database_name}",
         "Name": "account_map",
         "InputColumns": [

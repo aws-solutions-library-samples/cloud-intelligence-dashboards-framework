@@ -18,7 +18,7 @@ datasets:
         3803f554-6ebc-4256-96e7-ec0661db164b:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${account_map_database_name}
             Name: account_map
             InputColumns:
@@ -29,7 +29,7 @@ datasets:
         50abacdb-9086-41a9-a217-a2adf45e448c:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: cora_view
             InputColumns:

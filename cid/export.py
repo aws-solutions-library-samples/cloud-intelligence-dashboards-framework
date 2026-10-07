@@ -170,6 +170,7 @@ def export_analysis(qs, athena, glue):
                 and 'Schema' in value['RelationalTable']:
                 logger.debug(f"Dataset {dataset.raw['DataSetId']} looks like classic athena dataset")
                 value['RelationalTable']['DataSourceArn'] = '${athena_datasource_arn}'
+                value['RelationalTable']['Catalog'] = '${athena_catalog_name}'
                 database_name = value['RelationalTable']['Schema']
                 discovered_databases = list(set([d for _, d in all_views_and_databases])) # default database is the first one
                 if not discovered_databases or discovered_databases[0] == database_name:

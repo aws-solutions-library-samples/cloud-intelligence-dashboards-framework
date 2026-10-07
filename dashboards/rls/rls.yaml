@@ -19,7 +19,7 @@ datasets:
         625fab9d-ce94-4690-a7bf-142b0996ddda:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: rls_dataset
             InputColumns:
@@ -51,7 +51,7 @@ datasets:
         a4a17683-2fe9-4d08-9935-95ed1af884bb:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: rls_all_users_view
             InputColumns:

@@ -19,7 +19,7 @@ datasets:
         30d52db3-daf0-4f90-9716-52ba236f446d:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: ta_priority_org_view
             InputColumns:
@@ -72,7 +72,7 @@ datasets:
         78030af5-de76-4ef2-919e-492e863297d7:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -234,7 +234,7 @@ datasets:
         99142d9e-0831-40c4-8744-261696fb2f12:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:

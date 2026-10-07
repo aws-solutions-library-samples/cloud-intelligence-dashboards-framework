@@ -1840,7 +1840,7 @@ datasets:
         2e8a5480-2205-48f0-bbd7-5da573d1dd04:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: pricing_changes
             InputColumns:
@@ -1897,7 +1897,7 @@ datasets:
         c6899647-9846-4860-be8b-a357a4483f38:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
