@@ -135,7 +135,7 @@ def deploy(ctx, **kwargs):
      --view-{view_name}-{parameter} TEXT   a custom parameter for a view creation, can use variable: {account_id}
      --account-map-source TEXT             csv, dummy, organization (if autodiscovery impossible)
      --account-map-file TEXT               csv file path relative to current directory (if autodiscovery impossible and csv selected as a source )
-     --on-drift (show|override)            Action if a drift of view and dataset is discovered. 'override' = override drift(will destroy customization) or 'show' (default) = show a diff. In Unattended mode (without terminal on-drift will have allways override behaviour)
+     --on-drift (show|override)            Action if a drift of view and dataset is discovered. 'override' = override drift(will destroy customization) or 'show' (default) = show a diff. Without a terminal, existing views are not replaced and datasets are updated without a diff; run cid-cmd update --recursive in a terminal to review view changes.
      --update (yes|no)                     Update if some elements are already installed. Default = 'no'
      --resources TEXT                      CID resources yaml file or url
      --category TEXT                       Comma separated list of categories of dashboards (ex: foundational,advanced )
@@ -211,7 +211,7 @@ def update(ctx, dashboard_id, force, recursive, **kwargs):
     """Update Dashboard
 
     \b
-     --on-drift (show|override)            Action if a drift of view and dataset is discovered. 'override' = override drift(will destroy customization) or 'show' (default) = show a diff. In Unattended mode (without terminal on-drift will have allways override behaviour)
+     --on-drift (show|override)            Action if a drift of view and dataset is discovered. 'override' = override drift(will destroy customization) or 'show' (default) = show a diff. Without a terminal, existing views are not replaced and datasets are updated without a diff; run cid-cmd update --recursive in a terminal to review view changes.
      --theme TEXT                          A QuickSight Theme (CLASSIC|MIDNIGHT|SEASIDE|RAINIER)
      --currency TEXT                       A currency symbol instead of default USD (USD|GBP|EUR|JPY|KRW|DKK|TWD|INR)
      --rls TEXT                            Desired RLS status (CLEAR|ENABLED|DISABLED) Clear = No RLS configuration.

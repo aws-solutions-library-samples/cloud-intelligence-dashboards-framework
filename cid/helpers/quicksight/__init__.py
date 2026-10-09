@@ -1417,6 +1417,15 @@ class QuickSight(CidBase):
                     order=True,
                     default=taxonomy_default,
                 )
+                # a field from parameters can be missing in datasets (ex: new resource-tags without a recursive update)
+                common_column_names = {c['Name'] for c in common_columns}
+                missing_taxonomy = [field for field in taxonomy or [] if field not in common_column_names]
+                if missing_taxonomy:
+                    logger.warning(
+                        f'Taxonomy fields {missing_taxonomy} are not found in datasets and will not be added to the dashboard.'
+                        ' Run cid-cmd update --recursive in a terminal to add them to views and datasets.'
+                    )
+                    taxonomy = [field for field in taxonomy if field in common_column_names]
                 if taxonomy:
                     create_parameters['Definition'] = add_filter_to_dashboard_definition(create_parameters['Definition'], taxonomy, taxonomy_dataset=definition.get('taxonomyDataset'))
                     create_parameters['Definition'] = patch_group_by(create_parameters['Definition'], taxonomy)
