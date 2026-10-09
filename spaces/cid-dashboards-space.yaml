@@ -1,0 +1,11 @@
+# Shared Space for the launch-library agents. Loaded via agents/catalog.yaml.
+spaces:
+  cid-dashboards-space:
+    name: CID Dashboards Space
+    description: >-
+      Comprehensive knowledge base for the Cloud Intelligence Dashboards,
+      shared by the CID launch-library agents.
+    dependsOn:
+      dashboards: [CUDOSv5, CID, KPI]
+      optionalDashboards: [Trends]
+      datasets: []

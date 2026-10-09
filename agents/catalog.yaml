@@ -1,0 +1,10 @@
+# Quick Agents catalog.
+# Loaded by cid-cmd alongside dashboards/catalog.yaml through the same
+# resource pipeline. Urls are relative to this file. To add an agent, add its
+# folder under agents/ and list its manifest here (see docs/agents-contributing.md).
+Resources:
+  - Url: finops/finops.yaml
+  - Url: operations/operations.yaml
+  - Url: security/security.yaml
+  # Shared Spaces used by the launch-library agents
+  - Url: ../spaces/cid-dashboards-space.yaml

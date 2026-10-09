@@ -1,0 +1,31 @@
+# FinOps agent (launch library). Loaded via agents/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  finops:
+    category: Foundational
+    name: CID FinOps Advisor
+    agentId: cid-finops-advisor
+    description: >-
+      Cost optimization and anomaly advisor over the CUDOS, Cost Intelligence,
+      and KPI dashboards. Surfaces savings opportunities, spend drivers, and
+      cost anomalies across the organization.
+    dependsOn:
+      spaces: [cid-dashboards-space]
+      dashboards: [CUDOSv5, CID, KPI]
+      optionalDashboards: [Trends]
+      datasets:
+        - daily-anomaly-detection
+        - monthly-anomaly-detection
+      knowledgeBases: []
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "What are my top cost optimization opportunities right now?"
+      - "Show services with increased spend last week and the likely drivers"
+      - "Were any cost anomalies detected this month?"
+    welcomeMessage: >-
+      Hi, I'm the CID FinOps Advisor. Ask me about your CUDOS, Cost
+      Intelligence, and KPI cost data: spend drivers, savings opportunities,
+      commitment coverage, and cost anomalies.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }
