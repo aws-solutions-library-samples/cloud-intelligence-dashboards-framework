@@ -216,6 +216,7 @@ def update(ctx, dashboard_id, force, recursive, **kwargs):
      --currency TEXT                       A currency symbol instead of default USD (USD|GBP|EUR|JPY|KRW|DKK|TWD|INR)
      --rls TEXT                            Desired RLS status (CLEAR|ENABLED|DISABLED) Clear = No RLS configuration.
      --rls-dataset-id TEXT                 ID of RLS Dataset that will be used
+     --share-with-account (yes|no)         Grant or revoke dashboard visibility to everyone in the account. Not changed if omitted.
 
     """
     ctx.obj.update(dashboard_id, force=force, recursive=recursive, **kwargs)

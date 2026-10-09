@@ -1539,6 +1539,11 @@ class QuickSight(CidBase):
         """ get_dashboard_permissions """
         return self.client.describe_dashboard_permissions(AwsAccountId=self.account_id, DashboardId=dashboard_id)['Permissions']
 
+    def get_dashboard_link_permissions(self, dashboard_id):
+        """ get dashboard permissions granted via link sharing """
+        res = self.client.describe_dashboard_permissions(AwsAccountId=self.account_id, DashboardId=dashboard_id)
+        return res.get('LinkSharingConfiguration', {}).get('Permissions', [])
+
     def dataset_diff(self, raw1, raw2):
         """ get dataset diff """
         return diff(

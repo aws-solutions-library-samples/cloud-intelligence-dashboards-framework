@@ -1542,6 +1542,7 @@ Resources:
                   - quicksight:DeleteDashboard
                   - quicksight:UpdateDashboard
                   - quicksight:UpdateDashboardPermissions
+                  - quicksight:DescribeDashboardPermissions
                   - quicksight:UpdateDashboardPublishedVersion
                   - quicksight:ListDashboards
                   - quicksight:DescribeUser
@@ -1837,6 +1838,8 @@ Resources:
                   dashboard = properties['Dashboard']
                   # set additional parameters from environment variables
                   for par in 'athena_workgroup quicksight_datasource_id quicksight_datasource_role_arn athena_database glue_data_catalog cur_table_name cur_database quicksight_user account_map_source share_with_account account_map_database_name currency_symbol'.split():
+                      if par == 'share_with_account' and request_type != 'Create':
+                          continue # on update, change sharing only if share-with-account is set on the dashboard resource
                       dashboard[par.replace('_', '-')] = dashboard.get(par.replace('_', '-'), os.environ.get(par))
                   if request_type == 'Create':
                       dash_url = deploy_dash(dashboard)

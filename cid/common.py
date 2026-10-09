@@ -1238,8 +1238,40 @@ class Cid():
             logger.debug(exc, exc_info=True)
             print(f'failed with an error message: {exc}')
 
+        self.update_account_sharing(dashboard_id)
         self.dump_default_parameters()
         return dashboard_id
+
+
+    def update_account_sharing(self, dashboard_id):
+        """ Grant or revoke sharing with everyone in the account on update, only if share-with-account is explicitly provided """
+        share_with_account = get_parameters().get('share-with-account')
+        if share_with_account is None:
+            return
+        if str(share_with_account).lower() in ('yes', 'true'):
+            set_parameters({'share-method': 'account'})
+            self.share(dashboard_id)
+            return
+
+        namespace_suffix = f':{self.qs.account_id}:namespace/default'
+        try:
+            permissions = self.qs.get_dashboard_permissions(dashboard_id)
+            link_permissions = self.qs.get_dashboard_link_permissions(dashboard_id)
+        except self.qs.client.exceptions.ClientError as exc:
+            raise CidCritical(f'Unable to read permissions of dashboard {dashboard_id} to revoke sharing with the account: {exc}') from exc
+        revoke = {
+            'RevokePermissions': [p for p in permissions if p['Principal'].endswith(namespace_suffix)],
+            'RevokeLinkPermissions': [p for p in link_permissions if p['Principal'].endswith(namespace_suffix)],
+        }
+        revoke = {key: value for key, value in revoke.items() if value}
+        if not revoke:
+            logger.debug(f'Dashboard {dashboard_id} is not shared with the account, nothing to revoke')
+            return
+        try:
+            self.qs.update_dashboard_permissions(DashboardId=dashboard_id, **revoke)
+            cid_print(f'Revoked sharing of dashboard {dashboard_id} with everyone in the account')
+        except self.qs.client.exceptions.ClientError as exc:
+            raise CidCritical(f'Unable to revoke sharing of dashboard {dashboard_id} with the account: {exc}') from exc
 
 
     def create_datasets(self, _datasets: list, known_datasets: dict={}, recursive: bool=True, update: bool=False) -> dict:
