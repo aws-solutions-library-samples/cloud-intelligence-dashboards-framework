@@ -1652,6 +1652,8 @@ datasets:
     dependsOn:
       views:
       - cost_anomalies
+    schedules:
+    - default
 views:
   cost_anomalies:
     data: |-
@@ -1679,8 +1681,6 @@ views:
       FROM
         "${data_collection_database_name}"."cost_anomaly_data"
       WHERE ("date_parse"("concat"("year", "month", "day"), '%Y%m%d') >= (current_timestamp - INTERVAL  '3' MONTH))
-    schedules:
-    - default
     parameters:
         data_collection_database_name:
           type: athena
