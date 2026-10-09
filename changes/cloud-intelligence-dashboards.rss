@@ -5,8 +5,29 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Fri, 02 Oct 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 09 Oct 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] cid-cmd v4.4.18</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/releases/tag/4.4.18
+      </link>
+      <pubDate>Fri, 09 Oct 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">b75b53e0-34b1-4d16-9648-d28ce09fc841</guid>
+      <description>cid-cmd v4.4.18</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>CloudFormation Reliability:</strong> Dashboards deployed one after another through CloudFormation no longer inherit each other's parameters (such as the RLS dataset), which could make a dashboard fail to create.</li>
+    <li><strong>Sharing on Update:</strong> <code>share-with-account yes|no</code> is now applied when updating a dashboard, so you can grant or revoke access for everyone in the account without recreating the dashboard.</li>
+    <li><strong>Plugin Parameters:</strong> <code>cid-plugin.yml</code> accepts any <code>cid-cmd</code> parameter as JSON (for example an RLS dataset or resource tags), and unattended deployments use parameter defaults instead of failing.</li>
+    <li><strong>Fixes:</strong> FOCUS <code>resource-tags</code> now produce valid views, dashboard updates skip filters on fields not yet in the datasets instead of showing errors, and <code>--on-drift override</code> replaces views as documented.</li>
+  </ul>
+  <p>To update, run <code>pip3 install --upgrade cid-cmd</code>. CloudFormation users should update the <code>cid-cfn</code> stack to the latest template.</p>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Graviton Savings Dashboard v3.0.5</title>
       <link>
