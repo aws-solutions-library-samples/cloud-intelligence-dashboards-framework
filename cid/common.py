@@ -412,13 +412,9 @@ class Cid():
                 cache_key = f'_tags_json_sql_{prefix}{key}'
                 if hasattr(self, cache_key):
                     params[key] = getattr(self, cache_key)
-                elif get_parameters().get((prefix + key).replace('_', '-')): # priority to user input
-                    params[key] = get_parameters().get((prefix + key).replace('_', '-'))
-                    if isinstance(params[key], str):
-                        params[key] = params[key].split(',')
-                elif not utils.isatty():
+                elif not get_parameters().get((prefix + key).replace('_', '-')) and not utils.isatty():
                     params[key] = "'{}'"
-                else:
+                else: # tags provided by user or to be selected: discover tags to build json sql
                     if 'query' not in value:
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: parameter with type Athena must have query value.')
                     query = Template(value['query']).safe_substitute(params|others)
@@ -428,7 +424,7 @@ class Cid():
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: {exc}.') from exc
                     options = ['-'.join(res) for res in (res_list or [])]
                     params[key] = self.generic_tags_json(
-                        param_name=key,
+                        param_name=prefix + key,
                         options=options,
                     )
                 # Cache rendered SQL for reuse by subsequent views
@@ -2132,6 +2128,10 @@ class Cid():
                 default=resource_tags or [],
             )
 
+        unknown_tags = [name for name in resource_tags or [] if name not in tags_and_names]
+        if unknown_tags:
+            logger.warning(f'Tags {unknown_tags} are not found in the data and will be skipped. Available: {sorted(tags_and_names.keys())[:50]}')
+            resource_tags = [name for name in resource_tags if name in tags_and_names]
         if not resource_tags:
             return "'{}'"
         logger.debug(f'selected_tag_names = {resource_tags}')
