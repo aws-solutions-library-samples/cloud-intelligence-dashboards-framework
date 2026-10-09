@@ -1836,6 +1836,12 @@ Resources:
               dash_url = "Unknown"
               try:
                   dashboard = properties['Dashboard']
+                  # merge additional parameters passed as a JSON object (ex: from cid-plugin.yml)
+                  extra_parameters = json.loads(dashboard.pop('parameters', None) or '{}')
+                  if not isinstance(extra_parameters, dict):
+                      raise ValueError('parameters must be a JSON object')
+                  extra_parameters.pop('dashboard-id', None)
+                  dashboard.update({key.replace('_', '-'): value for key, value in extra_parameters.items()})
                   # set additional parameters from environment variables
                   for par in 'athena_workgroup quicksight_datasource_id quicksight_datasource_role_arn athena_database glue_data_catalog cur_table_name cur_database quicksight_user account_map_source share_with_account account_map_database_name currency_symbol'.split():
                       if par == 'share_with_account' and request_type != 'Create':
