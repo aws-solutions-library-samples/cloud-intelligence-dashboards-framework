@@ -504,7 +504,7 @@ views:
     parameters:
       retention_months:
         default: '7'
-        description: "Number of months of billing data to include in summary_view (default: 7)"
+        description: "Months of billing data to keep"
     dependsOn:
       views:
         - cur2_view
