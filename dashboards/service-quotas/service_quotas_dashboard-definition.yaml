@@ -1,0 +1,1754 @@
+AnalysisDefaults:
+  DefaultNewSheetConfiguration:
+    InteractiveLayoutConfiguration:
+      Grid:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+    SheetContentType: INTERACTIVE
+CalculatedFields:
+- DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+  Expression: 'ifelse(adjustable = 1, ''Adjustable'', ''Non-Adjustable'')
+
+    '
+  Name: adjustable_label
+- DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+  Expression: 'ifelse(currentvalue = defaultvalue, ''No'', ''Yes'')
+
+    '
+  Name: adjusted_flag
+- DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+  Expression: ifelse(isNotNull(utilization) AND utilization <> '', 'Yes', 'No')
+  Name: has_utilization
+- DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+  Expression: 'ifelse(globalquota = 1, ''Global'', ''Regional'')
+
+    '
+  Name: scope_label
+- DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+  Expression: |-
+    ifelse(
+      parseDecimal(utilization) > 0,
+      parseDecimal(utilization),
+      null
+    )
+  Name: utilization_nonzero
+- DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+  Expression: 'parseDecimal(utilization)
+
+    '
+  Name: utilization_pct
+DataSetIdentifierDeclarations:
+- DataSetArn: arn:aws:quicksight:::dataset/cfc8ef5d-9668-41e3-8243-b292e0d23c06
+  Identifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+FilterGroups:
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: filter_group_id_list_filter_id_ddccecb6-3e97-419f-8284-890ef825d9a0_bf050084-e2e6-45e1-8839-157db563917c
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: account_id
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: list_filter_id_ddccecb6-3e97-419f-8284-890ef825d9a0
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: sheet-c2247696
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: filter_group_id_list_filter_id_e667c054-baa8-4a27-b2fc-4a92960afa03_c90c379a-3e7d-4009-8c68-f87d4a4cd405
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: region
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: list_filter_id_e667c054-baa8-4a27-b2fc-4a92960afa03
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: sheet-c2247696
+  Status: ENABLED
+- CrossDataset: ALL_DATASETS
+  FilterGroupId: filter_group_id_list_filter_id_cb3e050b-cbe6-42ba-84f2-a2afb2edf4cd_036b884b-c25c-468b-ad5a-14d6c0aff770
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: servicename
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: list_filter_id_cb3e050b-cbe6-42ba-84f2-a2afb2edf4cd
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: sheet-c2247696
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: e5de7872-f9bd-4491-9a4e-995b4a42ace8
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: adjusted_flag
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 2b70ea97-5753-441f-a2fc-e0cc7805593a
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: sheet-c2247696
+        VisualIds:
+        - visual_8a988c4d
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 14ca55ce-7091-41ea-b030-016141d2193f
+  Filters:
+  - NumericRangeFilter:
+      AggregationFunction:
+        NumericalAggregationFunction:
+          SimpleNumericalAggregation: MAX
+      Column:
+        ColumnName: utilization_nonzero
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      FilterId: 2cd14e36-3fd1-4fe9-ac74-ec00ca78e205
+      IncludeMaximum: false
+      IncludeMinimum: true
+      NullOption: NON_NULLS_ONLY
+      RangeMinimum:
+        StaticValue: 0.01
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: sheet-c2247696
+        VisualIds:
+        - visual_81f9f0c5
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: d9dea0dd-c9f0-4c1e-9eac-026d70a43dd8
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: quotaname
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 9774b95f-fca4-4b2f-aaf2-968e6069e2ec
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: sheet-c2247696
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 60018501-322b-4c47-969b-7d3d8669015a
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: quotacode
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 41c3bc09-95aa-49a2-bd9a-b3f194cb2967
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: sheet-c2247696
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 7dc3ba4b-97d9-4ba1-9eb2-1de7f8a91921
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: account_id
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 42aded14-17b4-4d64-989c-566d4ab3d4c8
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 890173c7-33b4-4b20-ae54-3dd279886659
+        VisualIds:
+        - 9b4056c3-3e16-45ab-b614-0c52ac40fb42
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: c530d837-9bc2-4edc-8ab0-7a1bad6bab8e
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: region
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          CategoryValues:
+          - us-east-2
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+      FilterId: 34535995-8639-45b8-b4b0-1a13699e0a11
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 890173c7-33b4-4b20-ae54-3dd279886659
+        VisualIds:
+        - 9b4056c3-3e16-45ab-b614-0c52ac40fb42
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 8a9c993d-14d0-4d6d-b501-0bd5a53a1ad6
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: account_id
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 79d1ba9b-822c-4653-8097-f5631d97b0b3
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 890173c7-33b4-4b20-ae54-3dd279886659
+        VisualIds:
+        - e99c0986-51fe-4ebe-b6e9-c38246b4c7b9
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: c6d12b0a-a703-4c9d-b390-08e801d03675
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: region
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: d2618f95-abd6-4e88-b7e6-54c01b2ae63c
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 890173c7-33b4-4b20-ae54-3dd279886659
+        VisualIds:
+        - e99c0986-51fe-4ebe-b6e9-c38246b4c7b9
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 6cc2b17a-8627-44d3-9317-d1de73c420a7
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: account_id
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: cfc0159c-cf6d-46e7-a79c-f3c04a862f93
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 890173c7-33b4-4b20-ae54-3dd279886659
+        VisualIds:
+        - e99c0986-51fe-4ebe-b6e9-c38246b4c7b9
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: a55414f0-b5fa-4f95-a1cd-5009719545f1
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: region
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: dc01daea-c2d4-41f5-83e8-70f33e39eb56
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 890173c7-33b4-4b20-ae54-3dd279886659
+        VisualIds:
+        - e99c0986-51fe-4ebe-b6e9-c38246b4c7b9
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: 3b4e5cb4-9dca-407d-a615-1fe12c83df84
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: quotacode
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: c0bdc9f1-67ac-45e8-9599-3a6223aacb81
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: 890173c7-33b4-4b20-ae54-3dd279886659
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: c797eb0b-ad60-4df6-9b80-7c3a42c51a0e
+  Filters:
+  - CategoryFilter:
+      Column:
+        ColumnName: quotaname
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      Configuration:
+        FilterListConfiguration:
+          MatchOperator: CONTAINS
+          NullOption: NON_NULLS_ONLY
+          SelectAllOptions: FILTER_ALL_VALUES
+      FilterId: 37bded1d-b697-45eb-94f3-3d0af5b42f10
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: ALL_VISUALS
+        SheetId: 890173c7-33b4-4b20-ae54-3dd279886659
+  Status: ENABLED
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: e42bd7d4-0c3a-410f-88dd-c04f395f1e1e
+  Filters:
+  - NumericRangeFilter:
+      AggregationFunction:
+        NumericalAggregationFunction:
+          SimpleNumericalAggregation: MAX
+      Column:
+        ColumnName: utilization_nonzero
+        DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+      FilterId: a0b4d45e-2e25-4cb0-ad89-a482497a125d
+      IncludeMaximum: false
+      IncludeMinimum: true
+      NullOption: NON_NULLS_ONLY
+      RangeMinimum:
+        StaticValue: 0.01
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: sheet-c2247696
+        VisualIds:
+        - 114b85e9-8353-4b05-8dbf-66c2909b00b9
+  Status: ENABLED
+Options:
+  QBusinessInsightsStatus: DISABLED
+  Timezone: UTC
+  WeekStart: SUNDAY
+ParameterDeclarations: []
+Sheets:
+- ContentType: INTERACTIVE
+  Description: Overview, adjustments, detail, and utilization for AWS service quotas.
+    Default filter- latest collection_date. Filters- account_id, region, servicename,
+    adjustable, globalq...
+  FilterControls:
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: control_id_sheet-c2247696_list_filter_id_ddccecb6-3e97-419f-8284-890ef825d9a0
+      SourceFilterId: list_filter_id_ddccecb6-3e97-419f-8284-890ef825d9a0
+      Title: Filter by Account ID
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: control_id_sheet-c2247696_list_filter_id_e667c054-baa8-4a27-b2fc-4a92960afa03
+      SourceFilterId: list_filter_id_e667c054-baa8-4a27-b2fc-4a92960afa03
+      Title: Filter by Region
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: control_id_sheet-c2247696_list_filter_id_cb3e050b-cbe6-42ba-84f2-a2afb2edf4cd
+      SourceFilterId: list_filter_id_cb3e050b-cbe6-42ba-84f2-a2afb2edf4cd
+      Title: Filter by ServiceName
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: bdda9b00-3552-418a-91ea-667d68be4100
+      SourceFilterId: 2b70ea97-5753-441f-a2fc-e0cc7805593a
+      Title: Adjusted Quota
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 7af80fc0-6510-4626-b792-c352ea3ac2ec
+      SourceFilterId: 9774b95f-fca4-4b2f-aaf2-968e6069e2ec
+      Title: Filter by Quota Name
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 3d8c3c22-a848-4e35-996d-4781fac14b58
+      SourceFilterId: 41c3bc09-95aa-49a2-bd9a-b3f194cb2967
+      Title: Filter by Quota code
+      Type: MULTI_SELECT
+  Layouts:
+  - Configuration:
+      FreeFormLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+        Elements:
+        - ElementId: visual_8a988c4d
+          ElementType: VISUAL
+          Height: 512px
+          Visibility: VISIBLE
+          Width: 1596px
+          XAxisLocation: 0px
+          YAxisLocation: 1200px
+        - ElementId: visual_81f9f0c5
+          ElementType: VISUAL
+          Height: 464px
+          Visibility: VISIBLE
+          Width: 1596px
+          XAxisLocation: 0px
+          YAxisLocation: 1840px
+        - ElementId: visual_6645d451
+          ElementType: VISUAL
+          Height: 454px
+          Visibility: VISIBLE
+          Width: 794px
+          XAxisLocation: 6px
+          YAxisLocation: 286px
+        - ElementId: visual_8c530a95
+          ElementType: VISUAL
+          Height: 454px
+          Visibility: VISIBLE
+          Width: 794px
+          XAxisLocation: 806px
+          YAxisLocation: 286px
+        - ElementId: visual_7c34982e
+          ElementType: VISUAL
+          Height: 454px
+          Visibility: VISIBLE
+          Width: 794px
+          XAxisLocation: 6px
+          YAxisLocation: 746px
+        - ElementId: visual_ceb76329
+          ElementType: VISUAL
+          Height: 454px
+          Visibility: VISIBLE
+          Width: 794px
+          XAxisLocation: 806px
+          YAxisLocation: 746px
+        - ElementId: visual_a2eeca00
+          ElementType: VISUAL
+          Height: 274px
+          Visibility: VISIBLE
+          Width: 314px
+          XAxisLocation: 6px
+          YAxisLocation: 6px
+        - ElementId: visual_68c6dac9
+          ElementType: VISUAL
+          Height: 274px
+          Visibility: VISIBLE
+          Width: 314px
+          XAxisLocation: 326px
+          YAxisLocation: 6px
+        - ElementId: visual_1f646cb7
+          ElementType: VISUAL
+          Height: 274px
+          Visibility: VISIBLE
+          Width: 314px
+          XAxisLocation: 646px
+          YAxisLocation: 6px
+        - ElementId: visual_f3fb13e0
+          ElementType: VISUAL
+          Height: 274px
+          Visibility: VISIBLE
+          Width: 314px
+          XAxisLocation: 966px
+          YAxisLocation: 6px
+        - ElementId: visual_d9e6d720
+          ElementType: VISUAL
+          Height: 274px
+          Visibility: VISIBLE
+          Width: 314px
+          XAxisLocation: 1286px
+          YAxisLocation: 6px
+        - ElementId: 8778dfae-8418-4252-87bf-756617c938e3
+          ElementType: TEXT_BOX
+          Height: 64px
+          Visibility: VISIBLE
+          Width: 1596px
+          XAxisLocation: 0px
+          YAxisLocation: 1776px
+        - ElementId: 3f8995f4-4316-4bcc-baf8-6c961ca592c7
+          ElementType: TEXT_BOX
+          Height: 64px
+          Visibility: VISIBLE
+          Width: 1596px
+          XAxisLocation: 0px
+          YAxisLocation: 2304px
+        - ElementId: 114b85e9-8353-4b05-8dbf-66c2909b00b9
+          ElementType: VISUAL
+          Height: 464px
+          Visibility: VISIBLE
+          Width: 1596px
+          XAxisLocation: 0px
+          YAxisLocation: 2368px
+  Name: Main View
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 2
+          ElementId: control_id_sheet-c2247696_list_filter_id_ddccecb6-3e97-419f-8284-890ef825d9a0
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 2
+          ColumnSpan: 2
+          ElementId: control_id_sheet-c2247696_list_filter_id_e667c054-baa8-4a27-b2fc-4a92960afa03
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 4
+          ColumnSpan: 2
+          ElementId: control_id_sheet-c2247696_list_filter_id_cb3e050b-cbe6-42ba-84f2-a2afb2edf4cd
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 6
+          ColumnSpan: 2
+          ElementId: bdda9b00-3552-418a-91ea-667d68be4100
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 8
+          ColumnSpan: 2
+          ElementId: 7af80fc0-6510-4626-b792-c352ea3ac2ec
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+        - ColumnIndex: 10
+          ColumnSpan: 2
+          ElementId: 3d8c3c22-a848-4e35-996d-4781fac14b58
+          ElementType: FILTER_CONTROL
+          RowIndex: 0
+          RowSpan: 1
+  SheetId: sheet-c2247696
+  TextBoxes:
+  - Content: "<text-box>\n  <inline color=\"Accent\">Service Quota Utilization Details\
+      \ by Account -\_</inline>\n  This view shows the service quotas that AWS reports\
+      \ usage metrics for with utilization higher than 0%, based on periodic snapshots\
+      \ (not live data). Each row shows how much of a quota's limit was consumed at\
+      \ collection time, by account and region. Quotas with zero or no reported usage\
+      \ are excluded.\n  <br/>\n</text-box>"
+    SheetTextBoxId: 8778dfae-8418-4252-87bf-756617c938e3
+  - Content: "<text-box>\n  <b>Service Quota Inventory \u2014 Current vs. Default\
+      \ Values\_</b>\n  \u2014 This view shows the full list of service quotas collected\
+      \ across all accounts and regions, displaying both the current applied limit\
+      \ and the AWS default. Use this to get a complete picture of your quota posture\
+      \ \u2014 rows where Current Value exceeds Default Value indicate quotas that\
+      \ have been previously increased. All quotas are included regardless of utilization\
+      \ status.\n</text-box>"
+    SheetTextBoxId: 3f8995f4-4316-4bcc-baf8-6c961ca592c7
+  Title: Service Quotas Dashboard
+  Visuals:
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          Order:
+          - visual_81f9f0c5_servicename_field
+          - service_q-quotacode-2f89d8.5.1788287019210
+          - visual_81f9f0c5_quotaname_count_measure0
+          - service_q-quotaarn-371f13.6.1788287026869
+          - visual_81f9f0c5_account_id_count_measure1
+          - visual_81f9f0c5_region_count_measure2
+          - service_q-currentva-08fe9f.7.1788287151502
+          - service_q-defaultva-57fe2a.7.1790953812585
+          SelectedFieldOptions:
+          - CustomLabel: Service Name
+            FieldId: visual_81f9f0c5_servicename_field
+            Width: 128px
+          - CustomLabel: Quota Code
+            FieldId: service_q-quotacode-2f89d8.5.1788287019210
+          - CustomLabel: Quota Name
+            FieldId: visual_81f9f0c5_quotaname_count_measure0
+            Width: 436px
+          - CustomLabel: Quota ARN
+            FieldId: service_q-quotaarn-371f13.6.1788287026869
+            Width: 450px
+          - CustomLabel: 'Account ID '
+            FieldId: visual_81f9f0c5_account_id_count_measure1
+            Width: 132px
+          - CustomLabel: Region
+            FieldId: visual_81f9f0c5_region_count_measure2
+            Width: 106px
+          - CustomLabel: Current Value
+            FieldId: service_q-currentva-08fe9f.7.1788287151502
+            Width: 107px
+          - CustomLabel: Default Value
+            FieldId: service_q-defaultva-57fe2a.7.1790953812585
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: servicename
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_81f9f0c5_servicename_field
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotacode
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotacode-2f89d8.5.1788287019210
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotaname
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_81f9f0c5_quotaname_count_measure0
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotaarn
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotaarn-371f13.6.1788287026869
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_81f9f0c5_account_id_count_measure1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: region
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_81f9f0c5_region_count_measure2
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: currentvalue
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-currentva-08fe9f.7.1788287151502
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: defaultvalue
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-defaultva-57fe2a.7.1790953812585
+            Values: []
+        SortConfiguration: {}
+        TableOptions:
+          CellStyle:
+            Height: 25
+          HeaderStyle:
+            Height: 25
+            TextWrap: WRAP
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Current and default quota values across AWS regions</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline color="Accent">Service Quota Utilization Details by Account</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: Table listing AWS service quotas with current values,
+        defaults, units, and adjustability across accounts and regions
+      VisualId: 114b85e9-8353-4b05-8dbf-66c2909b00b9
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: quotacode
+                DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+              FieldId: visual_a2eeca00_quotacode_distinct_count_measure0
+              FormatConfiguration:
+                NumericFormatConfiguration:
+                  NumberDisplayFormatConfiguration:
+                    NullValueFormatConfiguration:
+                      NullString: 'null'
+                    NumberScale: AUTO
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Count of distinct AWS service quota codes</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Total Service Quotas Tracked</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: KPI card displaying total count of unique service quota
+        codes monitored across AWS accounts and regions
+      VisualId: visual_a2eeca00
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: servicename
+                DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+              FieldId: visual_68c6dac9_servicename_distinct_count_measure0
+              FormatConfiguration:
+                NumericFormatConfiguration:
+                  NumberDisplayFormatConfiguration:
+                    NullValueFormatConfiguration:
+                      NullString: 'null'
+                    NumberScale: AUTO
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Count of AWS services under quota monitoring</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Total Services Tracked</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: KPI card displaying the total number of AWS services being
+        tracked for quota utilization
+      VisualId: visual_68c6dac9
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: DISTINCT_COUNT
+              Column:
+                ColumnName: region
+                DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+              FieldId: visual_1f646cb7_region_distinct_count_measure0
+              FormatConfiguration:
+                NumericFormatConfiguration:
+                  NumberDisplayFormatConfiguration:
+                    NullValueFormatConfiguration:
+                      NullString: 'null'
+                    NumberScale: AUTO
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Distinct count of active service regions</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Total AWS Regions Covered</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: KPI card displaying total number of AWS regions covered
+        by service quotas monitoring
+      VisualId: visual_1f646cb7
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - NumericalMeasureField:
+              AggregationFunction:
+                SimpleNumericalAggregation: SUM
+              Column:
+                ColumnName: adjustable
+                DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+              FieldId: visual_f3fb13e0_adjustable_measure_0
+              FormatConfiguration:
+                FormatConfiguration:
+                  NumberDisplayFormatConfiguration:
+                    NullValueFormatConfiguration:
+                      NullString: 'null'
+                    NumberScale: AUTO
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Sum of quotas eligible for limit increases</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Total Adjustable Service Quotas</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: KPI card displaying total count of adjustable AWS service
+        quotas available for increase requests
+      VisualId: visual_f3fb13e0
+  - KPIVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldWells:
+          TargetValues: []
+          TrendGroups: []
+          Values:
+          - CategoricalMeasureField:
+              AggregationFunction: COUNT
+              Column:
+                ColumnName: utilization
+                DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+              FieldId: visual_d9e6d720_utilization_count_measure0
+              FormatConfiguration:
+                NumericFormatConfiguration:
+                  NumberDisplayFormatConfiguration:
+                    NullValueFormatConfiguration:
+                      NullString: 'null'
+                    NumberScale: AUTO
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Aggregate utilization across all service quotas</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Total Quota Utilization Value</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: KPI card displaying the total sum of utilization values
+        across all AWS service quotas being monitored
+      VisualId: visual_d9e6d720
+  - BarChartVisual:
+      Actions: []
+      ChartConfiguration:
+        BarsArrangement: CLUSTERED
+        CategoryAxis:
+          ScrollbarOptions:
+            VisibleRange:
+              PercentRange:
+                From: 0.0
+                To: 20.0
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: servicename
+                DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+              FieldId: visual_6645d451_servicename_field
+            CustomLabel: Service Name
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: servicename
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_6645d451_servicename_field
+            Colors:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotaappliedatlevel
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotaappl-fb80cf.2.1787864151058
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: DISTINCT_COUNT
+                Column:
+                  ColumnName: quotacode
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_6645d451_quotacode_distinct_count_measure0
+        Legend:
+          Width: 112px
+        Orientation: HORIZONTAL
+        SortConfiguration:
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: visual_6645d451_servicename_field
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: visual_6645d451_servicename_field
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: visual_6645d451_quotacode_distinct_count_measure0
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: service_q-quotaappl-fb80cf.2.1787864151058
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Services ranked by total number of quotas</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Quota Count by AWS Service</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: Horizontal bar chart showing total quota counts across
+        AWS services, revealing which services have the most defined quotas
+      VisualId: visual_6645d451
+  - BarChartVisual:
+      Actions: []
+      ChartConfiguration:
+        BarsArrangement: CLUSTERED
+        CategoryLabelOptions:
+          AxisLabelOptions:
+          - ApplyTo:
+              Column:
+                ColumnName: region
+                DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+              FieldId: visual_8c530a95_region_field
+            CustomLabel: Region
+        DataLabels:
+          Overlap: DISABLE_OVERLAP
+          Visibility: VISIBLE
+        FieldWells:
+          BarChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: region
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_8c530a95_region_field
+            Colors: []
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: DISTINCT_COUNT
+                Column:
+                  ColumnName: quotacode
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_8c530a95_quotacode_distinct_count_measure0
+        Orientation: VERTICAL
+        SortConfiguration: {}
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Distribution of unique quota codes across AWS
+            regions</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Service Quota Count by Region</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: Bar chart comparing the count of service quotas across
+        AWS regions, revealing which regions have the most quota definitions
+      VisualId: visual_8c530a95
+  - PieChartVisual:
+      Actions: []
+      ChartConfiguration:
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: LARGE
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: adjustable_label
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-adjustabl-5ad7c6.1.1787847588582
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
+                Column:
+                  ColumnName: quotacode
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_7c34982e_quotacode_count_measure0
+        Legend:
+          Width: 126px
+        SortConfiguration:
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: visual_7c34982e_quotacode_count_measure0
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: visual_7c34982e_quotacode_count_measure0
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: service_q-adjustabl-5ad7c6.1.1787847588582
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Proportion of quota codes by adjustability status</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Adjustable vs Non-Adjustable Quotas</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: Pie chart showing distribution of service quotas by adjustability,
+        revealing the share of adjustable versus fixed quotas
+      VisualId: visual_7c34982e
+  - PieChartVisual:
+      Actions: []
+      ChartConfiguration:
+        DonutOptions:
+          ArcOptions:
+            ArcThickness: MEDIUM
+        FieldWells:
+          PieChartAggregatedFieldWells:
+            Category:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: scope_label
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: 65fe9cb9-f8fa-46ca-afbd-d5ae07ffcaea.1.1787849996098
+            Values:
+            - CategoricalMeasureField:
+                AggregationFunction: COUNT
+                Column:
+                  ColumnName: quotacode
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_ceb76329_quotacode_count_measure0
+        SortConfiguration:
+          CategorySort:
+          - FieldSort:
+              Direction: DESC
+              FieldId: visual_ceb76329_quotacode_count_measure0
+        Tooltip:
+          FieldBasedTooltip:
+            AggregationVisibility: HIDDEN
+            TooltipFields:
+            - FieldTooltipItem:
+                FieldId: visual_ceb76329_quotacode_count_measure0
+                Visibility: VISIBLE
+            - FieldTooltipItem:
+                FieldId: 65fe9cb9-f8fa-46ca-afbd-d5ae07ffcaea.1.1787849996098
+                Visibility: VISIBLE
+            TooltipTitleType: PRIMARY_VALUE
+          SelectedTooltipType: BASIC
+          TooltipVisibility: VISIBLE
+      ColumnHierarchies: []
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Proportion of quotas by global scope indicator</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Global vs Regional Quota Distribution</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: Pie chart showing the distribution of service quotas split
+        between global and regional scopes, highlighting quota scope proportions
+      VisualId: visual_ceb76329
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - CustomLabel: Service Name
+            FieldId: visual_8a988c4d_servicename_field
+            Width: 134px
+          - CustomLabel: Quota Code
+            FieldId: service_q-quotacode-2f89d8.6.1787850816699
+            Width: 99px
+          - CustomLabel: Quota Name
+            FieldId: visual_8a988c4d_quotaname_count_measure0
+            Width: 433px
+          - CustomLabel: Quota ARN
+            FieldId: service_q-quotaarn-371f13.7.1787866390879
+            Width: 449px
+          - CustomLabel: Account ID
+            FieldId: visual_8a988c4d_account_id_count_measure1
+            Width: 125px
+          - CustomLabel: Region
+            FieldId: visual_8a988c4d_region_count_measure2
+            Width: 112px
+          - CustomLabel: Default Value
+            FieldId: visual_8a988c4d_defaultvalue_count_measure3
+            Width: 93px
+          - CustomLabel: Current Value
+            FieldId: visual_8a988c4d_currentvalue_count_measure4
+            Width: 108px
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: servicename
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_8a988c4d_servicename_field
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotacode
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotacode-2f89d8.6.1787850816699
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotaname
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_8a988c4d_quotaname_count_measure0
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotaarn
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotaarn-371f13.7.1787866390879
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_8a988c4d_account_id_count_measure1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: region
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_8a988c4d_region_count_measure2
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MIN
+                Column:
+                  ColumnName: defaultvalue
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_8a988c4d_defaultvalue_count_measure3
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: currentvalue
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_8a988c4d_currentvalue_count_measure4
+        SortConfiguration:
+          PaginationConfiguration:
+            PageNumber: 1
+            PageSize: 10000
+        TableOptions:
+          HeaderStyle:
+            Height: 25
+            TextWrap: WRAP
+      Subtitle:
+        FormatText:
+          RichText: |-
+            <visual-subtitle>
+              <inline font-size="13px">Quota Adjustments Detail Default vs. current values for all modified quotas across accounts and regions. Use this to spot which services have been tuned and by how much.</inline>
+              <br/>
+            </visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Adjusted Service Quotas Breakdown</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: visual_8a988c4d
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          Order:
+          - visual_81f9f0c5_servicename_field
+          - service_q-quotacode-2f89d8.5.1788287019210
+          - visual_81f9f0c5_quotaname_count_measure0
+          - service_q-quotaarn-371f13.6.1788287026869
+          - visual_81f9f0c5_account_id_count_measure1
+          - visual_81f9f0c5_region_count_measure2
+          - service_q-currentva-08fe9f.7.1788287151502
+          - 9e6ab697-74a2-4143-b9cc-1616085d024a.8.1788287857414
+          SelectedFieldOptions:
+          - CustomLabel: Service Name
+            FieldId: visual_81f9f0c5_servicename_field
+            Width: 128px
+          - CustomLabel: Quota Code
+            FieldId: service_q-quotacode-2f89d8.5.1788287019210
+          - CustomLabel: Quota Name
+            FieldId: visual_81f9f0c5_quotaname_count_measure0
+            Width: 436px
+          - CustomLabel: Quota ARN
+            FieldId: service_q-quotaarn-371f13.6.1788287026869
+            Width: 450px
+          - CustomLabel: 'Account ID '
+            FieldId: visual_81f9f0c5_account_id_count_measure1
+            Width: 132px
+          - CustomLabel: Region
+            FieldId: visual_81f9f0c5_region_count_measure2
+            Width: 106px
+          - CustomLabel: Current Value
+            FieldId: service_q-currentva-08fe9f.7.1788287151502
+            Width: 107px
+          - CustomLabel: Utilization %
+            FieldId: 9e6ab697-74a2-4143-b9cc-1616085d024a.8.1788287857414
+            Width: 104px
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: servicename
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_81f9f0c5_servicename_field
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotacode
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotacode-2f89d8.5.1788287019210
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotaname
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_81f9f0c5_quotaname_count_measure0
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotaarn
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotaarn-371f13.6.1788287026869
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_81f9f0c5_account_id_count_measure1
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: region
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: visual_81f9f0c5_region_count_measure2
+            - NumericalDimensionField:
+                Column:
+                  ColumnName: currentvalue
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-currentva-08fe9f.7.1788287151502
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: utilization_nonzero
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: 9e6ab697-74a2-4143-b9cc-1616085d024a.8.1788287857414
+                FormatConfiguration:
+                  FormatConfiguration:
+                    NumberDisplayFormatConfiguration:
+                      NegativeValueConfiguration:
+                        DisplayMode: NEGATIVE
+                      NullValueFormatConfiguration:
+                        NullString: 'null'
+                      SeparatorConfiguration:
+                        DecimalSeparator: DOT
+                        ThousandsSeparator:
+                          Symbol: COMMA
+                          Visibility: VISIBLE
+        SortConfiguration: {}
+        TableOptions:
+          CellStyle:
+            Height: 25
+          HeaderStyle:
+            Height: 25
+            TextWrap: WRAP
+      Subtitle:
+        FormatText:
+          RichText: <visual-subtitle>Current and default quota values across AWS regions</visual-subtitle>
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <inline color="Accent">Service Quota Utilization Details by Account</inline>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualContentAltText: Table listing AWS service quotas with current values,
+        defaults, units, and adjustability across accounts and regions
+      VisualId: visual_81f9f0c5
+- ContentType: INTERACTIVE
+  FilterControls:
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 99d57e8f-cdab-4b73-b93e-1e7672bb4653
+      SourceFilterId: 42aded14-17b4-4d64-989c-566d4ab3d4c8
+      Title: Account A
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 1ed0beac-7b17-4b23-b2cb-13f0a2d8ab11
+      SourceFilterId: 34535995-8639-45b8-b4b0-1a13699e0a11
+      Title: Account A Region
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 7d5d6a93-0ce2-4b56-9488-355072448036
+      SourceFilterId: cfc0159c-cf6d-46e7-a79c-f3c04a862f93
+      Title: Account B Selector
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 3522f216-8c78-4563-a8d3-25b908d50b6c
+      SourceFilterId: dc01daea-c2d4-41f5-83e8-70f33e39eb56
+      Title: Account B Region
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 057128e0-9b71-4815-8af0-d211850ba964
+      SourceFilterId: c0bdc9f1-67ac-45e8-9599-3a6223aacb81
+      Title: Filter by Quota code
+      Type: MULTI_SELECT
+  - Dropdown:
+      DisplayOptions:
+        InfoIconLabelOptions:
+          Visibility: HIDDEN
+        SelectAllOptions:
+          Visibility: VISIBLE
+        TitleOptions:
+          FontConfiguration:
+            FontSize:
+              Relative: MEDIUM
+          Visibility: VISIBLE
+      FilterControlId: 310e8196-80b7-4c38-a8d2-0ee2c000d803
+      SourceFilterId: 37bded1d-b697-45eb-94f3-3d0af5b42f10
+      Title: Filter by Quota Name
+      Type: MULTI_SELECT
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 36
+          ElementId: 52df2c0c-32bf-435c-87a9-858ed4a4e583
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 2
+        - ColumnIndex: 0
+          ColumnSpan: 18
+          ElementId: 9b4056c3-3e16-45ab-b614-0c52ac40fb42
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 21
+        - ColumnIndex: 18
+          ColumnSpan: 18
+          ElementId: e99c0986-51fe-4ebe-b6e9-c38246b4c7b9
+          ElementType: VISUAL
+          RowIndex: 2
+          RowSpan: 21
+  Name: Detailed View
+  SheetControlLayouts:
+  - Configuration:
+      GridLayout:
+        Elements:
+        - ColumnSpan: 2
+          ElementId: 99d57e8f-cdab-4b73-b93e-1e7672bb4653
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 1ed0beac-7b17-4b23-b2cb-13f0a2d8ab11
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 7d5d6a93-0ce2-4b56-9488-355072448036
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 3522f216-8c78-4563-a8d3-25b908d50b6c
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 057128e0-9b71-4815-8af0-d211850ba964
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+        - ColumnSpan: 2
+          ElementId: 310e8196-80b7-4c38-a8d2-0ee2c000d803
+          ElementType: FILTER_CONTROL
+          RowSpan: 1
+  SheetId: 890173c7-33b4-4b20-ae54-3dd279886659
+  TextBoxes:
+  - SheetTextBoxId: 52df2c0c-32bf-435c-87a9-858ed4a4e583
+  Visuals:
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - FieldId: service_q-quotaname-ccfe0f.6.1790952922259
+            Width: 336px
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-account_i-8c9fe3.1.1790952922259
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotacode
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotacode-2f89d8.5.1790952922259
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotaname
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotaname-ccfe0f.6.1790952922259
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: region
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-region-48ba10.0.1790952922259
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: currentvalue
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-currentva-08fe9f.2.1790952922259
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: defaultvalue
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-defaultva-57fe2a.3.1790952922259
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: utilization_nonzero
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: 9e6ab697-74a2-4143-b9cc-1616085d024a.6.1790953004892
+        SortConfiguration: {}
+        TableOptions:
+          HeaderStyle:
+            Height: 25
+            TextWrap: WRAP
+          RowAlternateColorOptions:
+            Status: DISABLED
+            UsePrimaryBackgroundColor: ENABLED
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Account B</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: e99c0986-51fe-4ebe-b6e9-c38246b4c7b9
+  - TableVisual:
+      Actions: []
+      ChartConfiguration:
+        FieldOptions:
+          SelectedFieldOptions:
+          - FieldId: service_q-quotaname-ccfe0f.6.1790952922259
+            Width: 336px
+        FieldWells:
+          TableAggregatedFieldWells:
+            GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: account_id
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-account_i-8c9fe3.1.1790952922259
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotacode
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotacode-2f89d8.5.1790952922259
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: quotaname
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-quotaname-ccfe0f.6.1790952922259
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: region
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-region-48ba10.0.1790952922259
+            Values:
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: currentvalue
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-currentva-08fe9f.2.1790952922259
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: defaultvalue
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: service_q-defaultva-57fe2a.3.1790952922259
+            - NumericalMeasureField:
+                AggregationFunction:
+                  SimpleNumericalAggregation: MAX
+                Column:
+                  ColumnName: utilization_nonzero
+                  DataSetIdentifier: cfc8ef5d-9668-41e3-8243-b292e0d23c06
+                FieldId: 9e6ab697-74a2-4143-b9cc-1616085d024a.6.1790953004892
+        SortConfiguration: {}
+        TableOptions:
+          HeaderStyle:
+            Height: 25
+            TextWrap: WRAP
+          RowAlternateColorOptions:
+            Status: DISABLED
+            UsePrimaryBackgroundColor: ENABLED
+      Subtitle:
+        Visibility: VISIBLE
+      Title:
+        FormatText:
+          RichText: |-
+            <visual-title>
+              <b>Account A</b>
+            </visual-title>
+        Visibility: VISIBLE
+      VisualId: 9b4056c3-3e16-45ab-b614-0c52ac40fb42
+- ContentType: INTERACTIVE
+  Layouts:
+  - Configuration:
+      GridLayout:
+        CanvasSizeOptions:
+          ScreenCanvasSizeOptions:
+            OptimizedViewPortWidth: 1600px
+            ResizeOption: FIXED
+        Elements:
+        - ColumnIndex: 0
+          ColumnSpan: 30
+          ElementId: a235a6c6-6426-4584-8e1f-164da83baee0
+          ElementType: TEXT_BOX
+          RowIndex: 0
+          RowSpan: 20
+  Name: About
+  SheetId: 322b87b0-a38a-4576-bf8a-bd9eae949037
+  TextBoxes:
+  - Content: "<text-box>\n  <inline font-size=\"20px\">\n    <b>Service Quotas Dashboard</b>\n\
+      \  </inline>\n  <br/>\n  <b>Version: 1.0.0</b>\n  <br/>\n  <br/>\n  <inline\
+      \ font-size=\"24px\">\n    <b>About This Dashboard</b>\n  </inline>\n  <br/>\n\
+      \  Service Quotas Dashboard provides org-wide visibility into AWS service quota\
+      \ consumption across all accounts, regions, and services \u2014 collected automatically\
+      \ via the CID Data Collection framework.\n  <br/>\n  <br/>\n  <br/>\n  <inline\
+      \ font-size=\"20px\">\n    <b>What This Dashboard Is For</b>\n  </inline>\n\
+      \  <br/>\n  AWS service quotas define the maximum limits for resources and API\
+      \ calls across every AWS service. When a quota is reached, workloads fail \u2014\
+      \ deployments block, API calls return errors, and incidents follow. This dashboard\
+      \ gives engineering and operations teams a proactive view of quota consumption\
+      \ across their entire AWS Organization, enabling them to identify risks before\
+      \ they become incidents.\n  <br/>\n  <br/>\n  <br/>\n  <inline font-size=\"\
+      20px\">\n    <b>Dashboard Views-Overview Tab\_</b>\n  </inline>\n  <br/>\n \
+      \ High-level summary of quota coverage and consumption across the organization:\n\
+      \  <br/>\n  <ul>\n    <li class=\"ql-indent-0\">Total Service Quotas Tracked\
+      \ \u2014 count of distinct quota codes collected across all accounts and regions</li>\n\
+      \    <li class=\"ql-indent-0\">Total Services Tracked \u2014 number of AWS services\
+      \ under quota monitoring</li>\n    <li class=\"ql-indent-0\">Total AWS Regions\
+      \ Covered \u2014 number of active regions in scope</li>\n    <li class=\"ql-indent-0\"\
+      >Total Adjustable Service Quotas \u2014 quotas eligible for limit increase requests</li>\n\
+      \    <li class=\"ql-indent-0\">Total Quota Utilization Value \u2014 aggregate\
+      \ utilization across all quotas where AWS reports usage metrics</li>\n  </ul>\n\
+      \  <br/>\n  <br/>\n  <b>Quota Count by AWS Service\_</b>\n  \u2014 ranks AWS\
+      \ services by number of quotas tracked. Use this to understand which services\
+      \ have the broadest quota surface area in your environment.\n  <br/>\n  <b>Service\
+      \ Quota Count by Region\_</b>\n  \u2014 distribution of quota codes across regions.\
+      \ us-east-1 typically has the highest count as AWS launches new services there\
+      \ first.\n  <br/>\n  <b>Adjustable vs Non-Adjustable Quotas</b>\n  \_\u2014\
+      \ proportion of quotas that can be increased via a service limit request vs\
+      \ hard limits that cannot be changed.\n  <br/>\n  <b>Global vs Regional Quota\
+      \ Distribution\_</b>\n  \u2014 identifies quotas that apply account-wide (global)\
+      \ vs those scoped to a specific region.\n  <br/>\n  <b>Adjusted Service Quotas\
+      \ Breakdown</b>\n  \_\u2014 shows quotas where the current value differs from\
+      \ the AWS default. Use this to spot which services have been manually tuned\
+      \ and by how much across accounts and regions.\n  <br/>\n  <b>Service Quota\
+      \ Utilization Details by Account\_</b>\n  \u2014 shows quotas where AWS reports\
+      \ active usage metrics with utilization above 0%. Based on periodic snapshots\
+      \ (not live data). Use this to identify quotas approaching their limit.\n  <br/>\n\
+      \  <br/>\n  <inline font-size=\"20px\">\n    <b>Dashboard Views-Detailed View\_\
+      </b>\n  </inline>\n  <br/>\n  <inline font-size=\"14px\">Tab Side-by-side comparison\
+      \ of quota values across two accounts and regions. Use this to:</inline>\n \
+      \ <br/>\n  <ul>\n    <li class=\"ql-indent-0\">Compare quota posture between\
+      \ accounts</li>\n    <li class=\"ql-indent-0\">Identify discrepancies in applied\
+      \ limits across regions</li>\n    <li class=\"ql-indent-0\">Spot quotas with\
+      \ zero current usage that may indicate unused capacity reservations</li>\n \
+      \ </ul>\n  <br/>\n  <br/>\n  <br/>\n  <inline font-size=\"20px\">\n    <b>Fields\
+      \ Reference</b>\n  </inline>\n  <br/>\n  <ul>\n    <li class=\"ql-indent-0\"\
+      >account_id \u2014 AWS account ID</li>\n    <li class=\"ql-indent-0\">region\
+      \ \u2014 AWS region where the quota applies</li>\n    <li class=\"ql-indent-0\"\
+      >servicename \u2014 AWS service name (e.g. Amazon EC2, AWS Lambda)</li>\n  \
+      \  <li class=\"ql-indent-0\">quotacode \u2014 Unique quota identifier (e.g.\
+      \ L-1216C47A)</li>\n    <li class=\"ql-indent-0\">quotaname \u2014 Human-readable\
+      \ quota description</li>\n    <li class=\"ql-indent-0\">currentvalue \u2014\
+      \ Applied quota limit in this account \u2014 may differ from the default if\
+      \ a limit increase was previously requested</li>\n    <li class=\"ql-indent-0\"\
+      >defaultvalue \u2014 AWS baseline limit before any customer-requested increases</li>\n\
+      \    <li class=\"ql-indent-0\">adjustable \u2014 Whether this quota supports\
+      \ limit increase requests</li>\n    <li class=\"ql-indent-0\">globalquota \u2014\
+      \ Whether this quota applies account-wide (true) or is scoped per-region (false)</li>\n\
+      \    <li class=\"ql-indent-0\">utilization \u2014 % of the quota consumed at\
+      \ collection time \u2014 only available for quotas where AWS natively tracks\
+      \ usage (~1,255 quotas across ~68 services)</li>\n    <li class=\"ql-indent-0\"\
+      >collection_date \u2014 Timestamp of when this data was collected \u2014 refreshes\
+      \ every 14 days</li>\n  </ul>\n  <br/>\n  <br/>\n  <br/>\n  <inline font-size=\"\
+      20px\">\n    <b>Data Freshness</b>\n  </inline>\n  <br/>\n  Data is collected\
+      \ every 14 days via the CID Data Collection framework. The dashboard defaults\
+      \ to the latest\n  <inline font-size=\"12px\">collection_date</inline>\n  .\
+      \ Use the collection date filter to compare quota posture over time.\n</text-box>"
+    SheetTextBoxId: a235a6c6-6426-4584-8e1f-164da83baee0
+  Visuals: []
