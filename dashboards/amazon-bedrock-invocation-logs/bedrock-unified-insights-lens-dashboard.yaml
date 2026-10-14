@@ -7,8 +7,7 @@ dashboards:
     dashboardId: bedrock-unified-insights-lens-dashboard
     category: Custom
     theme: MIDNIGHT
-    version: v0.0.0
-    file: ./bedrock-unified-insights-lens-dashboard-definition.yaml
+    version: v1.0.0
     data: |-
       AnalysisDefaults:
         DefaultNewSheetConfiguration:
@@ -1832,8 +1831,8 @@ views:
       , CAST(COALESCE(json_extract_scalar(output.outputbodyjson, '$.usage.cacheReadInputTokens'), json_extract_scalar(output.outputbodyjson, '$.usage.cacheReadInputTokenCount'), json_extract_scalar(output.outputbodyjson, '$.usage.cache_read_input_tokens')) AS INTEGER) usage_cache_read_tokens
       , CAST(COALESCE(json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokens'), json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokenCount'), json_extract_scalar(output.outputbodyjson, '$.usage.cache_creation_input_tokens')) AS INTEGER) usage_cache_write_tokens
       , COALESCE(json_extract_scalar(output.outputbodyjson, '$.stopReason'), json_extract_scalar(output.outputbodyjson, '$.stop_reason')) stop_reason
-      , COALESCE(json_extract_scalar(output.outputbodyjson, '$.output.message.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.completion'), json_extract_scalar(output.outputbodyjson, '$.outputText')) response_preview
-      , COALESCE(json_extract_scalar(input.inputbodyjson, '$.messages[0].content[0].text'), json_extract_scalar(input.inputbodyjson, '$.messages[0].content'), json_extract_scalar(input.inputbodyjson, '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText')) prompt_preview
+      , substr(COALESCE(json_extract_scalar(output.outputbodyjson, '$.output.message.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.completion'), json_extract_scalar(output.outputbodyjson, '$.outputText')), 1, 1000) response_preview
+      , substr(COALESCE(json_extract_scalar(input.inputbodyjson, '$.messages[0].content[0].text'), json_extract_scalar(input.inputbodyjson, '$.messages[0].content'), json_extract_scalar(input.inputbodyjson, '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText')), 1, 1000) prompt_preview
       FROM
         "${athena_database_name}".bedrock_logs
       WHERE (from_iso8601_timestamp(timestamp) >= date_add('month', -6, current_timestamp))
