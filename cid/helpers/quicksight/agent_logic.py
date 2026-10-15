@@ -333,30 +333,33 @@ def derive_space_id(name_or_id: str) -> str:
 # Check indicator used to mark deployed entries in listings/pickers, mirroring the
 # existing dashboard picker in common.py
 DEPLOYED_MARK = '✓'
-# Category hidden from listings and pickers
-HIDDEN_CATEGORY = 'Deprecated'
-# Category used when an entry declares none, mirroring the dashboard picker default
-DEFAULT_CATEGORY = 'Other'
 
 
-def build_agent_listing(agents_catalog: dict, deployed_ids) -> dict:
-    """Catalog agents grouped by category (Deprecated hidden), each with key, agentId, name, deployed and
+def agent_summary(entry: dict) -> str:
+    """One-line purpose of an agent: its ``summary``, else the first sentence of its description."""
+    summary = str((entry or {}).get('summary') or '').strip()
+    if summary:
+        return summary
+    description = ' '.join(str((entry or {}).get('description') or '').split())
+    return description.split('. ')[0].rstrip('.')
+
+
+def build_agent_listing(agents_catalog: dict, deployed_ids) -> list:
+    """Catalog agents in catalog order, each with key, agentId, name, summary, deployed and
     a ``' ✓[agentId] name'`` display label."""
     deployed_set = set(deployed_ids or ())
-    listing = {}
+    listing = []
     for key, entry in (agents_catalog or {}).items():
         entry = entry or {}
-        category = str(entry.get('category') or DEFAULT_CATEGORY)
-        if category == HIDDEN_CATEGORY:
-            continue
         agent_id = entry.get('agentId') or key
         name = entry.get('name') or key
         deployed = key in deployed_set or agent_id in deployed_set
         check = DEPLOYED_MARK if deployed else ' '
-        listing.setdefault(category, []).append({
+        listing.append({
             'key': key,
             'agentId': agent_id,
             'name': name,
+            'summary': agent_summary(entry),
             'deployed': deployed,
             'display': f' {check}[{agent_id}] {name}',
         })

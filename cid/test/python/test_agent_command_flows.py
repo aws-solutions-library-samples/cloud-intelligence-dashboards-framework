@@ -5,6 +5,7 @@ with mocked qs/space/agent helpers.
 """
 
 import io
+import logging
 import re
 import contextlib
 from types import SimpleNamespace
@@ -138,7 +139,6 @@ def make_definition(required=(), optional=(), datasets=(), knowledge_bases=(),
     return {
         'name': name,
         'agentId': agent_id,
-        'category': 'FinOps',
         'persona': {
             'identity': 'Cost optimization advisor',
             'customInstructions': 'Answer using the attached dashboards.',
@@ -677,8 +677,8 @@ def test_property_13_zero_deploy_and_zero_data_layer_calls(req_flags, opt_flags)
 def test_property_10_zero_present_raises_guidance_error_and_creates_nothing(
         n_required, n_optional, n_unrelated):
     """With every dependency dashboard absent (even when unrelated dashboards are
-    deployed), the handler stops with a CidError carrying the CID/CUDOS and Data
-    Collection guidance, names no cid-cmd command, and creates nothing."""
+    deployed), the handler stops with a CidError carrying the CID deployment
+    guidance, names no cid-cmd command, and creates nothing."""
     reset_parameters()
     required = [f'req-{i}' for i in range(n_required)]
     optional = [f'opt-{i}' for i in range(n_optional)]
@@ -692,9 +692,10 @@ def test_property_10_zero_present_raises_guidance_error_and_creates_nothing(
     ]
     excinfo, _ = run_create_raising(cid_obj, CidError, agent_id=AGENT_ID)
     message = str(excinfo.value)
-    assert 'https://catalog.workshops.aws/awscid/en-US' in message   # CID/CUDOS guidance
-    assert 'data-collection' in message                              # Data Collection guidance
+    assert 'cloud-intelligence-dashboards/dashboards.html' in message   # CID/CUDOS guidance
     assert 'cid-cmd' not in message
+    # stops before the owner is resolved, so not even the cid-owners group can be created
+    assert not cid_obj.qs.get_principal_arn.called
     assert_nothing_created(cid_obj)
 
 
@@ -723,7 +724,7 @@ def test_property_11_proceeds_attaching_exactly_the_present_set(req_flags, opt_f
 @given(req_flags=required_flags, opt_flags=optional_flags)
 def test_property_12_missing_dependencies_are_marked_and_explained_as_optional(req_flags, opt_flags):
     """Every missing dashboard is marked ✗ and one note explains that missing items are
-    optional, with the CID/CUDOS and Data Collection guidance, never naming a cid-cmd
+    optional, with the CID deployment guidance, never naming a cid-cmd
     command; nothing is deployed."""
     if not any(req_flags) and not any(opt_flags):
         req_flags = [True] + list(req_flags[1:])  # a proceeding run_create needs >=1 present
@@ -735,12 +736,14 @@ def test_property_12_missing_dependencies_are_marked_and_explained_as_optional(r
     result, output = run_create(cid_obj, agent_id=AGENT_ID)
     assert result == AGENT_ID
     plain = re.sub(r'\033\[[0-9;]*m', '', output)
-    notes = [line for line in plain.splitlines() if 'Missing items are optional' in line]
+    lines = plain.splitlines()
+    notes = [index for index, line in enumerate(lines) if 'Missing items are optional' in line]
     if missing:
         assert len(notes) == 1
         assert all(f'✗ {key}' in plain for key in missing)
-        assert 'https://catalog.workshops.aws/awscid/en-US' in notes[0] and 'Data Collection' in notes[0]
-        assert 'cid-cmd' not in notes[0]
+        note = '\n'.join(lines[notes[0]:notes[0] + 2])   # note + the deployment guide link
+        assert 'cloud-intelligence-dashboards/dashboards.html' in note
+        assert 'cid-cmd' not in note
     else:
         assert not notes
     assert_no_deploy_or_data_layer_calls(cid_obj)
@@ -840,7 +843,7 @@ def test_property_26_missing_agent_id_reported_by_name_non_interactively(agent_k
     definition = make_definition(required=('dash-a',))
     cid_obj = make_create_cid(definition, present=('dash-a',))
     cid_obj.resources['agents'] = {
-        key: {'name': key.title(), 'agentId': key, 'category': 'FinOps'}
+        key: {'name': key.title(), 'agentId': key}
         for key in agent_keys
     }
     buffer = io.StringIO()
@@ -880,7 +883,6 @@ def make_target_definition(space_keys=(SPACE_KEY,)):
     return {
         'name': 'Test Agent',
         'agentId': AGENT_ID,
-        'category': 'FinOps',
         'dependsOn': {'spaces': list(space_keys)},
     }
 
@@ -1141,7 +1143,7 @@ def build_catalog_and_deployed(configs):
     blocking_ids = set()
     for index, (deployed, managed, reference) in enumerate(configs):
         other_id = f'other-{index}'
-        entry = {'name': f'Other {index}', 'agentId': other_id, 'category': 'FinOps',
+        entry = {'name': f'Other {index}', 'agentId': other_id,
                  'dependsOn': {'spaces': [SPACE_KEY] if reference in ('catalog', 'both') else []}}
         agents_catalog[other_id] = entry
         if deployed:
@@ -1225,12 +1227,11 @@ list_agents = Cid.list_agents.__wrapped__
 
 
 def make_catalog():
-    """A catalog spanning multiple categories, including a Deprecated entry."""
+    """A small agents catalog (listing order = catalog order)."""
     return {
-        'finops': {'name': 'FinOps Advisor', 'agentId': 'finops', 'category': 'FinOps'},
-        'kpi': {'name': 'KPI Advisor', 'agentId': 'kpi', 'category': 'FinOps'},
-        'operations': {'name': 'Ops Advisor', 'agentId': 'operations', 'category': 'Operations'},
-        'legacy': {'name': 'Legacy Agent', 'agentId': 'legacy', 'category': 'Deprecated'},
+        'finops': {'name': 'FinOps Advisor', 'agentId': 'finops'},
+        'kpi': {'name': 'KPI Advisor', 'agentId': 'kpi'},
+        'operations': {'name': 'Ops Advisor', 'agentId': 'operations'},
     }
 
 
@@ -1310,24 +1311,19 @@ def run_list(cid_obj, **kwargs):
     return result, output
 
 
-class TestCategoryGroupingAndDeployedMarking:
-    """: category-grouped listing with ✓ on deployed entries."""
+class TestListingAndDeployedMarking:
+    """: flat listing in catalog order with ✓ on deployed entries."""
 
-    def test_entries_grouped_by_category(self):
+    def test_entries_listed_in_catalog_order(self):
         cid_obj = make_list_cid(make_catalog())
         listing, output = run_list(cid_obj)
-        assert set(listing) == {'FinOps', 'Operations'}
-        assert [entry['key'] for entry in listing['FinOps']] == ['finops', 'kpi']
-        assert [entry['key'] for entry in listing['Operations']] == ['operations']
-        # category headers appear in the printed output
-        assert 'FinOps' in output and 'Operations' in output
+        assert [entry['key'] for entry in listing] == ['finops', 'kpi', 'operations']
+        assert output.index('[finops]') < output.index('[kpi]') < output.index('[operations]')
 
     def test_exactly_the_deployed_entries_are_check_marked(self):
         cid_obj = make_list_cid(make_catalog(), deployed=('finops', 'operations'))
         listing, output = run_list(cid_obj)
-        deployed = {entry['agentId'] for entries in listing.values()
-                    for entry in entries if entry['deployed']}
-        assert deployed == {'finops', 'operations'}
+        assert {entry['agentId'] for entry in listing if entry['deployed']} == {'finops', 'operations'}
         assert f'{DEPLOYED_MARK}[finops]' in output
         assert f'{DEPLOYED_MARK}[operations]' in output
         # the non-deployed entry is listed without the check indicator
@@ -1337,7 +1333,7 @@ class TestCategoryGroupingAndDeployedMarking:
     def test_no_deployed_entries_no_check_marks(self):
         cid_obj = make_list_cid(make_catalog())
         listing, output = run_list(cid_obj)
-        assert all(not entry['deployed'] for entries in listing.values() for entry in entries)
+        assert all(not entry['deployed'] for entry in listing)
         assert DEPLOYED_MARK not in output
 
     def test_empty_catalog_prints_message_and_returns_empty(self):
@@ -1352,7 +1348,7 @@ class TestLiveStateSource:
     """: deployment status comes from live DescribeAgent per entry,
     never from ListAgents (which omits PREVIEW/FAILED agents)."""
 
-    def test_agent_get_called_once_per_non_deprecated_entry(self):
+    def test_agent_get_called_once_per_entry(self):
         cid_obj = make_list_cid(make_catalog(), deployed=('finops',))
         run_list(cid_obj)
         queried = sorted(call.args[0] for call in cid_obj.agent.get.call_args_list)
@@ -1367,25 +1363,6 @@ class TestLiveStateSource:
                        if name != 'get')
 
 
-class TestDeprecatedHidden:
-    """: Deprecated entries are absent from output AND never described."""
-
-    def test_deprecated_entry_absent_from_listing_and_output(self):
-        cid_obj = make_list_cid(make_catalog(), deployed=('legacy',))
-        listing, output = run_list(cid_obj)
-        assert 'Deprecated' not in listing
-        keys = {entry['key'] for entries in listing.values() for entry in entries}
-        assert 'legacy' not in keys
-        assert 'legacy' not in output
-        assert 'Legacy Agent' not in output
-
-    def test_deprecated_entry_never_queried(self):
-        cid_obj = make_list_cid(make_catalog())
-        run_list(cid_obj)
-        queried = {call.args[0] for call in cid_obj.agent.get.call_args_list}
-        assert 'legacy' not in queried
-
-
 class TestUnknownStatusFallback:
     """: a live-query failure marks that entry '?' and listing continues."""
 
@@ -1394,14 +1371,13 @@ class TestUnknownStatusFallback:
         listing, output = run_list(cid_obj)
         assert '?[kpi] KPI Advisor' in output
         # the failing entry is not marked deployed
-        kpi = next(entry for entry in listing['FinOps'] if entry['key'] == 'kpi')
+        kpi = next(entry for entry in listing if entry['key'] == 'kpi')
         assert kpi['deployed'] is False
 
     def test_remaining_entries_still_listed_after_failure(self):
         cid_obj = make_list_cid(make_catalog(), deployed=('finops',), failing=('kpi',))
         listing, output = run_list(cid_obj)
-        keys = {entry['key'] for entries in listing.values() for entry in entries}
-        assert keys == {'finops', 'kpi', 'operations'}
+        assert {entry['key'] for entry in listing} == {'finops', 'kpi', 'operations'}
         # deployed marking on the other entries is unaffected
         assert f'{DEPLOYED_MARK}[finops]' in output
         assert '[operations] Ops Advisor' in output
@@ -1411,7 +1387,7 @@ class TestUnknownStatusFallback:
         listing, output = run_list(cid_obj)
         assert output.count('?[') == 3
         assert DEPLOYED_MARK not in output
-        assert all(not entry['deployed'] for entries in listing.values() for entry in entries)
+        assert all(not entry['deployed'] for entry in listing)
 
 
 # ======================================================================
@@ -1635,7 +1611,7 @@ class TestOnDriftOverride:
     def test_space_contents_are_the_space_definition_only(self):
         """Another agent sharing the Space adds nothing: the Space definition is the target."""
         cid_obj = self.make_cid()
-        other = {'name': 'Other', 'agentId': 'other-agent', 'category': 'FinOps',
+        other = {'name': 'Other', 'agentId': 'other-agent',
                  'dependsOn': {'spaces': [SPACE_KEY]}}
         cid_obj.resources['agents']['other-agent'] = other
         reset_parameters({'confirm-update': 'yes', 'on-drift': 'override'})
@@ -1677,7 +1653,7 @@ class TestListAgentsDependencyAnnotations:
 
     def _catalog(self):
         return {
-            'finops': {'name': 'FinOps Advisor', 'agentId': 'finops', 'category': 'FinOps',
+            'finops': {'name': 'FinOps Advisor', 'agentId': 'finops',
                        'dependsOn': {'dashboards': ['cudos-v5', 'kpi_dashboard', 'trends-dashboard']}},
         }
 
@@ -1698,7 +1674,7 @@ class TestListAgentsDependencyAnnotations:
         assert listing
 
     def test_no_dependency_line_for_agents_without_dependencies(self):
-        cid_obj = make_list_cid({'plain': {'name': 'Plain', 'agentId': 'plain', 'category': 'FinOps'}})
+        cid_obj = make_list_cid({'plain': {'name': 'Plain', 'agentId': 'plain'}})
         _, output = run_list(cid_obj)
         assert 'dashboards:' not in output
 
@@ -1762,12 +1738,11 @@ class TestProvenanceAndTracking:
 
 
 class TestAgentPicker:
-    """_select_agent: dashboard-picker style, one line per agent, category rows re-prompt."""
+    """_select_agent: dashboard-picker style, one line per agent in catalog order."""
 
     CATALOG = {
-        'finops': {'name': 'FinOps Advisor', 'agentId': 'cid-finops', 'category': 'Foundational'},
-        'ops': {'name': 'Ops Advisor', 'agentId': 'cid-ops', 'category': 'Additional'},
-        'old': {'name': 'Old Advisor', 'agentId': 'cid-old', 'category': 'Deprecated'},
+        'finops': {'name': 'FinOps Advisor', 'agentId': 'cid-finops', 'summary': 'Cost savings'},
+        'ops': {'name': 'Ops Advisor', 'agentId': 'cid-ops', 'description': 'All-in-one advisor. Second sentence.'},
     }
 
     def _make_cid(self, deployed=()):
@@ -1777,22 +1752,17 @@ class TestAgentPicker:
         cid_obj._deployed_agent_ids = lambda: set(deployed)
         return cid_obj
 
-    def test_options_are_one_line_per_agent_grouped_by_category(self):
+    def test_options_are_one_line_per_agent_in_catalog_order(self):
         cid_obj = self._make_cid(deployed=('cid-finops',))
         with patch('cid.agents.get_parameter', return_value='finops') as picker:
             assert cid_obj._select_agent('Pick') == 'finops'
         options = picker.call_args.kwargs['choices']
-        assert list(options) == ['FOUNDATIONAL', ' ✓[cid-finops] FinOps Advisor',
-                                 'ADDITIONAL', '  [cid-ops] Ops Advisor']   # Deprecated hidden
-        assert options['FOUNDATIONAL'] == '[category]'
-
-    def test_choosing_a_category_row_prompts_again(self):
-        cid_obj = self._make_cid()
-        with patch('cid.agents.get_parameter', side_effect=['[category]', 'ops']) as picker, \
-                patch('cid.agents.unset_parameter') as unset:
-            assert cid_obj._select_agent('Pick') == 'ops'
-        assert picker.call_count == 2
-        unset.assert_called_once_with('agent-id')
+        assert list(options.values()) == ['finops', 'ops']
+        labels = list(options)
+        assert labels[0].startswith(' ✓[cid-finops] FinOps Advisor') and labels[0].endswith('Cost savings')
+        # no summary: the first sentence of the description; summaries start in one column
+        assert labels[1].startswith('  [cid-ops] Ops Advisor') and labels[1].endswith('All-in-one advisor')
+        assert labels[0].index('Cost savings') == labels[1].index('All-in-one advisor')
 
     def test_non_interactive_without_agent_id_raises(self):
         cid_obj = self._make_cid()
@@ -1859,11 +1829,13 @@ class TestDashboardIdResolution:
         return cid_obj
 
     def test_deployed_id_outside_the_catalog_is_present_with_a_warning(self, caplog):
+        caplog.set_level(logging.INFO)
         present = self._make_cid()._present_dashboard_ids(['cudos-v5', 'my-plugin-dash'], self.DEPLOYED)
         assert present == {'cudos-v5', 'my-plugin-dash'}
         assert "'my-plugin-dash' is not in the dashboards catalog" in caplog.text
 
     def test_catalog_key_is_not_a_dashboard_id(self, caplog):
+        caplog.set_level(logging.INFO)
         present = self._make_cid()._present_dashboard_ids(['CUDOSv5'], self.DEPLOYED)
         assert present == set()
         assert "'CUDOSv5' is not in the dashboards catalog" in caplog.text

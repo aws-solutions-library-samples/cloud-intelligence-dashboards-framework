@@ -67,9 +67,9 @@ files wrap under `dashboards:`. A worked example mirroring the shipped `finops` 
 ```yaml
 agents:
   finops:                                  # library id
-    category: Foundational                 # Foundational | Advanced | Additional | Deprecated | Other
     name: CID FinOps Advisor               # display name; Agent Name 1-50 chars
     agentId: cid-finops-advisor            # deployed agent id, [0-9a-zA-Z-_.+]
+    summary: "Cost savings, idle resources, commitments and upcoming fees"   # one line (<= 70 chars) for the picker
     description: >-
       Cost optimization and anomaly advisor over the CUDOS, Cost Intelligence,
       and KPI dashboards.
@@ -171,7 +171,7 @@ catalog list) while iterating:
 ```bash
 pip install -e '.[test]'
 pytest cid/test/python/          # includes catalog-loading and referential-completeness tests
-cid-cmd list-agents --catalog dashboards/catalog.yaml,agentic/catalog.yaml    # your agent appears under its category
+cid-cmd list-agents --catalog dashboards/catalog.yaml,agentic/catalog.yaml    # your agent appears in the list
 cid-cmd create-agent --agent-id <name> --catalog dashboards/catalog.yaml,agentic/catalog.yaml   # against an account with the dashboards deployed
 ```
 

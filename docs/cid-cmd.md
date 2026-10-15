@@ -351,7 +351,7 @@ cid-cmd create-cur-proxy --cur-version 1 --cur-table-name mycur2 \
 Create a Quick Agent (an AI advisor) and its knowledge Space over CID dashboards that are **already deployed**. An agent's knowledge layer is a **Space** — a Quick container that holds references to your already-deployed dashboards (and, optionally, datasets and pre-existing knowledge bases). This command never deploys dashboards and never provisions the data layer (CUR, Data Exports, Data Collection); when dashboards are missing it points to the existing CID/CUDOS and Data Collection deployment guidance. When the agent is already deployed, the command shows what differs from the catalog and asks whether to update instead — pass `--update yes` to skip the prompt, or use [update-agent](#update-agent).
 
 ```bash
-# Interactive — shows a category-grouped picker of catalog agents
+# Interactive — shows a picker of catalog agents
 cid-cmd create-agent
 
 # Non-interactive with a bring-your-own Space
@@ -360,7 +360,7 @@ cid-cmd create-agent --agent-id finops --space 'My Team Space' -y
 
 | Option | Description |
 |---|---|
-| `--agent-id TEXT` | Agent id from the catalog (a category-grouped picker is shown when omitted) |
+| `--agent-id TEXT` | Agent id from the catalog (a picker is shown when omitted) |
 | `--space TEXT` | Name of a Space to use instead of the per-agent default Space (bring-your-own Space) |
 | `--on-drift (show\|override)` | `show` (default): only add what the catalog lists and keep everything added outside it. `override`: detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list — see [Matching the catalog exactly](#matching-the-catalog-exactly---on-drift-override) |
 | `--update (yes\|no)` | When the agent is already deployed, update it without prompting ('no' exits with guidance) |
@@ -388,14 +388,14 @@ An agent's knowledge is defined by its **Space** (`agentic/spaces/<space-id>.yam
 
 At run time, `create-agent` pre-flights which of those dashboards are actually deployed (a read-only check) and then:
 
-- **None deployed** — the command stops with an error and creates nothing. Deploy the dashboards first, following the [Cloud Intelligence Dashboards (CID/CUDOS) deployment guidance](https://catalog.workshops.aws/awscid/en-US).
-- **Some missing** — one warning lists the missing dashboards and points to the [CID/CUDOS deployment guidance](https://catalog.workshops.aws/awscid/en-US) (advanced dashboards also need the [CID Data Collection deployment](https://catalog.workshops.aws/awscid/en-US/data-collection)); the command proceeds with the dashboards that are present. Re-run the command after deploying them to add them to the Space.
+- **None deployed** — the command stops with an error and creates nothing. Deploy the dashboards first, following the [Cloud Intelligence Dashboards (CID/CUDOS) deployment guidance](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html).
+- **Some missing** — one warning lists the missing dashboards and points to the [CID/CUDOS deployment guidance](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html); the command proceeds with the dashboards that are present. Re-run the command after deploying them to add them to the Space.
 
 The Space may also declare dataset knowledge (`dependsOn.datasets`). Present datasets are attached to the Space; missing datasets produce a warning and are skipped — datasets are never created or deployed by this command.
 
 #### Bring-your-own Space (`--space`)
 
-By default each agent uses the Space declared in its catalog definition (the launch-library agents share `cid-dashboards-space`). Pass `--space NAME` to use a Space you name instead:
+By default each agent uses the Space declared in its catalog definition (see the table below). Pass `--space NAME` to use a Space you name instead:
 
 ```bash
 cid-cmd create-agent --agent-id finops --space 'My Team Space'
@@ -423,13 +423,18 @@ Before anything changes, the command lists every item it would detach or remove 
 
 #### The launch library
 
-Three agents ship with the core catalog (run `cid-cmd list-agents` to see them):
+Six agents ship with the core catalog (run `cid-cmd list-agents` to see them):
 
-| Agent id | Name | Focus |
-|---|---|---|
-| `finops` | CID FinOps Advisor | Cost optimization and anomaly triage over CUDOS, CID, and KPI |
-| `operations` | CID Operations Advisor | Operational health and incident triage signals |
-| `security` | CID Security Advisor | Security finding triage over Trusted Advisor data |
+| Agent id | Name | Space | Dashboards |
+|---|---|---|---|
+| `finops` | CID FinOps Advisor | `cid-finops-space` | CUDOS, CORA, Graviton Savings, Extended Support Cost Projection, Pricing Change Analysis |
+| `operations` | CID Operations Advisor (all-in-one) | `cid-operations-space` | CUDOS, KPI, CORA, Graviton Savings, Extended Support Cost Projection, Pricing Change Analysis, Trusted Advisor Organizational View, AWS Config Resource Compliance Dashboard (`cid-crcd`), AWS News Feeds, ResilienceVue, Health Events, Support Cases Radar |
+| `security` | CID Security Advisor | `cid-security-space` | Trusted Advisor Organizational View, AWS Config Resource Compliance Dashboard (`cid-crcd`, deployed from [its own project](https://github.com/aws-samples/config-resource-compliance-dashboard)), CUDOS Security tab, Health Events, AWS News Feeds (Security Bulletins) |
+| `resilience` | CID Resilience Advisor | `cid-resilience-space` | ResilienceVue, Trusted Advisor Organizational View (Fault Tolerance, Service Limits), CUDOS (single-AZ RDS and VPC endpoints, AWS Backup, Capacity Reservations), Health Events, AWS Config Resource Compliance Dashboard (`cid-crcd`) |
+| `support` | CID Support Cases Analyst | `cid-support-space` | AWS Support Cases Radar |
+| `health` | CID Health Events Analyst | `cid-health-space` | Health Events Dashboard |
+
+An agent can be created as soon as one of its dashboards is deployed; each additional deployed dashboard adds knowledge on the next `create-agent` or `update-agent` run.
 
 Want to add your own agent? See the [zero-Python contribution guide](agents-contributing.md).
 
@@ -443,7 +448,7 @@ cid-cmd update-agent --agent-id finops
 
 | Option | Description |
 |---|---|
-| `--agent-id TEXT` | Agent id from the catalog (a category-grouped picker is shown when omitted) |
+| `--agent-id TEXT` | Agent id from the catalog (a picker is shown when omitted) |
 | `--space TEXT` | Name of a Space to use instead of the per-agent default Space (bring-your-own Space) |
 | `--on-drift (show\|override)` | `show` (default): only add what the catalog lists and keep everything added outside it. `override`: detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list — see [Matching the catalog exactly](#matching-the-catalog-exactly---on-drift-override) |
 | `--repair` | Detach and re-attach the agent Spaces to rewrite the links (recovers an agent whose Space shows as unavailable although it describes as healthy) |
@@ -460,7 +465,7 @@ The repair detaches every attached Space, waits for the agent to settle, then re
 
 ### list-agents
 
-List catalog agents grouped by category with live deployment status. Deployed agents are marked with a check indicator; entries in category `Deprecated` are hidden. Each entry also lists the dashboards of the agent's Space with their deployment state (✓/✗). Deployment status is read live from the account (no local state file).
+List catalog agents with their summary, Space and live deployment status. Deployed agents are marked with a check indicator. Each entry also lists the dashboards of the agent's Space with their deployment state (✓/✗). Deployment status is read live from the account (no local state file).
 
 ```bash
 cid-cmd list-agents

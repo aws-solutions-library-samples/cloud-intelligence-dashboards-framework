@@ -14,7 +14,6 @@ from cid.helpers.quicksight.agent_logic import (
     CID_MANAGED_MARKER,
     CID_PROVENANCE_TAG_KEY,
     DEPLOYED_MARK,
-    HIDDEN_CATEGORY,
     PARTITION_DOMAINS,
     PERSONA_API_FIELDS,
     PERSONA_FIELDS,
@@ -331,9 +330,8 @@ def test_property_9_override_space_removals(current, desired_arns):
 
 
 # ---------------------------------------------------------------------------
-# Feature: cid-cmd-agent-flow-platform, Property 19: Listing and pickers group by
-# category, mark deployed, and hide deprecated
-# Validates: Requirements 6.2, 11.1, 11.2, 11.4
+# Property 19: the listing keeps catalog order, lists every entry once and marks
+# exactly the deployed ones
 # ---------------------------------------------------------------------------
 _catalog_keys = st.text(alphabet='abcdefghijklmnopqrstuvwxyz-', min_size=1, max_size=10)
 
@@ -344,9 +342,6 @@ def _listing_cases(draw):
     catalog = {}
     for key in keys:
         entry = {}
-        category = draw(st.sampled_from([None, 'Cost', 'Operations', 'Security', HIDDEN_CATEGORY]))
-        if category is not None:
-            entry['category'] = category
         if draw(st.booleans()):
             entry['agentId'] = draw(_catalog_keys)
         if draw(st.booleans()):
@@ -358,31 +353,19 @@ def _listing_cases(draw):
     return catalog, deployed
 
 
-# Feature: cid-cmd-agent-flow-platform, Property 19: Listing and pickers group by category, mark deployed, and hide deprecated
 @settings(max_examples=100, deadline=None)
 @given(case=_listing_cases())
-def test_property_19_listing_groups_marks_hides(case):
-    """**Validates: Requirements 6.2, 11.1, 11.2, 11.4**"""
+def test_property_19_listing_keeps_order_and_marks_deployed(case):
     catalog, deployed = case
     listing = build_agent_listing(catalog, deployed)
-    # zero entries in category Deprecated
-    assert HIDDEN_CATEGORY not in listing
-    # flatten and count: every non-deprecated entry appears exactly once, under its category
-    seen_keys = []
-    for category, entries in listing.items():
-        for item in entries:
-            seen_keys.append(item['key'])
-            entry = catalog[item['key']]
-            assert str(entry.get('category') or 'Other') == category
-            agent_id = entry.get('agentId') or item['key']
-            assert item['agentId'] == agent_id
-            # check indicator marks exactly the deployed entries
-            expected_deployed = item['key'] in deployed or agent_id in deployed
-            assert item['deployed'] == expected_deployed
-            assert (DEPLOYED_MARK in item['display']) == expected_deployed
-    visible = [k for k, e in catalog.items() if (e.get('category') or 'Other') != HIDDEN_CATEGORY]
-    assert sorted(seen_keys) == sorted(visible)
-    assert len(seen_keys) == len(set(seen_keys))
+    assert [item['key'] for item in listing] == list(catalog)   # catalog order, each entry once
+    for item in listing:
+        entry = catalog[item['key']]
+        agent_id = entry.get('agentId') or item['key']
+        assert item['agentId'] == agent_id
+        expected_deployed = item['key'] in deployed or agent_id in deployed
+        assert item['deployed'] == expected_deployed
+        assert (DEPLOYED_MARK in item['display']) == expected_deployed
 
 
 # ---------------------------------------------------------------------------

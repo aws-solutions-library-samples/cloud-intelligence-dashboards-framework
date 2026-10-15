@@ -2,9 +2,9 @@
 # personaFile is resolved relative to this file.
 agents:
   finops:
-    category: Foundational
     name: CID FinOps Advisor
     agentId: cid-finops-advisor
+    summary: "Cost savings, idle resources, commitments and upcoming fees"   # one line shown in the agent picker and list-agents
     description: >-
       Cost optimization advisor over CUDOS, CORA, Graviton Savings, Extended
       Support Cost Projection and Pricing Change Analysis. Ranks savings

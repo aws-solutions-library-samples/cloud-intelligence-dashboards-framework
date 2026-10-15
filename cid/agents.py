@@ -12,7 +12,7 @@ from functools import cached_property
 
 import yaml
 
-from cid.utils import get_parameter, get_parameters, set_parameters, unset_parameter, get_yesno_parameter, cid_print, isatty
+from cid.utils import get_parameter, get_parameters, set_parameters, get_yesno_parameter, cid_print, isatty
 from cid.exceptions import CidError, CidCritical
 from cid.helpers import Dataset
 from cid.helpers.quicksight.space import Space
@@ -37,9 +37,8 @@ class AgentCommands():
     """ Quick Agents commands, mixed into Cid """
 
     # Deployment guidance pointers. These messages MUST NOT name any cid-cmd command.
-    CID_DASHBOARDS_GUIDANCE = 'the CID dashboards deployment guide (https://catalog.workshops.aws/awscid/en-US)'
-    DATA_COLLECTION_GUIDANCE = ('the Data Collection deployment guide '
-                                '(https://catalog.workshops.aws/awscid/en-US/data-collection)')
+    CID_DASHBOARDS_GUIDANCE = ('the CID dashboards deployment guide '
+                               '(https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html)')
     # QuickSight user roles entitled to create Quick Agents
     AGENT_AUTHOR_PRO_ROLES = ('AUTHOR_PRO', 'ADMIN_PRO')
 
@@ -65,7 +64,7 @@ class AgentCommands():
             self.load_catalog(catalog_url)
 
     def _list_agents(self):
-        """List catalog agents grouped by category with live status (DescribeAgent per entry) and their Space dashboards."""
+        """List catalog agents with live status (DescribeAgent per entry), their Space and its dashboards."""
         self.load_agentic_catalog()
         agents_catalog = self.resources.get('agents') or {}
         if not agents_catalog:
@@ -75,8 +74,6 @@ class AgentCommands():
         unknown_ids = set()
         for key, entry in agents_catalog.items():
             entry = entry if isinstance(entry, dict) else {}
-            if str(entry.get('category') or '') == 'Deprecated':
-                continue  # hidden entries are never queried
             target_id = entry.get('agentId') or key
             try:
                 if self.agent.get(target_id) is not None:  # live DescribeAgent
@@ -86,25 +83,22 @@ class AgentCommands():
                 unknown_ids.add(target_id)  # unknown status; continue with the rest
         # one read-only ListDashboards call covers all dependency annotations
         deployed_dashboard_arns = self._deployed_dashboard_arns_or_none()
-        # category grouping, ✓ marking, Deprecated hidden, each entry once
+        # ✓ marking, catalog order, each entry once; ? = status unknown
         listing = build_agent_listing(agents_catalog, deployed_ids)
-        for category, entries in listing.items():
-            cid_print(f'\n<BOLD>{category}<END>')
-            for entry in entries:
-                display = entry['display']
-                if entry['agentId'] in unknown_ids:
-                    # unknown-status indicator in place of the check mark
-                    display = f" ?[{entry['agentId']}] {entry['name']}"
-                catalog_entry = agents_catalog.get(entry['key']) or {}
-                spaces = (catalog_entry.get('dependsOn') or {}).get('spaces') or []
-                suffix = f'  (Space {spaces[0]})' if spaces else ''
-                if catalog_entry.get('providedBy'):
-                    suffix += f"  (provided by {catalog_entry['providedBy']})"
-                cid_print(f'{display}{suffix}')
-                if deployed_dashboard_arns is not None:
-                    definition = agents_catalog.get(entry['key']) or {}
-                    for dependency_line in self._agent_dependency_lines(definition, deployed_dashboard_arns):
-                        cid_print(dependency_line)
+        displays = [f" ?[{entry['agentId']}] {entry['name']}" if entry['agentId'] in unknown_ids else entry['display']
+                    for entry in listing]
+        for entry, label in zip(listing, self._agent_labels(listing, displays)):
+            catalog_entry = agents_catalog.get(entry['key']) or {}
+            spaces = (catalog_entry.get('dependsOn') or {}).get('spaces') or []
+            suffix = f'  (Space {spaces[0]})' if spaces else ''
+            if catalog_entry.get('providedBy'):
+                suffix += f"  (provided by {catalog_entry['providedBy']})"
+            cid_print(f'\n{label}')
+            if suffix:
+                cid_print(f'     {suffix.strip()}')
+            if deployed_dashboard_arns is not None:
+                for dependency_line in self._agent_dependency_lines(catalog_entry, deployed_dashboard_arns):
+                    cid_print(dependency_line)
         return listing
 
     def _agent_dependency_lines(self, definition: dict, deployed_arns_by_id: dict,
@@ -313,7 +307,13 @@ class AgentCommands():
         agent_key, definition = self._resolve_agent_definition(agent_id)
         # 5. cap validation before any CreateAgent call
         validate_caps(definition)
-        # 6. owner principal: registered QuickSight user with Author Pro
+        # 6. read-only dependency pre-flight — NEVER deploys. Runs before anything that can
+        # create or modify a resource (including the owner group): when none of the Space's
+        # dashboards is deployed, the command stops here. The summary (Space, dashboards,
+        # datasets) is also always shown before any prompt.
+        space_name = space_name or get_parameters().get('space-name') or get_parameters().get('space')
+        dependencies = self._preflight_agent_dependencies(definition, space_name=space_name)
+        # 7. owner principal: registered QuickSight user with Author Pro
         principal_arn = self._resolve_quicksight_principal()
 
         # 6b. existing-agent gate — BEFORE any create or modify call.
@@ -325,7 +325,6 @@ class AgentCommands():
                 'Cloud Intelligence Dashboards. Refusing to modify it. Please rename the catalog '
                 'agent id or remove the existing agent, then re-run.'
             )
-        space_name = space_name or get_parameters().get('space-name') or get_parameters().get('space')
         override = self._agent_override()
         drift = (describe_drift(definition, existing_agent, override=override)
                  if existing_agent is not None else [])
@@ -334,9 +333,6 @@ class AgentCommands():
                 f'Agent {target_agent_id!r} is not deployed, so there is nothing to update. '
                 f'Run cid-cmd create-agent --agent-id {agent_key} first.'
             )
-        # 7. read-only dependency pre-flight — NEVER deploys. Runs before any prompt so the
-        # summary (Space, dashboards, datasets) is always shown before anything changes.
-        dependencies = self._preflight_agent_dependencies(definition, space_name=space_name)
         # --on-drift override: plan (read-only) what would be detached or removed
         plan = self._agent_override_plan(definition, existing_agent, space_name, dependencies) if override else None
         if mode == 'create' and existing_agent is not None:
@@ -625,38 +621,35 @@ class AgentCommands():
         return ids
 
     def _select_agent(self, message: str) -> str:
-        """Category-grouped agent picker in the dashboard-picker style; returns the catalog key.
-
-        One line per agent (`` ✓[agentId] name``, ✓ = deployed via ListAgents),
-        upper-case category rows (choosing one re-prompts), type-to-search, and
-        Deprecated entries hidden. Dependencies are shown after selection by the
-        pre-flight summary and in ``list-agents``.
-        """
+        """Agent picker in the dashboard-picker style (`` ✓[agentId] name``, ✓ = deployed via
+        ListAgents, type-to-search); returns the catalog key. Dependencies are shown after
+        selection by the pre-flight summary and in ``list-agents``."""
         listing = build_agent_listing(self.resources.get('agents') or {}, self._deployed_agent_ids())
-        standard_categories = ['Foundational', 'Advanced', 'Additional']  # shown first, as for dashboards
-        categories = ([category for category in standard_categories if category in listing]
-                      + sorted(category for category in listing if category not in standard_categories))
-        options = {}
-        for category in categories:
-            options[category.upper()] = '[category]'
-            for entry in listing[category]:
-                options[entry['display']] = entry['key']
-        while True:
-            try:
-                agent_key = get_parameter(param_name='agent-id', message=message, choices=options)
-            except Exception as exc:
-                # non-interactive with no value/default: name the missing input
-                raise CidCritical(
-                    "Required input 'agent-id' has no supplied value, stored default, or "
-                    'fallback in a non-interactive environment. Please provide --agent-id.'
-                ) from exc
-            if agent_key == '[category]':
-                unset_parameter('agent-id')
-                continue
-            return agent_key
+        options = dict(zip(self._agent_labels(listing), (entry['key'] for entry in listing)))
+        try:
+            return get_parameter(param_name='agent-id', message=message, choices=options)
+        except Exception as exc:
+            # non-interactive with no value/default: name the missing input
+            raise CidCritical(
+                "Required input 'agent-id' has no supplied value, stored default, or "
+                'fallback in a non-interactive environment. Please provide --agent-id.'
+            ) from exc
+
+    @staticmethod
+    def _agent_labels(listing: list, displays: list=None) -> list:
+        """Picker/list labels: `` ✓[agentId] name`` padded to one column, then the agent summary,
+        cut to the terminal width."""
+        displays = displays or [entry['display'] for entry in listing]
+        width = min(shutil.get_terminal_size((120, 24)).columns - 4, 160)
+        column = max((len(display) for display in displays), default=0)
+        labels = []
+        for display, entry in zip(displays, listing):
+            label = f"{display.ljust(column)}  {entry['summary']}".rstrip() if entry.get('summary') else display
+            labels.append(label if len(label) <= width else label[:width - 1] + '…')
+        return labels
 
     def _resolve_agent_definition(self, agent_id: str=None) -> tuple:
-        """Resolve the agent id (category-grouped picker when absent) and load its definition.
+        """Resolve the agent id (picker when absent) and load its definition.
 
         Returns (agent_key, definition) where definition is a copy of the catalog entry
         with the persona loaded inline.
@@ -764,7 +757,10 @@ class AgentCommands():
         known_ids = {(entry or {}).get('dashboardId') for entry in (self.resources.get('dashboards') or {}).values()}
         for dashboard_id in dashboards:
             if dashboard_id not in known_ids:
-                logger.warning(f'Dependency dashboard id {dashboard_id!r} is not in the dashboards catalog.')
+                # expected for CID dashboards deployed from their own resources file (e.g. cid-crcd);
+                # typos in shipped catalogs are caught by the catalog tests
+                logger.info(f'Dependency dashboard id {dashboard_id!r} is not in the dashboards catalog '
+                            '(fine for dashboards deployed from another resources file).')
         return {dashboard_id for dashboard_id in dashboards if dashboard_id in deployed_arns_by_id}
 
     def _preflight_agent_dependencies(self, definition: dict, space_name: str=None) -> dict:
@@ -798,16 +794,13 @@ class AgentCommands():
         if not classification['present']:
             raise CidError(
                 'None of the dashboards this agent needs are deployed in this account and region. '
-                'Nothing was created. Deploy the foundational dashboards first — see '
-                f'{self.CID_DASHBOARDS_GUIDANCE}. For advanced dashboards, also see '
-                f'{self.DATA_COLLECTION_GUIDANCE}.'
+                f'Nothing was created. Deploy the dashboards first — see {self.CID_DASHBOARDS_GUIDANCE}.'
             )
         if classification['missing'] or missing_datasets:
             cid_print(
                 '     <YELLOW>✗ = not deployed. Missing items are optional:<END> the agent works with what is '
-                'deployed and they are not linked. To add them later, deploy them '
-                f'({self.CID_DASHBOARDS_GUIDANCE}; advanced dashboards also need {self.DATA_COLLECTION_GUIDANCE}) '
-                'and re-run this command. This command never deploys dashboards or creates datasets.'
+                'deployed, and you can add the rest later: deploy them, then re-run this command.\n'
+                f'     Deployment: {self.CID_DASHBOARDS_GUIDANCE}'
             )
         return {
             'classification': classification,

@@ -1,15 +1,40 @@
-# Space shared by the CID Operations Advisor and CID Security Advisor. Loaded via agentic/catalog.yaml.
+# Space for the CID Operations Advisor, the all-in-one agent. Loaded via agentic/catalog.yaml.
 # A Space owns the knowledge (dashboards, datasets, knowledge bases); agents reference it.
+# Quick allows at most 20 resources of each type (dashboards, datasets, ...) per Space.
 spaces:
   cid-operations-space:
     name: CID Operations Space
     description: >-
-      Operational health and security posture knowledge from the Cloud
-      Intelligence Dashboards: usage and spend, Trusted Advisor findings and
-      Compute Optimizer recommendations.
+      Comprehensive knowledge base for the Cloud Intelligence Dashboards: cost and
+      optimization, security and compliance, resilience, AWS Health and support
+      cases across the organization.
     dependsOn:
-      dashboards: [cudos-v5, cost_intelligence_dashboard, trends-dashboard]
-      datasets:
+      dashboards:
+        # FinOps
+        - cudos-v5
+        - kpi_dashboard
+        - cora
+        - graviton-savings
+        - extended-support-cost-projection
+        - pricing-change-analysis
+        # Security
         - ta-organizational-view
-        - compute_optimizer_all_options
+        - cid-crcd                 # AWS Config Resource Compliance Dashboard (deployed from its own
+                                   # resources file: github.com/aws-samples/config-resource-compliance-dashboard)
+        - aws-feeds
+        # Resilience, Health and Support
+        - resiliencevue
+        - health-events-dashboard
+        - support-cases-radar
+      datasets:
+        # core datasets for direct queries; the dashboards answer the rest
+        - summary_view
+        - resource_view
+        - cora_view
+        - ta-organizational-view
+        - ta_priority_org_view
+        - config_compliance_actual
+        - health_events_view
+        - resiliencehub_applications
+        - support_cases_communications_view
       knowledgeBases: []

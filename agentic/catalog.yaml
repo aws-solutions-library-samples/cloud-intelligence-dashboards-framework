@@ -8,9 +8,16 @@ Resources:
   - Url: agents/finops/finops.yaml
   - Url: agents/operations/operations.yaml
   - Url: agents/security/security.yaml
+  - Url: agents/resilience/resilience.yaml
+  - Url: agents/support/support.yaml
+  - Url: agents/health/health.yaml
 
   # Knowledge Spaces referenced by the agents above (dependsOn.spaces). They are not
   # deployed on their own: create-agent / update-agent create or update the Space of
   # the agent being deployed.
   - Url: spaces/cid-finops-space.yaml
   - Url: spaces/cid-operations-space.yaml
+  - Url: spaces/cid-security-space.yaml
+  - Url: spaces/cid-resilience-space.yaml
+  - Url: spaces/cid-support-space.yaml
+  - Url: spaces/cid-health-space.yaml

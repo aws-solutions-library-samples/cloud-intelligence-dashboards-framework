@@ -323,7 +323,7 @@ def create_agent(ctx, **kwargs):
 
     \b
     Command options:
-     --agent-id TEXT                       Agent id from the catalog (a category-grouped picker is shown when omitted)
+     --agent-id TEXT                       Agent id from the catalog (a picker is shown when omitted)
      --space TEXT                          Name of a Space to use instead of the per-agent default Space (bring-your-own Space)
      --on-drift (show|override)            'show' (default): only add what the catalog lists; 'override': detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list (listed and confirmed first)
      --update (yes|no)                     When the agent is already deployed, update it without prompting (default: prompt; 'no' exits with guidance)
@@ -350,7 +350,7 @@ def update_agent(ctx, **kwargs):
 
     \b
     Command options:
-     --agent-id TEXT                       Agent id from the catalog (a category-grouped picker is shown when omitted)
+     --agent-id TEXT                       Agent id from the catalog (a picker is shown when omitted)
      --space TEXT                          Name of a Space to use instead of the per-agent default Space (bring-your-own Space)
      --on-drift (show|override)            'show' (default): only add what the catalog lists; 'override': detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list (listed and confirmed first)
      --repair                              Detach and re-attach the agent Spaces to rewrite the links (recovers an agent whose Space shows as unavailable although it describes as healthy)
@@ -362,11 +362,7 @@ def update_agent(ctx, **kwargs):
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
 @cid_command
 def list_agents(ctx, **kwargs):
-    """List catalog agents grouped by category with live deployment status.
-
-    Deployed agents are marked with a check indicator; entries in category
-    'Deprecated' are hidden.
-    """
+    """List catalog agents with their summary, Space, live deployment status and Space dashboards."""
     ctx.obj.list_agents(**kwargs)
 
 

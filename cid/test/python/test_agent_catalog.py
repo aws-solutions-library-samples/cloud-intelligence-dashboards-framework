@@ -142,8 +142,15 @@ def test_repo_agents_catalog_lists_launch_agents_and_shared_space():
     for expected in ('agents/finops/finops.yaml',
                      'agents/operations/operations.yaml',
                      'agents/security/security.yaml',
+                     'agents/resilience/resilience.yaml',
+                     'agents/support/support.yaml',
+                     'agents/health/health.yaml',
                      'spaces/cid-finops-space.yaml',
-                     'spaces/cid-operations-space.yaml'):
+                     'spaces/cid-operations-space.yaml',
+                     'spaces/cid-security-space.yaml',
+                     'spaces/cid-resilience-space.yaml',
+                     'spaces/cid-support-space.yaml',
+                     'spaces/cid-health-space.yaml'):
         assert expected in urls, f'{expected} is not listed in agentic/catalog.yaml'
     for url in urls:
         referenced = (REPO_ROOT / 'agentic' / url).resolve()
@@ -196,7 +203,7 @@ DASHBOARDS_CATALOG_PATH = REPO_ROOT / 'dashboards' / 'catalog.yaml'
 AGENTS_CATALOG_PATH = REPO_ROOT / 'agentic' / 'catalog.yaml'
 
 
-LAUNCH_AGENT_IDS = ('operations', 'finops', 'security')
+LAUNCH_AGENT_IDS = ('operations', 'finops', 'security', 'resilience', 'support', 'health')
 
 
 PERSONA_FIELDS = ('identity', 'customInstructions', 'tone', 'outputStyle', 'responseLength')
@@ -229,26 +236,66 @@ def test_launch_agent_is_referentially_complete(agent_id):
     assert not misplaced, f'Agent {agent_id!r} declares {sorted(misplaced)}; move them to its Space'
 
 
+# CID dashboards deployed from their own resources file (not in dashboards/catalog.yaml):
+# dashboard id -> dataset names (matched by name against the deployed datasets at runtime).
+EXTERNAL_DASHBOARDS = {
+    # AWS Config Resource Compliance Dashboard:
+    # https://github.com/aws-samples/config-resource-compliance-dashboard (dashboard_template/cid-crcd.yaml)
+    'cid-crcd': {
+        'config_compliance', 'config_compliance_actual', 'config_compliance_conformance_pack',
+        'config_compliance_resource', 'config_event', 'config_event_delivery', 'config_event_rule_evaluation',
+        'config_inventory', 'config_inventory_ebs', 'config_inventory_ec2', 'config_inventory_lambda',
+        'config_inventory_rds', 'config_inventory_s3',
+    },
+}
+
+
 @pytest.mark.parametrize('space_id', sorted(RESOURCES.get('spaces', {})))
 def test_launch_space_is_referentially_complete(space_id):
-    """Every Space dashboard id is the dashboardId of a dashboard catalog entry and
-    every dataset key resolves to a datasets catalog entry."""
+    """Every Space dashboard id is the dashboardId of a dashboard catalog entry (or a
+    known external CID dashboard) and every dataset key resolves to a datasets catalog
+    entry (or a dataset of a known external dashboard listed in the same Space)."""
     depends_on = RESOURCES['spaces'][space_id].get('dependsOn', {})
     assert 'optionalDashboards' not in depends_on, (
         f"Space {space_id!r}: list every dashboard under 'dashboards' (optionalDashboards is not supported)")
     dashboard_ids = {entry.get('dashboardId') for entry in RESOURCES.get('dashboards', {}).values()}
+    external_datasets = set()
     for dashboard_id in depends_on.get('dashboards', []):
+        if dashboard_id in EXTERNAL_DASHBOARDS:
+            external_datasets |= EXTERNAL_DASHBOARDS[dashboard_id]
+            continue
         assert dashboard_id in dashboard_ids, (
             f'Space {space_id!r} references dashboard id {dashboard_id!r} that is not in the dashboards catalog')
     for key in depends_on.get('datasets', []):
-        assert key in RESOURCES.get('datasets', {}), (
+        assert key in RESOURCES.get('datasets', {}) or key in external_datasets, (
             f'Space {space_id!r} references dataset key {key!r} that is not in the datasets catalog')
+
+
+QUICK_SPACE_MAX_RESOURCES_PER_TYPE = 20   # Amazon Quick: at most 20 resources of each type per Space
+
+
+@pytest.mark.parametrize('space_id', sorted(RESOURCES.get('spaces', {})))
+def test_launch_space_respects_the_quick_resource_limit(space_id):
+    depends_on = RESOURCES['spaces'][space_id].get('dependsOn', {})
+    for kind in ('dashboards', 'datasets', 'knowledgeBases'):
+        count = len(depends_on.get(kind) or [])
+        assert count <= QUICK_SPACE_MAX_RESOURCES_PER_TYPE, (
+            f'Space {space_id!r} lists {count} {kind}; Quick allows at most '
+            f'{QUICK_SPACE_MAX_RESOURCES_PER_TYPE} per resource type')
 
 
 def test_every_launch_space_is_used_by_an_agent():
     used = {space for agent in RESOURCES.get('agents', {}).values()
             for space in (agent.get('dependsOn') or {}).get('spaces', [])}
     assert set(RESOURCES.get('spaces', {})) <= used, 'Some Spaces are not referenced by any agent'
+
+
+@pytest.mark.parametrize('agent_id', LAUNCH_AGENT_IDS)
+def test_launch_agent_has_a_short_summary(agent_id):
+    """The one-line summary shown in the picker and list-agents."""
+    summary = RESOURCES['agents'][agent_id].get('summary')
+    assert summary and '\n' not in summary and len(summary) <= 70, (
+        f'Agent {agent_id!r} needs a one-line summary of at most 70 characters (got {summary!r})')
 
 
 @pytest.mark.parametrize('agent_id', LAUNCH_AGENT_IDS)

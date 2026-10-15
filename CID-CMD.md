@@ -117,7 +117,7 @@ cid-cmd create-agent
 
 Create Agent Command Options:
 ```
- --agent-id TEXT                   Agent id from the catalog (a category-grouped picker is shown when omitted)
+ --agent-id TEXT                   Agent id from the catalog (a picker is shown when omitted)
  --space TEXT                      Name of a Space to use instead of the per-agent default Space (bring-your-own Space)
  --on-drift (show|override)        'show' (default): only add what the catalog lists; 'override': detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list (listed and confirmed first)
  --update (yes|no)                 When the agent is already deployed, update it without prompting ('no' exits with guidance)
@@ -137,14 +137,14 @@ cid-cmd update-agent --agent-id finops
 
 Update Agent Command Options:
 ```
- --agent-id TEXT                   Agent id from the catalog (a category-grouped picker is shown when omitted)
+ --agent-id TEXT                   Agent id from the catalog (a picker is shown when omitted)
  --space TEXT                      Name of a Space to use instead of the per-agent default Space (bring-your-own Space)
  --on-drift (show|override)        'show' (default): only add what the catalog lists; 'override': detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list (listed and confirmed first)
  --repair                          Detach and re-attach the agent Spaces to rewrite the links (recovers an agent whose Space shows as unavailable although it describes as healthy)
 ```
 
 #### List Quick Agents
-List catalog agents grouped by category with live deployment status. Deployed agents are marked with a check indicator; entries in category `Deprecated` are hidden. Each entry also lists the dashboards of the agent's Space with their deployment state (✓/✗).
+List catalog agents with their summary, Space and live deployment status. Deployed agents are marked with a check indicator. Each entry also lists the dashboards of the agent's Space with their deployment state (✓/✗).
 
 ```bash
 cid-cmd list-agents
