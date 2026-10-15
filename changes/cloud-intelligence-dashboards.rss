@@ -5,8 +5,98 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Thu, 14 Aug 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 09 Oct 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] cid-cmd v4.4.18</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/releases/tag/4.4.18
+      </link>
+      <pubDate>Fri, 09 Oct 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">b75b53e0-34b1-4d16-9648-d28ce09fc841</guid>
+      <description>cid-cmd v4.4.18</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>CloudFormation Reliability:</strong> Dashboards deployed one after another through CloudFormation no longer inherit each other's parameters (such as the RLS dataset), which could make a dashboard fail to create.</li>
+    <li><strong>Sharing on Update:</strong> <code>share-with-account yes|no</code> is now applied when updating a dashboard, so you can grant or revoke access for everyone in the account without recreating the dashboard.</li>
+    <li><strong>Plugin Parameters:</strong> <code>cid-plugin.yml</code> accepts any <code>cid-cmd</code> parameter as JSON (for example an RLS dataset or resource tags), and unattended deployments use parameter defaults instead of failing.</li>
+    <li><strong>Fixes:</strong> FOCUS <code>resource-tags</code> now produce valid views, dashboard updates skip filters on fields not yet in the datasets instead of showing errors, and <code>--on-drift override</code> replaces views as documented.</li>
+  </ul>
+  <p>To update, run <code>pip3 install --upgrade cid-cmd</code>. CloudFormation users should update the <code>cid-cfn</code> stack to the latest template.</p>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Graviton Savings Dashboard v3.0.5</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-graviton-savings.md
+      </link>
+      <pubDate>Fri, 02 Oct 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">310b820a-9810-4943-8cd9-da3fbcf279bf</guid>
+      <description>Graviton Savings Dashboard v3.0.5</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Realized Savings:</strong> The EC2 "Realized Graviton Savings" figure is now calculated in the Athena view, the same way potential savings already are. Displayed numbers are unchanged.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Graviton Savings Dashboard v3.0.4</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-graviton-savings.md
+      </link>
+      <pubDate>Thu, 01 Oct 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">ce74e862-6259-4a45-b651-a51fe21601fe</guid>
+      <description>Graviton Savings Dashboard v3.0.4</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Graviton5 Support:</strong> Added Graviton5 as a selectable generation (EC2 M9g/M9gd, C9g/C9gd, R9g/R9gd) across the modernization mapping, pricing and savings views, dataset schemas, the generation selector, a new 'Potential Graviton5 Base Savings' KPI, and Graviton5 columns in the EC2 and Graviton Instance Mapping tables.</li>
+    <li><strong>Potential Savings Table:</strong> Pinned the static 'Default next-gen Graviton' columns so their labels no longer mirror the selected generation.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Graviton Savings Dashboard v3.0.3</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-graviton-savings.md
+      </link>
+      <pubDate>Tue, 29 Sep 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">6d5196c5-30c2-4585-ae4e-0e77d550af6d</guid>
+      <description>Graviton Savings Dashboard v3.0.3</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Modernization Mapping:</strong> Removed invalid Graviton (g5g / NVIDIA T4G) targets for NVIDIA and AMD GPU families (g2, g3, g3s, g4ad, g5, g6, g6e, g6f, gr6, gr6f) so they are reported as 'No equivalent graviton instance' instead of inflating On-Demand eligible savings. Retained g4dn to g5g as a like-for-like T4 to T4G mapping.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] Media Services Information Hub - v2.2.2</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-media-services-insights.md
+      </link>
+      <pubDate>Fri, 18 Sep 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">07952055-44aa-43b5-817d-1c6b0f379b95</guid>
+      <description>Media Services Information Hub - v2.2.2</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Elemental Media Convert:</strong> EMC Mods for refining add-on analysis</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] cid-cmd v4.4.17</title>
       <link>

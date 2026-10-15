@@ -422,13 +422,9 @@ class Cid(AgentCommands):
                 cache_key = f'_tags_json_sql_{prefix}{key}'
                 if hasattr(self, cache_key):
                     params[key] = getattr(self, cache_key)
-                elif get_parameters().get((prefix + key).replace('_', '-')): # priority to user input
-                    params[key] = get_parameters().get((prefix + key).replace('_', '-'))
-                    if isinstance(params[key], str):
-                        params[key] = params[key].split(',')
-                elif not utils.isatty():
+                elif not get_parameters().get((prefix + key).replace('_', '-')) and not utils.isatty():
                     params[key] = "'{}'"
-                else:
+                else: # tags provided by user or to be selected: discover tags to build json sql
                     if 'query' not in value:
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: parameter with type Athena must have query value.')
                     query = Template(value['query']).safe_substitute(params|others)
@@ -438,7 +434,7 @@ class Cid(AgentCommands):
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: {exc}.') from exc
                     options = ['-'.join(res) for res in (res_list or [])]
                     params[key] = self.generic_tags_json(
-                        param_name=key,
+                        param_name=prefix + key,
                         options=options,
                     )
                 # Cache rendered SQL for reuse by subsequent views
@@ -1271,8 +1267,40 @@ class Cid(AgentCommands):
             logger.debug(exc, exc_info=True)
             print(f'failed with an error message: {exc}')
 
+        self.update_account_sharing(dashboard_id)
         self.dump_default_parameters()
         return dashboard_id
+
+
+    def update_account_sharing(self, dashboard_id):
+        """ Grant or revoke sharing with everyone in the account on update, only if share-with-account is explicitly provided """
+        share_with_account = get_parameters().get('share-with-account')
+        if share_with_account is None:
+            return
+        if str(share_with_account).lower() in ('yes', 'true'):
+            set_parameters({'share-method': 'account'})
+            self.share(dashboard_id)
+            return
+
+        namespace_suffix = f':{self.qs.account_id}:namespace/default'
+        try:
+            permissions = self.qs.get_dashboard_permissions(dashboard_id)
+            link_permissions = self.qs.get_dashboard_link_permissions(dashboard_id)
+        except self.qs.client.exceptions.ClientError as exc:
+            raise CidCritical(f'Unable to read permissions of dashboard {dashboard_id} to revoke sharing with the account: {exc}') from exc
+        revoke = {
+            'RevokePermissions': [p for p in permissions if p['Principal'].endswith(namespace_suffix)],
+            'RevokeLinkPermissions': [p for p in link_permissions if p['Principal'].endswith(namespace_suffix)],
+        }
+        revoke = {key: value for key, value in revoke.items() if value}
+        if not revoke:
+            logger.debug(f'Dashboard {dashboard_id} is not shared with the account, nothing to revoke')
+            return
+        try:
+            self.qs.update_dashboard_permissions(DashboardId=dashboard_id, **revoke)
+            cid_print(f'Revoked sharing of dashboard {dashboard_id} with everyone in the account')
+        except self.qs.client.exceptions.ClientError as exc:
+            raise CidCritical(f'Unable to revoke sharing of dashboard {dashboard_id} with the account: {exc}') from exc
 
 
     def create_datasets(self, _datasets: list, known_datasets: dict={}, recursive: bool=True, update: bool=False) -> dict:
@@ -2133,6 +2161,10 @@ class Cid(AgentCommands):
                 default=resource_tags or [],
             )
 
+        unknown_tags = [name for name in resource_tags or [] if name not in tags_and_names]
+        if unknown_tags:
+            logger.warning(f'Tags {unknown_tags} are not found in the data and will be skipped. Available: {sorted(tags_and_names.keys())[:50]}')
+            resource_tags = [name for name in resource_tags if name in tags_and_names]
         if not resource_tags:
             return "'{}'"
         logger.debug(f'selected_tag_names = {resource_tags}')

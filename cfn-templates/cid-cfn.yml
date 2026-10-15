@@ -1,6 +1,6 @@
 # https://github.com/aws-samples/aws-cudos-framework-deployment/blob/main/cfn-templates/cid-cfn.yml
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deployment of Cloud Intelligence Dashboards v4.4.17 - AWS Solution SO9011
+Description: Deployment of Cloud Intelligence Dashboards v4.4.18 - AWS Solution SO9011
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -1542,6 +1542,7 @@ Resources:
                   - quicksight:DeleteDashboard
                   - quicksight:UpdateDashboard
                   - quicksight:UpdateDashboardPermissions
+                  - quicksight:DescribeDashboardPermissions
                   - quicksight:UpdateDashboardPublishedVersion
                   - quicksight:ListDashboards
                   - quicksight:DescribeUser
@@ -1809,6 +1810,7 @@ Resources:
 
           import boto3
           import requests
+          import cid.utils # From lambda layer
           from cid.common import Cid # From lambda layer
           from cid.utils import set_parameters # From lambda layer
           from cid.exceptions import CidCritical
@@ -1824,6 +1826,9 @@ Resources:
 
           def lambda_handler(event, context):
               print(json.dumps(event))
+              # cid.utils keeps parameters in module globals; reset them so a warm container does not leak the previous dashboard's parameters
+              cid.utils.params.clear()
+              cid.utils.defaults.clear()
               request_type = event.get('RequestType', 'Undef')
               properties = event.get('ResourceProperties', {})
               status, reason = ('FAILED', "Undef error")
@@ -1831,8 +1836,16 @@ Resources:
               dash_url = "Unknown"
               try:
                   dashboard = properties['Dashboard']
+                  # merge additional parameters passed as a JSON object (ex: from cid-plugin.yml)
+                  extra_parameters = json.loads(dashboard.pop('parameters', None) or '{}')
+                  if not isinstance(extra_parameters, dict):
+                      raise ValueError('parameters must be a JSON object')
+                  extra_parameters.pop('dashboard-id', None)
+                  dashboard.update({key.replace('_', '-'): value for key, value in extra_parameters.items()})
                   # set additional parameters from environment variables
                   for par in 'athena_workgroup quicksight_datasource_id quicksight_datasource_role_arn athena_database glue_data_catalog cur_table_name cur_database quicksight_user account_map_source share_with_account account_map_database_name currency_symbol'.split():
+                      if par == 'share_with_account' and request_type != 'Create':
+                          continue # on update, change sharing only if share-with-account is set on the dashboard resource
                       dashboard[par.replace('_', '-')] = dashboard.get(par.replace('_', '-'), os.environ.get(par))
                   if request_type == 'Create':
                       dash_url = deploy_dash(dashboard)
@@ -2117,7 +2130,7 @@ Resources:
       SourceBucket: !Ref ReferenceAssetsBucket
       DestinationBucket: !Ref LocalAssetsBucket
       Keys:
-        - 'cid-resource-lambda-layer/cid-4.4.17.zip' #replace version here if needed
+        - 'cid-resource-lambda-layer/cid-4.4.18.zip' #replace version here if needed
 
   CidResourceLambdaLayer:
     Type: AWS::Lambda::LayerVersion
@@ -2132,7 +2145,7 @@ Resources:
             - LambdaLayerBucketPrefixIsManaged
             - !FindInMap [RegionMap, !Ref 'AWS::Region', BucketName]
             - !Sub '${LambdaLayerBucketPrefix}-${AWS::Region}' # Region added for backward compatibility
-        S3Key: 'cid-resource-lambda-layer/cid-4.4.17.zip' #replace version here if needed
+        S3Key: 'cid-resource-lambda-layer/cid-4.4.18.zip' #replace version here if needed
       CompatibleRuntimes:
         - python3.10
         - python3.11

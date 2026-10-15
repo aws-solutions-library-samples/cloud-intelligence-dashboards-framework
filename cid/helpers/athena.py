@@ -544,6 +544,8 @@ class Athena(CidBase):
         if view_name not in self._metadata:
             update_view = True
         else: # view exists
+            if get_parameters().get('on-drift', 'show').lower() == 'override' and isatty():
+                update_view = True # override without showing a diff
             while get_parameters().get('on-drift', 'show').lower() != 'override' and isatty():
                 cid_print(f'Analyzing view {view_name}')
                 diff = self.get_view_diff(view_name, view_query)
