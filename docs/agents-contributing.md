@@ -2,8 +2,8 @@
 
 Adding a new agent to the `cid-cmd` catalog is a **content-only** contribution:
 **no Python change is required**. Agents are catalog content, defined and shipped the
-same way dashboards are: a YAML resource file at the repo root, listed in the agents'
-own catalog, `agentic/catalog.yaml`. If your pull request touches any `.py` file, it is
+same way dashboards are: YAML resource files under `agentic/`, listed in the agentic
+catalog, `agentic/catalog.yaml`. If your pull request touches any `.py` file, it is
 not an agent contribution and will be reviewed under the regular code process instead.
 
 ## Agents and Spaces
@@ -34,7 +34,7 @@ List both files in `agentic/catalog.yaml`:
   - Url: spaces/<space-id>.yaml        # skip if the agent reuses an existing Space
 ```
 
-That is all the wiring there is — the file flows through the same resource pipeline
+That is all the wiring there is — the files flow through the same resource pipeline
 dashboards use. `personaFile` is referenced by relative path and resolved against the
 manifest's location, so it works both from a local checkout and over HTTPS.
 
@@ -71,15 +71,15 @@ agents:
     agentId: cid-finops-advisor            # deployed agent id, [0-9a-zA-Z-_.+]
     summary: "Cost savings, idle resources, commitments and upcoming fees"   # one line (<= 70 chars) for the picker
     description: >-
-      Cost optimization and anomaly advisor over the CUDOS, Cost Intelligence,
-      and KPI dashboards.
+      Cost optimization advisor over CUDOS, CORA, Graviton Savings, Extended
+      Support Cost Projection and Pricing Change Analysis.
     dependsOn:
       spaces: [cid-finops-space]           # exactly one Space id from spaces/
       actionConnectors: []                 # optional action-connector ARNs
     personaFile: persona.yaml              # sibling relative path
     starterPrompts:                        # 0-3 strings, each 100 chars or fewer
       - "What are my top cost optimization opportunities right now?"
-      - "Were any cost anomalies detected this month?"
+      - "Which Extended Support charges are coming and what should we upgrade first?"
     welcomeMessage: >-                     # 300 chars or fewer
       Hi, I'm the CID FinOps Advisor. Ask me about your cost data.
     lifecycle: PUBLISHED                   # PREVIEW | PUBLISHED
@@ -97,10 +97,17 @@ Rules to keep your PR green:
   this).
 - List every dashboard the agent can use under the Space's `dashboards`. `create-agent`
   never deploys dashboards: missing ones produce a warning pointing to the deployment
-  guidance, and the agent works with the ones that are deployed.
+  guidance, and the agent works with the ones that are deployed. With none deployed, it
+  stops before creating anything.
+- CID dashboards deployed from their own resources file (for example the AWS Config
+  Resource Compliance Dashboard, `cid-crcd`) are not in the core catalog; add them and
+  their datasets to `EXTERNAL_DASHBOARDS` in `cid/test/python/test_agent_catalog.py`.
+- Amazon Quick allows at most 20 resources of each type per Space (dashboards, datasets,
+  knowledge bases); a smoke test enforces it.
+- Every agent needs a one-line `summary` (70 chars or fewer), shown in the picker and in
+  `list-agents`.
 - Caps are validated before any API call: at most 3 starter prompts of 100 chars each,
-  welcome message 300 chars, agent name 1-50 chars, at most 10 spaces and 10 action
-  connectors.
+  welcome message 300 chars, agent name 1-50 chars, at most 10 action connectors.
 
 ### `persona.yaml` — the five persona fields
 
@@ -124,8 +131,11 @@ responseLength: >-
 ```
 
 The `customInstructions` body is where the agent's real behavior lives — the shipped
-agents under `agents/` are good templates (mission, analysis workflow, which dashboard to
-consult for what, response structure, and guardrails).
+agents under `agentic/agents/` are good templates: which dashboard, tab and dataset to use
+for which question, how to combine dashboards, how to prioritize, the response structure,
+and guardrails. Keep field-level meanings out of the persona: they belong in each dataset's
+semantic metadata. Ask the agent to name the exact dashboard and tab where the user can
+verify each figure.
 
 ## Content-only PR template
 
@@ -140,9 +150,9 @@ Copy this into your pull request description:
       + `persona.yaml`
 - [ ] Space `agentic/spaces/<space-id>.yaml` with the dashboards/datasets (or an existing Space reused)
 - [ ] `agentic/catalog.yaml` lists `agents/<name>/<name>.yaml` (and `spaces/<space-id>.yaml` for a new Space)
-- [ ] All 5 persona fields present and non-empty
+- [ ] All 5 persona fields present and non-empty; one-line `summary` (<= 70 chars)
 - [ ] Every Space dashboard id and dataset key exists in the core catalog (or is added as
-      an ordinary catalog entry in this PR)
+      an ordinary catalog entry in this PR); at most 20 dashboards and 20 datasets per Space
 - [ ] Starter prompts <= 3, each <= 100 chars; welcome message <= 300 chars; name <= 50 chars
 - [ ] `pip install -e '.[test]' && pytest cid/test/python/` passes locally
       (the launch-content tests validate referential completeness and loading)
@@ -163,7 +173,7 @@ source follow the regular code-review process.
 
 ## Testing your agent locally
 
-The agent commands load the agents catalog at runtime (the default URL points at this
+The agent commands load the agentic catalog at runtime (the default URL points at this
 repository's `main` branch; dashboard commands never load it), so point them at your local
 checkout with `--catalog` (list the dashboards catalog too: `--catalog` replaces the default
 catalog list) while iterating:

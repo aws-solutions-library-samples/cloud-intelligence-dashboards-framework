@@ -10,7 +10,7 @@
 #                    error naming the CID/CUDOS workshop and Data Collection
 #                    guidance URLs, naming no cid-cmd command, deploying nothing
 #   * Partial:       a strict subset of the finops agent's dependency dashboards
-#                    deployed -> exit 0 with per-missing-dependency warnings,
+#                    deployed -> proceeds, marking missing dependencies as optional,
 #                    deploying nothing
 #
 # Seeding prerequisites (full seeding automation is impractical here, so each
@@ -65,14 +65,12 @@ function dashboard_present {
     --agent-id $agent_catalog_key \
     --catalog "$catalog"
 
-  # guidance error, non-zero exit
-  [ "$status" -ne 0 ]
-  echo "$output" | grep -q 'No CID dashboards'
-  # points to the CID/CUDOS foundational and Data Collection guidance
-  echo "$output" | grep -q 'https://catalog.workshops.aws/awscid/en-US'
-  echo "$output" | grep -q 'https://catalog.workshops.aws/awscid/en-US/data-collection'
+  # guidance error (cid-cmd logs CidError and exits 0, like every command)
+  echo "$output" | grep -q 'None of the dashboards this agent needs are deployed'
+  # points to the CID deployment guide
+  echo "$output" | grep -q 'cloud-intelligence-dashboards/dashboards.html'
   # the guidance error itself names no cid-cmd command
-  echo "$output" | grep 'No CID dashboards' | grep -v -q 'cid-cmd'
+  echo "$output" | grep 'None of the dashboards this agent needs' | grep -v -q 'cid-cmd'
 
   # nothing was deployed: dashboard count unchanged (still zero)
   after=$(dashboards_count)
@@ -108,13 +106,12 @@ function dashboard_present {
 
   # proceeds with the present subset
   [ "$status" -eq 0 ]
-  # a warning is emitted for each missing dependency, pointing to the guidance
-  echo "$output" | grep -q 'Warning:'
-  echo "$output" | grep -q 'is not deployed'
-  echo "$output" | grep -q 'Proceeding with the available dashboards'
-  echo "$output" | grep -q 'https://catalog.workshops.aws/awscid'
-  # the warnings name no cid-cmd command
-  echo "$output" | grep 'is not deployed' | grep -v -q 'cid-cmd'
+  # missing dependencies are marked and explained as optional, pointing to the guide
+  echo "$output" | grep -q '✗'
+  echo "$output" | grep -q 'Missing items are optional'
+  echo "$output" | grep -q 'cloud-intelligence-dashboards/dashboards.html'
+  # the note names no cid-cmd command
+  echo "$output" | grep 'Missing items are optional' | grep -v -q 'cid-cmd'
 
   # nothing was deployed: dashboard count unchanged
   after=$(dashboards_count)

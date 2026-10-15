@@ -348,7 +348,7 @@ cid-cmd create-cur-proxy --cur-version 1 --cur-table-name mycur2 \
 
 ### create-agent
 
-Create a Quick Agent (an AI advisor) and its knowledge Space over CID dashboards that are **already deployed**. An agent's knowledge layer is a **Space** — a Quick container that holds references to your already-deployed dashboards (and, optionally, datasets and pre-existing knowledge bases). This command never deploys dashboards and never provisions the data layer (CUR, Data Exports, Data Collection); when dashboards are missing it points to the existing CID/CUDOS and Data Collection deployment guidance. When the agent is already deployed, the command shows what differs from the catalog and asks whether to update instead — pass `--update yes` to skip the prompt, or use [update-agent](#update-agent).
+Create a Quick Agent (an AI advisor) and its knowledge Space over CID dashboards that are **already deployed**. An agent's knowledge layer is a **Space** — a Quick container that holds references to your already-deployed dashboards (and, optionally, datasets and pre-existing knowledge bases). This command never deploys dashboards and never provisions the data layer (CUR, Data Exports, Data Collection); when dashboards are missing it points to the CID deployment guidance. When the agent is already deployed, the command shows what differs from the catalog and asks whether to update instead — pass `--update yes` to skip the prompt, or use [update-agent](#update-agent).
 
 ```bash
 # Interactive — shows a picker of catalog agents
@@ -369,8 +369,8 @@ cid-cmd create-agent --agent-id finops --space 'My Team Space' -y
 #### Agent Prerequisites
 
 - An active **QuickSight Enterprise** subscription. The check is read-only — `create-agent` never activates or modifies a subscription. Missing subscription stops the command with instructions to enable Enterprise.
-- The caller must be a **registered QuickSight user** with the **Author Pro** (or Admin Pro) role, since creating Quick Agents requires the Author Pro entitlement.
-- The Quick Suite generative-AI operations must be available in your region and partition, with an AWS SDK new enough to carry them (`boto3 >= 1.43.0`, installed automatically with `cid-cmd`).
+- An owner for the Space and the agent, resolved the same way as for dashboards: `--quicksight-user`, `--quicksight-group`, or the caller's QuickSight user (with an interactive choice, including the `cid-owners` group, when the caller is not registered). A user owner must have the **Author Pro** (or Admin Pro) role, since creating Quick Agents requires the Author Pro entitlement.
+- The Amazon Quick generative-AI operations must be available in your Region and partition, with an AWS SDK new enough to carry them (`boto3 >= 1.43.10`, installed automatically with `cid-cmd`).
 
 #### The prerequisite-only model
 
@@ -401,7 +401,7 @@ By default each agent uses the Space declared in its catalog definition (see the
 cid-cmd create-agent --agent-id finops --space 'My Team Space'
 ```
 
-- **The name matches one existing Space** — that Space is reused **additively**: only this agent's dashboards are added. Pre-existing Space resources, name, description, tags, and permissions are left untouched. This applies even to Spaces that were not created by CID.
+- **The name matches one existing Space** — that Space is reused **additively**: only the dashboards and datasets of the agent's catalog Space are added. Pre-existing Space resources, name, description, tags, and permissions are left untouched. This applies even to Spaces that were not created by CID.
 - **The name matches multiple Spaces** — the command stops with an error listing the matching space ids. Rename Spaces so the name is unique, then re-run.
 - **The name matches no Space** — a new Space is created with an id derived deterministically from the name.
 

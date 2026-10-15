@@ -779,7 +779,7 @@ class Cid(AgentCommands):
 
     @command
     def list_agents(self, **kwargs):
-        """List catalog agents grouped by category with live deployment status."""
+        """List catalog agents with their summary, Space and live deployment status."""
         return self._list_agents()
 
     @command

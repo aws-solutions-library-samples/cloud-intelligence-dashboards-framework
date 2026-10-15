@@ -52,11 +52,11 @@ pytest cid/test/python/
 
 ## Contributing a Quick Agent (zero Python)
 
-Adding a new Quick Agent to the catalog is a content-only contribution: one folder of
-YAML files (`agentic/agents/<name>/<name>.yaml` + `persona.yaml`, and its Space under `agentic/spaces/`) plus a line in
-`agentic/catalog.yaml`, and no Python change — the same way dashboards are added.
-See the [zero-Python agent contribution guide](docs/agents-contributing.md) for the manifest
-shapes, a worked example, the content-only PR template, and the review SLA.
+Adding a new Quick Agent to the catalog is a content-only contribution: an agent folder
+(`agentic/agents/<name>/<name>.yaml` + `persona.yaml`), its Space (`agentic/spaces/<space-id>.yaml`,
+or an existing Space reused), and their lines in `agentic/catalog.yaml` — no Python change, the
+same way dashboards are added. See the [zero-Python agent contribution guide](docs/agents-contributing.md)
+for the file shapes, worked examples, the rules the tests enforce, and the content-only PR template.
 
 
 ## Finding contributions to work on
