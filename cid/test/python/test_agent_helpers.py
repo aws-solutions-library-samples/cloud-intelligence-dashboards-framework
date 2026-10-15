@@ -250,7 +250,7 @@ class TestWaitActive:
             {'Agent': {'AgentStatus': 'CREATING'}},
             {'Agent': {'AgentStatus': 'ACTIVE', 'Arn': 'arn:agent'}},
         ]
-        with patch('cid.helpers.quicksight.agent.time.sleep') as mock_sleep:
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep') as mock_sleep:
             agent = helper.wait_active('my-agent')
         assert agent['AgentStatus'] == 'ACTIVE'
         assert mock_sleep.call_count == 2
@@ -259,7 +259,7 @@ class TestWaitActive:
         """Timeout raises CidError naming the agent and its last status."""
         helper, client = make_agent_helper()
         client.describe_agent.return_value = {'Agent': {'AgentStatus': 'CREATING'}}
-        with patch('cid.helpers.quicksight.agent.time.sleep'):
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep'):
             with pytest.raises(CidError) as exc_info:
                 helper.wait_active('my-agent', timeout=300, interval=5)
         message = str(exc_info.value)
@@ -273,7 +273,7 @@ class TestWaitActive:
         client.describe_agent.return_value = {
             'Agent': {'AgentStatus': 'FAILED', 'ErrorMessage': 'model access denied'},
         }
-        with patch('cid.helpers.quicksight.agent.time.sleep') as mock_sleep:
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep') as mock_sleep:
             with pytest.raises(CidError) as exc_info:
                 helper.wait_active('my-agent', timeout=300, interval=5)
         message = str(exc_info.value)
@@ -325,7 +325,7 @@ class TestDelete:
             None,
         ]
         client.describe_agent.return_value = {'Agent': {'AgentStatus': 'UPDATING'}}
-        with patch('cid.helpers.quicksight.agent.time.sleep') as mock_sleep:
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep') as mock_sleep:
             helper.delete('my-agent', timeout=300, interval=5)
         assert client.delete_agent.call_count == 3
         assert mock_sleep.call_count == 2
@@ -335,7 +335,7 @@ class TestDelete:
         helper, client = make_agent_helper()
         client.delete_agent.side_effect = ConflictException('agent is UPDATING')
         client.describe_agent.return_value = {'Agent': {'AgentStatus': 'UPDATING'}}
-        with patch('cid.helpers.quicksight.agent.time.sleep') as mock_sleep:
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep') as mock_sleep:
             with pytest.raises(CidError) as exc_info:
                 helper.delete('my-agent', timeout=300, interval=5)
         assert 'my-agent' in str(exc_info.value)
@@ -623,7 +623,7 @@ class TestSpacesAttachedAfterCreateNotAtCreate:
         client.describe_agent.side_effect = describe
         client.create_agent.return_value = {'Arn': 'arn:new-agent'}
 
-        with patch('cid.helpers.quicksight.agent.time.sleep') as mock_sleep:
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep') as mock_sleep:
             helper.create_or_update(definition, SPACE_ARNS)
 
         client.update_agent.assert_called_once()
@@ -670,98 +670,69 @@ class TestSpacesAttachedAfterCreateNotAtCreate:
         client.create_agent.return_value = {'Arn': 'arn:new-agent'}
         client.update_agent.side_effect = [ConflictException('busy'), None]
 
-        with patch('cid.helpers.quicksight.agent.time.sleep'):
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep'):
             helper.create_or_update(definition, SPACE_ARNS)
 
         assert client.update_agent.call_count == 2
         assert client.update_agent.call_args.kwargs['SpacesToAdd'] == sorted(SPACE_ARNS)
 
 
-class TestWriteProvenanceMutationSafety:
-    """write_provenance never mutates a transitional (CREATING/UPDATING) agent: it
-    waits for the agent to settle before any UpdateAgent/TagResource call."""
+class TestWriteMarkerMutationSafety:
+    """write_marker never mutates a transitional (CREATING/UPDATING) agent: it waits
+    for the agent to settle before UpdateAgent. Tagging is done by the caller."""
 
-    AGENT_ARN = f'arn:aws:quicksight:us-east-1:{ACCOUNT_ID}:agent/cid-finops-advisor'
-
-    def test_fresh_agent_with_baked_marker_settles_then_tags_without_update(self):
-        """Marker baked at create, agent settles CREATING -> UPDATING -> ACTIVE,
-        tag written after settle, UpdateAgent NEVER called."""
+    def test_fresh_agent_with_baked_marker_settles_without_update(self):
         helper, client = make_agent_helper()
         description = f'A test agent {CID_MANAGED_MARKER}'
         client.describe_agent.side_effect = [
-            {'Agent': {'Name': 'CID FinOps Advisor', 'Description': description, 'AgentStatus': 'CREATING'}},
-            {'Agent': {'Name': 'CID FinOps Advisor', 'Description': description, 'AgentStatus': 'UPDATING'}},
-            {'Agent': {'Name': 'CID FinOps Advisor', 'Description': description, 'AgentStatus': 'ACTIVE'}},
+            {'Agent': {'Name': 'CID FinOps Advisor', 'Description': description, 'AgentStatus': status}}
+            for status in ('CREATING', 'UPDATING', 'ACTIVE')
         ]
-        with patch('cid.helpers.quicksight.agent.time.sleep') as mock_sleep:
-            helper.write_provenance(self.AGENT_ARN, 'cid-finops-advisor')
-        client.update_agent.assert_not_called()   # no mutation of a transitional agent
-        client.tag_resource.assert_called_once()  # tag only after ACTIVE
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep') as mock_sleep:
+            helper.write_marker('cid-finops-advisor')
+        client.update_agent.assert_not_called()
+        client.tag_resource.assert_not_called()   # tags are written via qs.set_tags by the caller
         assert mock_sleep.call_count == 2
 
     def test_transitional_agent_is_never_mutated_marker_written_after_settle(self):
-        """A marker-less agent that is still UPDATING is not touched until it
-        settles; the marker UpdateAgent fires only against the ACTIVE agent."""
         helper, client = make_agent_helper()
+        unmarked = {'Name': 'CID FinOps Advisor', 'Description': 'A test agent'}
         client.describe_agent.side_effect = [
-            {'Agent': {'Name': 'CID FinOps Advisor', 'Description': 'A test agent', 'AgentStatus': 'UPDATING'}},
-            {'Agent': {'Name': 'CID FinOps Advisor', 'Description': 'A test agent', 'AgentStatus': 'ACTIVE'}},
-            # post-marker-write settle check before the tag
-            {'Agent': {'Name': 'CID FinOps Advisor', 'Description': f'A test agent {CID_MANAGED_MARKER}', 'AgentStatus': 'ACTIVE'}},
+            {'Agent': dict(unmarked, AgentStatus='UPDATING')},
+            {'Agent': dict(unmarked, AgentStatus='ACTIVE')},
+            {'Agent': dict(unmarked, AgentStatus='ACTIVE')},
+            {'Agent': dict(unmarked, Description=f'A test agent {CID_MANAGED_MARKER}', AgentStatus='ACTIVE')},
         ]
-        with patch('cid.helpers.quicksight.agent.time.sleep') as mock_sleep:
-            helper.write_provenance(self.AGENT_ARN, 'cid-finops-advisor')
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep'):
+            helper.write_marker('cid-finops-advisor')
         client.update_agent.assert_called_once()
         payload = client.update_agent.call_args.kwargs
         assert payload['Name'] == 'CID FinOps Advisor'
-        assert CID_MANAGED_MARKER in payload['Description']
-        assert payload['Description'].startswith('A test agent')
-        client.tag_resource.assert_called_once()
-        assert mock_sleep.call_count == 1
+        assert payload['Description'] == f'A test agent {CID_MANAGED_MARKER}'
 
     def test_residual_conflict_on_settled_agent_retries_until_written(self):
-        """A residual ConflictException flap on an ACTIVE agent still retries
-        ( pattern) until the marker write succeeds."""
         helper, client = make_agent_helper()
         client.describe_agent.return_value = {
             'Agent': {'Name': 'CID FinOps Advisor', 'Description': 'A test agent', 'AgentStatus': 'ACTIVE'},
         }
-        client.update_agent.side_effect = [
-            ConflictException('Cannot update Agent cid-finops-advisor in UPDATING status'),
-            ConflictException('Cannot update Agent cid-finops-advisor in UPDATING status'),
-            None,
-        ]
-        with patch('cid.helpers.quicksight.agent.time.sleep') as mock_sleep:
-            helper.write_provenance(self.AGENT_ARN, 'cid-finops-advisor')  # must not raise
+        client.update_agent.side_effect = [ConflictException('busy'), ConflictException('busy'), None]
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep') as mock_sleep:
+            helper.write_marker('cid-finops-advisor')  # must not raise
         assert client.update_agent.call_count == 3
         assert mock_sleep.call_count == 2
-        payload = client.update_agent.call_args.kwargs
-        assert payload['Name'] == 'CID FinOps Advisor'
-        assert CID_MANAGED_MARKER in payload['Description']
+        assert CID_MANAGED_MARKER in client.update_agent.call_args.kwargs['Description']
 
     def test_never_settles_skips_marker_write_without_mutating(self, caplog):
-        """An agent that never leaves UPDATING is NEVER mutated: the marker write
-        is skipped with a WARNING after the budget, and the tag is still attempted
-        (is_cid_managed accepts either mechanism)."""
         helper, client = make_agent_helper()
         client.describe_agent.return_value = {
             'Agent': {'Name': 'CID FinOps Advisor', 'Description': '', 'AgentStatus': 'UPDATING'},
         }
-        with patch('cid.helpers.quicksight.agent.time.sleep') as mock_sleep:
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep') as mock_sleep:
             with caplog.at_level(logging.WARNING, logger='cid.helpers.quicksight.agent'):
-                helper.write_provenance(  # must NOT raise
-                    self.AGENT_ARN, 'cid-finops-advisor', timeout=300, interval=5)
-        # Key assertion: zero mutating calls against a transitional agent.
+                helper.write_marker('cid-finops-advisor', timeout=300, interval=5)  # must NOT raise
         client.update_agent.assert_not_called()
-        # 300s bound at 5s intervals, then warn-and-skip (never a crash).
         assert mock_sleep.call_count == 300 // 5
-        warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
-        assert any(
-            'cid-finops-advisor' in r.getMessage() and 'provenance' in r.getMessage().lower()
-            for r in warnings
-        )
-        # The provenance tag (mechanism (b)) was still attempted.
-        client.tag_resource.assert_called_once()
+        assert any('marker' in record.getMessage() for record in caplog.records if record.levelno == logging.WARNING)
 
 
 class TestUpdateAgentFullReplacementSemantics:
@@ -783,7 +754,7 @@ class TestUpdateAgentFullReplacementSemantics:
         helper, client = make_agent_helper()
         client.describe_agent.return_value = {'Agent': deployed}
 
-        helper.write_provenance(self.AGENT_ARN, definition['agentId'])
+        helper.write_marker(definition['agentId'])
 
         payload = client.update_agent.call_args.kwargs
         assert CID_MANAGED_MARKER in payload['Description']
@@ -791,22 +762,6 @@ class TestUpdateAgentFullReplacementSemantics:
         assert payload['WelcomeMessage'] == definition['welcomeMessage']
         new_prompt = payload['CustomPromptInput']['NewPrompt']
         assert set(new_prompt) == set(PERSONA_API_FIELDS)  # server-derived keys dropped
-
-    def test_tag_written_after_marker_write(self):
-        """The provenance tag is written AFTER the marker write settles: TagResource
-        issued while a fresh agent is still CREATING is accepted (202) but is not
-        durably applied until the agent settles."""
-        definition, deployed = self._deployed()
-        deployed['Description'] = 'A test agent'
-        helper, client = make_agent_helper()
-        client.describe_agent.return_value = {'Agent': deployed}
-        order = []
-        client.update_agent.side_effect = lambda **kw: order.append('update_agent')
-        client.tag_resource.side_effect = lambda **kw: order.append('tag_resource')
-
-        helper.write_provenance(self.AGENT_ARN, definition['agentId'])
-
-        assert order == ['update_agent', 'tag_resource']
 
     def test_update_never_sends_agent_lifecycle(self):
         """UpdateAgent does not accept AgentLifecycle (raises ParamValidationError)."""
@@ -896,6 +851,25 @@ def make_space(resources=None):
     return space, client, session
 
 
+def test_space_update_resources_is_additive_and_remove_resources_removes_by_type():
+    space, client, _ = make_space()
+    client.list_space_resources.return_value = {'SpaceResources': [
+        {'ResourceType': 'DASHBOARD', 'ResourceDetails': {'resourceArn': 'arn:dash/a'}},
+        {'ResourceType': 'DATA_SET', 'ResourceDetails': {'resourceArn': 'arn:dataset/x'}},
+    ]}
+    client.update_space_resources.return_value = {}
+
+    assert space.current_resources('s1') == {'arn:dash/a': 'DASHBOARD', 'arn:dataset/x': 'DATA_SET'}
+    space.update_resources('s1', ['arn:dash/a', 'arn:dash/b'], resource_type='DASHBOARD')
+    kwargs = client.update_space_resources.call_args.kwargs
+    assert [r['ResourceDetails']['resourceArn'] for r in kwargs['AddResources']] == ['arn:dash/b']
+    assert 'RemoveResources' not in kwargs
+
+    space.remove_resources('s1', {'arn:dataset/x': 'DATA_SET'})
+    kwargs = client.update_space_resources.call_args.kwargs
+    assert kwargs['RemoveResources'] == [{'ResourceType': 'DATA_SET', 'ResourceDetails': {'resourceArn': 'arn:dataset/x'}}]
+
+
 def test_space_subclasses_cidbase():
     assert issubclass(Space, CidBase)
 
@@ -967,7 +941,7 @@ def test_update_resources_adds_only_missing_arns():
     existing = _arn('already-there')
     new = _arn('new-dashboard')
     client.list_space_resources.return_value = {
-        'Resources': [{'ResourceType': 'DASHBOARD', 'ResourceDetails': {'resourceArn': existing}}],
+        'SpaceResources': [{'ResourceType': 'DASHBOARD', 'ResourceDetails': {'resourceArn': existing}}],
     }
     client.update_space_resources.return_value = {'FailedResourceOperations': []}
 
@@ -985,7 +959,7 @@ def test_update_resources_noop_when_everything_present():
     space, client, _ = make_space()
     existing = _arn('already-there')
     client.list_space_resources.return_value = {
-        'Resources': [{'ResourceType': 'DASHBOARD', 'ResourceDetails': {'resourceArn': existing}}],
+        'SpaceResources': [{'ResourceType': 'DASHBOARD', 'ResourceDetails': {'resourceArn': existing}}],
     }
 
     failed = space.update_resources('my-space', [existing])
@@ -998,7 +972,7 @@ def test_update_resources_reports_partial_failures_and_continues(caplog):
     space, client, _ = make_space()
     bad = _arn('denied-dashboard')
     good = _arn('fine-dashboard')
-    client.list_space_resources.return_value = {'Resources': []}
+    client.list_space_resources.return_value = {'SpaceResources': []}
     failure = {
         'ResourceType': 'DASHBOARD',
         'ResourceDetails': {'resourceArn': bad},
@@ -1056,48 +1030,25 @@ def test_find_by_name_zero_matches():
     assert space.find_by_name('No Such Space') == []
 
 
-def test_write_provenance_tags_and_writes_description_marker():
+def test_write_marker_writes_description_marker():
     space, client, _ = make_space()
-    space_arn = f'arn:aws:quicksight:us-east-1:{ACCOUNT_ID}:space/my-space'
-    client.describe_space.return_value = {
-        'Space': {'name': 'My Space', 'description': 'FinOps knowledge'},
-    }
+    client.describe_space.return_value = {'Space': {'name': 'My Space', 'description': 'FinOps knowledge'}}
 
-    space.write_provenance(space_arn, 'my-space')
+    space.write_marker('my-space')
 
-    client.tag_resource.assert_called_once_with(
-        ResourceArn=space_arn,
-        Tags=[{'Key': CID_PROVENANCE_TAG_KEY, 'Value': CID_PROVENANCE_TAG_VALUE}],
-    )
-    client.update_space.assert_called_once()
+    client.tag_resource.assert_not_called()   # tags are written via qs.set_tags by the caller
     kwargs = client.update_space.call_args.kwargs
-    assert kwargs['SpaceId'] == 'my-space'
-    assert kwargs['Name'] == 'My Space'
-    assert CID_MANAGED_MARKER in kwargs['Description']
-    assert kwargs['Description'].startswith('FinOps knowledge')  # original description preserved
+    assert kwargs['SpaceId'] == 'my-space' and kwargs['Name'] == 'My Space'
+    assert kwargs['Description'] == f'FinOps knowledge {CID_MANAGED_MARKER}'
 
 
-def test_write_provenance_tolerates_tag_failure_and_still_writes_marker():
+def test_write_marker_skips_update_when_marker_already_present():
     space, client, _ = make_space()
-    space_arn = f'arn:aws:quicksight:us-east-1:{ACCOUNT_ID}:space/my-space'
-    client.tag_resource.side_effect = client.exceptions.AccessDeniedException()
-    client.describe_space.return_value = {'Space': {'name': 'My Space', 'description': ''}}
-
-    space.write_provenance(space_arn, 'my-space')  # must not raise
-
-    client.update_space.assert_called_once()
-    kwargs = client.update_space.call_args.kwargs
-    assert CID_MANAGED_MARKER in kwargs['Description']
-
-
-def test_write_provenance_skips_update_when_marker_already_present():
-    space, client, _ = make_space()
-    space_arn = f'arn:aws:quicksight:us-east-1:{ACCOUNT_ID}:space/my-space'
     client.describe_space.return_value = {
         'Space': {'name': 'My Space', 'description': f'Something. {CID_MANAGED_MARKER}'},
     }
 
-    space.write_provenance(space_arn, 'my-space')
+    space.write_marker('my-space')
 
     client.update_space.assert_not_called()
 
@@ -1132,38 +1083,22 @@ def test_property_17_space_owner_grant_uses_exactly_the_canonical_action_set(spa
     assert kwargs['SpaceId'] == space_id
 
 
-def test_write_provenance_conflict_settles_then_marker_written():
-    """UpdateSpace ConflictException while the Space settles is retried until
-    the Description marker write succeeds (must not raise)."""
+def test_write_marker_conflict_settles_then_marker_written():
+    """UpdateSpace ConflictException while the Space settles is retried."""
     from unittest.mock import patch
 
     space, client, _ = make_space()
     client.exceptions.ConflictException = type('ConflictException', (Exception,), {})
-    space_arn = f'arn:aws:quicksight:us-east-1:{ACCOUNT_ID}:space/my-space'
-    client.describe_space.return_value = {
-        'Space': {'name': 'My Space', 'description': 'FinOps knowledge'},
-    }
-    client.update_space.side_effect = [
-        client.exceptions.ConflictException('Cannot update Space my-space in UPDATING status'),
-        client.exceptions.ConflictException('Cannot update Space my-space in UPDATING status'),
-        None,
-    ]
+    client.describe_space.return_value = {'Space': {'name': 'My Space', 'description': 'FinOps knowledge'}}
+    client.update_space.side_effect = [client.exceptions.ConflictException('busy'),
+                                       client.exceptions.ConflictException('busy'), None]
 
-    with patch('cid.helpers.quicksight.space.time.sleep') as mock_sleep:
-        space.write_provenance(space_arn, 'my-space')  # must not raise
+    with patch('cid.helpers.quicksight.agent_logic.time.sleep') as mock_sleep:
+        space.write_marker('my-space')  # must not raise
 
     assert client.update_space.call_count == 3
     assert mock_sleep.call_count == 2
-    kwargs = client.update_space.call_args.kwargs
-    assert kwargs['Name'] == 'My Space'
-    assert CID_MANAGED_MARKER in kwargs['Description']
-    assert kwargs['Description'].startswith('FinOps knowledge')
-
-
-# ======================================================================
-# UpdateAgent partial association failures + Space link repair
-# ======================================================================
-
+    assert CID_MANAGED_MARKER in client.update_space.call_args.kwargs['Description']
 
 class TestAssociationFailureChecks:
     """UpdateAgent reports partial association failures IN-BAND (FailedToAddSpaces /
@@ -1297,7 +1232,7 @@ class TestRepairSpaceAssociations:
         self.wire_repair_lifecycle(client, definition, SPACE_ARNS)
         client.update_agent.side_effect = [ConflictException('busy'), {}, {}]
 
-        with patch('cid.helpers.quicksight.agent.time.sleep'):
+        with patch('cid.helpers.quicksight.agent_logic.time.sleep'):
             assert helper.repair_space_associations(definition['agentId']) is True
 
         assert client.update_agent.call_count == 3
@@ -1335,3 +1270,49 @@ class TestAdditiveSpaceLinks:
 
         assert result['action'] == 'updated'
         assert client.update_agent.call_args.kwargs['SpacesToRemove'] == [extra]
+
+
+class TestAdditiveActionConnectors:
+    """Action connectors are ADDITIVE by default on update, like Spaces:
+    connectors the user attached outside the catalog are never detached.
+    sync_connectors=True opts into exact synchronization."""
+
+    USER_CONNECTOR = f'arn:aws:quicksight:us-east-1:{ACCOUNT_ID}:action-connector/user-added'
+    CATALOG_CONNECTOR = f'arn:aws:quicksight:us-east-1:{ACCOUNT_ID}:action-connector/catalog'
+
+    def test_default_never_detaches_a_user_added_connector(self):
+        helper, client = make_agent_helper()
+        definition = base_definition()
+        deployed = dict(deployed_agent_matching(definition, SPACE_ARNS), ActionConnectors=[self.USER_CONNECTOR])
+        client.describe_agent.return_value = {'Agent': deployed}
+
+        result = helper.create_or_update(definition, SPACE_ARNS)
+
+        assert result['action'] == 'unchanged'
+        client.update_agent.assert_not_called()
+
+    def test_default_still_attaches_missing_catalog_connector(self):
+        helper, client = make_agent_helper()
+        definition = dict(base_definition(), dependsOn={'actionConnectors': [self.CATALOG_CONNECTOR]})
+        deployed = dict(deployed_agent_matching(definition, SPACE_ARNS), ActionConnectors=[self.USER_CONNECTOR])
+        client.describe_agent.return_value = {'Agent': deployed}
+        client.update_agent.return_value = {}
+
+        result = helper.create_or_update(definition, SPACE_ARNS)
+
+        assert result['action'] == 'updated'
+        kwargs = client.update_agent.call_args.kwargs
+        assert kwargs['ActionConnectorsToAdd'] == [self.CATALOG_CONNECTOR]
+        assert 'ActionConnectorsToRemove' not in kwargs
+
+    def test_sync_connectors_detaches_connectors_the_catalog_does_not_carry(self):
+        helper, client = make_agent_helper()
+        definition = base_definition()
+        deployed = dict(deployed_agent_matching(definition, SPACE_ARNS), ActionConnectors=[self.USER_CONNECTOR])
+        client.describe_agent.return_value = {'Agent': deployed}
+        client.update_agent.return_value = {}
+
+        result = helper.create_or_update(definition, SPACE_ARNS, sync_connectors=True)
+
+        assert result['action'] == 'updated'
+        assert client.update_agent.call_args.kwargs['ActionConnectorsToRemove'] == [self.USER_CONNECTOR]

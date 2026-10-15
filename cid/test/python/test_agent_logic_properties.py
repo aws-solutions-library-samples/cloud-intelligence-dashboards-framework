@@ -23,7 +23,8 @@ from cid.helpers.quicksight.agent_logic import (
     classify_dependencies,
     compute_space_additions,
     compute_space_delta,
-    compute_stale_removals,
+    compute_space_removals,
+    SPACE_MANAGED_RESOURCE_TYPES,
     derive_space_id,
     is_cid_managed,
     persona_differs,
@@ -190,115 +191,42 @@ def test_property_7_cap_validation(case):
 
 
 # ---------------------------------------------------------------------------
-# Feature: cid-cmd-agent-flow-platform, Property 10: Zero dashboards present raises a
-# guidance error and creates nothing (classification portion: all-absent yields an
-# empty present set)
-# Validates: Requirements 8.3, 19.1
+# Properties 10-12: dependency classification
 # ---------------------------------------------------------------------------
-# Feature: cid-cmd-agent-flow-platform, Property 10: Zero dashboards present raises a guidance error and creates nothing
 @settings(max_examples=100, deadline=None)
 @given(
-    required=st.lists(_dep_keys.map(lambda s: 'dep-' + s), max_size=8),
-    optional=st.lists(_dep_keys.map(lambda s: 'dep-' + s), max_size=8),
+    dashboards=st.lists(_dep_keys.map(lambda s: 'dep-' + s), max_size=8),
     present_keys=st.frozensets(_dep_keys.map(lambda s: 'other-' + s), max_size=8),
 )
-def test_property_10_all_absent_yields_empty_present(required, optional, present_keys):
-    """**Validates: Requirements 8.3, 19.1**"""
-    # present_keys is disjoint from every declared dependency ('other-' vs 'dep-' prefixes)
-    result = classify_dependencies(required, optional, present_keys)
+def test_property_10_all_absent_yields_empty_present(dashboards, present_keys):
+    """Nothing declared is deployed: present is empty and everything is missing."""
+    result = classify_dependencies(dashboards, present_keys)
     assert result['present'] == []
-    # everything declared is reported missing
-    assert set(result['missing_required']) | set(result['missing_optional']) == set(required) | set(optional)
+    assert set(result['missing']) == set(dashboards)
 
 
-# ---------------------------------------------------------------------------
-# Feature: cid-cmd-agent-flow-platform, Property 11: At least one present dashboard
-# proceeds using exactly the present set
-# Validates: Requirements 8.4, 19.2, 19.4
-# ---------------------------------------------------------------------------
 @st.composite
-def _partitioned_deps(draw):
-    required = draw(st.lists(_dep_keys, max_size=8))
-    optional = draw(st.lists(_dep_keys, max_size=8))
-    declared = sorted(set(required) | set(optional))
-    if declared:
-        present = draw(st.frozensets(st.sampled_from(declared), min_size=1))
-    else:
-        present = frozenset()
-    # extra present keys never declared as dependencies must be ignored
+def _classification_cases(draw):
+    dashboards = draw(st.lists(_dep_keys, max_size=8))
+    declared = sorted(set(dashboards))
+    present = draw(st.frozensets(st.sampled_from(declared))) if declared else frozenset()
+    # extra present ids never declared as dependencies must be ignored
     extra = draw(st.frozensets(_dep_keys.map(lambda s: 'extra-' + s), max_size=4))
-    return required, optional, present, extra
+    return dashboards, present, extra
 
 
-# Feature: cid-cmd-agent-flow-platform, Property 11: At least one present dashboard proceeds using exactly the present set
 @settings(max_examples=100, deadline=None)
-@given(case=_partitioned_deps())
-def test_property_11_proceeds_with_exactly_present_set(case):
-    """**Validates: Requirements 8.4, 19.2, 19.4**"""
-    required, optional, present, extra = case
-    result = classify_dependencies(required, optional, present | extra)
-    declared = set(required) | set(optional)
-    # exactly the present declared dependencies, never an absent or undeclared one
-    assert set(result['present']) == present & declared
-    if present & declared:
-        assert result['present'], 'at least one present dashboard must let the run proceed'
-    # each key appears at most once
-    assert len(result['present']) == len(set(result['present']))
-    # present preserves declaration order (required first, then optional)
-    declaration_order = [k for k in list(required) + list(optional)]
-    filtered = [k for i, k in enumerate(declaration_order) if k in set(result['present']) and k not in declaration_order[:i]]
-    assert result['present'] == filtered
-
-
-# ---------------------------------------------------------------------------
-# Feature: cid-cmd-agent-flow-platform, Property 12: Missing required vs missing
-# optional emit the correct guidance and never deploy (classification portion:
-# correct required/optional partitioning)
-# Validates: Requirements 8.5, 8.6, 19.3, 19.5
-# ---------------------------------------------------------------------------
-@st.composite
-def _missing_split_cases(draw):
-    # 'req-'/'opt-' prefixes keep the two dependency namespaces disjoint
-    required = draw(st.lists(_dep_keys.map(lambda s: 'req-' + s), max_size=8))
-    optional = draw(st.lists(_dep_keys.map(lambda s: 'opt-' + s), max_size=8))
-    declared = sorted(set(required) | set(optional))
-    present = set()
-    if declared:
-        present |= draw(st.frozensets(st.sampled_from(declared)))
-    # undeclared present keys must not disturb the split
-    present |= draw(st.frozensets(_dep_keys.map(lambda s: 'extra-' + s), max_size=4))
-    return required, optional, frozenset(present)
-
-
-# Feature: cid-cmd-agent-flow-platform, Property 12: Missing required vs missing optional emit the correct guidance and never deploy
-@settings(max_examples=100, deadline=None)
-@given(case=_missing_split_cases())
-def test_property_12_missing_required_vs_optional_partitioning(case):
-    """**Validates: Requirements 8.5, 8.6, 19.3, 19.5**"""
-    required, optional, present_keys = case
-    result = classify_dependencies(required, optional, present_keys)
-    present_set = set(present_keys)
-
-    def _dedup(seq):
-        seen = set()
-        out = []
-        for key in seq:
-            if key not in seen:
-                seen.add(key)
-                out.append(key)
-        return out
-
-    # missing_required is exactly the absent required keys, in declaration order, deduped
-    assert result['missing_required'] == [k for k in _dedup(required) if k not in present_set]
-    # missing_optional is exactly the absent optional keys, in declaration order, deduped
-    assert result['missing_optional'] == [k for k in _dedup(optional) if k not in present_set]
-    # required and optional missing sets are disjoint ('req-'/'opt-' prefixes) and
-    # together with present partition the declared dependency set
-    assert set(result['missing_required']).isdisjoint(result['missing_optional'])
-    assert set(result['present']) | set(result['missing_required']) | set(result['missing_optional']) == set(required) | set(optional)
-    assert set(result['present']).isdisjoint(result['missing_required'])
-    assert set(result['present']).isdisjoint(result['missing_optional'])
-
+@given(case=_classification_cases())
+def test_property_11_present_and_missing_partition_the_declared_dashboards(case):
+    """present + missing is exactly the declared set, each once, in declaration order."""
+    dashboards, present, extra = case
+    result = classify_dependencies(dashboards, present | extra)
+    assert set(result['present']) == present & set(dashboards)
+    assert set(result['missing']) == set(dashboards) - present
+    assert set(result['present']).isdisjoint(result['missing'])
+    unique_order = list(dict.fromkeys(dashboards))
+    assert result['present'] == [k for k in unique_order if k in present]
+    assert result['missing'] == [k for k in unique_order if k not in present]
 
 # ---------------------------------------------------------------------------
 # Feature: cid-cmd-agent-flow-platform, Property 14: Persona drift ignores the
@@ -381,33 +309,25 @@ def test_property_8_additive_deduplicated_updates(current, desired_with_dups, ag
 
 
 # ---------------------------------------------------------------------------
-# Feature: cid-cmd-agent-flow-platform, Property 9: Stale removal is opt-in and
-# scoped to CID-managed, unreferenced resources
-# Validates: Requirements 9.5, 12.6
-# ---------------------------------------------------------------------------
-# Feature: cid-cmd-agent-flow-platform, Property 9: Stale removal is opt-in and scoped to CID-managed, unreferenced resources
+# Property 9: --on-drift override removes exactly the catalog-managed resource types
+# that the Space config no longer needs, and never touches other types
+_resource_types = st.sampled_from(list(SPACE_MANAGED_RESOURCE_TYPES) + ['TOPIC', 'ACTION_CONNECTOR'])
+
+
 @settings(max_examples=100, deadline=None)
 @given(
-    space_arns=_arn_sets,
-    referenced_arns=_arn_sets,
-    managed_arns=_arn_sets,
-    remove_stale=st.booleans(),
+    current=st.dictionaries(st.text(min_size=1, max_size=8), _resource_types, max_size=10),
+    desired_arns=_arn_sets,
 )
-def test_property_9_scoped_stale_removal(space_arns, referenced_arns, managed_arns, remove_stale):
-    """**Validates: Requirements 9.5, 12.6**"""
-    removals = compute_stale_removals(space_arns, referenced_arns, managed_arns, remove_stale)
-    if not remove_stale:
-        # opt-in: flag off removes nothing
-        assert removals == set()
-    else:
-        # exactly the CID-managed, unreferenced resources actually in the Space
-        assert removals == (set(space_arns) & set(managed_arns)) - set(referenced_arns)
-        # never a non-CID resource
-        assert removals <= set(managed_arns)
-        # never a still-referenced resource
-        assert removals.isdisjoint(referenced_arns)
-        # never something not in the Space
-        assert removals <= set(space_arns)
+def test_property_9_override_space_removals(current, desired_arns):
+    removals = compute_space_removals(current, desired_arns)
+    # exactly the managed-type resources in the Space that the config does not need
+    assert removals == {arn: kind for arn, kind in current.items()
+                        if kind in SPACE_MANAGED_RESOURCE_TYPES and arn not in set(desired_arns)}
+    # never a desired resource, never an unmanaged type, never something not in the Space
+    assert set(removals).isdisjoint(desired_arns)
+    assert all(kind in SPACE_MANAGED_RESOURCE_TYPES for kind in removals.values())
+    assert set(removals) <= set(current)
 
 
 # ---------------------------------------------------------------------------
@@ -529,114 +449,3 @@ def test_property_28_space_id_derivation(name):
     # non-empty and pattern-valid
     assert first
     assert _SPACE_ID_PATTERN.fullmatch(first), f'derived id {first!r} violates the SpaceId pattern'
-
-
-# ---------------------------------------------------------------------------
-# Feature: cid-cmd-agent-flow-platform, Property 29: Agent parameter-store database
-# selection is deterministic and majority-based
-# Validates: Requirements 20.7
-# ---------------------------------------------------------------------------
-from collections import Counter
-
-from cid.helpers.quicksight.agent_logic import select_database_from_candidates
-
-_db_names = st.text(alphabet='abcdefgh_', min_size=1, max_size=6)
-
-
-@st.composite
-def _database_candidate_lists(draw):
-    """Lists of database names with deliberate duplicates and ties.
-
-    Half the time the list is built from explicit (name, count) pairs — repeated
-    names guarantee duplicates and the small alphabet makes count ties frequent —
-    then shuffled so order never influences the selection. The rest of the time a
-    plain (possibly empty) list is drawn.
-    """
-    if draw(st.booleans()):
-        pairs = draw(st.lists(st.tuples(_db_names, st.integers(min_value=1, max_value=4)), max_size=6))
-        names = [name for name, count in pairs for _ in range(count)]
-        return draw(st.permutations(names)) if names else names
-    return draw(st.lists(_db_names, max_size=20))
-
-
-# Feature: cid-cmd-agent-flow-platform, Property 29: Agent parameter-store database selection is deterministic and majority-based
-@settings(max_examples=100, deadline=None)
-@given(candidates=st.one_of(st.none(), _database_candidate_lists()))
-def test_property_29_database_selection_deterministic_majority(candidates):
-    """**Validates: Requirements 20.7**"""
-    first = select_database_from_candidates(candidates)
-    # calling twice with the same input yields the same result (determinism)
-    second = select_database_from_candidates(candidates)
-    assert first == second
-    if not candidates:
-        # empty list or None -> None
-        assert first is None
-    else:
-        counts = Counter(candidates)
-        max_count = max(counts.values())
-        # the returned name has the maximal count ...
-        assert counts[first] == max_count
-        # ... and among all maximal-count names it is the lexicographically smallest
-        winners = sorted(name for name, count in counts.items() if count == max_count)
-        assert first == winners[0]
-
-
-# ======================================================================
-# describe_drift
-# ======================================================================
-
-from cid.helpers.quicksight.agent_logic import describe_drift
-
-
-def _deployed_matching(definition):
-    """DescribeAgent read shape exactly matching a catalog definition."""
-    persona = {key[0].upper() + key[1:]: str(value)
-               for key, value in (definition.get('persona') or {}).items()}
-    return {
-        'Name': definition.get('name'),
-        'CustomPromptInterface': persona,
-        'StarterPrompts': list(definition.get('starterPrompts') or []),
-        'WelcomeMessage': definition.get('welcomeMessage'),
-        'ActionConnectors': list((definition.get('dependsOn') or {}).get('actionConnectors') or []),
-    }
-
-
-def _drift_definition():
-    return {
-        'name': 'Agent',
-        'persona': {'identity': 'id-1', 'customInstructions': 'ci-1', 'tone': 't-1',
-                    'outputStyle': 'os-1', 'responseLength': 'rl-1'},
-        'starterPrompts': ['p1'],
-        'welcomeMessage': 'hello',
-        'dependsOn': {'actionConnectors': []},
-    }
-
-
-def test_describe_drift_empty_when_matching():
-    definition = _drift_definition()
-    assert describe_drift(definition, _deployed_matching(definition)) == []
-
-
-def test_describe_drift_names_the_drifted_persona_field():
-    definition = _drift_definition()
-    deployed = _deployed_matching(definition)
-    deployed['CustomPromptInterface']['Tone'] = 'different'
-    assert describe_drift(definition, deployed) == ['persona.Tone']
-
-
-def test_describe_drift_reports_each_managed_field():
-    definition = _drift_definition()
-    deployed = _deployed_matching(definition)
-    deployed['Name'] = 'Other'
-    deployed['StarterPrompts'] = ['p2']
-    deployed['WelcomeMessage'] = 'bye'
-    deployed['ActionConnectors'] = ['arn:connector']
-    assert describe_drift(definition, deployed) == ['name', 'starterPrompts', 'welcomeMessage', 'actionConnectors']
-
-
-def test_describe_drift_ignores_unmanaged_fields():
-    """Fields the definition does not carry (None) never count as drift."""
-    definition = {'name': None, 'persona': {}, 'starterPrompts': None, 'welcomeMessage': None}
-    deployed = {'Name': 'Anything', 'StarterPrompts': ['x'], 'WelcomeMessage': 'y',
-                'CustomPromptInterface': {'Tone': 'z'}}
-    assert describe_drift(definition, deployed) == []

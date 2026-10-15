@@ -1,4 +1,4 @@
-# Operations agent (launch library). Loaded via agents/catalog.yaml;
+# Operations agent (launch library). Loaded via agentic/catalog.yaml;
 # personaFile is resolved relative to this file.
 agents:
   operations:
@@ -10,13 +10,7 @@ agents:
       Dashboards. Correlates usage and spend signals with Trusted Advisor
       findings and Compute Optimizer recommendations to spot operational risk.
     dependsOn:
-      spaces: [cid-dashboards-space]
-      dashboards: [CUDOSv5, CID]
-      optionalDashboards: [Trends]
-      datasets:
-        - ta-organizational-view
-        - compute_optimizer_all_options
-      knowledgeBases: []
+      spaces: [cid-operations-space]
       actionConnectors: []
     personaFile: persona.yaml
     starterPrompts:

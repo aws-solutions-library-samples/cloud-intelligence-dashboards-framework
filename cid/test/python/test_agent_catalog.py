@@ -5,6 +5,7 @@ import tempfile
 from pathlib import Path
 import pytest
 import yaml
+import cid.utils as cid_utils
 from cid.common import Cid
 from cid.exceptions import CidCritical, CidError
 import os
@@ -28,26 +29,25 @@ def _make_catalog_cid():
 
 
 def _write_repo_layout(root, agents=None, spaces=None):
-    """Create <root>/agents/catalog.yaml + agents/<id>/<id>.yaml + spaces/<id>.yaml.
+    """Create <root>/agentic/catalog.yaml + agentic/agents/<id>/<id>.yaml + agentic/spaces/<id>.yaml.
 
-    Mirrors the real repo convention: agents have their own catalog next to
-    the agent folders, catalog urls are relative to the catalog file, and
-    agent manifests are kind-wrapped in per-agent folders.
+    Mirrors the real repo convention: one agentic catalog with agents and Spaces in
+    sub-folders, catalog urls relative to the catalog file, kind-wrapped manifests.
     """
-    root = Path(root)
-    (root / 'agents').mkdir(parents=True, exist_ok=True)
+    base = Path(root) / 'agentic'
+    base.mkdir(parents=True, exist_ok=True)
     urls = []
     for agent_id, entry in (agents or {}).items():
-        agent_dir = root / 'agents' / agent_id
+        agent_dir = base / 'agents' / agent_id
         agent_dir.mkdir(parents=True)
         (agent_dir / f'{agent_id}.yaml').write_text(yaml.safe_dump({'agents': {agent_id: entry}}))
-        urls.append(f'{agent_id}/{agent_id}.yaml')
+        urls.append(f'agents/{agent_id}/{agent_id}.yaml')
     for space_id, entry in (spaces or {}).items():
-        spaces_dir = root / 'spaces'
+        spaces_dir = base / 'spaces'
         spaces_dir.mkdir(parents=True, exist_ok=True)
         (spaces_dir / f'{space_id}.yaml').write_text(yaml.safe_dump({'spaces': {space_id: entry}}))
-        urls.append(f'../spaces/{space_id}.yaml')
-    catalog = root / 'agents' / 'catalog.yaml'
+        urls.append(f'spaces/{space_id}.yaml')
+    catalog = base / 'catalog.yaml'
     catalog.write_text(yaml.safe_dump({'Resources': [{'Url': url} for url in urls]}))
     return catalog
 
@@ -69,8 +69,8 @@ def test_catalog_registers_agents_and_spaces_with_source():
         assert loaded_agent['category'] == 'FinOps'
         assert loaded_space['name'] == 'my space'
         root = Path(tmpdir)
-        assert Path(loaded_agent['source']).resolve() == (root / 'agents' / 'my-agent' / 'my-agent.yaml').resolve()
-        assert Path(loaded_space['source']).resolve() == (root / 'spaces' / 'my-space.yaml').resolve()
+        assert Path(loaded_agent['source']).resolve() == (root / 'agentic' / 'agents' / 'my-agent' / 'my-agent.yaml').resolve()
+        assert Path(loaded_space['source']).resolve() == (root / 'agentic' / 'spaces' / 'my-space.yaml').resolve()
 
 
 def test_persona_file_resolves_against_manifest_folder():
@@ -80,7 +80,7 @@ def test_persona_file_resolves_against_manifest_folder():
     with tempfile.TemporaryDirectory(prefix='cid_catalog_test_') as tmpdir:
         catalog = _write_repo_layout(
             tmpdir, agents={'my-agent': {'name': 'agent', 'personaFile': 'persona.yaml'}})
-        (Path(tmpdir) / 'agents' / 'my-agent' / 'persona.yaml').write_text(yaml.safe_dump(persona))
+        (Path(tmpdir) / 'agentic' / 'agents' / 'my-agent' / 'persona.yaml').write_text(yaml.safe_dump(persona))
 
         cid_obj = _make_catalog_cid()
         cid_obj.load_catalog(str(catalog))
@@ -101,11 +101,11 @@ def test_malformed_resource_file_is_skipped_and_loading_continues():
     catalog entries still load (same behavior dashboards rely on)."""
     with tempfile.TemporaryDirectory(prefix='cid_catalog_test_') as tmpdir:
         catalog = _write_repo_layout(tmpdir, agents={'good': {'name': 'good agent'}})
-        bad = Path(tmpdir) / 'agents' / 'bad'
+        bad = Path(tmpdir) / 'agentic' / 'agents' / 'bad'
         bad.mkdir(parents=True)
         (bad / 'bad.yaml').write_text('agents: [unclosed\n  sequence: {')
         catalog_content = yaml.safe_load(catalog.read_text())
-        catalog_content['Resources'].insert(0, {'Url': 'bad/bad.yaml'})
+        catalog_content['Resources'].insert(0, {'Url': 'agents/bad/bad.yaml'})
         catalog.write_text(yaml.safe_dump(catalog_content))
 
         cid_obj = _make_catalog_cid()
@@ -135,17 +135,18 @@ def test_missing_persona_file_raises_naming_the_file():
 
 
 def test_repo_agents_catalog_lists_launch_agents_and_shared_space():
-    """agents/catalog.yaml references the agent and shared space files, and
+    """agentic/catalog.yaml references the agent and shared space files, and
     every listed url resolves to a file."""
-    catalog = yaml.safe_load((REPO_ROOT / 'agents' / 'catalog.yaml').read_text())
+    catalog = yaml.safe_load((REPO_ROOT / 'agentic' / 'catalog.yaml').read_text())
     urls = [resource.get('Url') for resource in catalog.get('Resources', [])]
-    for expected in ('finops/finops.yaml',
-                     'operations/operations.yaml',
-                     'security/security.yaml',
-                     '../spaces/cid-dashboards-space.yaml'):
-        assert expected in urls, f'{expected} is not listed in agents/catalog.yaml'
+    for expected in ('agents/finops/finops.yaml',
+                     'agents/operations/operations.yaml',
+                     'agents/security/security.yaml',
+                     'spaces/cid-finops-space.yaml',
+                     'spaces/cid-operations-space.yaml'):
+        assert expected in urls, f'{expected} is not listed in agentic/catalog.yaml'
     for url in urls:
-        referenced = (REPO_ROOT / 'agents' / url).resolve()
+        referenced = (REPO_ROOT / 'agentic' / url).resolve()
         assert referenced.is_file(), f'catalog url {url} does not resolve to a file'
 
 
@@ -156,12 +157,34 @@ def test_dashboards_catalog_carries_no_agent_entries():
     assert not [url for url in urls if 'agents/' in url or 'spaces/' in url]
 
 
-def test_default_catalog_urls_include_the_agents_catalog():
-    """The Cid default catalog list carries both the dashboards and the agents
-    catalogs, so agents load without extra flags once merged upstream."""
+def test_dashboard_commands_never_load_the_agents_catalog():
+    """The default catalog list (loaded by every command) is dashboards-only; the
+    agents catalog is a separate list loaded by the agent commands only."""
     cid_obj = Cid()
-    assert any(url.endswith('dashboards/catalog.yaml') for url in cid_obj.catalog_urls)
-    assert any(url.endswith('agents/catalog.yaml') for url in cid_obj.catalog_urls)
+    assert all(url.endswith('dashboards/catalog.yaml') for url in cid_obj.catalog_urls)
+    assert all(url.endswith('agentic/catalog.yaml') for url in cid_obj.agentic_catalog_urls)
+
+
+def test_agentic_catalog_loads_once():
+    cid_obj = Cid.__new__(Cid)
+    cid_obj.resources = {}
+    cid_obj.agentic_catalog_urls = ['https://example.invalid/agentic/catalog.yaml']
+    loaded = []
+    cid_obj.load_catalog = loaded.append
+    cid_obj.load_agentic_catalog()
+    cid_obj.load_agentic_catalog()
+    assert loaded == ['https://example.invalid/agentic/catalog.yaml']
+
+
+def test_default_agents_catalog_skipped_when_agents_already_loaded():
+    """Agents passed via --catalog/--resources: the default agents URL is not fetched."""
+    cid_obj = Cid.__new__(Cid)
+    cid_obj.resources = {'agents': {'finops': {}}}
+    cid_obj.agentic_catalog_urls = ['https://example.invalid/agents/catalog.yaml']
+    loaded = []
+    cid_obj.load_catalog = loaded.append
+    cid_obj.load_agentic_catalog()
+    assert loaded == []
 
 
 # ======================================================================
@@ -170,7 +193,7 @@ def test_default_catalog_urls_include_the_agents_catalog():
 
 
 DASHBOARDS_CATALOG_PATH = REPO_ROOT / 'dashboards' / 'catalog.yaml'
-AGENTS_CATALOG_PATH = REPO_ROOT / 'agents' / 'catalog.yaml'
+AGENTS_CATALOG_PATH = REPO_ROOT / 'agentic' / 'catalog.yaml'
 
 
 LAUNCH_AGENT_IDS = ('operations', 'finops', 'security')
@@ -195,31 +218,37 @@ RESOURCES = _load_runtime_resources()
 
 @pytest.mark.parametrize('agent_id', LAUNCH_AGENT_IDS)
 def test_launch_agent_is_referentially_complete(agent_id):
-    """Every dependsOn.dashboards / optionalDashboards key resolves to a
-    dashboard catalog entry, every dependsOn.datasets key resolves to a
-    datasets catalog entry, and every dependsOn.spaces id resolves to the
-    spaces catalog."""
-    agent = RESOURCES['agents'][agent_id]
-    depends_on = agent.get('dependsOn', {})
+    """The agent references exactly one Space from the spaces catalog and declares
+    no knowledge itself (dashboards/datasets/knowledge bases belong to the Space)."""
+    depends_on = RESOURCES['agents'][agent_id].get('dependsOn', {})
+    spaces = depends_on.get('spaces', [])
+    assert len(spaces) == 1, f'Agent {agent_id!r} must reference exactly one Space (got {spaces})'
+    assert spaces[0] in RESOURCES.get('spaces', {}), (
+        f'Agent {agent_id!r} references space id {spaces[0]!r} that is not in the spaces catalog')
+    misplaced = set(depends_on) & {'dashboards', 'optionalDashboards', 'datasets', 'knowledgeBases'}
+    assert not misplaced, f'Agent {agent_id!r} declares {sorted(misplaced)}; move them to its Space'
 
-    dashboards_catalog = RESOURCES.get('dashboards', {})
-    datasets_catalog = RESOURCES.get('datasets', {})
-    spaces_catalog = RESOURCES.get('spaces', {})
 
-    for key in list(depends_on.get('dashboards', [])) + list(depends_on.get('optionalDashboards', [])):
-        assert key in dashboards_catalog, (
-            f'Agent {agent_id!r} references dashboard key {key!r} '
-            f'that is not in the dashboards catalog')
-
+@pytest.mark.parametrize('space_id', sorted(RESOURCES.get('spaces', {})))
+def test_launch_space_is_referentially_complete(space_id):
+    """Every Space dashboard id is the dashboardId of a dashboard catalog entry and
+    every dataset key resolves to a datasets catalog entry."""
+    depends_on = RESOURCES['spaces'][space_id].get('dependsOn', {})
+    assert 'optionalDashboards' not in depends_on, (
+        f"Space {space_id!r}: list every dashboard under 'dashboards' (optionalDashboards is not supported)")
+    dashboard_ids = {entry.get('dashboardId') for entry in RESOURCES.get('dashboards', {}).values()}
+    for dashboard_id in depends_on.get('dashboards', []):
+        assert dashboard_id in dashboard_ids, (
+            f'Space {space_id!r} references dashboard id {dashboard_id!r} that is not in the dashboards catalog')
     for key in depends_on.get('datasets', []):
-        assert key in datasets_catalog, (
-            f'Agent {agent_id!r} references dataset key {key!r} '
-            f'that is not in the datasets catalog')
+        assert key in RESOURCES.get('datasets', {}), (
+            f'Space {space_id!r} references dataset key {key!r} that is not in the datasets catalog')
 
-    for space_id in depends_on.get('spaces', []):
-        assert space_id in spaces_catalog, (
-            f'Agent {agent_id!r} references space id {space_id!r} '
-            f'that is not in the spaces catalog')
+
+def test_every_launch_space_is_used_by_an_agent():
+    used = {space for agent in RESOURCES.get('agents', {}).values()
+            for space in (agent.get('dependsOn') or {}).get('spaces', [])}
+    assert set(RESOURCES.get('spaces', {})) <= used, 'Some Spaces are not referenced by any agent'
 
 
 @pytest.mark.parametrize('agent_id', LAUNCH_AGENT_IDS)
@@ -247,7 +276,7 @@ def test_launch_agents_and_shared_space_register_via_catalog():
     catalog pipeline."""
     for agent_id in LAUNCH_AGENT_IDS:
         assert agent_id in RESOURCES.get('agents', {}), f'Launch agent {agent_id!r} did not register'
-    assert 'cid-dashboards-space' in RESOURCES.get('spaces', {})
+    assert {'cid-finops-space', 'cid-operations-space'} <= set(RESOURCES.get('spaces', {}))
 
 
 def test_builtin_plugin_ships_no_agents_or_spaces():

@@ -18,7 +18,7 @@ agent_catalog_key="${agent_catalog_key:-finops}"           # catalog key used wi
 agent_id="${agent_id:-cid-finops-advisor}"                 # deployed agentId of that catalog entry
 # agents/spaces are catalog content; load the repo's local catalog so the tests
 # exercise the checked-out definitions rather than the published main branch
-catalog="${catalog:-$BATS_TEST_DIRNAME/../../../../agents/catalog.yaml}"
+catalog="${catalog:-$BATS_TEST_DIRNAME/../../../../dashboards/catalog.yaml,$BATS_TEST_DIRNAME/../../../../agentic/catalog.yaml}"
 
 # Skip credential-dependent tests when no AWS credentials are available,
 # so the credential-independent assertions always run.

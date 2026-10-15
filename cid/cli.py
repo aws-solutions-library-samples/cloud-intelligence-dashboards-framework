@@ -307,7 +307,7 @@ def create_cur_proxy(ctx, cur_version, fields, **kwargs):
 
 @click.option('--agent-id', help='Agent id from the catalog', default=None)
 @click.option('--space', 'space_name', help='Name of a Space to use instead of the per-agent default Space', default=None)
-@click.option('--cleanup-space', help='Remove CID-managed Space resources no longer referenced by any agent', is_flag=True, default=None)
+@click.option('--on-drift', help="'show' (default): only add what the catalog lists, keep everything added outside it; 'override': make Spaces, action connectors and Space resources match the catalog exactly", type=click.Choice(['show', 'override']), default=None)
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
 @cid_command
@@ -324,16 +324,16 @@ def create_agent(ctx, **kwargs):
     Command options:
      --agent-id TEXT                       Agent id from the catalog (a category-grouped picker is shown when omitted)
      --space TEXT                          Name of a Space to use instead of the per-agent default Space (bring-your-own Space)
-     --cleanup-space                       Remove only CID-managed Space dashboard resources that are no longer referenced by any agent's dependencies
+     --on-drift (show|override)            'show' (default): only add what the catalog lists; 'override': detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list (listed and confirmed first)
      --update (yes|no)                     When the agent is already deployed, update it without prompting (default: prompt; 'no' exits with guidance)
+     --confirm-create (yes|no)             For a new agent, answer the confirmation shown after the dependency summary (default: yes)
     """
     ctx.obj.create_agent(**kwargs)
 
 
 @click.option('--agent-id', help='Agent id from the catalog', default=None)
 @click.option('--space', 'space_name', help='Name of a Space to use instead of the per-agent default Space', default=None)
-@click.option('--cleanup-space', help='Remove CID-managed Space resources no longer referenced by any agent', is_flag=True, default=None)
-@click.option('--sync-spaces', help='Exactly synchronize the agent Space links with the catalog (default: additive, never detaches)', is_flag=True, default=None)
+@click.option('--on-drift', help="'show' (default): only add what the catalog lists, keep everything added outside it; 'override': make Spaces, action connectors and Space resources match the catalog exactly", type=click.Choice(['show', 'override']), default=None)
 @click.option('--repair', help='Detach and re-attach the agent Spaces to rewrite the links', is_flag=True, default=None)
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
@@ -343,15 +343,15 @@ def update_agent(ctx, **kwargs):
 
     Requires the agent to exist (run create-agent first). Shows which
     catalog-managed fields drifted and asks for confirmation before overriding
-    them. Space links are reconciled additively by default: Spaces the user
-    attached outside the catalog are never detached.
+    them. Space links, action connectors and Space resources are reconciled
+    additively by default: anything added outside the catalog is kept unless
+    --on-drift override is passed.
 
     \b
     Command options:
      --agent-id TEXT                       Agent id from the catalog (a category-grouped picker is shown when omitted)
      --space TEXT                          Name of a Space to use instead of the per-agent default Space (bring-your-own Space)
-     --cleanup-space                       Remove only CID-managed Space dashboard resources that are no longer referenced by any agent's dependencies
-     --sync-spaces                         Exactly synchronize the agent Space links with the catalog (removes Spaces the catalog does not carry)
+     --on-drift (show|override)            'show' (default): only add what the catalog lists; 'override': detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list (listed and confirmed first)
      --repair                              Detach and re-attach the agent Spaces to rewrite the links (recovers an agent whose Space shows as unavailable although it describes as healthy)
     """
     ctx.obj.update_agent(**kwargs)
@@ -371,7 +371,6 @@ def list_agents(ctx, **kwargs):
 
 @click.option('--agent-id', help='Agent id to delete', default=None)
 @click.option('--delete-space', help='Also delete the Agent Space if no other CID-managed agent depends on it', is_flag=True, default=None)
-@click.option('--cleanup-space', help='Remove CID-managed Space resources no longer referenced by any agent', is_flag=True, default=None)
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
 @cid_command
@@ -384,8 +383,7 @@ def delete_agent(ctx, **kwargs):
     \b
     Command options:
      --agent-id TEXT                       Agent id to delete
-     --delete-space                        Also delete the Agent's Space when no other CID-managed agent depends on it
-     --cleanup-space                       Remove only CID-managed Space dashboard resources that are no longer referenced by any agent's dependencies
+     --delete-space                        Also delete the Agent's Space when no other CID-managed agent depends on it (also cleans up the Space of an already deleted agent)
     """
     ctx.obj.delete_agent(**kwargs)
 

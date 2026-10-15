@@ -1,4 +1,4 @@
-# FinOps agent (launch library). Loaded via agents/catalog.yaml;
+# FinOps agent (launch library). Loaded via agentic/catalog.yaml;
 # personaFile is resolved relative to this file.
 agents:
   finops:
@@ -10,13 +10,7 @@ agents:
       and KPI dashboards. Surfaces savings opportunities, spend drivers, and
       cost anomalies across the organization.
     dependsOn:
-      spaces: [cid-dashboards-space]
-      dashboards: [CUDOSv5, CID, KPI]
-      optionalDashboards: [Trends]
-      datasets:
-        - daily-anomaly-detection
-        - monthly-anomaly-detection
-      knowledgeBases: []
+      spaces: [cid-finops-space]
       actionConnectors: []
     personaFile: persona.yaml
     starterPrompts:

@@ -1,0 +1,16 @@
+# Agentic catalog: Quick agents (and, later, flows) with the Spaces they use.
+# Loaded by the cid-cmd agent commands on top of dashboards/catalog.yaml, through
+# the same resource pipeline (dashboard commands never load it). Urls are relative
+# to this file. To add an agent, add its folder under agents/ and its Space under
+# spaces/, and list both here (see docs/agents-contributing.md).
+Resources:
+  # Agents: what create-agent / update-agent / delete-agent deploy
+  - Url: agents/finops/finops.yaml
+  - Url: agents/operations/operations.yaml
+  - Url: agents/security/security.yaml
+
+  # Knowledge Spaces referenced by the agents above (dependsOn.spaces). They are not
+  # deployed on their own: create-agent / update-agent create or update the Space of
+  # the agent being deployed.
+  - Url: spaces/cid-finops-space.yaml
+  - Url: spaces/cid-operations-space.yaml

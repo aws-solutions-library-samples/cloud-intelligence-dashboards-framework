@@ -1,4 +1,4 @@
-# Security agent (launch library). Loaded via agents/catalog.yaml;
+# Security agent (launch library). Loaded via agentic/catalog.yaml;
 # personaFile is resolved relative to this file.
 agents:
   security:
@@ -10,12 +10,7 @@ agents:
       Prioritizes Trusted Advisor security and fault-tolerance findings and
       correlates them with security-service usage across accounts.
     dependsOn:
-      spaces: [cid-dashboards-space]
-      dashboards: [CUDOSv5, CID]
-      optionalDashboards: [Trends]
-      datasets:
-        - ta-organizational-view
-      knowledgeBases: []
+      spaces: [cid-operations-space]
       actionConnectors: []
     personaFile: persona.yaml
     starterPrompts:

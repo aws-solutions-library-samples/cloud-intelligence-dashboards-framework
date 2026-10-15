@@ -5,8 +5,8 @@ It MUST NOT import boto3/botocore or perform any I/O so that every function here
 covered cheaply by property-based tests (pytest + Hypothesis) and reused by the
 Space/Agent helpers and the Cid command handlers.
 """
+import time
 import logging
-from collections import Counter
 
 from cid.exceptions import CidError
 
@@ -29,20 +29,7 @@ _CONSOLE_PATHS = {
 
 
 def build_console_url(account_id: str, region: str, partition: str, domain: str, resource_kind: str, resource_id: str) -> str:
-    """Build the partition/domain-correct QuickSight console URL for a resource.
-
-    Used by create-agent to print the agent console URL with the
-    partition and domain derived from the caller identity.
-
-    :param account_id: AWS account id (used for account-scoped gen-AI resource paths)
-    :param region: AWS region (e.g. ``us-east-1``, ``cn-north-1``)
-    :param partition: AWS partition (``aws`` / ``aws-cn`` / ``aws-us-gov``)
-    :param domain: console domain (e.g. ``aws.amazon.com``); when falsy, derived from partition
-    :param resource_kind: one of ``dashboard`` / ``agent`` / ``space`` (plural accepted)
-    :param resource_id: the resource id to link to
-    :returns: the full https console URL
-    :raises ValueError: on an unsupported resource kind
-    """
+    """Quick console URL of a dashboard, agent or space for the given partition and region."""
     if not domain:
         domain = PARTITION_DOMAINS.get(partition, PARTITION_DOMAINS['aws'])
     kind = str(resource_kind or '').strip().lower()
@@ -72,35 +59,7 @@ REQUIRED_MANIFEST_FIELDS = ('name', 'agentId', 'persona')
 
 
 def validate_caps(manifest: dict) -> None:
-    """Validate agent manifest fields against the official Agent API caps.
-
-    Called by create-agent BEFORE any CreateAgent/UpdateAgent call so that cap
-    violations surface as clear, actionable errors instead of opaque API
-    rejections. Every error names the offending field.
-
-    Expected manifest shape (see the agent bundle data model in the design)::
-
-        {
-            'name': 'CID FinOps Advisor',          # required, 1-50 chars, not whitespace-only
-            'agentId': 'cid-finops-advisor',       # required
-            'persona': {                           # required; personaFile resolved relative to the manifest source
-                'identity': '...',                 # each of the 5 fields: 5-350000 chars
-                'customInstructions': '...',
-                'tone': '...',
-                'outputStyle': '...',
-                'responseLength': '...',
-            },
-            'starterPrompts': ['...'],             # optional, 0-3 strings, each <=100 chars
-            'welcomeMessage': '...',               # optional, <=300 chars
-            'dependsOn': {                         # optional
-                'spaces': [...],                   # <=10 entries
-                'actionConnectors': [...],         # <=10 entries
-            },
-        }
-
-    :param manifest: the agent manifest dict (persona already resolved inline)
-    :raises CidError: naming the offending field on any cap violation
-    """
+    """Validate an agent definition against the Agent API limits before any API call; raise CidError naming the field."""
     if not isinstance(manifest, dict):
         raise CidError('Agent manifest must be a mapping, got {type_name}.'.format(type_name=type(manifest).__name__))
 
@@ -161,51 +120,16 @@ def validate_caps(manifest: dict) -> None:
         )
 
 
-def classify_dependencies(required: list, optional: list, present_keys) -> dict:
-    """Classify dependency dashboard/dataset keys by deployment presence.
-
-    Pure, deploy-free classification used by create-agent:
-    the handler pre-flights the read-only ``ListDashboards`` call, builds the set of
-    present catalog keys, and this function partitions the declared dependencies. The
-    handler then decides: zero present -> guidance error; >=1 present -> proceed with
-    the present set and warn per missing required/optional key.
-
-    :param required: list of Required_Dashboard catalog keys (``dependsOn.dashboards``)
-    :param optional: list of Optional_Dashboard catalog keys (``dependsOn.optionalDashboards``)
-    :param present_keys: iterable of catalog keys confirmed deployed
-    :returns: ``{'present': [...], 'missing_required': [...], 'missing_optional': [...]}``
-        where ``present`` preserves declaration order (required first, then optional),
-        ``missing_required`` preserves the ``required`` order and ``missing_optional``
-        preserves the ``optional`` order; each key appears at most once per list
-    """
+def classify_dependencies(dashboards: list, present_keys) -> dict:
+    """Split dependency dashboard ids into ``{'present': [...], 'missing': [...]}`` (declaration order, no duplicates)."""
     present_set = set(present_keys or ())
-    present = []
-    missing_required = []
-    missing_optional = []
-    seen = set()
-    for key in list(required or []) + list(optional or []):
+    present, missing, seen = [], [], set()
+    for key in dashboards or []:
         if key in seen:
             continue
         seen.add(key)
-        if key in present_set:
-            present.append(key)
-    seen = set()
-    for key in required or []:
-        if key in seen or key in present_set:
-            continue
-        seen.add(key)
-        missing_required.append(key)
-    seen = set()
-    for key in optional or []:
-        if key in seen or key in present_set:
-            continue
-        seen.add(key)
-        missing_optional.append(key)
-    return {
-        'present': present,
-        'missing_required': missing_required,
-        'missing_optional': missing_optional,
-    }
+        (present if key in present_set else missing).append(key)
+    return {'present': present, 'missing': missing}
 
 
 # The five Persona fields as the API returns them on read (Agent.CustomPromptInterface).
@@ -232,54 +156,20 @@ def _normalize_persona(persona: dict) -> dict:
 
 
 def persona_differs(desired: dict, deployed: dict) -> bool:
-    """Return True if the desired persona differs from the deployed persona.
-
-    Compares ONLY the five persona fields (``Identity``, ``CustomInstructions``,
-    ``Tone``, ``OutputStyle``, ``ResponseLength``) and EXCLUDES the server-generated
-    ``promptSummary`` and any other server-derived key. Keys are matched
-    case-insensitively per field so a camelCase catalog persona (``identity``, ...)
-    compares correctly against the PascalCase API read shape
-    (``Agent.CustomPromptInterface``: ``Identity``, ...). Values are compared as exact
-    strings; a field present on one side but absent (or None) on the other counts as a
-    difference.
-
-    :param desired: persona from the catalog definition (camelCase or PascalCase keys)
-    :param deployed: persona from the API read (``Agent.CustomPromptInterface``)
-    :returns: True when at least one of the five fields differs in value or presence
-    """
+    """True when the five persona fields differ (keys matched case-insensitively; server-derived keys ignored)."""
     return _normalize_persona(desired) != _normalize_persona(deployed)
 
 
 def compute_space_delta(desired, current) -> tuple:
-    """Compute the add/remove delta for Space or action-connector associations.
-
-    Used by the Agent update path to send delta-based add/remove lists instead of a
-    full replacement: applying ``(to_add, to_remove)`` to ``current`` yields exactly
-    ``desired``.
-
-    :param desired: iterable of desired ARNs
-    :param current: iterable of currently associated ARNs
-    :returns: tuple ``(to_add, to_remove)`` of sets: ``(desired - current, current - desired)``
-    """
+    """Delta between desired and current associations: ``(desired - current, current - desired)``."""
     desired_set = set(desired or ())
     current_set = set(current or ())
     return (desired_set - current_set, current_set - desired_set)
 
 
-def describe_drift(definition: dict, deployed: dict) -> list:
-    """List the catalog-managed fields whose values differ from the deployed agent.
-
-    Compares the catalog definition against the DescribeAgent read shape and names
-    each drifted field so the user can see WHAT an update would change before
-    consenting to it. Fields the definition does not carry (None) are not managed
-    and never count as drift. Space associations are resolved later in the flow and
-    are not part of this report; ``lifecycle`` is create-only and excluded.
-
-    :param definition: agent definition from the catalog (same shape create_or_update takes)
-    :param deployed: the DescribeAgent read shape of the deployed agent
-    :returns: list of human-readable drifted-field names, e.g.
-        ``['persona.Identity', 'welcomeMessage']``; empty when nothing managed differs
-    """
+def describe_drift(definition: dict, deployed: dict, override: bool = False) -> list:
+    """Names of the catalog-managed agent fields that differ from the deployed agent (for the update prompt).
+    Extra action connectors count only with ``override`` (``--on-drift override``)."""
     drift = []
     name = definition.get('name')
     if name is not None and name != (deployed.get('Name') or deployed.get('AgentName')):
@@ -300,45 +190,30 @@ def describe_drift(definition: dict, deployed: dict) -> list:
     desired_connectors = set((definition.get('dependsOn') or {}).get('actionConnectors') or ())
     connectors_to_add, connectors_to_remove = compute_space_delta(
         desired_connectors, deployed.get('ActionConnectors') or ())
-    if connectors_to_add or connectors_to_remove:
+    if connectors_to_add or (override and connectors_to_remove):
         drift.append('actionConnectors')
     return drift
 
 
 def compute_space_additions(current_arns, desired_arns) -> set:
-    """Compute the additive, de-duplicated set of resource ARNs to add to a Space.
-
-    Space resource updates are strictly additive: only resources
-    not already in the Space are added, de-duplicated by ARN, and nothing is removed
-    here (removal is the separate, opt-in :func:`compute_stale_removals`).
-
-    :param current_arns: iterable of ARNs currently in the Space
-    :param desired_arns: iterable of ARNs the agent's dependencies resolve to (may repeat)
-    :returns: set of ARNs to add (``desired - current``); a set is returned because
-        UpdateSpaceResources ordering is not meaningful and set semantics guarantee
-        de-duplication
-    """
+    """ARNs to add to a Space: desired minus current (additive, de-duplicated)."""
     return set(desired_arns or ()) - set(current_arns or ())
 
 
-def compute_stale_removals(space_arns, referenced_arns, managed_arns, remove_stale) -> set:
-    """Compute the opt-in, scoped set of stale Space resources to remove.
+# Space resource types the agent catalog declares (dashboards, datasets, knowledge
+# bases); --on-drift override only ever removes resources of these types.
+SPACE_MANAGED_RESOURCE_TYPES = ('DASHBOARD', 'DATA_SET', 'KNOWLEDGE_BASE')
 
-    Removal is opt-in (``--cleanup-space``) and scoped: only resources
-    that are CID-managed AND no longer referenced by any agent's dependencies AND
-    actually present in the Space are ever removed. Resources another provider added
-    (not CID-managed) are never touched.
 
-    :param space_arns: iterable of ARNs currently in the Space
-    :param referenced_arns: iterable of ARNs still referenced by any agent's dependencies
-    :param managed_arns: iterable of ARNs known to be CID-managed
-    :param remove_stale: the ``--cleanup-space`` flag; falsy -> remove nothing
-    :returns: set of ARNs to remove; empty when ``remove_stale`` is falsy, else exactly
-        ``space ∩ managed − referenced``
-    """
-    if not remove_stale:
-        return set()
-    return (set(space_arns or ()) & set(managed_arns or ())) - set(referenced_arns or ())
+def compute_space_removals(current_resources: dict, desired_arns) -> dict:
+    """Space resources ``--on-drift override`` removes: catalog-managed types (dashboards, datasets,
+    knowledge bases) not in the desired set. Other resource types are never touched."""
+    desired = set(desired_arns or ())
+    return {
+        arn: resource_type
+        for arn, resource_type in (current_resources or {}).items()
+        if resource_type in SPACE_MANAGED_RESOURCE_TYPES and arn not in desired
+    }
 
 
 # UpdateAgent reports partial association failures IN-BAND (response lists), not as
@@ -353,20 +228,7 @@ ASSOCIATION_FAILURE_FIELDS = (
 
 
 def association_failures(response) -> list:
-    """Extract UpdateAgent partial association failures as readable strings.
-
-    UpdateAgent can succeed (HTTP 200) while individual Space or action-connector
-    add/remove operations fail; those failures are reported only in the response
-    lists (:data:`ASSOCIATION_FAILURE_FIELDS`). Ignoring them leaves the deployed
-    associations silently diverged from the requested ones, so every caller that
-    sends association deltas must check this.
-
-    :param response: the UpdateAgent response dict; None and non-dict values are
-        tolerated (treated as carrying no failures), as are absent or non-list fields
-    :returns: list of human-readable failure strings, one per failed ARN, e.g.
-        ``failed to add Space arn:... (AccessDenied: not authorized)``; empty when
-        every association operation succeeded
-    """
+    """Readable list of the Space/connector failures UpdateAgent reports in-band (HTTP 200)."""
     failures = []
     if not isinstance(response, dict):
         return failures
@@ -384,6 +246,36 @@ def association_failures(response) -> list:
     return failures
 
 
+def retry_on_conflict(action, conflict_exception, timeout: int=300, interval: int=5):
+    """Call ``action()``, retrying every ``interval`` seconds while it raises
+    ``conflict_exception`` (a resource still settling), up to ``timeout`` seconds;
+    then the last conflict is re-raised. Returns what ``action`` returns."""
+    elapsed = 0
+    while True:
+        try:
+            return action()
+        except conflict_exception:
+            if elapsed >= timeout:
+                raise
+            logger.debug(f'Resource busy; retrying in {interval}s ({elapsed}/{timeout}s elapsed).')
+            time.sleep(interval)
+            elapsed += interval
+
+
+def poll(fetch, done, timeout: int=300, interval: int=5):
+    """Call ``fetch()`` every ``interval`` seconds until ``done(result)`` is true or
+    ``timeout`` seconds passed. Returns ``(result, finished)``."""
+    elapsed = 0
+    while True:
+        result = fetch()
+        if done(result):
+            return result, True
+        if elapsed >= timeout:
+            return result, False
+        time.sleep(interval)
+        elapsed += interval
+
+
 # CID_Managed provenance: dual mechanism.
 # (a) resource tag written via TagResource (tolerated failure), and
 # (b) marker string embedded in the resource Description — the existing
@@ -395,20 +287,7 @@ CID_MANAGED_MARKER = 'Created by Cloud Intelligence Dashboards'
 
 
 def is_cid_managed(tags, description) -> bool:
-    """Dual-mechanism CID_Managed provenance detection.
-
-    A resource is CID-managed when EITHER the CID provenance tag
-    (:data:`CID_PROVENANCE_TAG_KEY`) is present in its tags OR its description contains
-    the CID-managed marker (:data:`CID_MANAGED_MARKER`, exact case-sensitive substring).
-    Either mechanism alone suffices because the tag write is tolerated-on-failure while
-    the Description marker is always written.
-
-    :param tags: resource tags as either a mapping ``{key: value}`` or the raw API list
-        shape ``[{'Key': ..., 'Value': ...}, ...]``; None/empty accepted. Tag-key match
-        is exact; presence of the key counts regardless of its value.
-    :param description: the resource Description string (None/empty accepted)
-    :returns: True when the provenance tag is present or the description carries the marker
-    """
+    """True when the CID provenance tag is present or the description carries the CID-managed marker."""
     tag_keys = set()
     if isinstance(tags, dict):
         tag_keys = {str(key) for key in tags}
@@ -433,21 +312,7 @@ _SPACE_ID_FALLBACK = 'cid-space'
 
 
 def derive_space_id(name_or_id: str) -> str:
-    """Derive a valid QuickSight space id deterministically from a name or id.
-
-    Sanitization rules (deterministic: the same input always yields the same output):
-
-    1. The input is stringified; if it already fully matches the SpaceId pattern
-       ``[0-9a-zA-Z-_=.+]+`` it is returned unchanged (catalog space ids pass through).
-    2. Otherwise every maximal run of invalid characters (anything outside
-       ``0-9 a-z A-Z - _ = . +``, e.g. spaces or unicode) is replaced by a single ``-``.
-    3. Hyphens introduced at the start or end by step 2 are stripped.
-    4. If the result is empty (input had no valid characters),
-       :data:`_SPACE_ID_FALLBACK` is returned so the id is never empty.
-
-    :param name_or_id: a space name (bring-your-own case) or catalog space id
-    :returns: a non-empty space id matching ``[0-9a-zA-Z-_=.+]+``
-    """
+    """Deterministic, valid Space id from a name or id (invalid character runs become one dash)."""
     text = str(name_or_id or '')
     if text and all(char in _SPACE_ID_ALLOWED_CHARS for char in text):
         return text
@@ -475,35 +340,8 @@ DEFAULT_CATEGORY = 'Other'
 
 
 def build_agent_listing(agents_catalog: dict, deployed_ids) -> dict:
-    """Build the category-grouped agent listing / picker structure.
-
-    Groups catalog agent entries by ``category``, hides entries in category
-    ``Deprecated``, and marks entries whose catalog key or ``agentId`` is in
-    ``deployed_ids`` with the check indicator (:data:`DEPLOYED_MARK`). Each catalog
-    entry appears exactly once, under its own category.
-
-    Returned shape (suitable for both ``list-agents`` output and picker choices)::
-
-        {
-            '<category>': [
-                {
-                    'key': '<catalog key>',
-                    'agentId': '<agentId or key>',
-                    'name': '<display name or key>',
-                    'deployed': bool,
-                    'display': ' ✓[<agentId>] <name>',   # ' ' instead of ✓ when not deployed
-                },
-                ...
-            ],
-        }
-
-    Categories and entries preserve catalog iteration order.
-
-    :param agents_catalog: mapping of catalog key -> agent entry dict (``category``,
-        ``name``, ``agentId`` all optional; ``agentId`` defaults to the key)
-    :param deployed_ids: iterable of deployed agent ids and/or catalog keys
-    :returns: dict of category -> list of entry dicts as documented above
-    """
+    """Catalog agents grouped by category (Deprecated hidden), each with key, agentId, name, deployed and
+    a ``' ✓[agentId] name'`` display label."""
     deployed_set = set(deployed_ids or ())
     listing = {}
     for key, entry in (agents_catalog or {}).items():
@@ -523,25 +361,3 @@ def build_agent_listing(agents_catalog: dict, deployed_ids) -> dict:
             'display': f' {check}[{agent_id}] {name}',
         })
     return listing
-
-
-def select_database_from_candidates(dataset_databases) -> str | None:
-    """Select the Athena database for the agent Parameter_Store from dataset candidates.
-
-    Pure selection kernel for the dataset-based database inference (step 2b of the
-    agent-command resolution chain): the agent commands collect the Athena database
-    referenced by each deployed CID dataset's physical table map
-    (``PhysicalTableMap -> RelationalTable -> Schema``, one entry per referencing
-    dataset) and this function picks one deterministically — the database referenced
-    by the greatest number of datasets, breaking ties by ascending lexicographic
-    order of database name. The same input always yields the same output.
-
-    :param dataset_databases: iterable of database names discovered from dataset
-        physical table maps (may repeat; one entry per referencing dataset);
-        None/empty entries are ignored
-    :returns: the selected database name, or None when no candidate is available
-    """
-    counts = Counter(str(database) for database in (dataset_databases or ()) if database)
-    if not counts:
-        return None
-    return min(counts, key=lambda name: (-counts[name], name))

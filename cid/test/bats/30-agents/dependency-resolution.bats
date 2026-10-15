@@ -30,12 +30,10 @@ agent_catalog_key="${agent_catalog_key:-finops}"    # catalog key used with --ag
 agent_id="${agent_id:-cid-finops-advisor}"          # deployed agentId of that catalog entry
 # agents/spaces are catalog content; load the repo's local catalog so the tests
 # exercise the checked-out definitions rather than the published main branch
-catalog="${catalog:-$BATS_TEST_DIRNAME/../../../../agents/catalog.yaml}"
+catalog="${catalog:-$BATS_TEST_DIRNAME/../../../../dashboards/catalog.yaml,$BATS_TEST_DIRNAME/../../../../agentic/catalog.yaml}"
 
-# dependency dashboards of the finops agent (dashboardIds as deployed):
-# required: cudos-v5, cost_intelligence_dashboard, kpi_dashboard; optional: trends-dashboard
-required_dashboard_ids="cudos-v5 cost_intelligence_dashboard kpi_dashboard"
-optional_dashboard_ids="trends-dashboard"
+# dependency dashboards of the finops agent's Space (spaces/cid-finops-space.yaml, dashboardIds as deployed)
+dashboard_ids="cudos-v5 cora graviton-savings extended-support-cost-projection pricing-change-analysis"
 
 function skip_without_aws {
   if ! aws sts get-caller-identity >/dev/null 2>&1; then
@@ -93,11 +91,8 @@ function dashboard_present {
   skip_without_aws
   present=0
   missing=0
-  for id in $required_dashboard_ids; do
+  for id in $dashboard_ids; do
     if dashboard_present "$id"; then present=$((present+1)); else missing=$((missing+1)); fi
-  done
-  for id in $optional_dashboard_ids; do
-    if dashboard_present "$id"; then :; else missing=$((missing+1)); fi
   done
   if [ "$present" -eq 0 ]; then
     skip "No finops dependency dashboard is deployed; seed a subset first (see header comments)"

@@ -3,30 +3,63 @@
 Adding a new agent to the `cid-cmd` catalog is a **content-only** contribution:
 **no Python change is required**. Agents are catalog content, defined and shipped the
 same way dashboards are: a YAML resource file at the repo root, listed in the agents'
-own catalog, `agents/catalog.yaml`. If your pull request touches any `.py` file, it is
+own catalog, `agentic/catalog.yaml`. If your pull request touches any `.py` file, it is
 not an agent contribution and will be reviewed under the regular code process instead.
 
-## The agent folder
+## Agents and Spaces
 
-An agent lives in a per-agent folder at the repo root, next to `dashboards/`:
+An agent is two things:
+
+- a **Space** — the knowledge: the dashboards, datasets and knowledge bases the agent
+  can use. It lives in `agentic/spaces/<space-id>.yaml`.
+- the **agent** — the behavior: persona, starter prompts, welcome message and action
+  connectors. It references its Space by id and lives in `agentic/agents/<name>/`.
 
 ```
-agents/<name>/
-├── <name>.yaml         # required — the agent manifest (kind-wrapped, like dashboards)
-└── persona.yaml        # required — the 5-field persona
+agentic/spaces/<space-id>.yaml  # the Space and its knowledge (kind-wrapped under spaces:)
+agentic/agents/<name>/
+├── <name>.yaml         # the agent manifest (kind-wrapped under agents:)
+└── persona.yaml        # the 5-field persona
 ```
 
-Then add one line to `agents/catalog.yaml`:
+Several agents (and, later, flows) can use the same Space: they then share exactly that
+Space's knowledge, and users need access to one Space instead of one per agent. Action
+connectors stay on the agent, so sharing a Space never shares the actions another agent
+can take.
+
+List both files in `agentic/catalog.yaml`:
 
 ```yaml
-  - Url: <name>/<name>.yaml
+  - Url: agents/<name>/<name>.yaml
+  - Url: spaces/<space-id>.yaml        # skip if the agent reuses an existing Space
 ```
 
 That is all the wiring there is — the file flows through the same resource pipeline
 dashboards use. `personaFile` is referenced by relative path and resolved against the
 manifest's location, so it works both from a local checkout and over HTTPS.
 
-### `<name>.yaml` — the manifest
+### `agentic/spaces/<space-id>.yaml` — the Space
+
+A worked example mirroring the shipped `cid-finops-space`:
+
+```yaml
+spaces:
+  cid-finops-space:                        # space id, [0-9a-zA-Z-_=.+]
+    name: CID FinOps Space
+    description: >-
+      Cost and optimization knowledge from the Cloud Intelligence Dashboards.
+    dependsOn:
+      dashboards:                          # dashboard ids (as in cid-cmd deploy --dashboard-id);
+        - cudos-v5                         #   missing ones only produce a warning
+        - cora
+        - graviton-savings
+      datasets:                            # dataset catalog keys, attached as DATA_SET
+        - summary_view                     #   knowledge when present; never deployed
+        - cora_view
+      knowledgeBases: []                   # optional pre-existing knowledge-base ARNs
+```
+
+### `<name>.yaml` — the agent manifest
 
 The file wraps the agent under a top-level `agents:` kind key, exactly the way dashboard
 files wrap under `dashboards:`. A worked example mirroring the shipped `finops` agent:
@@ -41,13 +74,7 @@ agents:
       Cost optimization and anomaly advisor over the CUDOS, Cost Intelligence,
       and KPI dashboards.
     dependsOn:
-      spaces: [cid-dashboards-space]       # shared space id(s) from spaces/
-      dashboards: [CUDOSv5, CID, KPI]      # REQUIRED dashboard catalog keys (foundational/additional)
-      optionalDashboards: [Trends]         # OPTIONAL dashboard keys (advanced, Data Collection-backed)
-      datasets:                            # optional dataset catalog keys, attached as
-        - daily-anomaly-detection          #   DATA_SET knowledge when present; never deployed
-        - monthly-anomaly-detection
-      knowledgeBases: []                   # optional pre-existing knowledge-base ARNs
+      spaces: [cid-finops-space]           # exactly one Space id from spaces/
       actionConnectors: []                 # optional action-connector ARNs
     personaFile: persona.yaml              # sibling relative path
     starterPrompts:                        # 0-3 strings, each 100 chars or fewer
@@ -61,12 +88,16 @@ agents:
 
 Rules to keep your PR green:
 
-- Every key under `dependsOn.dashboards` / `optionalDashboards` / `datasets` must exist in
-  the core catalog, or be added as an ordinary catalog entry in the same PR (referential
-  completeness — a smoke test enforces this).
-- Foundational/additional dashboards go under `dashboards` (Required); advanced,
-  Data Collection-backed dashboards go under `optionalDashboards` (Optional). `create-agent`
-  never deploys either kind — it warns and points to the deployment guidance.
+- Knowledge (dashboards, datasets, knowledge bases) is declared on the Space, never on
+  the agent; an agent references exactly one Space (a smoke test enforces both).
+- Space dashboards are referenced by their `dashboardId` (the id you pass to
+  `cid-cmd deploy --dashboard-id`, e.g. `cudos-v5`), not by their catalog key. Every
+  dashboard id and every `datasets` key must exist in the core catalog, or be added as an
+  ordinary catalog entry in the same PR (referential completeness — a smoke test enforces
+  this).
+- List every dashboard the agent can use under the Space's `dashboards`. `create-agent`
+  never deploys dashboards: missing ones produce a warning pointing to the deployment
+  guidance, and the agent works with the ones that are deployed.
 - Caps are validated before any API call: at most 3 starter prompts of 100 chars each,
   welcome message 300 chars, agent name 1-50 chars, at most 10 spaces and 10 action
   connectors.
@@ -96,31 +127,6 @@ The `customInstructions` body is where the agent's real behavior lives — the s
 agents under `agents/` are good templates (mission, analysis workflow, which dashboard to
 consult for what, response structure, and guardrails).
 
-### Spaces: shared vs agent-owned
-
-- **Shared Space** — used by several agents; one kind-wrapped file per Space under
-  `spaces/<space-id>.yaml`, listed in `agents/catalog.yaml`
-  (as `../spaces/<space-id>.yaml`):
-
-  ```yaml
-  spaces:
-    cid-dashboards-space:                  # space id
-      name: CID Dashboards Space
-      description: >-
-        Comprehensive knowledge base for the Cloud Intelligence Dashboards.
-      dependsOn:
-        dashboards: [CUDOSv5, CID, KPI]    # Required dashboard keys
-        optionalDashboards: [Trends]       # Optional (Data Collection-backed) keys
-        datasets: []
-  ```
-
-- **Agent-owned Space** — specific to one agent; since resource files are kind-agnostic,
-  define it in the agent's own manifest file under a `spaces:` key alongside `agents:`,
-  and reference its id from `dependsOn.spaces`. No extra file or catalog line needed.
-
-Dashboard dependencies may be declared on the agent, on its Space, or both; the
-required/optional split applies in every location and `create-agent` merges them.
-
 ## Content-only PR template
 
 Copy this into your pull request description:
@@ -130,13 +136,13 @@ Copy this into your pull request description:
 
 **Content-only contribution — no Python source files changed.**
 
-- [ ] Agent folder `agents/<name>/` with `<name>.yaml` (kind-wrapped under `agents:`)
+- [ ] Agent folder `agentic/agents/<name>/` with `<name>.yaml` (kind-wrapped under `agents:`)
       + `persona.yaml`
-- [ ] `agents/catalog.yaml` lists `<name>/<name>.yaml`
+- [ ] Space `agentic/spaces/<space-id>.yaml` with the dashboards/datasets (or an existing Space reused)
+- [ ] `agentic/catalog.yaml` lists `agents/<name>/<name>.yaml` (and `spaces/<space-id>.yaml` for a new Space)
 - [ ] All 5 persona fields present and non-empty
-- [ ] Every `dependsOn` key exists in the core catalog (or is added as an ordinary
-      catalog entry in this PR)
-- [ ] Required vs Optional dashboard split follows foundational-vs-Data-Collection lines
+- [ ] Every Space dashboard id and dataset key exists in the core catalog (or is added as
+      an ordinary catalog entry in this PR)
 - [ ] Starter prompts <= 3, each <= 100 chars; welcome message <= 300 chars; name <= 50 chars
 - [ ] `pip install -e '.[test]' && pytest cid/test/python/` passes locally
       (the launch-content tests validate referential completeness and loading)
@@ -145,7 +151,7 @@ Copy this into your pull request description:
 <one paragraph>
 
 ### Dashboards it needs
-Required: <keys>  |  Optional: <keys>
+<dashboard ids>
 ```
 
 ## Review
@@ -157,14 +163,16 @@ source follow the regular code-review process.
 
 ## Testing your agent locally
 
-Agents are loaded from the catalog at runtime (the default catalog URL points at this
-repository's `main` branch), so point `cid-cmd` at your local checkout while iterating:
+The agent commands load the agents catalog at runtime (the default URL points at this
+repository's `main` branch; dashboard commands never load it), so point them at your local
+checkout with `--catalog` (list the dashboards catalog too: `--catalog` replaces the default
+catalog list) while iterating:
 
 ```bash
 pip install -e '.[test]'
 pytest cid/test/python/          # includes catalog-loading and referential-completeness tests
-cid-cmd list-agents --catalog agents/catalog.yaml    # your agent appears under its category
-cid-cmd create-agent --agent-id <name> --catalog agents/catalog.yaml   # against an account with the dashboards deployed
+cid-cmd list-agents --catalog dashboards/catalog.yaml,agentic/catalog.yaml    # your agent appears under its category
+cid-cmd create-agent --agent-id <name> --catalog dashboards/catalog.yaml,agentic/catalog.yaml   # against an account with the dashboards deployed
 ```
 
 You can also iterate without touching the repo at all by shipping the same YAML as an
