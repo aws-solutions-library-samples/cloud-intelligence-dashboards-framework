@@ -1,0 +1,25 @@
+# Health events analyst agent (launch library). Loaded via agentic/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  health:
+    name: CID Health Events Analyst
+    agentId: cid-health-events-analyst
+    summary: "Prioritized AWS Health events, maintenance and deadlines"   # one line shown in the agent picker and list-agents
+    description: >-
+      AWS Health events analyst over the Health Events Dashboard. Prioritizes
+      issues, scheduled changes, notifications and end-of-support events, and
+      focuses on the events that need action soon.
+    dependsOn:
+      spaces: [cid-health-space]
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "Which AWS Health events need our action first?"
+      - "What scheduled changes and maintenance are coming in the next 30 days?"
+      - "Which end-of-support events affect us and how many resources?"
+    welcomeMessage: >-
+      Hi, I'm the CID Health Events Analyst. Ask me which AWS Health events matter
+      most right now, what maintenance and end-of-support deadlines are coming, or
+      which accounts and resources are affected.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }

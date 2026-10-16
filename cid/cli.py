@@ -306,6 +306,85 @@ def create_cur_proxy(ctx, cur_version, fields, **kwargs):
     ctx.obj.create_cur_proxy(cur_version=cur_version, fields=fields, **kwargs)
 
 
+@click.option('--agent-id', help='Agent id from the catalog', default=None)
+@click.option('--space', 'space_name', help='Name of a Space to use instead of the per-agent default Space', default=None)
+@click.option('--on-drift', help="'show' (default): only add what the catalog lists, keep everything added outside it; 'override': make Spaces, action connectors and Space resources match the catalog exactly", type=click.Choice(['show', 'override']), default=None)
+@click.option('-v', '--verbose', count=True)
+@click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
+@cid_command
+def create_agent(ctx, **kwargs):
+    """Create a Quick Agent and its Space over already-deployed CID dashboards.
+
+    This command never deploys dashboards and never provisions the data layer
+    (CUR, Data Exports, Data Collection). It builds a Space over dashboards
+    that are already deployed and publishes an Agent on top of it.
+    When the agent is already deployed, it shows what differs from the catalog
+    and asks whether to update instead.
+
+    \b
+    Command options:
+     --agent-id TEXT                       Agent id from the catalog (a picker is shown when omitted)
+     --space TEXT                          Name of a Space to use instead of the per-agent default Space (bring-your-own Space)
+     --on-drift (show|override)            'show' (default): only add what the catalog lists; 'override': detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list (listed and confirmed first)
+     --update (yes|no)                     When the agent is already deployed, update it without prompting (default: prompt; 'no' exits with guidance)
+     --confirm-create (yes|no)             For a new agent, answer the confirmation shown after the dependency summary (default: yes)
+    """
+    ctx.obj.create_agent(**kwargs)
+
+
+@click.option('--agent-id', help='Agent id from the catalog', default=None)
+@click.option('--space', 'space_name', help='Name of a Space to use instead of the per-agent default Space', default=None)
+@click.option('--on-drift', help="'show' (default): only add what the catalog lists, keep everything added outside it; 'override': make Spaces, action connectors and Space resources match the catalog exactly", type=click.Choice(['show', 'override']), default=None)
+@click.option('--repair', help='Detach and re-attach the agent Spaces to rewrite the links', is_flag=True, default=None)
+@click.option('-v', '--verbose', count=True)
+@click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
+@cid_command
+def update_agent(ctx, **kwargs):
+    """Update a deployed CID-managed Quick Agent to match the catalog.
+
+    Requires the agent to exist (run create-agent first). Shows which
+    catalog-managed fields drifted and asks for confirmation before overriding
+    them. Space links, action connectors and Space resources are reconciled
+    additively by default: anything added outside the catalog is kept unless
+    --on-drift override is passed.
+
+    \b
+    Command options:
+     --agent-id TEXT                       Agent id from the catalog (a picker is shown when omitted)
+     --space TEXT                          Name of a Space to use instead of the per-agent default Space (bring-your-own Space)
+     --on-drift (show|override)            'show' (default): only add what the catalog lists; 'override': detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list (listed and confirmed first)
+     --repair                              Detach and re-attach the agent Spaces to rewrite the links (recovers an agent whose Space shows as unavailable although it describes as healthy)
+    """
+    ctx.obj.update_agent(**kwargs)
+
+
+@click.option('-v', '--verbose', count=True)
+@click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
+@cid_command
+def list_agents(ctx, **kwargs):
+    """List catalog agents with their summary, Space, live deployment status and Space dashboards."""
+    ctx.obj.list_agents(**kwargs)
+
+
+@click.option('--agent-id', help='Agent id to delete', default=None)
+@click.option('--delete-space', help='Also delete the Agent Space if no other CID-managed agent depends on it', is_flag=True, default=None)
+@click.option('-v', '--verbose', count=True)
+@click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
+@cid_command
+def delete_agent(ctx, **kwargs):
+    """Delete a CID-managed Quick Agent (never deletes dashboards).
+
+    Deletion is gated by a yes/no confirmation defaulting to 'no' and refuses
+    targets that are not CID-managed.
+
+    \b
+    Command options:
+     --agent-id TEXT                       Agent id to delete
+     --delete-space                        Also delete the Agent's Space when no other CID-managed agent depends on it (also cleans up the Space of an already deleted agent)
+    """
+    ctx.obj.delete_agent(**kwargs)
+
+
 @click.option('-v', '--verbose', count=True)
 @click.option('-y', '--yes', help='confirm all', is_flag=True, default=False)
 @cid_command

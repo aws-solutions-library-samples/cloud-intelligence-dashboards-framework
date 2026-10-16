@@ -1,0 +1,25 @@
+# Operations agent: the all-in-one advisor (launch library). Loaded via agentic/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  operations:
+    name: CID Operations Advisor
+    agentId: cid-operations-advisor
+    summary: "All-in-one: cost, security, resilience, AWS Health and support cases"   # one line shown in the agent picker and list-agents
+    description: >-
+      All-in-one advisor over the Cloud Intelligence Dashboards: cost and
+      optimization, security and compliance, resilience, AWS Health and support
+      cases. One agent for customers who do not need the specialist advisors.
+    dependsOn:
+      spaces: [cid-operations-space]
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "Show me the most critical risks across cost, security and resilience"
+      - "What are my top cost optimization opportunities?"
+      - "Which AWS Health events and support cases need attention now?"
+    welcomeMessage: >-
+      Hi, I'm the CID Operations Advisor. Ask me about cost and savings, security
+      and compliance, resilience, AWS Health events or support cases across your
+      AWS organization.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }
