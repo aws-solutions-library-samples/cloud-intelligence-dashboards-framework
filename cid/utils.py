@@ -330,6 +330,8 @@ def get_parameter(param_name, message, choices=None, default=None, none_as_disab
                     default=default,
                 ).execute()
     else: # it is a text entry
+        if isinstance(default, (int, float)) and not isinstance(default, bool):
+            default = str(default) # stored defaults are json-decoded: '7' comes back as 7, but text prompts need str
         if isinstance(default, str) and template_variables:
             logger.debug(f'template_variables = {template_variables}')
             default=default.format(**template_variables)

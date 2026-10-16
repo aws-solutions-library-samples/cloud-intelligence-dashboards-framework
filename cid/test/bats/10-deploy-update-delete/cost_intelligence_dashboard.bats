@@ -15,6 +15,7 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
     --quicksight-group $quicksight_group \
     --share-with-account \
     --quicksight-datasource-id $quicksight_datasource_id \
+    --view-summary-view-retention-months '7' \
 
   [ "$status" -eq 0 ]
 }
