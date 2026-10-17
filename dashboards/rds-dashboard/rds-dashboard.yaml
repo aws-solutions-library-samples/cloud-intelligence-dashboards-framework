@@ -1314,7 +1314,7 @@ views:
       , total_cost
       , ROUND(((io_cost / ((compute_cost + io_cost) + storage_cost)) * 100), 2) io_pct
       , (CASE WHEN (is_io_optimized = 1) THEN NULL ELSE ROUND(((io_cost - (compute_cost * 3E-1)) - (storage_cost * 1.25E0)), 2) END) estimated_savings
-      , (CASE WHEN (is_io_optimized = 1) THEN 'Aurora IO Optimized - Already I/O-Optimized' WHEN (((io_cost - (compute_cost * 3E-1)) - (storage_cost * 1.25E0)) > 0) THEN 'Aurora IO Optimized - Recommended' WHEN (((io_cost - (compute_cost * 3E-1)) - (storage_cost * 1.25E0)) > (-0.1 * ((compute_cost + io_cost) + storage_cost))) THEN 'Aurora IO Optimized - Review' ELSE 'Aurora IO Optimized - Not Recommended' END) recommendation
+      , (CASE WHEN (is_io_optimized = 1) THEN 'Aurora IO Optimized - Already Enabled' WHEN (((io_cost - (compute_cost * 3E-1)) - (storage_cost * 1.25E0)) > 0) THEN 'Aurora IO Optimized - Recommended' WHEN (((io_cost - (compute_cost * 3E-1)) - (storage_cost * 1.25E0)) > (-0.1 * ((compute_cost + io_cost) + storage_cost))) THEN 'Aurora IO Optimized - Review' ELSE 'Aurora IO Optimized - Not Recommended' END) recommendation
       FROM
         aggregated
     parameters:
