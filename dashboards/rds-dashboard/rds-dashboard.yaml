@@ -199,6 +199,7 @@ datasets:
     dependsOn:
       views:
       - rds_backup_view
+      - account_map
     schedules:
     - default
   rds_inventory_view:
@@ -397,6 +398,7 @@ datasets:
     dependsOn:
       views:
       - rds_inventory_view
+      - account_map
     schedules:
     - default
   rds_maintenance_view:
@@ -514,6 +516,7 @@ datasets:
     dependsOn:
       views:
       - rds_maintenance_view
+      - account_map
     schedules:
     - default
   rds_tags_view:
@@ -768,6 +771,7 @@ datasets:
     dependsOn:
       views:
       - rds_cost_summary_view
+      - account_map
     schedules:
     - default
 crawlers: {}
@@ -875,7 +879,7 @@ views:
       , i.certificatedetails
       , i.accountid
       , i.latestrestorabletime
-      , org.name accountname
+      , a.account_name accountname
       , i.region
       , vs.majorengineversion current_major_version
       , emaj.latest_major_version
@@ -908,15 +912,15 @@ views:
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
       LEFT JOIN latest_instance_snapshots s ON ((s.accountid = i.accountid) AND (s.dbinstanceidentifier = i.dbinstanceidentifier) AND (s.maxsnapshotcreatetime = 1) AND (cm.dbclusteridentifier IS NULL) AND (date(parse_datetime(s.collection_date, 'yyyy-MM-dd HH:mm:ss')) = date(parse_datetime(i.collection_date, 'yyyy-MM-dd HH:mm:ss')))))
       LEFT JOIN latest_cluster_snapshots cs ON ((cs.accountid = i.accountid) AND (cs.dbclusteridentifier = cm.dbclusteridentifier) AND (cs.maxsnapshotcreatetime = 1) AND (cm.dbclusteridentifier IS NOT NULL) AND (date(parse_datetime(cs.collection_date, 'yyyy-MM-dd HH:mm:ss')) = date(parse_datetime(i.collection_date, 'yyyy-MM-dd HH:mm:ss')))))
-      LEFT JOIN "${data_collection_database_name}".organization_data org ON (i.accountid = org.id))
+      LEFT JOIN "${athena_database_name}".account_map a ON (i.accountid = a.account_id))
       LEFT JOIN version_status_lookup vs ON ((i.engine = vs.engine) AND (i.engineversion = vs.engineversion)))
       LEFT JOIN engine_major_versions emaj ON (i.engine = emaj.engine))
       LEFT JOIN engine_minor_versions emin ON ((i.engine = emin.engine) AND (vs.majorengineversion = emin.majorengineversion)))
     parameters:
       data_collection_database_name:
         type: athena
-        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_clusters_data'
-        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_cluster_snapshots_data'
+        error: "Prerequisites not found. Enable the RDS module in CID Data Collection (provides Aurora cluster snapshot data) and ensure its Step Function has run."
         default: optimization_data
         description: "Enter the name of the data collection database"
         global: True
@@ -1029,7 +1033,7 @@ views:
       , i.latestrestorabletime
       , i.readreplicasourcedbinstanceidentifier
       , (CASE WHEN ((i.taglist IS NULL) OR (i.taglist = '[]')) THEN null ELSE array_join(transform(CAST(json_parse(i.taglist) AS ARRAY(ROW(Key varchar, Value varchar))), (x) -> concat(x.Key, ':', x.Value)), ', ') END) taglist
-      , org.name accountname
+      , a.account_name accountname
       , i.collection_date
       , i.region
       , cm.dbclusteridentifier
@@ -1057,7 +1061,7 @@ views:
       FROM
         ((((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
-      LEFT JOIN "${data_collection_database_name}".organization_data org ON (i.accountid = org.id))
+      LEFT JOIN "${athena_database_name}".account_map a ON (i.accountid = a.account_id))
       LEFT JOIN version_status_lookup vs ON ((i.engine = vs.engine) AND (i.engineversion = vs.engineversion)))
       LEFT JOIN engine_major_versions emaj ON (i.engine = emaj.engine))
       LEFT JOIN engine_minor_versions emin ON ((i.engine = emin.engine) AND (vs.majorengineversion = emin.majorengineversion)))
@@ -1066,8 +1070,8 @@ views:
     parameters:
       data_collection_database_name:
         type: athena
-        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_clusters_data'
-        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'rds_db_engine_versions'
+        error: "Prerequisites not found. Enable the Reference module in CID Data Collection (provides RDS engine version and end-of-support data) and ensure its Step Function has run."
         default: optimization_data
         description: "Enter the name of the data collection database"
         global: True
@@ -1140,7 +1144,7 @@ views:
       , i.engineversion
       , i.autominorversionupgrade
       , i.accountid
-      , org.name accountname
+      , a.account_name accountname
       , i.collection_date
       , i.region
       , vs.majorengineversion current_major_version
@@ -1164,7 +1168,7 @@ views:
       FROM
         (((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
-      LEFT JOIN "${data_collection_database_name}".organization_data org ON (i.accountid = org.id))
+      LEFT JOIN "${athena_database_name}".account_map a ON (i.accountid = a.account_id))
       LEFT JOIN version_status_lookup vs ON ((i.engine = vs.engine) AND (i.engineversion = vs.engineversion)))
       LEFT JOIN engine_major_versions emaj ON (i.engine = emaj.engine))
       LEFT JOIN engine_minor_versions emin ON ((i.engine = emin.engine) AND (vs.majorengineversion = emin.majorengineversion)))
@@ -1172,8 +1176,8 @@ views:
     parameters:
       data_collection_database_name:
         type: athena
-        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'inventory_rds_db_clusters_data'
-        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'rds_maintenance_data'
+        error: "Prerequisites not found. Enable the RDS module in CID Data Collection (provides pending maintenance data) and ensure its Step Function has run."
         default: optimization_data
         description: "Enter the name of the data collection database"
         global: True
@@ -1262,6 +1266,7 @@ views:
          , COALESCE(cm.engine, im.engine, ar.database_engine) database_engine
          , ar.usage_month
          , ar.cost_category
+         , ar.usage_type
          , ar.amortized_cost
          , ar.resource_type
          , ar.extracted_name
@@ -1287,6 +1292,7 @@ views:
          , SUM((CASE WHEN (cost_category = 'storage') THEN amortized_cost ELSE 0 END)) storage_cost
          , SUM((CASE WHEN (cost_category = 'other') THEN amortized_cost ELSE 0 END)) other_cost
          , SUM(amortized_cost) total_cost
+         , MAX((CASE WHEN ((usage_type LIKE '%IOOptimized%') OR (usage_type LIKE '%IO-Optimized%')) THEN 1 ELSE 0 END)) is_io_optimized
          FROM
            aurora_with_cluster
          GROUP BY usage_month, payer_account_id, account_id, account_name, region, database_engine, dbclusteridentifier
@@ -1307,8 +1313,8 @@ views:
       , other_cost
       , total_cost
       , ROUND(((io_cost / ((compute_cost + io_cost) + storage_cost)) * 100), 2) io_pct
-      , ROUND(((io_cost - (compute_cost * 3E-1)) - (storage_cost * 1.25E0)), 2) estimated_savings
-      , (CASE WHEN (((io_cost / ((compute_cost + io_cost) + storage_cost)) * 100) > 25) THEN 'Aurora IO Optimized - Recommended' WHEN (((io_cost / ((compute_cost + io_cost) + storage_cost)) * 100) > 15) THEN 'Aurora IO Optimized - Review' ELSE 'Aurora IO Optimized - Not Recommended' END) recommendation
+      , (CASE WHEN (is_io_optimized = 1) THEN NULL ELSE ROUND(((io_cost - (compute_cost * 3E-1)) - (storage_cost * 1.25E0)), 2) END) estimated_savings
+      , (CASE WHEN (is_io_optimized = 1) THEN 'Aurora IO Optimized - Already I/O-Optimized' WHEN (((io_cost - (compute_cost * 3E-1)) - (storage_cost * 1.25E0)) > 0) THEN 'Aurora IO Optimized - Recommended' WHEN (((io_cost - (compute_cost * 3E-1)) - (storage_cost * 1.25E0)) > (-0.1 * ((compute_cost + io_cost) + storage_cost))) THEN 'Aurora IO Optimized - Review' ELSE 'Aurora IO Optimized - Not Recommended' END) recommendation
       FROM
         aggregated
     parameters:
@@ -1414,6 +1420,6 @@ views:
       , s.month
       FROM
         ((summary s
-      INNER JOIN "${athena_database_name}"."account_map" a ON (s.linked_account_id = a.account_id))
+      LEFT JOIN "${athena_database_name}"."account_map" a ON (s.linked_account_id = a.account_id))
       LEFT JOIN resource_agg r ON ((s.linked_account_id = r.linked_account_id) AND (s.usage_date = r.usage_date) AND (s.region = r.region) AND (s.product_code = r.product_code) AND (s.usage_type = r.usage_type)))
       WHERE (s.product_code = 'AmazonRDS')
