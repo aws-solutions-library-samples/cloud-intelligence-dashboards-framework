@@ -281,6 +281,9 @@ CalculatedFields:
   Expression: ' concat(accountid, ''|'', dbinstanceidentifier, ''|'', region)'
   Name: dbinstanceidentifier_distinct
 - DataSetIdentifier: rds_maintenance_dataset
+  Expression: distinct_countIf({dbinstanceidentifier_distinct}, isNotNull({action}))
+  Name: db_pending_maint_kpi
+- DataSetIdentifier: rds_maintenance_dataset
   Expression: |-
     ifelse(
         isNull(currentapplydate) and isNull(forcedapplydate) and isNull(autoappliedafterdate),
@@ -1546,26 +1549,6 @@ FilterGroups:
       FilterId: 4c23f392-59b4-462f-b682-0361a2f260bb
   ScopeConfiguration:
     AllSheets: {}
-  Status: ENABLED
-- CrossDataset: SINGLE_DATASET
-  FilterGroupId: a6c782bf-3898-4612-a794-4b9ba3c62240
-  Filters:
-  - CategoryFilter:
-      Column:
-        ColumnName: action
-        DataSetIdentifier: rds_maintenance_dataset
-      Configuration:
-        FilterListConfiguration:
-          MatchOperator: DOES_NOT_CONTAIN
-          NullOption: ALL_VALUES
-      FilterId: ed0dc52b-389f-4574-9904-c81acf76877c
-  ScopeConfiguration:
-    SelectedSheets:
-      SheetVisualScopingConfigurations:
-      - Scope: SELECTED_VISUALS
-        SheetId: b62c48ea-d1b8-46f5-9d3d-0de152816f4c
-        VisualIds:
-        - f2fc8f4b-d0b8-4059-82ac-91e9c0a63e3a
   Status: ENABLED
 Options:
   WeekStart: SUNDAY
@@ -5136,9 +5119,8 @@ Sheets:
               HierarchyId: ec0fa99b-6810-4777-90cf-0f9e05a1f4f2
           Values:
           - CategoricalMeasureField:
-              AggregationFunction: COUNT
               Column:
-                ColumnName: dbinstanceidentifier_distinct
+                ColumnName: db_pending_maint_kpi
                 DataSetIdentifier: rds_maintenance_dataset
               FieldId: 5387090c-82a7-4257-bece-d92680da0f14.1.1792186138630
         KPIOptions:
