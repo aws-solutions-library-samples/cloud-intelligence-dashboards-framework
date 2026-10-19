@@ -380,6 +380,29 @@ DataSetIdentifierDeclarations:
 - DataSetArn: arn:aws:quicksight:::dataset/rds_backup_dataset
   Identifier: rds_backup_dataset
 FilterGroups:
+- CrossDataset: SINGLE_DATASET
+  FilterGroupId: f1e2d3c4-b5a6-47f8-9012-3a4b5c6d7e8f
+  Filters:
+  - RelativeDatesFilter:
+      AnchorDateConfiguration:
+        AnchorOption: NOW
+      Column:
+        ColumnName: usage_month
+        DataSetIdentifier: rds_aurora_io_optimized_view
+      FilterId: 0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d
+      MinimumGranularity: DAY
+      NullOption: NON_NULLS_ONLY
+      RelativeDateType: THIS
+      TimeGranularity: MONTH
+  ScopeConfiguration:
+    SelectedSheets:
+      SheetVisualScopingConfigurations:
+      - Scope: SELECTED_VISUALS
+        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        VisualIds:
+        - 9b677fc7-3c43-4428-a48d-f90161519ebb
+        - 3efa125d-9fcf-4887-8aa4-b01db2dbe8e2
+  Status: ENABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: 0490f80d-3779-4f3a-99d7-cd39065f44bc
   Filters:
@@ -12754,7 +12777,7 @@ Sheets:
         FormatText:
           RichText: |-
             <visual-title>
-              <inline font-size="14px">Aurora IO Optimized Savings Analysis - last 6 months</inline>
+              <inline font-size="14px">Aurora IO Optimized Savings Analysis - Current Month to Date</inline>
             </visual-title>
         Visibility: VISIBLE
       VisualId: 9b677fc7-3c43-4428-a48d-f90161519ebb
@@ -12919,8 +12942,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: <visual-title>Aurora Cluster IO optimizied recommendation - last
-            6 months</visual-title>
+          RichText: <visual-title>Aurora Cluster IO Optimized Recommendation - Current Month to Date</visual-title>
         Visibility: VISIBLE
       VisualId: 3efa125d-9fcf-4887-8aa4-b01db2dbe8e2
   - BarChartVisual:
