@@ -905,8 +905,8 @@ views:
       , i.year
       , i.month
       , i.day
-      , date_format(date_parse(max(i.collection_date) OVER (PARTITION BY i.accountid, i.region), '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') latest_collection_date
-      , (CASE WHEN (i.collection_date = max(i.collection_date) OVER (PARTITION BY i.accountid, i.region)) THEN 1 ELSE 0 END) latest_collection_date_flag
+      , max(substr(i.collection_date, 1, 10)) OVER () latest_collection_date
+      , (CASE WHEN substr(i.collection_date, 1, 10) = max(substr(i.collection_date, 1, 10)) OVER () THEN 1 ELSE 0 END) latest_collection_date_flag
       FROM
         ((((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
@@ -1056,8 +1056,8 @@ views:
       , i.year
       , i.month
       , i.day
-      , date_format(date_parse(max(i.collection_date) OVER (PARTITION BY i.accountid, i.region), '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') latest_collection_date
-      , (CASE WHEN (i.collection_date = max(i.collection_date) OVER (PARTITION BY i.accountid, i.region)) THEN 1 ELSE 0 END) latest_collection_date_flag
+      , max(substr(i.collection_date, 1, 10)) OVER () latest_collection_date
+      , (CASE WHEN substr(i.collection_date, 1, 10) = max(substr(i.collection_date, 1, 10)) OVER () THEN 1 ELSE 0 END) latest_collection_date_flag
       FROM
         ((((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
@@ -1163,8 +1163,8 @@ views:
       , i.year
       , i.month
       , i.day
-      , date_format(date_parse(max(i.collection_date) OVER (PARTITION BY i.accountid, i.region), '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') latest_collection_date
-      , (CASE WHEN (i.collection_date = max(i.collection_date) OVER (PARTITION BY i.accountid, i.region)) THEN 1 ELSE 0 END) latest_collection_date_flag
+      , max(substr(i.collection_date, 1, 10)) OVER () latest_collection_date
+      , (CASE WHEN substr(i.collection_date, 1, 10) = max(substr(i.collection_date, 1, 10)) OVER () THEN 1 ELSE 0 END) latest_collection_date_flag
       FROM
         (((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
