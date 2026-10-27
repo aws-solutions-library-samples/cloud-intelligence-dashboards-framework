@@ -20,6 +20,17 @@ datasets:
       DataSetId: rds_backup_dataset
       Name: rds_backup_view
       PhysicalTableMap:
+        rds-dailybackup-account-map:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
         rds-dailybackup-table:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
@@ -72,8 +83,6 @@ datasets:
             - Name: accountid
               Type: STRING
             - Name: latestrestorabletime
-              Type: STRING
-            - Name: accountname
               Type: STRING
             - Name: region
               Type: STRING
@@ -131,6 +140,21 @@ datasets:
               Type: INTEGER
       ImportMode: SPICE
       LogicalTableMap:
+        rds-dailybackup-account-map-logical:
+          Alias: account_map
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: accountname
+          Source:
+            PhysicalTableId: rds-dailybackup-account-map
+        rds-dailybackup-source-logical:
+          Alias: rds_backup_view_source
+          Source:
+            PhysicalTableId: rds-dailybackup-table
         rds-dailybackup-logical:
           Alias: rds_backup_view
           DataTransforms:
@@ -195,7 +219,11 @@ datasets:
               - latest_collection_date
               - latest_collection_date_flag
           Source:
-            PhysicalTableId: rds-dailybackup-table
+            JoinInstruction:
+              LeftOperand: rds-dailybackup-source-logical
+              RightOperand: rds-dailybackup-account-map-logical
+              Type: LEFT
+              OnClause: '{accountid} = {account_id[account_map]}'
     dependsOn:
       views:
       - rds_backup_view
@@ -207,6 +235,17 @@ datasets:
       DataSetId: rds_inventory_dataset
       Name: rds_inventory_view
       PhysicalTableMap:
+        rds-analysis-account-map:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
         rds-analysis-table:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
@@ -270,8 +309,6 @@ datasets:
               Type: STRING
             - Name: taglist
               Type: STRING
-            - Name: accountname
-              Type: STRING
             - Name: collection_date
               Type: STRING
             - Name: region
@@ -326,6 +363,21 @@ datasets:
               Type: INTEGER
       ImportMode: SPICE
       LogicalTableMap:
+        rds-analysis-account-map-logical:
+          Alias: account_map
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: accountname
+          Source:
+            PhysicalTableId: rds-analysis-account-map
+        rds-analysis-source-logical:
+          Alias: rds_inventory_view_source
+          Source:
+            PhysicalTableId: rds-analysis-table
         rds-analysis-logical:
           Alias: rds_inventory_view
           DataTransforms:
@@ -394,7 +446,11 @@ datasets:
               - latest_collection_date
               - latest_collection_date_flag
           Source:
-            PhysicalTableId: rds-analysis-table
+            JoinInstruction:
+              LeftOperand: rds-analysis-source-logical
+              RightOperand: rds-analysis-account-map-logical
+              Type: LEFT
+              OnClause: '{accountid} = {account_id[account_map]}'
     dependsOn:
       views:
       - rds_inventory_view
@@ -406,6 +462,17 @@ datasets:
       DataSetId: rds_maintenance_dataset
       Name: rds_maintenance_view
       PhysicalTableMap:
+        rds-maintenance-account-map:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
         rds-maintenance-table:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
@@ -426,8 +493,6 @@ datasets:
             - Name: autominorversionupgrade
               Type: STRING
             - Name: accountid
-              Type: STRING
-            - Name: accountname
               Type: STRING
             - Name: collection_date
               Type: STRING
@@ -471,6 +536,21 @@ datasets:
               Type: INTEGER
       ImportMode: SPICE
       LogicalTableMap:
+        rds-maintenance-account-map-logical:
+          Alias: account_map
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map]
+          - RenameColumnOperation:
+              ColumnName: account_name
+              NewColumnName: accountname
+          Source:
+            PhysicalTableId: rds-maintenance-account-map
+        rds-maintenance-source-logical:
+          Alias: rds_maintenance_view_source
+          Source:
+            PhysicalTableId: rds-maintenance-table
         rds-maintenance-logical:
           Alias: rds_maintenance_view
           DataTransforms:
@@ -512,7 +592,11 @@ datasets:
               - latest_collection_date
               - latest_collection_date_flag
           Source:
-            PhysicalTableId: rds-maintenance-table
+            JoinInstruction:
+              LeftOperand: rds-maintenance-source-logical
+              RightOperand: rds-maintenance-account-map-logical
+              Type: LEFT
+              OnClause: '{accountid} = {account_id[account_map]}'
     dependsOn:
       views:
       - rds_maintenance_view
@@ -644,6 +728,17 @@ datasets:
       DataSetId: rds_cost_summary_view
       Name: rds_cost_summary_view
       PhysicalTableMap:
+        rds-cost-summary-account-map:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: account_map
+            InputColumns:
+            - Name: account_id
+              Type: STRING
+            - Name: account_name
+              Type: STRING
         rds-cost-summary-table:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
@@ -652,8 +747,6 @@ datasets:
             Name: rds_cost_summary_view
             InputColumns:
             - Name: account_id
-              Type: STRING
-            - Name: account_name
               Type: STRING
             - Name: payer_account_id
               Type: STRING
@@ -727,6 +820,18 @@ datasets:
               Type: STRING
       ImportMode: SPICE
       LogicalTableMap:
+        rds-cost-summary-account-map-logical:
+          Alias: account_map
+          DataTransforms:
+          - RenameColumnOperation:
+              ColumnName: account_id
+              NewColumnName: account_id[account_map]
+          Source:
+            PhysicalTableId: rds-cost-summary-account-map
+        rds-cost-summary-source-logical:
+          Alias: rds_cost_summary_view_source
+          Source:
+            PhysicalTableId: rds-cost-summary-table
         rds-cost-summary-logical:
           Alias: rds_cost_summary_view
           DataTransforms:
@@ -767,7 +872,11 @@ datasets:
               - year
               - month
           Source:
-            PhysicalTableId: rds-cost-summary-table
+            JoinInstruction:
+              LeftOperand: rds-cost-summary-source-logical
+              RightOperand: rds-cost-summary-account-map-logical
+              Type: LEFT
+              OnClause: '{account_id} = {account_id[account_map]}'
     dependsOn:
       views:
       - rds_cost_summary_view
@@ -879,7 +988,6 @@ views:
       , i.certificatedetails
       , i.accountid
       , i.latestrestorabletime
-      , a.account_name accountname
       , i.region
       , vs.majorengineversion current_major_version
       , emaj.latest_major_version
@@ -908,11 +1016,10 @@ views:
       , max(substr(i.collection_date, 1, 10)) OVER () latest_collection_date
       , (CASE WHEN substr(i.collection_date, 1, 10) = max(substr(i.collection_date, 1, 10)) OVER () THEN 1 ELSE 0 END) latest_collection_date_flag
       FROM
-        ((((((("${data_collection_database_name}".inventory_rds_db_instances_data i
+        (((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
       LEFT JOIN latest_instance_snapshots s ON ((s.accountid = i.accountid) AND (s.dbinstanceidentifier = i.dbinstanceidentifier) AND (s.maxsnapshotcreatetime = 1) AND (cm.dbclusteridentifier IS NULL) AND (date(parse_datetime(s.collection_date, 'yyyy-MM-dd HH:mm:ss')) = date(parse_datetime(i.collection_date, 'yyyy-MM-dd HH:mm:ss')))))
       LEFT JOIN latest_cluster_snapshots cs ON ((cs.accountid = i.accountid) AND (cs.dbclusteridentifier = cm.dbclusteridentifier) AND (cs.maxsnapshotcreatetime = 1) AND (cm.dbclusteridentifier IS NOT NULL) AND (date(parse_datetime(cs.collection_date, 'yyyy-MM-dd HH:mm:ss')) = date(parse_datetime(i.collection_date, 'yyyy-MM-dd HH:mm:ss')))))
-      LEFT JOIN "${athena_database_name}".account_map a ON (i.accountid = a.account_id))
       LEFT JOIN version_status_lookup vs ON ((i.engine = vs.engine) AND (i.engineversion = vs.engineversion)))
       LEFT JOIN engine_major_versions emaj ON (i.engine = emaj.engine))
       LEFT JOIN engine_minor_versions emin ON ((i.engine = emin.engine) AND (vs.majorengineversion = emin.majorengineversion)))
@@ -1033,7 +1140,6 @@ views:
       , i.latestrestorabletime
       , i.readreplicasourcedbinstanceidentifier
       , (CASE WHEN ((i.taglist IS NULL) OR (i.taglist = '[]')) THEN null ELSE array_join(transform(CAST(json_parse(i.taglist) AS ARRAY(ROW(Key varchar, Value varchar))), (x) -> concat(x.Key, ':', x.Value)), ', ') END) taglist
-      , a.account_name accountname
       , i.collection_date
       , i.region
       , cm.dbclusteridentifier
@@ -1059,9 +1165,8 @@ views:
       , max(substr(i.collection_date, 1, 10)) OVER () latest_collection_date
       , (CASE WHEN substr(i.collection_date, 1, 10) = max(substr(i.collection_date, 1, 10)) OVER () THEN 1 ELSE 0 END) latest_collection_date_flag
       FROM
-        ((((((("${data_collection_database_name}".inventory_rds_db_instances_data i
+        (((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
-      LEFT JOIN "${athena_database_name}".account_map a ON (i.accountid = a.account_id))
       LEFT JOIN version_status_lookup vs ON ((i.engine = vs.engine) AND (i.engineversion = vs.engineversion)))
       LEFT JOIN engine_major_versions emaj ON (i.engine = emaj.engine))
       LEFT JOIN engine_minor_versions emin ON ((i.engine = emin.engine) AND (vs.majorengineversion = emin.majorengineversion)))
@@ -1144,7 +1249,6 @@ views:
       , i.engineversion
       , i.autominorversionupgrade
       , i.accountid
-      , a.account_name accountname
       , i.collection_date
       , i.region
       , vs.majorengineversion current_major_version
@@ -1166,9 +1270,8 @@ views:
       , max(substr(i.collection_date, 1, 10)) OVER () latest_collection_date
       , (CASE WHEN substr(i.collection_date, 1, 10) = max(substr(i.collection_date, 1, 10)) OVER () THEN 1 ELSE 0 END) latest_collection_date_flag
       FROM
-        (((((("${data_collection_database_name}".inventory_rds_db_instances_data i
+        ((((("${data_collection_database_name}".inventory_rds_db_instances_data i
       LEFT JOIN cluster_members cm ON ((i.accountid = cm.accountid) AND (i.region = cm.region) AND (i.dbinstanceidentifier = cm.dbinstanceidentifier)))
-      LEFT JOIN "${athena_database_name}".account_map a ON (i.accountid = a.account_id))
       LEFT JOIN version_status_lookup vs ON ((i.engine = vs.engine) AND (i.engineversion = vs.engineversion)))
       LEFT JOIN engine_major_versions emaj ON (i.engine = emaj.engine))
       LEFT JOIN engine_minor_versions emin ON ((i.engine = emin.engine) AND (vs.majorengineversion = emin.majorengineversion)))
@@ -1384,8 +1487,7 @@ views:
          GROUP BY 1, 2, 3, 4, 5
       )
       SELECT
-        a.account_id
-      , a.account_name
+        s.linked_account_id account_id
       , s.payer_account_id
       , s.billing_period
       , s.usage_date
@@ -1419,7 +1521,6 @@ views:
       , s.year
       , s.month
       FROM
-        ((summary s
-      LEFT JOIN "${athena_database_name}"."account_map" a ON (s.linked_account_id = a.account_id))
+        (summary s
       LEFT JOIN resource_agg r ON ((s.linked_account_id = r.linked_account_id) AND (s.usage_date = r.usage_date) AND (s.region = r.region) AND (s.product_code = r.product_code) AND (s.usage_type = r.usage_type)))
       WHERE (s.product_code = 'AmazonRDS')

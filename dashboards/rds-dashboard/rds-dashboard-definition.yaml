@@ -15,6 +15,9 @@ CalculatedFields:
 - DataSetIdentifier: rds_aurora_io_optimized_view
   Expression: ifelse(recommendation='Aurora IO Optimized - Recommended',1,0)
   Name: aurora_io_optimized_clusters
+- DataSetIdentifier: rds_aurora_io_optimized_view
+  Expression: ifelse({estimated_savings} > 0, {estimated_savings}, 0)
+  Name: positive_io_savings
 - DataSetIdentifier: rds_backup_dataset
   Expression: concat(formatDate(addDateTime(-30, 'DD', now()),'dd-MMM-yyyy'),' - ',formatDate(now(),'dd-MMM-yyyy'))
   Name: Backup - Last30Days
@@ -10190,7 +10193,7 @@ Sheets:
               AggregationFunction:
                 SimpleNumericalAggregation: SUM
               Column:
-                ColumnName: estimated_savings
+                ColumnName: positive_io_savings
                 DataSetIdentifier: rds_aurora_io_optimized_view
               FieldId: 7e3c839b-f897-4c3d-bd00-293f476ba693.estimated_savings.1.1782532003306
               FormatConfiguration:
