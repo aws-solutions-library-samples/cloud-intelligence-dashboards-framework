@@ -14,7 +14,7 @@ This architecture follows AWS best practices by separating the Payer account (So
 
 ## Prerequisites
 
-* Terraform >= 1.0
+* Terraform >= 1.5
 * Access to deploy resources in both accounts:
   * **Payer account**: Permissions to create IAM roles, S3 buckets, and access billing data
   * **Data Collection account**: Permissions to create CloudFormation stacks, S3 buckets, and manage QuickSight
@@ -50,7 +50,7 @@ global_values = {
   source_account_ids     = "987654321098"     # Comma-separated list of Payer account IDs
   aws_region            = "us-east-1"         # AWS region for deployment
   quicksight_user       = "user@example.com" # QuickSight username
-  cid_cfn_version       = "4.4.6"           # CID CloudFormation version
+  cid_cfn_version       = "4.4.18"          # CID CloudFormation version
   data_export_version   = "0.9.0"           # Data Export version
   environment           = "prod"              # Environment (dev, staging, prod)
 }
@@ -70,6 +70,8 @@ dashboards = {
   containers   = "yes"  # SCAD Containers Cost Allocation
   cora         = "yes"  # CORA Dashboard
   focus        = "yes"  # FOCUS Dashboard
+  pca          = "no"   # Pricing Change Analysis (optional, requires cid_cfn_version >= 4.4.15)
+  msih         = "no"   # Media Services Insights (optional)
 }
 ```
 
@@ -102,7 +104,7 @@ terraform {
 #### Create `providers.tf`
 ```hcl
 terraform {
-  required_version = ">= 1.0.0"
+  required_version = ">= 1.5.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -134,6 +136,7 @@ provider "aws" {
 - **`dashboards.tf`** - 🏗️ **Don't edit** - Resource definitions
 - **`locals.tf`** - 🏗️ **Don't edit** - Internal logic and configurations
 - **`outputs.tf`** - 📊 **Don't edit** - Output definitions
+- **`versions.tf`** - 🏗️ **Don't edit** - Minimum Terraform version
 - **`backend.tf`** - 💾 **CREATE THIS** - Backend configuration
 - **`providers.tf`** - 🔧 **CREATE THIS** - Provider configurations
 
@@ -178,6 +181,10 @@ These require a foundational dashboard to be deployed first and use the same CUR
 | Containers | `containers` | yes | SCAD Containers Cost Allocation |
 | CORA | `cora` | yes | CORA Dashboard |
 | FOCUS | `focus` | yes | FOCUS Dashboard |
+| Pricing Change Analysis | `pca` | no | Public pricing changes and their cost impact. Requires `cid_cfn_version` 4.4.15 or later |
+| Media Services Insights | `msih` | no | AWS Elemental media services cost, usage and reservations |
+
+`pca` and `msih` are optional: you can leave them out of `dashboards`, and they default to `no`. Both read CUR 2.0 data from the Data Exports stack, so no extra data collection is needed. They only show data if the payer has matching usage: Pricing Change Analysis looks at the last 24 months for SKUs whose public price changed, and Media Services Insights needs AWS Elemental usage.
 
 ## Advanced Configuration
 
@@ -231,7 +238,7 @@ After successful deployment, the module provides the following outputs:
 | `cid_dataexports_source_outputs` | Outputs from source stack |
 | `cloud_intelligence_dashboards_outputs` | QuickSight dashboard outputs |
 | `dashboard_summary` | Summary of all deployed dashboards (foundational and additional) |
-| `additional_dashboards_stacks` | Additional dashboard CloudFormation stacks (trends, datatransfer, marketplace, connect, containers) |
+| `additional_dashboards_stacks` | Additional dashboard CloudFormation stacks (trends, datatransfer, marketplace, connect, containers, focus, cora, pca, msih) |
 
 Access the dashboard URLs from the outputs to view your dashboards in QuickSight.
 
@@ -270,7 +277,7 @@ If you're upgrading from the previous non-modular Terraform configuration, pleas
      source_account_ids     = "your-source-ids"     # From your old config
      aws_region            = "your-region"          # From your old config
      quicksight_user       = "your-qs-user"        # From your old config
-     cid_cfn_version       = "4.4.6"               # Updated version
+     cid_cfn_version       = "4.4.18"              # Updated version
      data_export_version   = "0.9.0"               # Updated version
      environment           = "prod"                 # From your old config
    }
@@ -289,6 +296,8 @@ If you're upgrading from the previous non-modular Terraform configuration, pleas
      containers   = "no"   # Based on your previous setup or desired to deploy
      cora         = "no"   # Based on your previous setup or desired to deploy
      focus        = "no"   # Based on your previous setup or desired to deploy
+     pca          = "no"   # Optional, defaults to "no"
+     msih         = "no"   # Optional, defaults to "no"
    }
    ```
 
@@ -326,7 +335,7 @@ While the cross-account setup is recommended for production environments, you ca
      source_account_ids     = "123456789012"      # Same Payer account ID
      aws_region             = "us-east-1"         # AWS region for deployment
      quicksight_user        = "user/example"      # QuickSight username
-     cid_cfn_version        = "4.4.6"             # CID CloudFormation version
+     cid_cfn_version        = "4.4.18"            # CID CloudFormation version
      data_export_version    = "0.9.0"             # Data Export version
      environment            = "dev"               # Environment (dev, staging, prod)
    }

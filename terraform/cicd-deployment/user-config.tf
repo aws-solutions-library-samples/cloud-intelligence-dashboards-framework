@@ -88,9 +88,11 @@ variable "dashboards" {
     containers   = string
     focus        = string
     cora         = string
+    pca          = optional(string, "no")
+    msih         = optional(string, "no")
   })
 
-  description = "Dashboard deployment configuration - choose which dashboards to deploy"
+  description = "Dashboard deployment configuration - choose which dashboards to deploy. pca (Pricing Change Analysis) and msih (Media Services Insights) are optional and default to 'no'; pca requires cid_cfn_version 4.4.15 or later."
 
   default = {
     # Foundational
@@ -106,6 +108,8 @@ variable "dashboards" {
     containers   = "yes"
     focus        = "yes"
     cora         = "yes"
+    pca          = "no"
+    msih         = "no"
   }
 
   validation {
@@ -126,7 +130,9 @@ variable "dashboards" {
       var.dashboards.connect == "yes",
       var.dashboards.containers == "yes",
       var.dashboards.focus == "yes",
-      var.dashboards.cora == "yes"
+      var.dashboards.cora == "yes",
+      var.dashboards.pca == "yes",
+      var.dashboards.msih == "yes"
     ])
     error_message = "At least one dashboard must be enabled"
   }
@@ -147,7 +153,9 @@ variable "dashboards" {
         var.dashboards.connect == "yes",
         var.dashboards.containers == "yes",
         var.dashboards.focus == "yes",
-        var.dashboards.cora == "yes"
+        var.dashboards.cora == "yes",
+        var.dashboards.pca == "yes",
+        var.dashboards.msih == "yes"
       ])
     )
     error_message = "Additional dashboards require at least one foundational dashboard (cudos_v5, cost_intelligence, or kpi) to be enabled, OR set 'allow_standalone_dashboard = true' if foundational dashboards are already deployed elsewhere."

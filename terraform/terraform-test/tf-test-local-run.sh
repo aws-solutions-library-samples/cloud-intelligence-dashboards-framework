@@ -101,6 +101,8 @@ CONNECT_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/connect.*= *"/) { gsub(/
 CONTAINERS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/containers.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
 FOCUS_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/focus.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
 CORA_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/cora.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
+PCA_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/pca.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
+MSIH_DASH=$(awk '/variable "dashboards"/,/^}/ { if (/msih.*= *"/) { gsub(/.*= *"/, ""); gsub(/".*/, ""); print; exit } }' "$USER_CONFIG_FILE" || echo "no")
 
 # Extract CID CFN version from local cid-cfn.yml file
 CID_CFN_VERSION=$(sed -n '3p' "$PROJECT_ROOT/cfn-templates/cid-cfn.yml" | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/v//' || echo "${CID_VERSION}")
@@ -137,6 +139,8 @@ dashboards = {
   containers   = \"${CONTAINERS_DASH}\"
   focus        = \"${FOCUS_DASH}\"
   cora         = \"${CORA_DASH}\"
+  pca          = \"${PCA_DASH:-no}\"
+  msih         = \"${MSIH_DASH:-no}\"
 }
 " | tee $PROJECT_ROOT/terraform/cicd-deployment/terraform.tfvars
 
@@ -188,7 +192,7 @@ echo "Scanning for CID stacks (foundational + additional dashboards)..."
 # Foundational stacks
 FOUNDATIONAL_STACKS=("CID-DataExports-Destination" "Cloud-Intelligence-Dashboards")
 # Additional CUR-based dashboard stacks
-ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Dashboard" "FOCUS-Dashboard" "CORA-Dashboard")
+ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Dashboard" "FOCUS-Dashboard" "CORA-Dashboard" "Pricing-Change-Analysis-Dashboard" "Media-Services-Insights-Dashboard")
 # All stacks to check (excluding optional advanced stacks to reduce noise)
 STACKS_TO_CHECK=("${FOUNDATIONAL_STACKS[@]}" "${ADDITIONAL_STACKS[@]}")
 GOOD_STATES=("CREATE_COMPLETE" "UPDATE_COMPLETE")
@@ -372,7 +376,7 @@ echo "=== Additional Dashboards Validation ==="
 echo "Checking for additional dashboards..."
 
 # Check each additional dashboard
-for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-marketplace amazon-connect-cost-insight-dashboard scad-containers-cost-allocation focus-dashboard cora; do
+for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-marketplace amazon-connect-cost-insight-dashboard scad-containers-cost-allocation focus-dashboard cora pricing-change-analysis media-services-insights; do
   case $dashboard_id in
     trends-dashboard) view_name="daily_anomaly_detection" ;;
     datatransfer-cost-analysis-dashboard) view_name="data_transfer_view" ;;
@@ -381,6 +385,8 @@ for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-ma
     scad-containers-cost-allocation) view_name="scad_cca_summary_view" ;;
     focus-dashboard) view_name="focus_consolidation_view" ;;
     cora) view_name="cora_view" ;;
+    pricing-change-analysis) view_name="pricing_changes" ;;
+    media-services-insights) view_name="msih_view" ;;
   esac
   
   echo "Checking dashboard: $dashboard_id"

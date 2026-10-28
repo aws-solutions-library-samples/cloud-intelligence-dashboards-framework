@@ -77,5 +77,13 @@ output "additional_dashboards_stacks" {
       stack_id = module.cora_dashboard.stack_id
       outputs  = module.cora_dashboard.stack_outputs
     } : null
+    pca = var.dashboards.pca == "yes" ? {
+      stack_id = module.pca_dashboard.stack_id
+      outputs  = module.pca_dashboard.stack_outputs
+    } : null
+    msih = var.dashboards.msih == "yes" ? {
+      stack_id = module.msih_dashboard.stack_id
+      outputs  = module.msih_dashboard.stack_outputs
+    } : null
   }
 }

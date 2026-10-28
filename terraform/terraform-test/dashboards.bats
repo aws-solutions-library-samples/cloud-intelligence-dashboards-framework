@@ -33,7 +33,7 @@ setup_file() {
   done
   
   # Check for additional dashboards
-  for var_name in trends datatransfer marketplace connect containers focus cora; do
+  for var_name in trends datatransfer marketplace connect containers focus cora pca msih; do
     case $var_name in
       trends) dashboard_id="trends-dashboard" ;;
       datatransfer) dashboard_id="datatransfer-cost-analysis-dashboard" ;;
@@ -42,6 +42,8 @@ setup_file() {
       containers) dashboard_id="scad-containers-cost-allocation" ;;
       focus) dashboard_id="focus-dashboard" ;;
       cora) dashboard_id="cora" ;;
+      pca) dashboard_id="pricing-change-analysis" ;;
+      msih) dashboard_id="media-services-insights" ;;
     esac
     if [ "${!var_name:-no}" = "yes" ]; then
       echo "$dashboard_id" >> "$tmp_dir/dashboard_ids"
@@ -264,7 +266,7 @@ teardown_file() {
   fi
   
   # Test additional dashboard views
-  for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-marketplace amazon-connect-cost-insight-dashboard scad-containers-cost-allocation focus-dashboard cora; do
+  for dashboard_id in trends-dashboard datatransfer-cost-analysis-dashboard aws-marketplace amazon-connect-cost-insight-dashboard scad-containers-cost-allocation focus-dashboard cora pricing-change-analysis media-services-insights; do
     if grep -q "$dashboard_id" "$tmp_dir/dashboard_ids"; then
       case $dashboard_id in
         trends-dashboard) view_name="daily_anomaly_detection" ;;
@@ -274,6 +276,8 @@ teardown_file() {
         scad-containers-cost-allocation) view_name="scad_cca_summary_view" ;;
         focus-dashboard) view_name="focus_consolidation_view" ;;
         cora) view_name="cora_view" ;;
+        pricing-change-analysis) view_name="pricing_changes" ;;
+        media-services-insights) view_name="msih_view" ;;
       esac
       echo "Testing $dashboard_id view: $view_name" | tee -a "$log_file"
       run aws athena get-table-metadata \

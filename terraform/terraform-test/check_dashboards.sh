@@ -44,51 +44,45 @@ connect="no"
 containers="no"
 focus="no"
 cora="no"
+pca="no"
+msih="no"
 
-# Check user-config.tf first, then fall back to terraform.tfvars
+# Prefer terraform.tfvars when it sets dashboards (that is what Terraform deploys),
+# otherwise fall back to the defaults in user-config.tf
 CONFIG_FILE=""
-if [ -f "user-config.tf" ]; then
+if [ -f "terraform.tfvars" ] && grep -qE '^[[:space:]]*dashboards[[:space:]]*=' "terraform.tfvars"; then
+  CONFIG_FILE="terraform.tfvars"
+  echo "Found dashboards in terraform.tfvars, extracting dashboard settings..."
+elif [ -f "user-config.tf" ]; then
   CONFIG_FILE="user-config.tf"
   echo "Found user-config.tf, extracting dashboard settings..."
-elif [ -f "terraform.tfvars" ]; then
-  CONFIG_FILE="terraform.tfvars"
-  echo "Found terraform.tfvars, extracting dashboard settings..."
 fi
+
+# Print the value of the first `<key> = "<value>"` assignment, or the default if there is none.
+# Matching the whole assignment skips type lines (`key = string`, `key = optional(string, "no")`)
+# and validation lines (`var.dashboards.key == "yes"`).
+get_dashboard_value() {
+  local key="$1" default="$2" value
+  value=$(grep -E "^[[:space:]]*${key}[[:space:]]*=[[:space:]]*\"" "$CONFIG_FILE" | head -1 | cut -d'"' -f2)
+  echo "${value:-$default}"
+}
 
 if [ -n "$CONFIG_FILE" ]; then
   # Extract foundational dashboards
-  if grep -q "cudos_v5" "$CONFIG_FILE"; then
-    deploy_cudos_v5=$(grep "cudos_v5" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
-  fi
-  if grep -q "cost_intelligence" "$CONFIG_FILE"; then
-    deploy_cost_intelligence_dashboard=$(grep "cost_intelligence" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
-  fi
-  if grep -q "kpi" "$CONFIG_FILE"; then
-    deploy_kpi_dashboard=$(grep "kpi" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
-  fi
-  
+  deploy_cudos_v5=$(get_dashboard_value cudos_v5 "$deploy_cudos_v5")
+  deploy_cost_intelligence_dashboard=$(get_dashboard_value cost_intelligence "$deploy_cost_intelligence_dashboard")
+  deploy_kpi_dashboard=$(get_dashboard_value kpi "$deploy_kpi_dashboard")
+
   # Extract additional dashboards
-  if grep -q "trends" "$CONFIG_FILE"; then
-    trends=$(grep "trends" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
-  fi
-  if grep -q "datatransfer" "$CONFIG_FILE"; then
-    datatransfer=$(grep "datatransfer" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
-  fi
-  if grep -q "marketplace" "$CONFIG_FILE"; then
-    marketplace=$(grep "marketplace" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
-  fi
-  if grep -q "connect" "$CONFIG_FILE"; then
-    connect=$(grep "connect" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
-  fi
-  if grep -q "containers" "$CONFIG_FILE"; then
-    containers=$(grep "containers" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
-  fi
-  if grep -q "focus" "$CONFIG_FILE"; then
-    focus=$(grep "focus" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
-  fi
-  if grep -q "cora" "$CONFIG_FILE"; then
-    cora=$(grep "cora" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
-  fi
+  trends=$(get_dashboard_value trends "$trends")
+  datatransfer=$(get_dashboard_value datatransfer "$datatransfer")
+  marketplace=$(get_dashboard_value marketplace "$marketplace")
+  connect=$(get_dashboard_value connect "$connect")
+  containers=$(get_dashboard_value containers "$containers")
+  focus=$(get_dashboard_value focus "$focus")
+  cora=$(get_dashboard_value cora "$cora")
+  pca=$(get_dashboard_value pca "$pca")
+  msih=$(get_dashboard_value msih "$msih")
 fi
 
 # Export all variables
@@ -102,6 +96,8 @@ export connect
 export containers
 export focus
 export cora
+export pca
+export msih
 
 # Echo the dashboard settings
 echo "Dashboard settings from Terraform configuration:"
@@ -117,6 +113,8 @@ echo "- connect: $connect"
 echo "- containers: $containers"
 echo "- focus: $focus"
 echo "- cora: $cora"
+echo "- pca: $pca"
+echo "- msih: $msih"
 
 cd "$PROJECT_ROOT"
 
