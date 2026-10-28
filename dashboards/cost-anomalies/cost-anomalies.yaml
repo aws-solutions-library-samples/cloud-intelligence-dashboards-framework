@@ -1575,7 +1575,7 @@ datasets:
         3cec5d27-cc1d-4503-9b2e-c2bf0ce7b389:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: cost_anomalies
             InputColumns:

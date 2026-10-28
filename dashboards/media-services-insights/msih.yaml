@@ -23,7 +23,7 @@ datasets:
         561125b1-707c-4bb5-8612-0de0dd959cbc:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -34,7 +34,7 @@ datasets:
         b8ca8419-aec2-4fdc-b918-d863093c891b:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -45,7 +45,7 @@ datasets:
         ed097151-78f5-469f-9fca-e38e55537089:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: msih_reservation_optimize
             InputColumns:
@@ -257,7 +257,7 @@ datasets:
         09e670d1-8b16-4a2f-9e17-2d9ef290ec84:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: msih_reservations
             InputColumns:
@@ -335,7 +335,7 @@ datasets:
         481b319c-c8f4-4e82-9ddf-fa705f6cf783:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -346,7 +346,7 @@ datasets:
         fe517bcf-d790-49f8-b395-b744f079758f:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -469,7 +469,7 @@ datasets:
         17740ffc-0df9-4dc9-8780-a77c9dadae18:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: msih_view
             InputColumns:
@@ -587,7 +587,7 @@ datasets:
         ca2f9216-c240-4505-9a10-3d7794d2633a:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -598,7 +598,7 @@ datasets:
         ec2b20b0-73e0-476d-bcb9-7ccd2bcf48db:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:

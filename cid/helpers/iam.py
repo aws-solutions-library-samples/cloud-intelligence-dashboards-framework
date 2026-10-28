@@ -151,7 +151,7 @@ class IAM(CidBase):
             policy_merge_mode='MERGE_RESOURCES',
             managed_policies=[]
         )
-    def ensure_data_source_role_exists(self, role_name, databases, workgroup, kms_key_arns='', buckets=[], output_location_bucket=None):
+    def ensure_data_source_role_exists(self, role_name, databases, workgroup, kms_key_arns='', buckets=[], output_location_bucket=None, catalog_name='AwsDataCatalog'):
         ''' Create or update a role specifically for a QS Datasource
         '''
         return self.ensure_role_with_policy(
@@ -215,7 +215,7 @@ class IAM(CidBase):
                                 "athena:GetWorkGroup"
                             ],
                             "Resource": [
-                                f"arn:{self.partition}:athena:{self.region}:{self.account_id}:datacatalog/AwsDataCatalog", # TODO: check if this can be variable?
+                                f"arn:{self.partition}:athena:{self.region}:{self.account_id}:datacatalog/{catalog_name}",
                                 f"arn:{self.partition}:athena:{self.region}:{self.account_id}:workgroup/{workgroup}",
                             ]
                         },

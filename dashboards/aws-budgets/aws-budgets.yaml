@@ -1973,7 +1973,7 @@ datasets:
         837bbb14-78d7-44f6-8733-35c9d535665c:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -1984,7 +1984,7 @@ datasets:
         92380c13-4243-40f6-849c-2fefa127e241:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: budgets_view
             InputColumns:

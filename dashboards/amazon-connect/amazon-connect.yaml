@@ -21087,7 +21087,7 @@ datasets:
         262bcde8-fd8b-46b0-906e-9ea47394ffa8:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resource_connect_contact_summary_view
             InputColumns:
@@ -21130,7 +21130,7 @@ datasets:
         6de73818-2adf-47d0-9638-00703f1d3b04:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resource_connect_view
             InputColumns:
@@ -21199,7 +21199,7 @@ datasets:
         d7487789-c916-4f54-8058-526658d9c7d7:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:

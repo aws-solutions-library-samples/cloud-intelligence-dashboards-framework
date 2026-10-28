@@ -104,7 +104,7 @@
     "PhysicalTableMap": {
         "22291301-8e81-41bf-9270-56eb59692e55": {
             "RelationalTable": {
-                "Catalog": "AwsDataCatalog",
+                "Catalog": "${athena_catalog_name}",
                 "DataSourceArn": "${athena_datasource_arn}",
                 "Schema": "${athena_database_name}",
                 "Name": "compute_optimizer_all_options",
@@ -230,7 +230,7 @@
         },
         "5da8f118-fdc0-47ee-aaa0-b633cbf8f9c9": {
             "RelationalTable": {
-                "Catalog": "AwsDataCatalog",
+                "Catalog": "${athena_catalog_name}",
                 "DataSourceArn": "${athena_datasource_arn}",
                 "Schema": "${athena_database_name}",
                 "Name": "business_units_map",

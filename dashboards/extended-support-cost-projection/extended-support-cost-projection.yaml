@@ -31,7 +31,7 @@ datasets:
         a201689c-b688-4037-a5ad-6282c4056d01:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: elasticache_extended_support_view
             InputColumns:
@@ -94,7 +94,7 @@ datasets:
         19e7f4ff-203f-478e-a12e-754ee6a312cb:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${account_map_database_name}
             Name: account_map
             InputColumns:
@@ -172,7 +172,7 @@ datasets:
         2ae1dbc5-c18b-4751-8473-5864f5e91d44:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: eks_extended_support_view
             InputColumns:
@@ -215,7 +215,7 @@ datasets:
         effd7cff-853e-45ff-b71d-b08cd0117824:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${account_map_database_name}
             Name: account_map
             InputColumns:
@@ -285,7 +285,7 @@ datasets:
         0d4de22c-5e16-47c0-bf31-c248baf48499:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${account_map_database_name}
             Name: account_map
             InputColumns:
@@ -296,7 +296,7 @@ datasets:
         76a6ad9d-caf0-447f-8609-1c4d8fb89673:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: rds_extended_support_view
             InputColumns:
@@ -444,7 +444,7 @@ datasets:
         b51ef4eb-f8bd-41d1-8ed4-bce50612fb1b:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: opensearch_extended_support_view
             InputColumns:
@@ -500,7 +500,7 @@ datasets:
         cbd42501-c0e4-4cb5-a85f-50cbaa20776e:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${account_map_database_name}
             Name: account_map
             InputColumns:
@@ -575,7 +575,7 @@ datasets:
         5a574f8c-5e74-4da8-97cc-4f6802a7d360:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: extended_support_tagging_view
             InputColumns:
@@ -590,7 +590,7 @@ datasets:
         90e1376c-d426-4481-9af2-e30d8e9a10c1:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${account_map_database_name}
             Name: account_map
             InputColumns:

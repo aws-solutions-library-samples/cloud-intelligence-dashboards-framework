@@ -26,7 +26,7 @@ datasets:
         4b549ebe-2b15-409e-b4b9-4dd77bee7438:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_resiliency_policy_view
             InputColumns:
@@ -69,7 +69,7 @@ datasets:
         e3c1e20f-e35c-435b-9ec0-2b7e957b0af7:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -148,7 +148,7 @@ datasets:
         a1b01e93-9a6b-4175-bd84-f8f8bb54edda:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_applications_view
             InputColumns:
@@ -219,7 +219,7 @@ datasets:
         ca6792e7-8cdc-458a-8ee6-7b319ac04c4a:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resilience_hub_alarm_recommendations_view
             InputColumns:
@@ -248,7 +248,7 @@ datasets:
         e3c1e20f-e35c-435b-9ec0-2b7e957b0af6:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -353,7 +353,7 @@ datasets:
         0225d787-37df-4a1d-9fdc-17b0f0836318:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_app_recommendations_view
             InputColumns:
@@ -378,7 +378,7 @@ datasets:
         1ae03acd-73e7-4243-bfd2-be72b34c64c1:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_applications_view
             InputColumns:
@@ -449,7 +449,7 @@ datasets:
         e3c1e20f-e35c-435b-9ec0-2b7e957b0af8:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -557,7 +557,7 @@ datasets:
         374283c9-0f44-482c-aff3-b9bdd0caa0ac:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_applications_view
             InputColumns:
@@ -628,7 +628,7 @@ datasets:
         e3c1e20f-e35c-435b-9ec0-2b7e957b0af9:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -713,7 +713,7 @@ datasets:
         5ddffa0d-502a-431d-b99e-ace62085c0ec:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_complete_view
             InputColumns:
@@ -816,7 +816,7 @@ datasets:
         c2e9b0ea-d31a-4855-b2ff-a7250b236f92:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_applications_view
             InputColumns:
@@ -887,7 +887,7 @@ datasets:
         c35444df-c780-442f-b519-7eed83b0eb34:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -1216,7 +1216,7 @@ datasets:
         08552140-425b-4db9-8f41-94d1b639ee84:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_daily_assessments_view
             InputColumns:
@@ -1281,7 +1281,7 @@ datasets:
         dddbce52-5b96-4d62-9d46-3e676d14dafb:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -1417,7 +1417,7 @@ datasets:
         4d63d09e-8eca-4a79-8419-672c6c614fc2:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_fis_test_recommendations_view
             InputColumns:
@@ -1446,7 +1446,7 @@ datasets:
         ad502496-1d2e-4a21-96fb-2ec750f343ca:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_applications_view
             InputColumns:
@@ -1517,7 +1517,7 @@ datasets:
         b79055ee-a61f-459d-a103-4914289d7620:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -1626,7 +1626,7 @@ datasets:
         90d7b3ce-088b-4ea8-bf12-92f26943ef7e:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_resource_types_view
             InputColumns:
@@ -1647,7 +1647,7 @@ datasets:
         c6cad87b-2018-4170-b3b3-3d11ee2d0293:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -1711,7 +1711,7 @@ datasets:
         4baab758-4f80-4394-891a-ea6d129d9eb7:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: account_map
             InputColumns:
@@ -1722,7 +1722,7 @@ datasets:
         bf7d1c7b-afff-455b-9010-39a34a7bdd83:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_sop_recommendations_view
             InputColumns:
@@ -1751,7 +1751,7 @@ datasets:
         c2483319-f729-4f18-9cd2-1bb7f6cb79ad:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
+            Catalog: ${athena_catalog_name}
             Schema: ${athena_database_name}
             Name: resiliencehub_applications_view
             InputColumns:
