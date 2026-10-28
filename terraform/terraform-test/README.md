@@ -33,7 +33,7 @@ This testing framework provides comprehensive validation for CID Terraform deplo
 - Validates QuickSight dashboards exist and are accessible
 - Checks Athena views and datasets
 - Tests foundational dashboards (CUDOS, Cost Intelligence, KPI)
-- Validates additional dashboards (Trends, DataTransfer, Marketplace, Connect, Containers, FOCUS, CORA, Pricing Change Analysis, Media Services Insights)
+- Validates additional dashboards (Trends, DataTransfer, Marketplace, Connect, Containers, FOCUS, CORA, Media Services Insights, Pricing Change Analysis)
 - Runs BATS test suite for comprehensive validation
 
 ### 5. Resource Cleanup
@@ -56,18 +56,16 @@ This testing framework provides comprehensive validation for CID Terraform deplo
 
 ### Dashboard Configuration
 
-`tf-test-local-run.sh` reads the dashboard defaults from `user-config.tf` and writes them to `terraform.tfvars`. The dashboard checks (`check_dashboards.sh`) read `terraform.tfvars` when it sets `dashboards`, and fall back to `user-config.tf` otherwise:
+The test automatically extracts dashboard settings from `user-config.tf` (or falls back to `terraform.tfvars`):
 
 - **Foundational**: CUDOS v5, Cost Intelligence, KPI
-- **Additional**: Trends, DataTransfer, Marketplace, Connect, Containers, FOCUS, CORA, Pricing Change Analysis (`pca`), Media Services Insights (`msih`)
-
-`pca` and `msih` default to `no`, so the local run only deploys them if you set them to `"yes"` in `user-config.tf`. The CI workflow enables them.
+- **Additional**: Trends, DataTransfer, Marketplace, Connect, Containers, FOCUS, CORA, Media Services Insights, Pricing Change Analysis
 
 ## Prerequisites
 
 ### Required Tools
 - **AWS CLI** - Configured with appropriate credentials
-- **Terraform** >= 1.5.0
+- **Terraform** >= 1.0.0
 - **BATS** - Bash Automated Testing System
 - **jq** - JSON processor for parsing AWS responses
 - **Python 3.x** - For lambda layer building

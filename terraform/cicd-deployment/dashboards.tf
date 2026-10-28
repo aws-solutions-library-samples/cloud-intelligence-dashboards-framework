@@ -117,18 +117,7 @@ module "cora_dashboard" {
   depends_on = [module.focus_dashboard]
 }
 
-# 8. Pricing Change Analysis Dashboard - Public pricing changes and their cost impact
-module "pca_dashboard" {
-  source = "./modules/cloudformation_stack"
-  providers = {
-    aws = aws.datacollection
-  }
-
-  config     = local.additional_dashboards.pca
-  depends_on = [module.cora_dashboard]
-}
-
-# 9. Media Services Insights Dashboard - AWS Elemental media services cost and reservations
+# 8. Media Services Insights Dashboard - AWS Elemental media services cost and reservations
 module "msih_dashboard" {
   source = "./modules/cloudformation_stack"
   providers = {
@@ -136,17 +125,17 @@ module "msih_dashboard" {
   }
 
   config     = local.additional_dashboards.msih
-  depends_on = [module.pca_dashboard]
+  depends_on = [module.cora_dashboard]
 }
 
-# Warn at plan time when Pricing Change Analysis is enabled with a CID version
-# whose Lambda layer cannot build the CUR 2.0 proxy view it depends on.
-check "pca_minimum_cid_cfn_version" {
-  assert {
-    condition = (
-      var.dashboards.pca != "yes" ||
-      coalesce(local.cid_cfn_version_number, local.pca_min_cid_cfn_version_number) >= local.pca_min_cid_cfn_version_number
-    )
-    error_message = "Pricing Change Analysis (dashboards.pca) requires cid_cfn_version ${local.pca_min_cid_cfn_version} or later, but cid_cfn_version is '${var.global_values.cid_cfn_version}'. The Pricing-Change-Analysis-Dashboard stack will fail with older versions."
+# 9. Pricing Change Analysis Dashboard - Public pricing changes and their cost impact
+# Deployed last so a failure cannot block other dashboards. Skipped when cid_cfn_version < 4.4.15 (see locals.tf).
+module "pca_dashboard" {
+  source = "./modules/cloudformation_stack"
+  providers = {
+    aws = aws.datacollection
   }
+
+  config     = local.additional_dashboards.pca
+  depends_on = [module.msih_dashboard]
 }

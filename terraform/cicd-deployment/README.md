@@ -14,7 +14,7 @@ This architecture follows AWS best practices by separating the Payer account (So
 
 ## Prerequisites
 
-* Terraform >= 1.5
+* Terraform >= 1.0
 * Access to deploy resources in both accounts:
   * **Payer account**: Permissions to create IAM roles, S3 buckets, and access billing data
   * **Data Collection account**: Permissions to create CloudFormation stacks, S3 buckets, and manage QuickSight
@@ -70,8 +70,8 @@ dashboards = {
   containers   = "yes"  # SCAD Containers Cost Allocation
   cora         = "yes"  # CORA Dashboard
   focus        = "yes"  # FOCUS Dashboard
-  pca          = "no"   # Pricing Change Analysis (optional, requires cid_cfn_version >= 4.4.15)
-  msih         = "no"   # Media Services Insights (optional)
+  msih         = "yes"  # Media Services Insights
+  pca          = "yes"  # Pricing Change Analysis (requires cid_cfn_version >= 4.4.15)
 }
 ```
 
@@ -104,7 +104,7 @@ terraform {
 #### Create `providers.tf`
 ```hcl
 terraform {
-  required_version = ">= 1.5.0"
+  required_version = ">= 1.0.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -136,7 +136,6 @@ provider "aws" {
 - **`dashboards.tf`** - 🏗️ **Don't edit** - Resource definitions
 - **`locals.tf`** - 🏗️ **Don't edit** - Internal logic and configurations
 - **`outputs.tf`** - 📊 **Don't edit** - Output definitions
-- **`versions.tf`** - 🏗️ **Don't edit** - Minimum Terraform version
 - **`backend.tf`** - 💾 **CREATE THIS** - Backend configuration
 - **`providers.tf`** - 🔧 **CREATE THIS** - Provider configurations
 
@@ -181,10 +180,10 @@ These require a foundational dashboard to be deployed first and use the same CUR
 | Containers | `containers` | yes | SCAD Containers Cost Allocation |
 | CORA | `cora` | yes | CORA Dashboard |
 | FOCUS | `focus` | yes | FOCUS Dashboard |
-| Pricing Change Analysis | `pca` | no | Public pricing changes and their cost impact. Requires `cid_cfn_version` 4.4.15 or later |
-| Media Services Insights | `msih` | no | AWS Elemental media services cost, usage and reservations |
+| Media Services Insights | `msih` | yes | AWS Elemental media services cost, usage and reservations |
+| Pricing Change Analysis | `pca` | yes | Public pricing changes and their cost impact |
 
-`pca` and `msih` are optional: you can leave them out of `dashboards`, and they default to `no`. Both read CUR 2.0 data from the Data Exports stack, so no extra data collection is needed. They only show data if the payer has matching usage: Pricing Change Analysis looks at the last 24 months for SKUs whose public price changed, and Media Services Insights needs AWS Elemental usage.
+Pricing Change Analysis needs `cid_cfn_version` 4.4.15 or later. With an older version the module skips it, deploys the other dashboards, and creates it on the first apply after you upgrade. Media Services Insights only shows data if the payer has AWS Elemental usage, and Pricing Change Analysis only shows SKUs whose public price changed in the last 24 months.
 
 ## Advanced Configuration
 
@@ -238,7 +237,7 @@ After successful deployment, the module provides the following outputs:
 | `cid_dataexports_source_outputs` | Outputs from source stack |
 | `cloud_intelligence_dashboards_outputs` | QuickSight dashboard outputs |
 | `dashboard_summary` | Summary of all deployed dashboards (foundational and additional) |
-| `additional_dashboards_stacks` | Additional dashboard CloudFormation stacks (trends, datatransfer, marketplace, connect, containers, focus, cora, pca, msih) |
+| `additional_dashboards_stacks` | Additional dashboard CloudFormation stacks (trends, datatransfer, marketplace, connect, containers, focus, cora, msih, pca) |
 
 Access the dashboard URLs from the outputs to view your dashboards in QuickSight.
 
@@ -296,8 +295,8 @@ If you're upgrading from the previous non-modular Terraform configuration, pleas
      containers   = "no"   # Based on your previous setup or desired to deploy
      cora         = "no"   # Based on your previous setup or desired to deploy
      focus        = "no"   # Based on your previous setup or desired to deploy
-     pca          = "no"   # Optional, defaults to "no"
-     msih         = "no"   # Optional, defaults to "no"
+     msih         = "no"   # Based on your previous setup or desired to deploy
+     pca          = "no"   # Based on your previous setup or desired to deploy
    }
    ```
 

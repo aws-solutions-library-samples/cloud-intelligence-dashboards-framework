@@ -208,20 +208,6 @@ locals {
       dashboard_id = "cora"
       dataset_name = "cora_view"
     }
-    pca = {
-      enabled      = var.dashboards.pca == "yes"
-      stack_name   = "Pricing-Change-Analysis-Dashboard"
-      template_url = local.template_urls.cid_plugin
-      capabilities = local.common_capabilities
-      parameters   = { DashboardId = "pricing-change-analysis" }
-      timeouts     = local.default_timeouts
-      tags = merge(local.common_tags, {
-        DashboardType = "Additional"
-        DashboardId   = "pricing-change-analysis"
-      })
-      dashboard_id = "pricing-change-analysis"
-      dataset_name = "pricing_changes"
-    }
     msih = {
       enabled      = var.dashboards.msih == "yes"
       stack_name   = "Media-Services-Insights-Dashboard"
@@ -236,14 +222,29 @@ locals {
       dashboard_id = "media-services-insights"
       dataset_name = "msih_view"
     }
+    pca = {
+      enabled      = var.dashboards.pca == "yes" && local.pca_supported
+      stack_name   = "Pricing-Change-Analysis-Dashboard"
+      template_url = local.template_urls.cid_plugin
+      capabilities = local.common_capabilities
+      parameters   = { DashboardId = "pricing-change-analysis" }
+      timeouts     = local.default_timeouts
+      tags = merge(local.common_tags, {
+        DashboardType = "Additional"
+        DashboardId   = "pricing-change-analysis"
+      })
+      dashboard_id = "pricing-change-analysis"
+      dataset_name = "pricing_changes"
+    }
   }
 
   enabled_additional_dashboards = {
     for k, v in local.additional_dashboards : k => v if v.enabled
   }
 
-  # CID CloudFormation version as a comparable number (major * 1000000 + minor * 1000 + patch).
-  # null when cid_cfn_version is not in X.Y.Z form.
+  # Pricing Change Analysis needs the CUR 2.0 proxy fix from cid 4.4.15 (the Lambda layer
+  # version follows cid_cfn_version), so it is skipped on older versions instead of failing.
+  # Versions compare as major * 1000000 + minor * 1000 + patch; an unparsable version counts as supported.
   cid_cfn_version_number = try(
     tonumber(split(".", var.global_values.cid_cfn_version)[0]) * 1000000 +
     tonumber(split(".", var.global_values.cid_cfn_version)[1]) * 1000 +
@@ -251,10 +252,7 @@ locals {
     null
   )
 
-  # Pricing Change Analysis reads legacy CUR columns through the CUR 2.0 proxy view,
-  # which works from cid 4.4.15 (the Lambda layer version follows cid_cfn_version).
-  pca_min_cid_cfn_version        = "4.4.15"
-  pca_min_cid_cfn_version_number = 4004015
+  pca_supported = coalesce(local.cid_cfn_version_number, 4004015) >= 4004015
 
   # Common tags for all resources
   common_tags = {

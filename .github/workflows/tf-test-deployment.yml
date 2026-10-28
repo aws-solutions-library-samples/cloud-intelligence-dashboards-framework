@@ -61,22 +61,6 @@ jobs:
             data_export_version    = "${{ steps.versions.outputs.data_export_version }}"
             environment            = "dev"
           }
-
-          # Deploy every dashboard, including the optional ones that default to "no"
-          dashboards = {
-            cudos_v5          = "yes"
-            cost_intelligence = "yes"
-            kpi               = "yes"
-            trends            = "yes"
-            datatransfer      = "yes"
-            marketplace       = "yes"
-            connect           = "yes"
-            containers        = "yes"
-            focus             = "yes"
-            cora              = "yes"
-            pca               = "yes"
-            msih              = "yes"
-          }
           EOF
 
       - name: Configure AWS Credentials
@@ -137,7 +121,7 @@ jobs:
           # Foundational stacks
           FOUNDATIONAL_STACKS=("CID-DataExports-Destination" "Cloud-Intelligence-Dashboards")
           # Additional CUR-based dashboard stacks
-          ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Dashboard" "FOCUS-Dashboard" "CORA-Dashboard" "Pricing-Change-Analysis-Dashboard" "Media-Services-Insights-Dashboard")
+          ADDITIONAL_STACKS=("Trends-Dashboard" "DataTransfer-Cost-Analysis-Dashboard" "AWS-Marketplace-SPG-Dashboard" "Amazon-Connect-Cost-Insight-Dashboard" "SCAD-Containers-Dashboard" "FOCUS-Dashboard" "CORA-Dashboard" "Media-Services-Insights-Dashboard" "Pricing-Change-Analysis-Dashboard")
           # Other optional stacks
           OTHER_STACKS=("CID-DataExports-Source" "CID-DataCollection" "CID-OptimizationDataCollection")
           # All stacks to check

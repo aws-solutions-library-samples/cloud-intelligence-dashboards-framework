@@ -139,8 +139,8 @@ dashboards = {
   containers   = \"${CONTAINERS_DASH}\"
   focus        = \"${FOCUS_DASH}\"
   cora         = \"${CORA_DASH}\"
-  pca          = \"${PCA_DASH:-no}\"
-  msih         = \"${MSIH_DASH:-no}\"
+  msih         = \"${MSIH_DASH}\"
+  pca          = \"${PCA_DASH}\"
 }
 " | tee $PROJECT_ROOT/terraform/cicd-deployment/terraform.tfvars
 
