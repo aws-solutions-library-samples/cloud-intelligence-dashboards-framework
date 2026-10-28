@@ -9,6 +9,7 @@ Before you create or change anything, read the files below that apply to your ta
 | File | Read when |
 |---|---|
 | [dashboard-standards.md](dashboard-standards.md) | Creating or reviewing dashboard resource files (`dashboards/**/*.yaml`): views, datasets, `dependsOn`, placeholders, account names (`account_map`), prerequisite checks, metadata |
+| [release-readiness.md](release-readiness.md) | Preparing or reviewing a dashboard release: account-specific or hardcoded content, spelling, duplicate fields, version consistency, changelog and RSS |
 | [usage-type-groups.md](usage-type-groups.md) | Creating, reviewing or updating `* Usage Type Group` / `Sub Group` calculated fields: checking coverage against the AWS Price List bulk files, pricing-page naming, match order, dependents |
 
 ## Feature specs (read only when working on that feature)
