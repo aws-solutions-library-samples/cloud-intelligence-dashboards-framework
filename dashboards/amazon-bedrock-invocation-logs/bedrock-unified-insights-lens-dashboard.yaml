@@ -8,1655 +8,847 @@ dashboards:
     category: Custom
     theme: MIDNIGHT
     version: v1.0.0
-    data: |-
-      AnalysisDefaults:
-        DefaultNewSheetConfiguration:
-          InteractiveLayoutConfiguration:
-            Grid:
-              CanvasSizeOptions:
-                ScreenCanvasSizeOptions:
-                  OptimizedViewPortWidth: 1600px
-                  ResizeOption: FIXED
-          SheetContentType: INTERACTIVE
-      CalculatedFields: []
-      DataSetIdentifierDeclarations:
-      - DataSetArn: arn:aws:quicksight:::dataset/3c8cae3b-252e-4639-9f18-c03ebf8113a7
-        Identifier: bedrock_invocations_view
-      FilterGroups:
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: filter_group_id_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2_d0b1cf09-9590-4e28-b198-b3a1af09dc7d
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: region
-              DataSetIdentifier: bedrock_invocations_view
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            DefaultFilterControlConfiguration:
-              ControlOptions:
-                DefaultDropdownOptions:
-                  DisplayOptions:
-                    SelectAllOptions:
-                      Visibility: VISIBLE
-                    TitleOptions:
-                      FontConfiguration:
-                        FontSize:
-                          Relative: MEDIUM
-                      Visibility: VISIBLE
-                  Type: MULTI_SELECT
-              Title: Region
-            FilterId: list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
-        ScopeConfiguration:
-          AllSheets: {}
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: filter_group_id_list_filter_id_2e820c31-56ab-4f8f-b13c-244eeba5c127_a2038420-fab9-4cd0-8270-0cacd9cc0f83
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: operation
-              DataSetIdentifier: bedrock_invocations_view
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            DefaultFilterControlConfiguration:
-              ControlOptions:
-                DefaultDropdownOptions:
-                  DisplayOptions:
-                    SelectAllOptions:
-                      Visibility: VISIBLE
-                    TitleOptions:
-                      FontConfiguration:
-                        FontSize:
-                          Relative: MEDIUM
-                      Visibility: VISIBLE
-                  Type: MULTI_SELECT
-              Title: operation equals
-            FilterId: list_filter_id_2e820c31-56ab-4f8f-b13c-244eeba5c127
-        ScopeConfiguration:
-          AllSheets: {}
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: filter_group_id_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1_f61a58c3-a34b-47ba-bc9d-3b84090e2ce8
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: modelid
-              DataSetIdentifier: bedrock_invocations_view
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            DefaultFilterControlConfiguration:
-              ControlOptions:
-                DefaultDropdownOptions:
-                  DisplayOptions:
-                    SelectAllOptions:
-                      Visibility: VISIBLE
-                    TitleOptions:
-                      FontConfiguration:
-                        FontSize:
-                          Relative: MEDIUM
-                      Visibility: VISIBLE
-                  Type: MULTI_SELECT
-              Title: Model
-            FilterId: list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
-        ScopeConfiguration:
-          AllSheets: {}
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: b56c6d56-8ccc-44f2-a030-c904f6988c25
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: account_name
-              DataSetIdentifier: bedrock_invocations_view
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            FilterId: c5bc60dd-9d7d-456d-8aa5-5596002e9276
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 9130cf63-3b35-497a-9266-34127c3a621b
-              VisualIds:
-              - de5714a9-504b-47d6-83cb-7f93fc4b2b80
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: 5ab5fa0e-9853-4681-ac39-91e54ada55ef
-        Filters:
-        - TimeRangeFilter:
-            Column:
-              ColumnName: timestamp
-              DataSetIdentifier: bedrock_invocations_view
-            FilterId: 918caee8-a6f1-4ecd-887b-e1050b97ee76
-            NullOption: NON_NULLS_ONLY
-            TimeGranularity: DAY
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 9130cf63-3b35-497a-9266-34127c3a621b
-              VisualIds:
-              - 0fe5b93b-22ab-493b-9083-9a79d57c2c87
-        Status: ENABLED
-      - CrossDataset: SINGLE_DATASET
-        FilterGroupId: c1746751-b84a-4d9f-9b73-dc50ad82115f
-        Filters:
-        - CategoryFilter:
-            Column:
-              ColumnName: identity
-              DataSetIdentifier: bedrock_invocations_view
-            Configuration:
-              FilterListConfiguration:
-                MatchOperator: CONTAINS
-                NullOption: NON_NULLS_ONLY
-                SelectAllOptions: FILTER_ALL_VALUES
-            FilterId: d6089e36-c850-4bbb-a2b6-3f3a2d734675
-        ScopeConfiguration:
-          SelectedSheets:
-            SheetVisualScopingConfigurations:
-            - Scope: SELECTED_VISUALS
-              SheetId: 9130cf63-3b35-497a-9266-34127c3a621b
-              VisualIds:
-              - 0fe5b93b-22ab-493b-9083-9a79d57c2c87
-        Status: ENABLED
-      Options: {}
-      ParameterDeclarations: []
-      Sheets:
-      - ContentType: INTERACTIVE
-        Description: Executive-level KPIs, temporal trends, and categorical breakdowns of
-          Bedrock invocations across models, users, accounts, regions, and stop reasons.
-        FilterControls:
-        - CrossSheet:
-            FilterControlId: control_id_sheet-885725c7_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
-            SourceFilterId: list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
-        - CrossSheet:
-            FilterControlId: control_id_sheet-885725c7_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
-            SourceFilterId: list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
-        - DateTimePicker:
-            DisplayOptions:
-              DateIconVisibility: VISIBLE
-              DateTimeFormat: YYYY/MM/DD HH:mm:ss
-              HelperTextVisibility: VISIBLE
-              InfoIconLabelOptions:
-                Visibility: HIDDEN
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            FilterControlId: 515987a1-93a4-4029-aabf-3f777f140d3a
-            SourceFilterId: 918caee8-a6f1-4ecd-887b-e1050b97ee76
-            Title: Date Range
-            Type: DATE_RANGE
-        - Dropdown:
-            DisplayOptions:
-              InfoIconLabelOptions:
-                Visibility: HIDDEN
-              SelectAllOptions:
-                Visibility: VISIBLE
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            FilterControlId: 52ce46f5-9e45-4cc0-9cec-789b6cd5734f
-            SourceFilterId: c5bc60dd-9d7d-456d-8aa5-5596002e9276
-            Title: Account Name
-            Type: MULTI_SELECT
-        - Dropdown:
-            DisplayOptions:
-              InfoIconLabelOptions:
-                Visibility: HIDDEN
-              SelectAllOptions:
-                Visibility: VISIBLE
-              TitleOptions:
-                FontConfiguration:
-                  FontSize:
-                    Relative: MEDIUM
-                Visibility: VISIBLE
-            FilterControlId: 388a4461-a5a5-4e66-ba3c-e78f2bdbadf0
-            SourceFilterId: d6089e36-c850-4bbb-a2b6-3f3a2d734675
-            Title: Identity
-            Type: MULTI_SELECT
-        Layouts:
-        - Configuration:
-            FreeFormLayout:
-              CanvasSizeOptions:
-                ScreenCanvasSizeOptions:
-                  OptimizedViewPortWidth: 1600px
-              Elements:
-              - ElementId: 711e4eb3-3ffe-43bc-ae4a-abd75dcb3874
-                ElementType: VISUAL
-                Height: 494px
-                Visibility: VISIBLE
-                Width: 1594px
-                XAxisLocation: 6px
-                YAxisLocation: 2829px
-              - ElementId: a79b635f-f866-4acf-b040-32e83b3afe46
-                ElementType: VISUAL
-                Height: 444px
-                Visibility: VISIBLE
-                Width: 1061px
-                XAxisLocation: 8px
-                YAxisLocation: 1929px
-              - ElementId: b0b51166-97b4-4c57-9565-a797fec6517a
-                ElementType: VISUAL
-                Height: 444px
-                Visibility: VISIBLE
-                Width: 794px
-                XAxisLocation: 11px
-                YAxisLocation: 567px
-              - ElementId: a4db636c-8ec4-49e0-ba93-7886da16d6f2
-                ElementType: VISUAL
-                Height: 444px
-                Visibility: VISIBLE
-                Width: 794px
-                XAxisLocation: 789px
-                YAxisLocation: 567px
-              - ElementId: fe5001a3-b30a-4ba1-92b1-d85e251e8ad9
-                ElementType: VISUAL
-                Height: 444px
-                Visibility: VISIBLE
-                Width: 794px
-                XAxisLocation: 11px
-                YAxisLocation: 1017px
-              - ElementId: 655cc2d8-ef7f-48c2-bc25-e6708a026fe9
-                ElementType: VISUAL
-                Height: 444px
-                Visibility: VISIBLE
-                Width: 794px
-                XAxisLocation: 789px
-                YAxisLocation: 1017px
-              - ElementId: cb053dd6-70ad-45f3-b781-c845c55f165f
-                ElementType: VISUAL
-                Height: 444px
-                Visibility: VISIBLE
-                Width: 794px
-                XAxisLocation: 11px
-                YAxisLocation: 1467px
-              - ElementId: 4406e1f6-d59a-4274-ba78-0a03e3cdccdf
-                ElementType: VISUAL
-                Height: 444px
-                Visibility: VISIBLE
-                Width: 794px
-                XAxisLocation: 789px
-                YAxisLocation: 1467px
-              - ElementId: 697ebc8c-05bb-4f46-beb7-10c96de25ec6
-                ElementType: VISUAL
-                Height: 444px
-                Visibility: VISIBLE
-                Width: 794px
-                XAxisLocation: 8px
-                YAxisLocation: 2379px
-              - ElementId: bb031b39-f746-4e4a-aab0-a7adfc16d1af
-                ElementType: VISUAL
-                Height: 444px
-                Visibility: VISIBLE
-                Width: 794px
-                XAxisLocation: 797px
-                YAxisLocation: 2379px
-              - ElementId: 0dc2f9b6-c63d-42c3-83d8-78d7faee5da2
-                ElementType: VISUAL
-                Height: 444px
-                Visibility: VISIBLE
-                Width: 527px
-                XAxisLocation: 1064px
-                YAxisLocation: 1929px
-              - ElementId: 9fb6d20a-8bef-40b8-80b2-0f05628ce3a6
-                ElementType: VISUAL
-                Height: 274px
-                Visibility: VISIBLE
-                Width: 527px
-                XAxisLocation: 540px
-                YAxisLocation: 6px
-              - ElementId: 60a33b9c-576e-4155-9760-ff7c38dbdb9f
-                ElementType: VISUAL
-                Height: 274px
-                Visibility: VISIBLE
-                Width: 527px
-                XAxisLocation: 1073px
-                YAxisLocation: 6px
-              - ElementId: 9e1f38e4-67ea-4e50-8bc4-5d847edfc17f
-                ElementType: VISUAL
-                Height: 274px
-                Visibility: VISIBLE
-                Width: 528px
-                XAxisLocation: 6px
-                YAxisLocation: 286px
-              - ElementId: de5714a9-504b-47d6-83cb-7f93fc4b2b80
-                ElementType: VISUAL
-                Height: 274px
-                Visibility: VISIBLE
-                Width: 527px
-                XAxisLocation: 540px
-                YAxisLocation: 286px
-              - ElementId: 26341a3d-c96e-43e1-ab85-58508945f5e7
-                ElementType: VISUAL
-                Height: 272px
-                Visibility: VISIBLE
-                Width: 528px
-                XAxisLocation: 1072px
-                YAxisLocation: 288px
-              - ElementId: e2edf7ad-849a-4f02-a1c2-b1bbc8b89d32
-                ElementType: VISUAL
-                Height: 576px
-                Visibility: VISIBLE
-                Width: 1440px
-                XAxisLocation: 0px
-                YAxisLocation: 3600px
-              - ElementId: 0fe5b93b-22ab-493b-9083-9a79d57c2c87
-                ElementType: VISUAL
-                Height: 274px
-                Visibility: VISIBLE
-                Width: 527px
-                XAxisLocation: 0px
-                YAxisLocation: 0px
-        Name: Usage Overview & Trends
-        SheetControlLayouts:
-        - Configuration:
-            GridLayout:
-              Elements:
-              - ColumnIndex: 0
-                ColumnSpan: 2
-                ElementId: 52ce46f5-9e45-4cc0-9cec-789b6cd5734f
-                ElementType: FILTER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 2
-                ColumnSpan: 2
-                ElementId: control_id_sheet-885725c7_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
-                ElementType: FILTER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 4
-                ColumnSpan: 2
-                ElementId: control_id_sheet-885725c7_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
-                ElementType: FILTER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 6
-                ColumnSpan: 2
-                ElementId: 388a4461-a5a5-4e66-ba3c-e78f2bdbadf0
-                ElementType: FILTER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 10
-                ColumnSpan: 2
-                ElementId: 515987a1-93a4-4029-aabf-3f777f140d3a
-                ElementType: FILTER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-        SheetId: 9130cf63-3b35-497a-9266-34127c3a621b
-        Title: Usage Overview & Trends
-        Visuals:
-        - KPIVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: 5444fc61-efd5-4410-8bbc-b9c74a785831
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              FieldWells:
-                TargetValues: []
-                TrendGroups: []
-                Values:
-                - CategoricalMeasureField:
-                    AggregationFunction: DISTINCT_COUNT
-                    Column:
-                      ColumnName: requestid
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: bedrock_i-requestid-d07db8.0.1790345517370
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Distinct count of  invocations</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <inline font-size="14px">
-                      <b>Total Bedrock Invocations</b>
-                    </inline>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Key performance indicator displaying total unique users
-              accessing Amazon Bedrock services based on distinct identity ARNs
-            VisualId: 0fe5b93b-22ab-493b-9083-9a79d57c2c87
-        - TableVisual:
-            Actions: []
-            ChartConfiguration:
-              FieldWells:
-                TableAggregatedFieldWells:
-                  GroupBy:
-                  - DateDimensionField:
-                      Column:
-                        ColumnName: timestamp
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_timestamp_field
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: prompt_preview
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_prompt_preview_count_measure9
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: response_preview
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: bedrock_i-response_-db09d2.11.1786365116825
-                  Values:
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: account_id
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_account_id_count_measure0
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: identity_arn
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_identity_arn_count_measure1
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: modelid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_modelid_count_measure2
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: operation
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_operation_count_measure3
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: region
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_region_count_measure4
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
-                      Column:
-                        ColumnName: input_token_count
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_input_token_count_count_measure5
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
-                      Column:
-                        ColumnName: output_token_count
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_output_token_count_count_measure6
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
-                      Column:
-                        ColumnName: usage_total_tokens
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_usage_total_tokens_count_measure7
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: stop_reason
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_stop_reason_count_measure8
-              SortConfiguration: {}
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Timestamped listing of model calls with token
-                  usage</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Bedrock Invocation Records Detail</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Table displaying individual Bedrock invocation records
-              with timestamps, models, operations, regions, token counts, and prompt previews
-            VisualId: e2edf7ad-849a-4f02-a1c2-b1bbc8b89d32
-        - KPIVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: 1e07550c-f77d-4748-8eb0-7310ef193974
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              FieldWells:
-                TargetValues: []
-                TrendGroups: []
-                Values:
-                - CategoricalMeasureField:
-                    AggregationFunction: DISTINCT_COUNT
-                    Column:
-                      ColumnName: identity_arn
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_c45b99ce_identity_arn_distinct_count_measure0
-                    FormatConfiguration:
-                      NumericFormatConfiguration:
-                        NumberDisplayFormatConfiguration:
-                          NullValueFormatConfiguration:
-                            NullString: 'null'
-                          NumberScale: AUTO
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Distinct count of identity ARNs invoking Bedrock</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Total Unique Bedrock Users</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Key performance indicator displaying total unique users
-              accessing Amazon Bedrock services based on distinct identity ARNs
-            VisualId: 9fb6d20a-8bef-40b8-80b2-0f05628ce3a6
-        - KPIVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: 66b735dc-34b5-4f76-8801-c17cc0bab98f
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              FieldWells:
-                TargetValues: []
-                TrendGroups: []
-                Values:
-                - CategoricalMeasureField:
-                    AggregationFunction: DISTINCT_COUNT
-                    Column:
-                      ColumnName: account_id
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_b75c6406_account_id_distinct_count_measure0
-                    FormatConfiguration:
-                      NumericFormatConfiguration:
-                        NumberDisplayFormatConfiguration:
-                          NullValueFormatConfiguration:
-                            NullString: 'null'
-                          NumberScale: AUTO
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Distinct account count using Bedrock services</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Total Unique Accounts</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Key performance indicator displaying total count of unique
-              accounts invoking Bedrock models
-            VisualId: 60a33b9c-576e-4155-9760-ff7c38dbdb9f
-        - KPIVisual:
-            Actions: []
-            ChartConfiguration:
-              FieldWells:
-                TargetValues: []
-                TrendGroups: []
-                Values:
-                - NumericalMeasureField:
-                    AggregationFunction:
-                      SimpleNumericalAggregation: SUM
-                    Column:
-                      ColumnName: input_token_count
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: bedrock_i-input_tok-08bb0b.0.1789133417126
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Cumulative input token usage across all model
-                  invocations</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Total Bedrock Input Tokens Consumed</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: KPI displaying total input tokens consumed by Bedrock
-              model invocations, indicating overall prompt volume
-            VisualId: 9e1f38e4-67ea-4e50-8bc4-5d847edfc17f
-        - KPIVisual:
-            Actions: []
-            ChartConfiguration:
-              FieldWells:
-                TargetValues: []
-                TrendGroups: []
-                Values:
-                - NumericalMeasureField:
-                    AggregationFunction:
-                      SimpleNumericalAggregation: SUM
-                    Column:
-                      ColumnName: output_token_count
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: bedrock_i-output_to-6fbdcb.0.1789133434164
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Cumulative output tokens across all Bedrock invocations</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Total Output Tokens Generated</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: KPI displaying the total sum of output tokens generated
-              by Bedrock model invocations across all requests
-            VisualId: de5714a9-504b-47d6-83cb-7f93fc4b2b80
-        - LineChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: f2d3a1b9-56c7-4017-9cde-895bcbd0260e
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: HIDDEN
-              FieldWells:
-                LineChartAggregatedFieldWells:
-                  Category:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: day
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: bedrock_i-day-0548de.1.1786444590947
-                  Colors: []
-                  Values:
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: requestid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_7cba1549_requestid_count_measure0
-              SortConfiguration:
-                CategoryItemsLimitConfiguration:
-                  OtherCategories: INCLUDE
-                CategorySort:
-                - FieldSort:
-                    Direction: DESC
-                    FieldId: visual_7cba1549_requestid_count_measure0
-                ColorItemsLimitConfiguration:
-                  OtherCategories: INCLUDE
-                SmallMultiplesLimitConfiguration:
-                  OtherCategories: INCLUDE
-              Tooltip:
-                FieldBasedTooltip:
-                  AggregationVisibility: HIDDEN
-                  TooltipFields:
-                  - FieldTooltipItem:
-                      FieldId: visual_7cba1549_requestid_count_measure0
-                      Visibility: VISIBLE
-                  - FieldTooltipItem:
-                      FieldId: bedrock_i-day-0548de.1.1786444590947
-                      Visibility: VISIBLE
-                  TooltipTitleType: PRIMARY_VALUE
-                SelectedTooltipType: DETAILED
-                TooltipVisibility: VISIBLE
-              Type: LINE
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Count of API requests across invocation timestamps</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Daily Bedrock Invocation Trend</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Line chart tracking daily Bedrock invocation counts over
-              time, revealing usage patterns and trends in API request volume
-            VisualId: b0b51166-97b4-4c57-9565-a797fec6517a
-        - LineChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: fc6d572d-2a54-43b1-9708-3b661e8bd85a
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: HIDDEN
-              FieldWells:
-                LineChartAggregatedFieldWells:
-                  Category:
-                  - DateDimensionField:
-                      Column:
-                        ColumnName: timestamp
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0a669f25_timestamp_field
-                      HierarchyId: 8207fa8e-0f2b-4118-b88d-9cb2f7229a95
-                  Colors: []
-                  Values:
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: SUM
-                      Column:
-                        ColumnName: usage_input_tokens
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0a669f25_usage_input_tokens_measure_0
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: SUM
-                      Column:
-                        ColumnName: usage_output_tokens
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0a669f25_usage_output_tokens_measure_1
-              PrimaryYAxisLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: usage_input_tokens
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_0a669f25_usage_input_tokens_measure_0
-                  CustomLabel: Token Count
-                - ApplyTo:
-                    Column:
-                      ColumnName: usage_output_tokens
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_0a669f25_usage_output_tokens_measure_1
-                  CustomLabel: Token Count
-              SortConfiguration:
-                CategoryItemsLimitConfiguration:
-                  OtherCategories: INCLUDE
-                ColorItemsLimitConfiguration:
-                  OtherCategories: INCLUDE
-                SmallMultiplesLimitConfiguration:
-                  OtherCategories: INCLUDE
-              Tooltip:
-                FieldBasedTooltip:
-                  AggregationVisibility: HIDDEN
-                  TooltipFields: []
-                  TooltipTitleType: PRIMARY_VALUE
-                SelectedTooltipType: DETAILED
-                TooltipVisibility: VISIBLE
-              Type: STACKED_AREA
-              XAxisLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: timestamp
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_0a669f25_timestamp_field
-                  CustomLabel: Date
-            ColumnHierarchies:
-            - DateTimeHierarchy:
-                DrillDownFilters: []
-                HierarchyId: 8207fa8e-0f2b-4118-b88d-9cb2f7229a95
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Total input and output tokens over time</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Daily Token Consumption Trends</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Line chart tracking total input and output token consumption
-              over time, revealing daily usage patterns and demand fluctuations
-            VisualId: a4db636c-8ec4-49e0-ba93-7886da16d6f2
-        - BarChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: bdb0e86d-564c-493e-b542-8976a88a2154
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              BarsArrangement: CLUSTERED
-              CategoryLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: modelid
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_134043e7_modelid_field
-                  CustomLabel: Invocation Count
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: VISIBLE
-              FieldWells:
-                BarChartAggregatedFieldWells:
-                  Category:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: modelid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_134043e7_modelid_field
-                  Colors: []
-                  Values:
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: requestid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_134043e7_requestid_count_measure0
-              Orientation: HORIZONTAL
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Ranking foundation models by request volume</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Model Invocations by Model ID</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Horizontal bar chart comparing invocation counts across
-              Bedrock models, revealing which foundation models drive the most usage
-            VisualId: fe5001a3-b30a-4ba1-92b1-d85e251e8ad9
-        - BarChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: 8972f16d-a0a4-4716-be8b-28657ed9172b
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              BarsArrangement: CLUSTERED
-              CategoryLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: modelid
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_ebf9da3e_modelid_field
-                  CustomLabel: Model ID
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: VISIBLE
-              FieldWells:
-                BarChartAggregatedFieldWells:
-                  Category:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: modelid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_ebf9da3e_modelid_field
-                  Colors: []
-                  Values:
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: SUM
-                      Column:
-                        ColumnName: usage_total_tokens
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_ebf9da3e_usage_total_tokens_measure_0
-              Orientation: HORIZONTAL
-              SortConfiguration: {}
-              ValueLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: usage_total_tokens
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_ebf9da3e_usage_total_tokens_measure_0
-                  CustomLabel: Total Tokens
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Bedrock models ranked by cumulative token usage</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Total Token Consumption by Model</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Horizontal bar chart comparing total token consumption
-              across Bedrock models, revealing which models drive highest usage volume
-            VisualId: 655cc2d8-ef7f-48c2-bc25-e6708a026fe9
-        - BarChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: f27fc0e8-8135-4b93-a4ce-738976e46ec2
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              BarsArrangement: CLUSTERED
-              CategoryLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: identity_arn
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_95673c6c_identity_arn_field
-                  CustomLabel: Invocations
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: VISIBLE
-              FieldWells:
-                BarChartAggregatedFieldWells:
-                  Category:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: identity_arn
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_95673c6c_identity_arn_field
-                  Colors: []
-                  Values:
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: requestid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_95673c6c_requestid_count_measure0
-              Orientation: HORIZONTAL
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Request volume ranked across Bedrock user identities</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>User Invocations by Identity</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Horizontal bar chart ranking users by total Bedrock invocation
-              requests, revealing highest-activity identities
-            VisualId: cb053dd6-70ad-45f3-b781-c845c55f165f
-        - BarChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: 5d57c673-e2ab-4af0-a9ff-31fd586db264
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              BarsArrangement: CLUSTERED
-              CategoryLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: identity_arn
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_4d9455d8_identity_arn_field
-                  CustomLabel: User
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: VISIBLE
-              FieldWells:
-                BarChartAggregatedFieldWells:
-                  Category:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: identity_arn
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_4d9455d8_identity_arn_field
-                  Colors: []
-                  Values:
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: SUM
-                      Column:
-                        ColumnName: usage_total_tokens
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_4d9455d8_usage_total_tokens_measure_0
-              Orientation: HORIZONTAL
-              SortConfiguration: {}
-              ValueLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: usage_total_tokens
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_4d9455d8_usage_total_tokens_measure_0
-                  CustomLabel: Total Tokens
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>User identity ranked by aggregate token usage</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Total Token Consumption by User</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Horizontal bar chart showing total token usage per user
-              identity, revealing which users consume the most Bedrock model resources
-            VisualId: 4406e1f6-d59a-4274-ba78-0a03e3cdccdf
-        - BarChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: a9cb20bb-08e9-4392-9570-e601230bf22a
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              BarsArrangement: CLUSTERED
-              CategoryLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: account_id
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_aa43a2f9_account_id_field
-                  CustomLabel: Account ID
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: VISIBLE
-              FieldWells:
-                BarChartAggregatedFieldWells:
-                  Category:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: account_id
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_aa43a2f9_account_id_field
-                  Colors: []
-                  Values:
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
-                      Column:
-                        ColumnName: usage_total_tokens
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_aa43a2f9_usage_total_tokens_count_measure0
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: requestid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_aa43a2f9_requestid_count_measure1
-              Orientation: HORIZONTAL
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Total tokens and request counts per account</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Account Usage by Tokens and Requests</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Horizontal bar chart ranking accounts by total token usage
-              and request counts, revealing highest consuming accounts
-            VisualId: a79b635f-f866-4acf-b040-32e83b3afe46
-        - PieChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: 5c84162e-9a81-4ba2-9fa4-b9b08a615514
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              DonutOptions:
-                ArcOptions:
-                  ArcThickness: MEDIUM
-              FieldWells:
-                PieChartAggregatedFieldWells:
-                  Category:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: stop_reason
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_9df8787c_stop_reason_field
-                  Values:
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: requestid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_9df8787c_requestid_count_measure0
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Distribution of Bedrock requests by termination
-                  cause</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Request Stop Reason Breakdown</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Pie chart showing proportion of Bedrock requests by stop
-              reason, revealing why model invocations terminated
-            VisualId: 0dc2f9b6-c63d-42c3-83d8-78d7faee5da2
-        - BarChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: 318dd773-b488-482f-83c5-969ed574cc9b
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              BarsArrangement: CLUSTERED
-              CategoryLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: region
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_bdbdb6ea_region_field
-                  CustomLabel: Region
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: VISIBLE
-              FieldWells:
-                BarChartAggregatedFieldWells:
-                  Category:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: region
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_bdbdb6ea_region_field
-                  Colors: []
-                  Values:
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: requestid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_bdbdb6ea_requestid_count_measure0
-              Orientation: VERTICAL
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Regional distribution of model request volumes</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Bedrock Invocations by AWS Region</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Bar chart comparing total Bedrock invocation counts across
-              AWS regions, revealing geographic usage distribution patterns
-            VisualId: 697ebc8c-05bb-4f46-beb7-10c96de25ec6
-        - BarChartVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: d05aaed0-3192-4941-bca8-e77951aa2f82
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              BarsArrangement: CLUSTERED
-              CategoryLabelOptions:
-                AxisLabelOptions:
-                - ApplyTo:
-                    Column:
-                      ColumnName: operation
-                      DataSetIdentifier: bedrock_invocations_view
-                    FieldId: visual_3a126fa0_operation_field
-                  CustomLabel: Operation
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: VISIBLE
-              FieldWells:
-                BarChartAggregatedFieldWells:
-                  Category:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: operation
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_3a126fa0_operation_field
-                  Colors: []
-                  Values:
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: requestid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_3a126fa0_requestid_count_measure0
-              Orientation: VERTICAL
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Request volume ranked across API operation types</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Bedrock Invocations by Operation</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Vertical bar chart showing total request count per Bedrock
-              operation, sorted descending to reveal most frequently invoked operations
-            VisualId: bb031b39-f746-4e4a-aab0-a7adfc16d1af
-        - HeatMapVisual:
-            Actions:
-            - ActionOperations:
-              - FilterOperation:
-                  SelectedFieldsConfiguration:
-                    SelectedFieldOptions: ALL_FIELDS
-                  TargetVisualsConfiguration:
-                    SameSheetTargetVisualConfiguration:
-                      TargetVisualOptions: ALL_VISUALS
-              CustomActionId: aaf6ebcb-9677-4627-b66d-0baeab41b00a
-              Name: Action 1
-              Status: ENABLED
-              Trigger: DATA_POINT_CLICK
-            ChartConfiguration:
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: VISIBLE
-              FieldWells:
-                HeatMapAggregatedFieldWells:
-                  Columns:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: month
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_ee5a6d50_month_field
-                  Rows:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: day
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_ee5a6d50_day_field
-                  Values:
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: requestid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_ee5a6d50_requestid_count_measure0
-              SortConfiguration: {}
-            ColumnHierarchies: []
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Count of Bedrock invocations across calendar
-                  days</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Daily Request Volume by Month</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Heat map showing request counts by day of month and month,
-              revealing daily usage patterns and peak activity periods
-            VisualId: 711e4eb3-3ffe-43bc-ae4a-abd75dcb3874
-        - PieChartVisual:
-            Actions: []
-            ChartConfiguration:
-              DataLabels:
-                Overlap: DISABLE_OVERLAP
-                Visibility: VISIBLE
-              DonutOptions:
-                ArcOptions:
-                  ArcThickness: MEDIUM
-              FieldWells:
-                PieChartAggregatedFieldWells:
-                  Category:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: region
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: bedrock_i-region-ec168e.0.1786444542154
-                  Values:
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: requestid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: bedrock_i-requestid-0138c6.1.1786444551712
-              SortConfiguration:
-                CategoryItemsLimit:
-                  OtherCategories: INCLUDE
-                CategorySort:
-                - FieldSort:
-                    Direction: DESC
-                    FieldId: bedrock_i-requestid-0138c6.1.1786444551712
-                SmallMultiplesLimitConfiguration:
-                  OtherCategories: INCLUDE
-              Tooltip:
-                FieldBasedTooltip:
-                  AggregationVisibility: HIDDEN
-                  TooltipFields:
-                  - FieldTooltipItem:
-                      FieldId: bedrock_i-region-ec168e.0.1786444542154
-                      Visibility: VISIBLE
-                  - FieldTooltipItem:
-                      FieldId: bedrock_i-requestid-0138c6.1.1786444551712
-                      Visibility: VISIBLE
-                  TooltipTitleType: PRIMARY_VALUE
-                SelectedTooltipType: DETAILED
-                TooltipVisibility: VISIBLE
-            ColumnHierarchies: []
-            Subtitle:
-              Visibility: VISIBLE
-            Title:
-              Visibility: VISIBLE
-            VisualId: 26341a3d-c96e-43e1-ab85-58508945f5e7
-      - ContentType: INTERACTIVE
-        Description: Transaction-level detail table of all Bedrock invocations including
-          prompts, responses, tokens, and stop reasons for investigation and audit.
-        FilterControls:
-        - CrossSheet:
-            FilterControlId: control_id_sheet-fb989833_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
-            SourceFilterId: list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
-        - CrossSheet:
-            FilterControlId: control_id_sheet-fb989833_list_filter_id_2e820c31-56ab-4f8f-b13c-244eeba5c127
-            SourceFilterId: list_filter_id_2e820c31-56ab-4f8f-b13c-244eeba5c127
-        - CrossSheet:
-            FilterControlId: control_id_sheet-fb989833_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
-            SourceFilterId: list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
-        Layouts:
-        - Configuration:
-            FreeFormLayout:
-              CanvasSizeOptions:
-                ScreenCanvasSizeOptions:
-                  OptimizedViewPortWidth: 1600px
-              Elements:
-              - ElementId: 7f6a6e7d-e160-4b10-96cc-e56f40ecd576
-                ElementType: VISUAL
-                Height: 608px
-                Visibility: VISIBLE
-                Width: 1232px
-                XAxisLocation: 0px
-                YAxisLocation: 0px
-              - ElementId: 43881b81-6c76-42fc-85a3-fca4234f20d0
-                ElementType: VISUAL
-                Height: 592px
-                Visibility: VISIBLE
-                Width: 1232px
-                XAxisLocation: 0px
-                YAxisLocation: 624px
-        Name: Raw Data Explorer
-        SheetControlLayouts:
-        - Configuration:
-            GridLayout:
-              Elements:
-              - ColumnIndex: 0
-                ColumnSpan: 4
-                ElementId: control_id_sheet-fb989833_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2
-                ElementType: FILTER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 4
-                ColumnSpan: 4
-                ElementId: control_id_sheet-fb989833_list_filter_id_2e820c31-56ab-4f8f-b13c-244eeba5c127
-                ElementType: FILTER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-              - ColumnIndex: 8
-                ColumnSpan: 4
-                ElementId: control_id_sheet-fb989833_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1
-                ElementType: FILTER_CONTROL
-                RowIndex: 0
-                RowSpan: 1
-        SheetId: 8d82b114-3bb1-4574-bdee-c91ebeb99abe
-        Title: Raw Data Explorer
-        Visuals:
-        - TableVisual:
-            Actions: []
-            ChartConfiguration:
-              FieldWells:
-                TableAggregatedFieldWells:
-                  GroupBy:
-                  - DateDimensionField:
-                      Column:
-                        ColumnName: timestamp
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_timestamp_field
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: prompt_preview
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_prompt_preview_count_measure9
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: response_preview
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: bedrock_i-response_-db09d2.11.1786365116825
-                  Values:
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: account_id
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_account_id_count_measure0
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: identity_arn
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_identity_arn_count_measure1
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: modelid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_modelid_count_measure2
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: operation
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_operation_count_measure3
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: region
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_region_count_measure4
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
-                      Column:
-                        ColumnName: input_token_count
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_input_token_count_count_measure5
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
-                      Column:
-                        ColumnName: output_token_count
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_output_token_count_count_measure6
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: COUNT
-                      Column:
-                        ColumnName: usage_total_tokens
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_usage_total_tokens_count_measure7
-                  - CategoricalMeasureField:
-                      AggregationFunction: COUNT
-                      Column:
-                        ColumnName: stop_reason
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_0c29e820_stop_reason_count_measure8
-              SortConfiguration: {}
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Timestamped listing of model calls with token
-                  usage</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Bedrock Invocation Records Detail</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Table displaying individual Bedrock invocation records
-              with timestamps, models, operations, regions, token counts, and prompt previews
-            VisualId: 7f6a6e7d-e160-4b10-96cc-e56f40ecd576
-        - TableVisual:
-            Actions: []
-            ChartConfiguration:
-              FieldWells:
-                TableAggregatedFieldWells:
-                  GroupBy:
-                  - CategoricalDimensionField:
-                      Column:
-                        ColumnName: requestid
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_1eab78ce_requestid_field
-                  Values:
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: SUM
-                      Column:
-                        ColumnName: input_token_count
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_1eab78ce_input_token_count_measure_0
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: SUM
-                      Column:
-                        ColumnName: output_token_count
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_1eab78ce_output_token_count_measure_1
-                  - NumericalMeasureField:
-                      AggregationFunction:
-                        SimpleNumericalAggregation: SUM
-                      Column:
-                        ColumnName: usage_total_tokens
-                        DataSetIdentifier: bedrock_invocations_view
-                      FieldId: visual_1eab78ce_usage_total_tokens_measure_2
-              SortConfiguration: {}
-            Subtitle:
-              FormatText:
-                RichText: <visual-subtitle>Input, output, and total tokens per request ID</visual-subtitle>
-              Visibility: VISIBLE
-            Title:
-              FormatText:
-                RichText: |-
-                  <visual-title>
-                    <b>Total Token Usage by Request</b>
-                  </visual-title>
-              Visibility: VISIBLE
-            VisualContentAltText: Table listing request IDs with total input, output, and
-              combined token counts, revealing highest token-consuming API calls
-            VisualId: 43881b81-6c76-42fc-85a3-fca4234f20d0
+    data: "AnalysisDefaults:\n  DefaultNewSheetConfiguration:\n    InteractiveLayoutConfiguration:\n\
+      \      Grid:\n        CanvasSizeOptions:\n          ScreenCanvasSizeOptions:\n\
+      \            OptimizedViewPortWidth: 1600px\n            ResizeOption: FIXED\n\
+      \    SheetContentType: INTERACTIVE\nCalculatedFields: []\nDataSetIdentifierDeclarations:\n\
+      - DataSetArn: arn:aws:quicksight:::dataset/3c8cae3b-252e-4639-9f18-c03ebf8113a7\n\
+      \  Identifier: bedrock_invocations_view\nFilterGroups:\n- CrossDataset: SINGLE_DATASET\n\
+      \  FilterGroupId: filter_group_id_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2_d0b1cf09-9590-4e28-b198-b3a1af09dc7d\n\
+      \  Filters:\n  - CategoryFilter:\n      Column:\n        ColumnName: region\n\
+      \        DataSetIdentifier: bedrock_invocations_view\n      Configuration:\n\
+      \        FilterListConfiguration:\n          MatchOperator: CONTAINS\n     \
+      \     NullOption: NON_NULLS_ONLY\n          SelectAllOptions: FILTER_ALL_VALUES\n\
+      \      DefaultFilterControlConfiguration:\n        ControlOptions:\n       \
+      \   DefaultDropdownOptions:\n            DisplayOptions:\n              SelectAllOptions:\n\
+      \                Visibility: VISIBLE\n              TitleOptions:\n        \
+      \        FontConfiguration:\n                  FontSize:\n                 \
+      \   Relative: MEDIUM\n                Visibility: VISIBLE\n            Type:\
+      \ MULTI_SELECT\n        Title: Region\n      FilterId: list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2\n\
+      \  ScopeConfiguration:\n    AllSheets: {}\n  Status: ENABLED\n- CrossDataset:\
+      \ SINGLE_DATASET\n  FilterGroupId: filter_group_id_list_filter_id_2e820c31-56ab-4f8f-b13c-244eeba5c127_a2038420-fab9-4cd0-8270-0cacd9cc0f83\n\
+      \  Filters:\n  - CategoryFilter:\n      Column:\n        ColumnName: operation\n\
+      \        DataSetIdentifier: bedrock_invocations_view\n      Configuration:\n\
+      \        FilterListConfiguration:\n          MatchOperator: CONTAINS\n     \
+      \     NullOption: NON_NULLS_ONLY\n          SelectAllOptions: FILTER_ALL_VALUES\n\
+      \      DefaultFilterControlConfiguration:\n        ControlOptions:\n       \
+      \   DefaultDropdownOptions:\n            DisplayOptions:\n              SelectAllOptions:\n\
+      \                Visibility: VISIBLE\n              TitleOptions:\n        \
+      \        FontConfiguration:\n                  FontSize:\n                 \
+      \   Relative: MEDIUM\n                Visibility: VISIBLE\n            Type:\
+      \ MULTI_SELECT\n        Title: operation equals\n      FilterId: list_filter_id_2e820c31-56ab-4f8f-b13c-244eeba5c127\n\
+      \  ScopeConfiguration:\n    AllSheets: {}\n  Status: ENABLED\n- CrossDataset:\
+      \ SINGLE_DATASET\n  FilterGroupId: filter_group_id_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1_f61a58c3-a34b-47ba-bc9d-3b84090e2ce8\n\
+      \  Filters:\n  - CategoryFilter:\n      Column:\n        ColumnName: modelid\n\
+      \        DataSetIdentifier: bedrock_invocations_view\n      Configuration:\n\
+      \        FilterListConfiguration:\n          MatchOperator: CONTAINS\n     \
+      \     NullOption: NON_NULLS_ONLY\n          SelectAllOptions: FILTER_ALL_VALUES\n\
+      \      DefaultFilterControlConfiguration:\n        ControlOptions:\n       \
+      \   DefaultDropdownOptions:\n            DisplayOptions:\n              SelectAllOptions:\n\
+      \                Visibility: VISIBLE\n              TitleOptions:\n        \
+      \        FontConfiguration:\n                  FontSize:\n                 \
+      \   Relative: MEDIUM\n                Visibility: VISIBLE\n            Type:\
+      \ MULTI_SELECT\n        Title: Model\n      FilterId: list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1\n\
+      \  ScopeConfiguration:\n    AllSheets: {}\n  Status: ENABLED\n- CrossDataset:\
+      \ SINGLE_DATASET\n  FilterGroupId: b56c6d56-8ccc-44f2-a030-c904f6988c25\n  Filters:\n\
+      \  - CategoryFilter:\n      Column:\n        ColumnName: account_name\n    \
+      \    DataSetIdentifier: bedrock_invocations_view\n      Configuration:\n   \
+      \     FilterListConfiguration:\n          MatchOperator: CONTAINS\n        \
+      \  NullOption: NON_NULLS_ONLY\n          SelectAllOptions: FILTER_ALL_VALUES\n\
+      \      FilterId: c5bc60dd-9d7d-456d-8aa5-5596002e9276\n  ScopeConfiguration:\n\
+      \    SelectedSheets:\n      SheetVisualScopingConfigurations:\n      - Scope:\
+      \ SELECTED_VISUALS\n        SheetId: feef3194-2dcd-4b85-80a2-f88ea79550aa\n\
+      \        VisualIds:\n        - e2b4a453-7c9c-4fbe-99d2-b26059e4e41b\n  Status:\
+      \ ENABLED\n- CrossDataset: SINGLE_DATASET\n  FilterGroupId: 5ab5fa0e-9853-4681-ac39-91e54ada55ef\n\
+      \  Filters:\n  - TimeRangeFilter:\n      Column:\n        ColumnName: timestamp\n\
+      \        DataSetIdentifier: bedrock_invocations_view\n      DefaultFilterControlConfiguration:\n\
+      \        ControlOptions:\n          DefaultDateTimePickerOptions:\n        \
+      \    DisplayOptions:\n              DateIconVisibility: VISIBLE\n          \
+      \    DateTimeFormat: YYYY/MM/DD HH:mm:ss\n              HelperTextVisibility:\
+      \ VISIBLE\n              TitleOptions:\n                FontConfiguration:\n\
+      \                  FontSize:\n                    Relative: MEDIUM\n       \
+      \         Visibility: VISIBLE\n            Type: DATE_RANGE\n        Title:\
+      \ Date Range\n      FilterId: 918caee8-a6f1-4ecd-887b-e1050b97ee76\n      NullOption:\
+      \ NON_NULLS_ONLY\n      TimeGranularity: DAY\n  ScopeConfiguration:\n    AllSheets:\
+      \ {}\n  Status: ENABLED\n- CrossDataset: SINGLE_DATASET\n  FilterGroupId: c1746751-b84a-4d9f-9b73-dc50ad82115f\n\
+      \  Filters:\n  - CategoryFilter:\n      Column:\n        ColumnName: identity\n\
+      \        DataSetIdentifier: bedrock_invocations_view\n      Configuration:\n\
+      \        FilterListConfiguration:\n          MatchOperator: CONTAINS\n     \
+      \     NullOption: NON_NULLS_ONLY\n          SelectAllOptions: FILTER_ALL_VALUES\n\
+      \      DefaultFilterControlConfiguration:\n        ControlOptions:\n       \
+      \   DefaultDropdownOptions:\n            DisplayOptions:\n              SelectAllOptions:\n\
+      \                Visibility: VISIBLE\n              TitleOptions:\n        \
+      \        FontConfiguration:\n                  FontSize:\n                 \
+      \   Relative: MEDIUM\n                Visibility: VISIBLE\n            Type:\
+      \ MULTI_SELECT\n        Title: Identity\n      FilterId: d6089e36-c850-4bbb-a2b6-3f3a2d734675\n\
+      \  ScopeConfiguration:\n    AllSheets: {}\n  Status: ENABLED\nOptions: {}\n\
+      ParameterDeclarations: []\nSheets:\n- ContentType: INTERACTIVE\n  Description:\
+      \ Executive-level KPIs, temporal trends, and categorical breakdowns of\n   \
+      \ Bedrock invocations across models, users, accounts, regions, and stop reasons.\n\
+      \  FilterControls:\n  - CrossSheet:\n      FilterControlId: 515987a1-93a4-4029-aabf-3f777f140d3a\n\
+      \      SourceFilterId: 918caee8-a6f1-4ecd-887b-e1050b97ee76\n  - CrossSheet:\n\
+      \      FilterControlId: 388a4461-a5a5-4e66-ba3c-e78f2bdbadf0\n      SourceFilterId:\
+      \ d6089e36-c850-4bbb-a2b6-3f3a2d734675\n  - CrossSheet:\n      FilterControlId:\
+      \ control_id_sheet-885725c7_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2\n\
+      \      SourceFilterId: list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2\n\
+      \  - CrossSheet:\n      FilterControlId: control_id_sheet-885725c7_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1\n\
+      \      SourceFilterId: list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1\n\
+      \  - Dropdown:\n      DisplayOptions:\n        InfoIconLabelOptions:\n     \
+      \     Visibility: HIDDEN\n        SelectAllOptions:\n          Visibility: VISIBLE\n\
+      \        TitleOptions:\n          FontConfiguration:\n            FontSize:\n\
+      \              Relative: MEDIUM\n          Visibility: VISIBLE\n      FilterControlId:\
+      \ 52ce46f5-9e45-4cc0-9cec-789b6cd5734f\n      SourceFilterId: c5bc60dd-9d7d-456d-8aa5-5596002e9276\n\
+      \      Title: Account Name\n      Type: MULTI_SELECT\n  Layouts:\n  - Configuration:\n\
+      \      FreeFormLayout:\n        CanvasSizeOptions:\n          ScreenCanvasSizeOptions:\n\
+      \            OptimizedViewPortWidth: 1600px\n        Elements:\n        - ElementId:\
+      \ c9882328-d496-45db-a31f-ca23db7c32ab\n          ElementType: VISUAL\n    \
+      \      Height: 494px\n          Visibility: VISIBLE\n          Width: 1594px\n\
+      \          XAxisLocation: 6px\n          YAxisLocation: 2829px\n        - ElementId:\
+      \ b5dd942f-35ad-40ce-8ba1-01b08721d38b\n          ElementType: VISUAL\n    \
+      \      Height: 444px\n          Visibility: VISIBLE\n          Width: 1061px\n\
+      \          XAxisLocation: 8px\n          YAxisLocation: 1929px\n        - ElementId:\
+      \ 1fb80142-629a-424a-b294-ee8906b4959d\n          ElementType: VISUAL\n    \
+      \      Height: 444px\n          Visibility: VISIBLE\n          Width: 794px\n\
+      \          XAxisLocation: 11px\n          YAxisLocation: 567px\n        - ElementId:\
+      \ b219376c-0c37-49c4-b619-69898d2c1cb7\n          ElementType: VISUAL\n    \
+      \      Height: 444px\n          Visibility: VISIBLE\n          Width: 794px\n\
+      \          XAxisLocation: 789px\n          YAxisLocation: 567px\n        - ElementId:\
+      \ c9401074-6e56-42ff-ada6-677f347a587a\n          ElementType: VISUAL\n    \
+      \      Height: 444px\n          Visibility: VISIBLE\n          Width: 794px\n\
+      \          XAxisLocation: 11px\n          YAxisLocation: 1017px\n        - ElementId:\
+      \ d98c45db-9cc2-4760-897f-cc5c8ba67fa2\n          ElementType: VISUAL\n    \
+      \      Height: 444px\n          Visibility: VISIBLE\n          Width: 794px\n\
+      \          XAxisLocation: 789px\n          YAxisLocation: 1017px\n        -\
+      \ ElementId: c9f73200-464d-43cb-afa1-b672432d8bf1\n          ElementType: VISUAL\n\
+      \          Height: 444px\n          Visibility: VISIBLE\n          Width: 794px\n\
+      \          XAxisLocation: 11px\n          YAxisLocation: 1467px\n        - ElementId:\
+      \ a4413bb5-6295-4d6e-98a7-75df0d8fc19f\n          ElementType: VISUAL\n    \
+      \      Height: 444px\n          Visibility: VISIBLE\n          Width: 794px\n\
+      \          XAxisLocation: 789px\n          YAxisLocation: 1467px\n        -\
+      \ ElementId: fec3e355-99f8-4545-a6a1-229983b50905\n          ElementType: VISUAL\n\
+      \          Height: 444px\n          Visibility: VISIBLE\n          Width: 794px\n\
+      \          XAxisLocation: 8px\n          YAxisLocation: 2379px\n        - ElementId:\
+      \ d390e0ff-776c-4eaf-b506-2cfdc9f11027\n          ElementType: VISUAL\n    \
+      \      Height: 444px\n          Visibility: VISIBLE\n          Width: 794px\n\
+      \          XAxisLocation: 797px\n          YAxisLocation: 2379px\n        -\
+      \ ElementId: c974b5c9-f66c-4e8b-bdbb-8e305eca41a7\n          ElementType: VISUAL\n\
+      \          Height: 444px\n          Visibility: VISIBLE\n          Width: 527px\n\
+      \          XAxisLocation: 1064px\n          YAxisLocation: 1929px\n        -\
+      \ ElementId: f4e78f3b-10b7-43c0-b71b-bf1a28c04d4e\n          ElementType: VISUAL\n\
+      \          Height: 274px\n          Visibility: VISIBLE\n          Width: 527px\n\
+      \          XAxisLocation: 540px\n          YAxisLocation: 6px\n        - ElementId:\
+      \ be5b9b8f-6387-47a7-ac09-18f527037ce2\n          ElementType: VISUAL\n    \
+      \      Height: 274px\n          Visibility: VISIBLE\n          Width: 527px\n\
+      \          XAxisLocation: 1073px\n          YAxisLocation: 6px\n        - ElementId:\
+      \ 69c0499e-351a-45a0-bb24-db7fc758e416\n          ElementType: VISUAL\n    \
+      \      Height: 274px\n          Visibility: VISIBLE\n          Width: 528px\n\
+      \          XAxisLocation: 6px\n          YAxisLocation: 286px\n        - ElementId:\
+      \ e2b4a453-7c9c-4fbe-99d2-b26059e4e41b\n          ElementType: VISUAL\n    \
+      \      Height: 274px\n          Visibility: VISIBLE\n          Width: 527px\n\
+      \          XAxisLocation: 540px\n          YAxisLocation: 286px\n        - ElementId:\
+      \ d8f32a1e-2d5c-4582-8d9e-2d20f1a44f7f\n          ElementType: VISUAL\n    \
+      \      Height: 272px\n          Visibility: VISIBLE\n          Width: 528px\n\
+      \          XAxisLocation: 1072px\n          YAxisLocation: 288px\n        -\
+      \ ElementId: 601511b1-6ddc-42fd-a700-f4e57ff26731\n          ElementType: VISUAL\n\
+      \          Height: 576px\n          Visibility: VISIBLE\n          Width: 1440px\n\
+      \          XAxisLocation: 0px\n          YAxisLocation: 3600px\n        - ElementId:\
+      \ 57ec776f-db44-4349-ae94-2e4dbecc364c\n          ElementType: VISUAL\n    \
+      \      Height: 274px\n          Visibility: VISIBLE\n          Width: 527px\n\
+      \          XAxisLocation: 0px\n          YAxisLocation: 0px\n        - ElementId:\
+      \ bce757d7-4940-410d-afb7-e49bd8446ce4\n          ElementType: VISUAL\n    \
+      \      Height: 532px\n          Visibility: VISIBLE\n          Width: 798px\n\
+      \          XAxisLocation: 0px\n          YAxisLocation: 4176px\n  Name: Usage\
+      \ Overview & Trends\n  SheetControlLayouts:\n  - Configuration:\n      GridLayout:\n\
+      \        Elements:\n        - ColumnIndex: 0\n          ColumnSpan: 2\n    \
+      \      ElementId: 52ce46f5-9e45-4cc0-9cec-789b6cd5734f\n          ElementType:\
+      \ FILTER_CONTROL\n          RowIndex: 0\n          RowSpan: 1\n        - ColumnIndex:\
+      \ 2\n          ColumnSpan: 2\n          ElementId: control_id_sheet-885725c7_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2\n\
+      \          ElementType: FILTER_CONTROL\n          RowIndex: 0\n          RowSpan:\
+      \ 1\n        - ColumnIndex: 4\n          ColumnSpan: 2\n          ElementId:\
+      \ control_id_sheet-885725c7_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1\n\
+      \          ElementType: FILTER_CONTROL\n          RowIndex: 0\n          RowSpan:\
+      \ 1\n        - ColumnIndex: 6\n          ColumnSpan: 2\n          ElementId:\
+      \ 388a4461-a5a5-4e66-ba3c-e78f2bdbadf0\n          ElementType: FILTER_CONTROL\n\
+      \          RowIndex: 0\n          RowSpan: 1\n        - ColumnIndex: 8\n   \
+      \       ColumnSpan: 2\n          ElementId: 515987a1-93a4-4029-aabf-3f777f140d3a\n\
+      \          ElementType: FILTER_CONTROL\n          RowIndex: 0\n          RowSpan:\
+      \ 1\n  SheetId: feef3194-2dcd-4b85-80a2-f88ea79550aa\n  Title: Usage Overview\
+      \ & Trends\n  Visuals:\n  - KPIVisual:\n      Actions:\n      - ActionOperations:\n\
+      \        - FilterOperation:\n            SelectedFieldsConfiguration:\n    \
+      \          SelectedFieldOptions: ALL_FIELDS\n            TargetVisualsConfiguration:\n\
+      \              SameSheetTargetVisualConfiguration:\n                TargetVisualOptions:\
+      \ ALL_VISUALS\n        CustomActionId: 5444fc61-efd5-4410-8bbc-b9c74a785831\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        FieldWells:\n          TargetValues: []\n\
+      \          TrendGroups: []\n          Values:\n          - CategoricalMeasureField:\n\
+      \              AggregationFunction: DISTINCT_COUNT\n              Column:\n\
+      \                ColumnName: requestid\n                DataSetIdentifier: bedrock_invocations_view\n\
+      \              FieldId: bedrock_i-requestid-d07db8.0.1790345517370\n       \
+      \ SortConfiguration: {}\n      ColumnHierarchies: []\n      Subtitle:\n    \
+      \    FormatText:\n          RichText: <visual-subtitle>Distinct count of  invocations</visual-subtitle>\n\
+      \        Visibility: VISIBLE\n      Title:\n        FormatText:\n          RichText:\
+      \ \"<visual-title>\\n  <inline font-size=\\\"14px\\\">\\n    <b>Total Bedrock\\\
+      \n            \\ Invocations</b>\\n  </inline>\\n</visual-title>\"\n       \
+      \ Visibility: VISIBLE\n      VisualContentAltText: Key performance indicator\
+      \ displaying total unique users\n        accessing Amazon Bedrock services based\
+      \ on distinct identity ARNs\n      VisualId: 57ec776f-db44-4349-ae94-2e4dbecc364c\n\
+      \  - TableVisual:\n      Actions: []\n      ChartConfiguration:\n        FieldWells:\n\
+      \          TableAggregatedFieldWells:\n            GroupBy:\n            - DateDimensionField:\n\
+      \                Column:\n                  ColumnName: timestamp\n        \
+      \          DataSetIdentifier: bedrock_invocations_view\n                FieldId:\
+      \ visual_0c29e820_timestamp_field\n            - CategoricalDimensionField:\n\
+      \                Column:\n                  ColumnName: prompt_preview\n   \
+      \               DataSetIdentifier: bedrock_invocations_view\n              \
+      \  FieldId: visual_0c29e820_prompt_preview_count_measure9\n            - CategoricalDimensionField:\n\
+      \                Column:\n                  ColumnName: response_preview\n \
+      \                 DataSetIdentifier: bedrock_invocations_view\n            \
+      \    FieldId: bedrock_i-response_-db09d2.11.1786365116825\n            Values:\n\
+      \            - CategoricalMeasureField:\n                AggregationFunction:\
+      \ COUNT\n                Column:\n                  ColumnName: account_id\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_0c29e820_account_id_count_measure0\n            - CategoricalMeasureField:\n\
+      \                AggregationFunction: COUNT\n                Column:\n     \
+      \             ColumnName: identity_arn\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_0c29e820_identity_arn_count_measure1\n\
+      \            - CategoricalMeasureField:\n                AggregationFunction:\
+      \ COUNT\n                Column:\n                  ColumnName: modelid\n  \
+      \                DataSetIdentifier: bedrock_invocations_view\n             \
+      \   FieldId: visual_0c29e820_modelid_count_measure2\n            - CategoricalMeasureField:\n\
+      \                AggregationFunction: COUNT\n                Column:\n     \
+      \             ColumnName: operation\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_0c29e820_operation_count_measure3\n       \
+      \     - CategoricalMeasureField:\n                AggregationFunction: COUNT\n\
+      \                Column:\n                  ColumnName: region\n           \
+      \       DataSetIdentifier: bedrock_invocations_view\n                FieldId:\
+      \ visual_0c29e820_region_count_measure4\n            - NumericalMeasureField:\n\
+      \                AggregationFunction:\n                  SimpleNumericalAggregation:\
+      \ COUNT\n                Column:\n                  ColumnName: input_token_count\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_0c29e820_input_token_count_count_measure5\n          \
+      \  - NumericalMeasureField:\n                AggregationFunction:\n        \
+      \          SimpleNumericalAggregation: COUNT\n                Column:\n    \
+      \              ColumnName: output_token_count\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_0c29e820_output_token_count_count_measure6\n\
+      \            - NumericalMeasureField:\n                AggregationFunction:\n\
+      \                  SimpleNumericalAggregation: COUNT\n                Column:\n\
+      \                  ColumnName: usage_total_tokens\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_0c29e820_usage_total_tokens_count_measure7\n\
+      \            - CategoricalMeasureField:\n                AggregationFunction:\
+      \ COUNT\n                Column:\n                  ColumnName: stop_reason\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_0c29e820_stop_reason_count_measure8\n        SortConfiguration:\
+      \ {}\n      Subtitle:\n        FormatText:\n          RichText: <visual-subtitle>Timestamped\
+      \ listing of model calls with token\n            usage</visual-subtitle>\n \
+      \       Visibility: VISIBLE\n      Title:\n        FormatText:\n          RichText:\
+      \ \"<visual-title>\\n  <b>Bedrock Invocation Records Detail</b>\\n\\\n     \
+      \       </visual-title>\"\n        Visibility: VISIBLE\n      VisualContentAltText:\
+      \ Table displaying individual Bedrock invocation records\n        with timestamps,\
+      \ models, operations, regions, token counts, and prompt previews\n      VisualId:\
+      \ 601511b1-6ddc-42fd-a700-f4e57ff26731\n  - KPIVisual:\n      Actions:\n   \
+      \   - ActionOperations:\n        - FilterOperation:\n            SelectedFieldsConfiguration:\n\
+      \              SelectedFieldOptions: ALL_FIELDS\n            TargetVisualsConfiguration:\n\
+      \              SameSheetTargetVisualConfiguration:\n                TargetVisualOptions:\
+      \ ALL_VISUALS\n        CustomActionId: 1e07550c-f77d-4748-8eb0-7310ef193974\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        FieldWells:\n          TargetValues: []\n\
+      \          TrendGroups: []\n          Values:\n          - CategoricalMeasureField:\n\
+      \              AggregationFunction: DISTINCT_COUNT\n              Column:\n\
+      \                ColumnName: identity_arn\n                DataSetIdentifier:\
+      \ bedrock_invocations_view\n              FieldId: visual_c45b99ce_identity_arn_distinct_count_measure0\n\
+      \              FormatConfiguration:\n                NumericFormatConfiguration:\n\
+      \                  NumberDisplayFormatConfiguration:\n                    NullValueFormatConfiguration:\n\
+      \                      NullString: 'null'\n                    NumberScale:\
+      \ AUTO\n        SortConfiguration: {}\n      ColumnHierarchies: []\n      Subtitle:\n\
+      \        FormatText:\n          RichText: <visual-subtitle>Distinct count of\
+      \ identity ARNs invoking Bedrock</visual-subtitle>\n        Visibility: VISIBLE\n\
+      \      Title:\n        FormatText:\n          RichText: \"<visual-title>\\n\
+      \  <b>Total Unique Bedrock Users</b>\\n</visual-title>\"\n        Visibility:\
+      \ VISIBLE\n      VisualContentAltText: Key performance indicator displaying\
+      \ total unique users\n        accessing Amazon Bedrock services based on distinct\
+      \ identity ARNs\n      VisualId: f4e78f3b-10b7-43c0-b71b-bf1a28c04d4e\n  - KPIVisual:\n\
+      \      Actions:\n      - ActionOperations:\n        - FilterOperation:\n   \
+      \         SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: 66b735dc-34b5-4f76-8801-c17cc0bab98f\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        FieldWells:\n          TargetValues: []\n\
+      \          TrendGroups: []\n          Values:\n          - CategoricalMeasureField:\n\
+      \              AggregationFunction: DISTINCT_COUNT\n              Column:\n\
+      \                ColumnName: account_id\n                DataSetIdentifier:\
+      \ bedrock_invocations_view\n              FieldId: visual_b75c6406_account_id_distinct_count_measure0\n\
+      \              FormatConfiguration:\n                NumericFormatConfiguration:\n\
+      \                  NumberDisplayFormatConfiguration:\n                    NullValueFormatConfiguration:\n\
+      \                      NullString: 'null'\n                    NumberScale:\
+      \ AUTO\n        SortConfiguration: {}\n      ColumnHierarchies: []\n      Subtitle:\n\
+      \        FormatText:\n          RichText: <visual-subtitle>Distinct account\
+      \ count using Bedrock services</visual-subtitle>\n        Visibility: VISIBLE\n\
+      \      Title:\n        FormatText:\n          RichText: \"<visual-title>\\n\
+      \  <b>Total Unique Accounts</b>\\n</visual-title>\"\n        Visibility: VISIBLE\n\
+      \      VisualContentAltText: Key performance indicator displaying total count\
+      \ of unique\n        accounts invoking Bedrock models\n      VisualId: be5b9b8f-6387-47a7-ac09-18f527037ce2\n\
+      \  - KPIVisual:\n      Actions: []\n      ChartConfiguration:\n        FieldWells:\n\
+      \          TargetValues: []\n          TrendGroups: []\n          Values:\n\
+      \          - NumericalMeasureField:\n              AggregationFunction:\n  \
+      \              SimpleNumericalAggregation: SUM\n              Column:\n    \
+      \            ColumnName: input_token_count\n                DataSetIdentifier:\
+      \ bedrock_invocations_view\n              FieldId: bedrock_i-input_tok-08bb0b.0.1789133417126\n\
+      \        SortConfiguration: {}\n      ColumnHierarchies: []\n      Subtitle:\n\
+      \        FormatText:\n          RichText: <visual-subtitle>Cumulative input\
+      \ token usage across all model\n            invocations</visual-subtitle>\n\
+      \        Visibility: VISIBLE\n      Title:\n        FormatText:\n          RichText:\
+      \ \"<visual-title>\\n  <b>Total Bedrock Input Tokens Consumed</b>\\n\\\n   \
+      \         </visual-title>\"\n        Visibility: VISIBLE\n      VisualContentAltText:\
+      \ KPI displaying total input tokens consumed by Bedrock\n        model invocations,\
+      \ indicating overall prompt volume\n      VisualId: 69c0499e-351a-45a0-bb24-db7fc758e416\n\
+      \  - KPIVisual:\n      Actions: []\n      ChartConfiguration:\n        FieldWells:\n\
+      \          TargetValues: []\n          TrendGroups: []\n          Values:\n\
+      \          - NumericalMeasureField:\n              AggregationFunction:\n  \
+      \              SimpleNumericalAggregation: SUM\n              Column:\n    \
+      \            ColumnName: output_token_count\n                DataSetIdentifier:\
+      \ bedrock_invocations_view\n              FieldId: bedrock_i-output_to-6fbdcb.0.1789133434164\n\
+      \        SortConfiguration: {}\n      ColumnHierarchies: []\n      Subtitle:\n\
+      \        FormatText:\n          RichText: <visual-subtitle>Cumulative output\
+      \ tokens across all Bedrock invocations</visual-subtitle>\n        Visibility:\
+      \ VISIBLE\n      Title:\n        FormatText:\n          RichText: \"<visual-title>\\\
+      n  <b>Total Output Tokens Generated</b>\\n</visual-title>\"\n        Visibility:\
+      \ VISIBLE\n      VisualContentAltText: KPI displaying the total sum of output\
+      \ tokens generated\n        by Bedrock model invocations across all requests\n\
+      \      VisualId: e2b4a453-7c9c-4fbe-99d2-b26059e4e41b\n  - LineChartVisual:\n\
+      \      Actions:\n      - ActionOperations:\n        - FilterOperation:\n   \
+      \         SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: f2d3a1b9-56c7-4017-9cde-895bcbd0260e\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        DataLabels:\n          Overlap: DISABLE_OVERLAP\n\
+      \          Visibility: HIDDEN\n        FieldWells:\n          LineChartAggregatedFieldWells:\n\
+      \            Category:\n            - DateDimensionField:\n                Column:\n\
+      \                  ColumnName: timestamp\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: bedrock_i-timestamp-f1c25f.1.1793189525225\n\
+      \                HierarchyId: bedrock_i-timestamp-f1c25f.1.1793189525225\n \
+      \           Colors: []\n            Values:\n            - CategoricalMeasureField:\n\
+      \                AggregationFunction: COUNT\n                Column:\n     \
+      \             ColumnName: requestid\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_7cba1549_requestid_count_measure0\n       \
+      \ SortConfiguration:\n          CategoryItemsLimitConfiguration:\n         \
+      \   OtherCategories: INCLUDE\n          CategorySort:\n          - FieldSort:\n\
+      \              Direction: DESC\n              FieldId: visual_7cba1549_requestid_count_measure0\n\
+      \          ColorItemsLimitConfiguration:\n            OtherCategories: INCLUDE\n\
+      \          SmallMultiplesLimitConfiguration:\n            OtherCategories: INCLUDE\n\
+      \        Tooltip:\n          FieldBasedTooltip:\n            AggregationVisibility:\
+      \ HIDDEN\n            TooltipFields:\n            - FieldTooltipItem:\n    \
+      \            FieldId: visual_7cba1549_requestid_count_measure0\n           \
+      \     Visibility: VISIBLE\n            - FieldTooltipItem:\n               \
+      \ FieldId: bedrock_i-timestamp-f1c25f.1.1793189525225\n                Visibility:\
+      \ VISIBLE\n            TooltipTitleType: PRIMARY_VALUE\n          SelectedTooltipType:\
+      \ DETAILED\n          TooltipVisibility: VISIBLE\n        Type: LINE\n     \
+      \ ColumnHierarchies:\n      - DateTimeHierarchy:\n          HierarchyId: bedrock_i-timestamp-f1c25f.1.1793189525225\n\
+      \      Subtitle:\n        FormatText:\n          RichText: <visual-subtitle>Count\
+      \ of API requests across invocation timestamps</visual-subtitle>\n        Visibility:\
+      \ VISIBLE\n      Title:\n        FormatText:\n          RichText: \"<visual-title>\\\
+      n  <b>Daily Bedrock Invocation Trend</b>\\n</visual-title>\"\n        Visibility:\
+      \ VISIBLE\n      VisualContentAltText: Line chart tracking daily Bedrock invocation\
+      \ counts over\n        time, revealing usage patterns and trends in API request\
+      \ volume\n      VisualId: 1fb80142-629a-424a-b294-ee8906b4959d\n  - LineChartVisual:\n\
+      \      Actions:\n      - ActionOperations:\n        - FilterOperation:\n   \
+      \         SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: fc6d572d-2a54-43b1-9708-3b661e8bd85a\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        DataLabels:\n          Overlap: DISABLE_OVERLAP\n\
+      \          Visibility: HIDDEN\n        FieldWells:\n          LineChartAggregatedFieldWells:\n\
+      \            Category:\n            - DateDimensionField:\n                Column:\n\
+      \                  ColumnName: timestamp\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_0a669f25_timestamp_field\n\
+      \                HierarchyId: 613d5b18-a8ee-414b-869c-fe8646836b7e\n       \
+      \     Colors: []\n            Values:\n            - NumericalMeasureField:\n\
+      \                AggregationFunction:\n                  SimpleNumericalAggregation:\
+      \ SUM\n                Column:\n                  ColumnName: usage_input_tokens\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_0a669f25_usage_input_tokens_measure_0\n            - NumericalMeasureField:\n\
+      \                AggregationFunction:\n                  SimpleNumericalAggregation:\
+      \ SUM\n                Column:\n                  ColumnName: usage_output_tokens\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_0a669f25_usage_output_tokens_measure_1\n        PrimaryYAxisLabelOptions:\n\
+      \          AxisLabelOptions:\n          - ApplyTo:\n              Column:\n\
+      \                ColumnName: usage_input_tokens\n                DataSetIdentifier:\
+      \ bedrock_invocations_view\n              FieldId: visual_0a669f25_usage_input_tokens_measure_0\n\
+      \            CustomLabel: Token Count\n          - ApplyTo:\n              Column:\n\
+      \                ColumnName: usage_output_tokens\n                DataSetIdentifier:\
+      \ bedrock_invocations_view\n              FieldId: visual_0a669f25_usage_output_tokens_measure_1\n\
+      \            CustomLabel: Token Count\n        SortConfiguration:\n        \
+      \  CategoryItemsLimitConfiguration:\n            OtherCategories: INCLUDE\n\
+      \          ColorItemsLimitConfiguration:\n            OtherCategories: INCLUDE\n\
+      \          SmallMultiplesLimitConfiguration:\n            OtherCategories: INCLUDE\n\
+      \        Tooltip:\n          FieldBasedTooltip:\n            AggregationVisibility:\
+      \ HIDDEN\n            TooltipFields: []\n            TooltipTitleType: PRIMARY_VALUE\n\
+      \          SelectedTooltipType: DETAILED\n          TooltipVisibility: VISIBLE\n\
+      \        Type: STACKED_AREA\n        XAxisLabelOptions:\n          AxisLabelOptions:\n\
+      \          - ApplyTo:\n              Column:\n                ColumnName: timestamp\n\
+      \                DataSetIdentifier: bedrock_invocations_view\n             \
+      \ FieldId: visual_0a669f25_timestamp_field\n            CustomLabel: Date\n\
+      \      ColumnHierarchies:\n      - DateTimeHierarchy:\n          DrillDownFilters:\
+      \ []\n          HierarchyId: 613d5b18-a8ee-414b-869c-fe8646836b7e\n      Subtitle:\n\
+      \        FormatText:\n          RichText: <visual-subtitle>Total input and output\
+      \ tokens over time</visual-subtitle>\n        Visibility: VISIBLE\n      Title:\n\
+      \        FormatText:\n          RichText: \"<visual-title>\\n  <b>Daily Token\
+      \ Consumption Trends</b>\\n</visual-title>\"\n        Visibility: VISIBLE\n\
+      \      VisualContentAltText: Line chart tracking total input and output token\
+      \ consumption\n        over time, revealing daily usage patterns and demand\
+      \ fluctuations\n      VisualId: b219376c-0c37-49c4-b619-69898d2c1cb7\n  - BarChartVisual:\n\
+      \      Actions:\n      - ActionOperations:\n        - FilterOperation:\n   \
+      \         SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: bdb0e86d-564c-493e-b542-8976a88a2154\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        BarsArrangement: CLUSTERED\n        CategoryLabelOptions:\n\
+      \          AxisLabelOptions:\n          - ApplyTo:\n              Column:\n\
+      \                ColumnName: modelid\n                DataSetIdentifier: bedrock_invocations_view\n\
+      \              FieldId: visual_134043e7_modelid_field\n            CustomLabel:\
+      \ Invocation Count\n        DataLabels:\n          Overlap: DISABLE_OVERLAP\n\
+      \          Visibility: VISIBLE\n        FieldWells:\n          BarChartAggregatedFieldWells:\n\
+      \            Category:\n            - CategoricalDimensionField:\n         \
+      \       Column:\n                  ColumnName: modelid\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_134043e7_modelid_field\n\
+      \            Colors: []\n            Values:\n            - CategoricalMeasureField:\n\
+      \                AggregationFunction: COUNT\n                Column:\n     \
+      \             ColumnName: requestid\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_134043e7_requestid_count_measure0\n       \
+      \ Orientation: HORIZONTAL\n        SortConfiguration: {}\n      ColumnHierarchies:\
+      \ []\n      Subtitle:\n        FormatText:\n          RichText: <visual-subtitle>Ranking\
+      \ foundation models by request volume</visual-subtitle>\n        Visibility:\
+      \ VISIBLE\n      Title:\n        FormatText:\n          RichText: \"<visual-title>\\\
+      n  <b>Model Invocations by Model ID</b>\\n</visual-title>\"\n        Visibility:\
+      \ VISIBLE\n      VisualContentAltText: Horizontal bar chart comparing invocation\
+      \ counts across\n        Bedrock models, revealing which foundation models drive\
+      \ the most usage\n      VisualId: c9401074-6e56-42ff-ada6-677f347a587a\n  -\
+      \ BarChartVisual:\n      Actions:\n      - ActionOperations:\n        - FilterOperation:\n\
+      \            SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: 8972f16d-a0a4-4716-be8b-28657ed9172b\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        BarsArrangement: CLUSTERED\n        CategoryLabelOptions:\n\
+      \          AxisLabelOptions:\n          - ApplyTo:\n              Column:\n\
+      \                ColumnName: modelid\n                DataSetIdentifier: bedrock_invocations_view\n\
+      \              FieldId: visual_ebf9da3e_modelid_field\n            CustomLabel:\
+      \ Model ID\n        DataLabels:\n          Overlap: DISABLE_OVERLAP\n      \
+      \    Visibility: VISIBLE\n        FieldWells:\n          BarChartAggregatedFieldWells:\n\
+      \            Category:\n            - CategoricalDimensionField:\n         \
+      \       Column:\n                  ColumnName: modelid\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_ebf9da3e_modelid_field\n\
+      \            Colors: []\n            Values:\n            - NumericalMeasureField:\n\
+      \                AggregationFunction:\n                  SimpleNumericalAggregation:\
+      \ SUM\n                Column:\n                  ColumnName: usage_total_tokens\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_ebf9da3e_usage_total_tokens_measure_0\n        Orientation:\
+      \ HORIZONTAL\n        SortConfiguration: {}\n        ValueLabelOptions:\n  \
+      \        AxisLabelOptions:\n          - ApplyTo:\n              Column:\n  \
+      \              ColumnName: usage_total_tokens\n                DataSetIdentifier:\
+      \ bedrock_invocations_view\n              FieldId: visual_ebf9da3e_usage_total_tokens_measure_0\n\
+      \            CustomLabel: Total Tokens\n      ColumnHierarchies: []\n      Subtitle:\n\
+      \        FormatText:\n          RichText: <visual-subtitle>Bedrock models ranked\
+      \ by cumulative token usage</visual-subtitle>\n        Visibility: VISIBLE\n\
+      \      Title:\n        FormatText:\n          RichText: \"<visual-title>\\n\
+      \  <b>Total Token Consumption by Model</b>\\n</visual-title>\"\n        Visibility:\
+      \ VISIBLE\n      VisualContentAltText: Horizontal bar chart comparing total\
+      \ token consumption\n        across Bedrock models, revealing which models drive\
+      \ highest usage volume\n      VisualId: d98c45db-9cc2-4760-897f-cc5c8ba67fa2\n\
+      \  - TableVisual:\n      Actions:\n      - ActionOperations:\n        - FilterOperation:\n\
+      \            SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: f27fc0e8-8135-4b93-a4ce-738976e46ec2\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        FieldOptions:\n          SelectedFieldOptions:\n\
+      \          - CustomLabel: Invocations\n            FieldId: visual_95673c6c_identity_arn_field\n\
+      \        FieldWells:\n          TableAggregatedFieldWells:\n            GroupBy:\n\
+      \            - CategoricalDimensionField:\n                Column:\n       \
+      \           ColumnName: identity_arn\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_95673c6c_identity_arn_field\n            Values:\n\
+      \            - CategoricalMeasureField:\n                AggregationFunction:\
+      \ COUNT\n                Column:\n                  ColumnName: requestid\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_95673c6c_requestid_count_measure0\n        SortConfiguration:\
+      \ {}\n      Subtitle:\n        FormatText:\n          RichText: <visual-subtitle>Request\
+      \ volume ranked across Bedrock user identities</visual-subtitle>\n        Visibility:\
+      \ VISIBLE\n      Title:\n        FormatText:\n          RichText: \"<visual-title>\\\
+      n  <b>User Invocations by Identity</b>\\n</visual-title>\"\n        Visibility:\
+      \ VISIBLE\n      VisualContentAltText: Horizontal bar chart ranking users by\
+      \ total Bedrock invocation\n        requests, revealing highest-activity identities\n\
+      \      VisualId: c9f73200-464d-43cb-afa1-b672432d8bf1\n  - TableVisual:\n  \
+      \    Actions:\n      - ActionOperations:\n        - FilterOperation:\n     \
+      \       SelectedFieldsConfiguration:\n              SelectedFieldOptions: ALL_FIELDS\n\
+      \            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: 5d57c673-e2ab-4af0-a9ff-31fd586db264\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        FieldOptions:\n          SelectedFieldOptions:\n\
+      \          - CustomLabel: User\n            FieldId: visual_4d9455d8_identity_arn_field\n\
+      \          - CustomLabel: Total Tokens\n            FieldId: visual_4d9455d8_usage_total_tokens_measure_0\n\
+      \        FieldWells:\n          TableAggregatedFieldWells:\n            GroupBy:\n\
+      \            - CategoricalDimensionField:\n                Column:\n       \
+      \           ColumnName: identity_arn\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_4d9455d8_identity_arn_field\n            Values:\n\
+      \            - NumericalMeasureField:\n                AggregationFunction:\n\
+      \                  SimpleNumericalAggregation: SUM\n                Column:\n\
+      \                  ColumnName: usage_total_tokens\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_4d9455d8_usage_total_tokens_measure_0\n\
+      \        SortConfiguration: {}\n      Subtitle:\n        FormatText:\n     \
+      \     RichText: <visual-subtitle>User identity ranked by aggregate token usage</visual-subtitle>\n\
+      \        Visibility: VISIBLE\n      Title:\n        FormatText:\n          RichText:\
+      \ \"<visual-title>\\n  <b>Total Token Consumption by User</b>\\n</visual-title>\"\
+      \n        Visibility: VISIBLE\n      VisualContentAltText: Horizontal bar chart\
+      \ showing total token usage per user\n        identity, revealing which users\
+      \ consume the most Bedrock model resources\n      VisualId: a4413bb5-6295-4d6e-98a7-75df0d8fc19f\n\
+      \  - BarChartVisual:\n      Actions:\n      - ActionOperations:\n        - FilterOperation:\n\
+      \            SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: a9cb20bb-08e9-4392-9570-e601230bf22a\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        BarsArrangement: CLUSTERED\n        DataLabels:\n\
+      \          Overlap: DISABLE_OVERLAP\n          Visibility: VISIBLE\n       \
+      \ FieldWells:\n          BarChartAggregatedFieldWells:\n            Category:\n\
+      \            - CategoricalDimensionField:\n                Column:\n       \
+      \           ColumnName: account_name\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: am-account-name.2.1793189608183\n            Colors:\
+      \ []\n            Values:\n            - NumericalMeasureField:\n          \
+      \      AggregationFunction:\n                  SimpleNumericalAggregation: COUNT\n\
+      \                Column:\n                  ColumnName: usage_total_tokens\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_aa43a2f9_usage_total_tokens_count_measure0\n         \
+      \   - CategoricalMeasureField:\n                AggregationFunction: COUNT\n\
+      \                Column:\n                  ColumnName: requestid\n        \
+      \          DataSetIdentifier: bedrock_invocations_view\n                FieldId:\
+      \ visual_aa43a2f9_requestid_count_measure1\n        Orientation: HORIZONTAL\n\
+      \        SortConfiguration:\n          CategorySort:\n          - FieldSort:\n\
+      \              Direction: DESC\n              FieldId: visual_aa43a2f9_usage_total_tokens_count_measure0\n\
+      \        Tooltip:\n          FieldBasedTooltip:\n            AggregationVisibility:\
+      \ HIDDEN\n            TooltipFields:\n            - FieldTooltipItem:\n    \
+      \            FieldId: visual_aa43a2f9_usage_total_tokens_count_measure0\n  \
+      \              Visibility: VISIBLE\n            - FieldTooltipItem:\n      \
+      \          FieldId: visual_aa43a2f9_requestid_count_measure1\n             \
+      \   Visibility: VISIBLE\n            - FieldTooltipItem:\n                FieldId:\
+      \ am-account-name.2.1793189608183\n                Visibility: VISIBLE\n   \
+      \         TooltipTitleType: PRIMARY_VALUE\n          SelectedTooltipType: BASIC\n\
+      \          TooltipVisibility: VISIBLE\n      ColumnHierarchies: []\n      Subtitle:\n\
+      \        FormatText:\n          RichText: <visual-subtitle>Total tokens and\
+      \ request counts per account</visual-subtitle>\n        Visibility: VISIBLE\n\
+      \      Title:\n        FormatText:\n          RichText: \"<visual-title>\\n\
+      \  <b>Account Usage by Tokens and Requests</b>\\n\\\n            </visual-title>\"\
+      \n        Visibility: VISIBLE\n      VisualContentAltText: Horizontal bar chart\
+      \ ranking accounts by total token usage\n        and request counts, revealing\
+      \ highest consuming accounts\n      VisualId: b5dd942f-35ad-40ce-8ba1-01b08721d38b\n\
+      \  - PieChartVisual:\n      Actions:\n      - ActionOperations:\n        - FilterOperation:\n\
+      \            SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: 5c84162e-9a81-4ba2-9fa4-b9b08a615514\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        DonutOptions:\n          ArcOptions:\n \
+      \           ArcThickness: MEDIUM\n        FieldWells:\n          PieChartAggregatedFieldWells:\n\
+      \            Category:\n            - CategoricalDimensionField:\n         \
+      \       Column:\n                  ColumnName: stop_reason\n               \
+      \   DataSetIdentifier: bedrock_invocations_view\n                FieldId: visual_9df8787c_stop_reason_field\n\
+      \            Values:\n            - CategoricalMeasureField:\n             \
+      \   AggregationFunction: COUNT\n                Column:\n                  ColumnName:\
+      \ requestid\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_9df8787c_requestid_count_measure0\n       \
+      \ SortConfiguration: {}\n      ColumnHierarchies: []\n      Subtitle:\n    \
+      \    FormatText:\n          RichText: <visual-subtitle>Distribution of Bedrock\
+      \ requests by termination\n            cause</visual-subtitle>\n        Visibility:\
+      \ VISIBLE\n      Title:\n        FormatText:\n          RichText: \"<visual-title>\\\
+      n  <b>Request Stop Reason Breakdown</b>\\n</visual-title>\"\n        Visibility:\
+      \ VISIBLE\n      VisualContentAltText: Pie chart showing proportion of Bedrock\
+      \ requests by stop\n        reason, revealing why model invocations terminated\n\
+      \      VisualId: c974b5c9-f66c-4e8b-bdbb-8e305eca41a7\n  - BarChartVisual:\n\
+      \      Actions:\n      - ActionOperations:\n        - FilterOperation:\n   \
+      \         SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: 318dd773-b488-482f-83c5-969ed574cc9b\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        BarsArrangement: CLUSTERED\n        CategoryLabelOptions:\n\
+      \          AxisLabelOptions:\n          - ApplyTo:\n              Column:\n\
+      \                ColumnName: region\n                DataSetIdentifier: bedrock_invocations_view\n\
+      \              FieldId: visual_bdbdb6ea_region_field\n            CustomLabel:\
+      \ Region\n        DataLabels:\n          Overlap: DISABLE_OVERLAP\n        \
+      \  Visibility: VISIBLE\n        FieldWells:\n          BarChartAggregatedFieldWells:\n\
+      \            Category:\n            - CategoricalDimensionField:\n         \
+      \       Column:\n                  ColumnName: region\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_bdbdb6ea_region_field\n\
+      \            Colors: []\n            Values:\n            - CategoricalMeasureField:\n\
+      \                AggregationFunction: COUNT\n                Column:\n     \
+      \             ColumnName: requestid\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_bdbdb6ea_requestid_count_measure0\n       \
+      \ Orientation: VERTICAL\n        SortConfiguration: {}\n      ColumnHierarchies:\
+      \ []\n      Subtitle:\n        FormatText:\n          RichText: <visual-subtitle>Regional\
+      \ distribution of model request volumes</visual-subtitle>\n        Visibility:\
+      \ VISIBLE\n      Title:\n        FormatText:\n          RichText: \"<visual-title>\\\
+      n  <b>Bedrock Invocations by AWS Region</b>\\n\\\n            </visual-title>\"\
+      \n        Visibility: VISIBLE\n      VisualContentAltText: Bar chart comparing\
+      \ total Bedrock invocation counts across\n        AWS regions, revealing geographic\
+      \ usage distribution patterns\n      VisualId: fec3e355-99f8-4545-a6a1-229983b50905\n\
+      \  - BarChartVisual:\n      Actions:\n      - ActionOperations:\n        - FilterOperation:\n\
+      \            SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: d05aaed0-3192-4941-bca8-e77951aa2f82\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        BarsArrangement: CLUSTERED\n        CategoryLabelOptions:\n\
+      \          AxisLabelOptions:\n          - ApplyTo:\n              Column:\n\
+      \                ColumnName: operation\n                DataSetIdentifier: bedrock_invocations_view\n\
+      \              FieldId: visual_3a126fa0_operation_field\n            CustomLabel:\
+      \ Operation\n        DataLabels:\n          Overlap: DISABLE_OVERLAP\n     \
+      \     Visibility: VISIBLE\n        FieldWells:\n          BarChartAggregatedFieldWells:\n\
+      \            Category:\n            - CategoricalDimensionField:\n         \
+      \       Column:\n                  ColumnName: operation\n                 \
+      \ DataSetIdentifier: bedrock_invocations_view\n                FieldId: visual_3a126fa0_operation_field\n\
+      \            Colors: []\n            Values:\n            - CategoricalMeasureField:\n\
+      \                AggregationFunction: COUNT\n                Column:\n     \
+      \             ColumnName: requestid\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_3a126fa0_requestid_count_measure0\n       \
+      \ Orientation: VERTICAL\n        SortConfiguration: {}\n      ColumnHierarchies:\
+      \ []\n      Subtitle:\n        FormatText:\n          RichText: <visual-subtitle>Request\
+      \ volume ranked across API operation types</visual-subtitle>\n        Visibility:\
+      \ VISIBLE\n      Title:\n        FormatText:\n          RichText: \"<visual-title>\\\
+      n  <b>Bedrock Invocations by Operation</b>\\n</visual-title>\"\n        Visibility:\
+      \ VISIBLE\n      VisualContentAltText: Vertical bar chart showing total request\
+      \ count per Bedrock\n        operation, sorted descending to reveal most frequently\
+      \ invoked operations\n      VisualId: d390e0ff-776c-4eaf-b506-2cfdc9f11027\n\
+      \  - HeatMapVisual:\n      Actions:\n      - ActionOperations:\n        - FilterOperation:\n\
+      \            SelectedFieldsConfiguration:\n              SelectedFieldOptions:\
+      \ ALL_FIELDS\n            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
+      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: aaf6ebcb-9677-4627-b66d-0baeab41b00a\n\
+      \        Name: Action 1\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
+      \      ChartConfiguration:\n        DataLabels:\n          Overlap: DISABLE_OVERLAP\n\
+      \          Visibility: VISIBLE\n        FieldWells:\n          HeatMapAggregatedFieldWells:\n\
+      \            Columns:\n            - CategoricalDimensionField:\n          \
+      \      Column:\n                  ColumnName: month\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_ee5a6d50_month_field\n\
+      \            Rows:\n            - CategoricalDimensionField:\n             \
+      \   Column:\n                  ColumnName: day\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_ee5a6d50_day_field\n\
+      \            Values:\n            - CategoricalMeasureField:\n             \
+      \   AggregationFunction: COUNT\n                Column:\n                  ColumnName:\
+      \ requestid\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_ee5a6d50_requestid_count_measure0\n       \
+      \ SortConfiguration: {}\n      ColumnHierarchies: []\n      Subtitle:\n    \
+      \    FormatText:\n          RichText: <visual-subtitle>Count of Bedrock invocations\
+      \ across calendar\n            days</visual-subtitle>\n        Visibility: VISIBLE\n\
+      \      Title:\n        FormatText:\n          RichText: \"<visual-title>\\n\
+      \  <b>Daily Request Volume by Month</b>\\n</visual-title>\"\n        Visibility:\
+      \ VISIBLE\n      VisualContentAltText: Heat map showing request counts by day\
+      \ of month and month,\n        revealing daily usage patterns and peak activity\
+      \ periods\n      VisualId: c9882328-d496-45db-a31f-ca23db7c32ab\n  - PieChartVisual:\n\
+      \      Actions: []\n      ChartConfiguration:\n        DataLabels:\n       \
+      \   Overlap: DISABLE_OVERLAP\n          Visibility: VISIBLE\n        DonutOptions:\n\
+      \          ArcOptions:\n            ArcThickness: MEDIUM\n        FieldWells:\n\
+      \          PieChartAggregatedFieldWells:\n            Category:\n          \
+      \  - CategoricalDimensionField:\n                Column:\n                 \
+      \ ColumnName: region\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: bedrock_i-region-ec168e.0.1786444542154\n        \
+      \    Values:\n            - CategoricalMeasureField:\n                AggregationFunction:\
+      \ COUNT\n                Column:\n                  ColumnName: requestid\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: bedrock_i-requestid-0138c6.1.1786444551712\n        SortConfiguration:\n\
+      \          CategoryItemsLimit:\n            OtherCategories: INCLUDE\n     \
+      \     CategorySort:\n          - FieldSort:\n              Direction: DESC\n\
+      \              FieldId: bedrock_i-requestid-0138c6.1.1786444551712\n       \
+      \   SmallMultiplesLimitConfiguration:\n            OtherCategories: INCLUDE\n\
+      \        Tooltip:\n          FieldBasedTooltip:\n            AggregationVisibility:\
+      \ HIDDEN\n            TooltipFields:\n            - FieldTooltipItem:\n    \
+      \            FieldId: bedrock_i-region-ec168e.0.1786444542154\n            \
+      \    Visibility: VISIBLE\n            - FieldTooltipItem:\n                FieldId:\
+      \ bedrock_i-requestid-0138c6.1.1786444551712\n                Visibility: VISIBLE\n\
+      \            TooltipTitleType: PRIMARY_VALUE\n          SelectedTooltipType:\
+      \ DETAILED\n          TooltipVisibility: VISIBLE\n      ColumnHierarchies: []\n\
+      \      Subtitle:\n        Visibility: VISIBLE\n      Title:\n        Visibility:\
+      \ VISIBLE\n      VisualId: d8f32a1e-2d5c-4582-8d9e-2d20f1a44f7f\n  - LineChartVisual:\n\
+      \      Actions: []\n      ChartConfiguration:\n        DataLabels:\n       \
+      \   Overlap: DISABLE_OVERLAP\n          Visibility: HIDDEN\n        FieldWells:\n\
+      \          LineChartAggregatedFieldWells:\n            Category:\n         \
+      \   - DateDimensionField:\n                Column:\n                  ColumnName:\
+      \ timestamp\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: bedrock_i-timestamp-f1c25f.2.1793190046249\n     \
+      \           HierarchyId: bedrock_i-timestamp-f1c25f.2.1793190046249\n      \
+      \      Colors:\n            - CategoricalDimensionField:\n                Column:\n\
+      \                  ColumnName: account_name\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: am-account-name.0.1793190019014\n\
+      \            Values:\n            - NumericalMeasureField:\n               \
+      \ AggregationFunction:\n                  SimpleNumericalAggregation: SUM\n\
+      \                Column:\n                  ColumnName: usage_total_tokens\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: bedrock_i-usage_tot-220fc1.2.1793194065322\n        SortConfiguration:\n\
+      \          CategoryItemsLimitConfiguration:\n            OtherCategories: INCLUDE\n\
+      \          CategorySort:\n          - FieldSort:\n              Direction: DESC\n\
+      \              FieldId: bedrock_i-timestamp-f1c25f.2.1793190046249\n       \
+      \   ColorItemsLimitConfiguration:\n            OtherCategories: INCLUDE\n  \
+      \        SmallMultiplesLimitConfiguration:\n            OtherCategories: INCLUDE\n\
+      \        Tooltip:\n          FieldBasedTooltip:\n            AggregationVisibility:\
+      \ HIDDEN\n            TooltipFields:\n            - FieldTooltipItem:\n    \
+      \            FieldId: am-account-name.0.1793190019014\n                Visibility:\
+      \ VISIBLE\n            - FieldTooltipItem:\n                FieldId: bedrock_i-timestamp-f1c25f.2.1793190046249\n\
+      \                Visibility: VISIBLE\n            - FieldTooltipItem:\n    \
+      \            FieldId: bedrock_i-usage_tot-220fc1.2.1793194065322\n         \
+      \       Visibility: VISIBLE\n            TooltipTitleType: PRIMARY_VALUE\n \
+      \         SelectedTooltipType: DETAILED\n          TooltipVisibility: VISIBLE\n\
+      \        Type: STACKED_AREA\n      ColumnHierarchies:\n      - DateTimeHierarchy:\n\
+      \          HierarchyId: bedrock_i-timestamp-f1c25f.2.1793190046249\n      Subtitle:\n\
+      \        Visibility: VISIBLE\n      Title:\n        FormatText:\n          RichText:\
+      \ \"<visual-title>Tokens consumption by account\\_</visual-title>\"\n      \
+      \  Visibility: VISIBLE\n      VisualId: bce757d7-4940-410d-afb7-e49bd8446ce4\n\
+      - ContentType: INTERACTIVE\n  Description: Transaction-level detail table of\
+      \ all Bedrock invocations including\n    prompts, responses, tokens, and stop\
+      \ reasons for investigation and audit.\n  FilterControls:\n  - CrossSheet:\n\
+      \      FilterControlId: control_id_sheet-fb989833_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2\n\
+      \      SourceFilterId: list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2\n\
+      \  - CrossSheet:\n      FilterControlId: control_id_sheet-fb989833_list_filter_id_2e820c31-56ab-4f8f-b13c-244eeba5c127\n\
+      \      SourceFilterId: list_filter_id_2e820c31-56ab-4f8f-b13c-244eeba5c127\n\
+      \  - CrossSheet:\n      FilterControlId: control_id_sheet-fb989833_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1\n\
+      \      SourceFilterId: list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1\n\
+      \  Layouts:\n  - Configuration:\n      FreeFormLayout:\n        CanvasSizeOptions:\n\
+      \          ScreenCanvasSizeOptions:\n            OptimizedViewPortWidth: 1600px\n\
+      \        Elements:\n        - ElementId: 4efb80fd-17db-4561-82be-953b29982baf\n\
+      \          ElementType: VISUAL\n          Height: 608px\n          Visibility:\
+      \ VISIBLE\n          Width: 1232px\n          XAxisLocation: 0px\n         \
+      \ YAxisLocation: 0px\n        - ElementId: 49097c00-df0a-4a4e-a484-7ad0a92b138a\n\
+      \          ElementType: VISUAL\n          Height: 592px\n          Visibility:\
+      \ VISIBLE\n          Width: 1232px\n          XAxisLocation: 0px\n         \
+      \ YAxisLocation: 624px\n  Name: Raw Data Explorer\n  SheetControlLayouts:\n\
+      \  - Configuration:\n      GridLayout:\n        Elements:\n        - ColumnIndex:\
+      \ 0\n          ColumnSpan: 4\n          ElementId: control_id_sheet-fb989833_list_filter_id_063257fc-886b-42b3-8128-90d4a082a7d2\n\
+      \          ElementType: FILTER_CONTROL\n          RowIndex: 0\n          RowSpan:\
+      \ 1\n        - ColumnIndex: 4\n          ColumnSpan: 4\n          ElementId:\
+      \ control_id_sheet-fb989833_list_filter_id_2e820c31-56ab-4f8f-b13c-244eeba5c127\n\
+      \          ElementType: FILTER_CONTROL\n          RowIndex: 0\n          RowSpan:\
+      \ 1\n        - ColumnIndex: 8\n          ColumnSpan: 4\n          ElementId:\
+      \ control_id_sheet-fb989833_list_filter_id_6ec4d388-63e9-4c51-bd47-e179a40923d1\n\
+      \          ElementType: FILTER_CONTROL\n          RowIndex: 0\n          RowSpan:\
+      \ 1\n  SheetId: 9579771a-a665-46cb-8c13-59264dc34293\n  Title: Raw Data Explorer\n\
+      \  Visuals:\n  - TableVisual:\n      Actions: []\n      ChartConfiguration:\n\
+      \        FieldWells:\n          TableAggregatedFieldWells:\n            GroupBy:\n\
+      \            - DateDimensionField:\n                Column:\n              \
+      \    ColumnName: timestamp\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_0c29e820_timestamp_field\n            - CategoricalDimensionField:\n\
+      \                Column:\n                  ColumnName: prompt_preview\n   \
+      \               DataSetIdentifier: bedrock_invocations_view\n              \
+      \  FieldId: visual_0c29e820_prompt_preview_count_measure9\n            - CategoricalDimensionField:\n\
+      \                Column:\n                  ColumnName: response_preview\n \
+      \                 DataSetIdentifier: bedrock_invocations_view\n            \
+      \    FieldId: bedrock_i-response_-db09d2.11.1786365116825\n            Values:\n\
+      \            - CategoricalMeasureField:\n                AggregationFunction:\
+      \ COUNT\n                Column:\n                  ColumnName: account_id\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_0c29e820_account_id_count_measure0\n            - CategoricalMeasureField:\n\
+      \                AggregationFunction: COUNT\n                Column:\n     \
+      \             ColumnName: identity_arn\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_0c29e820_identity_arn_count_measure1\n\
+      \            - CategoricalMeasureField:\n                AggregationFunction:\
+      \ COUNT\n                Column:\n                  ColumnName: modelid\n  \
+      \                DataSetIdentifier: bedrock_invocations_view\n             \
+      \   FieldId: visual_0c29e820_modelid_count_measure2\n            - CategoricalMeasureField:\n\
+      \                AggregationFunction: COUNT\n                Column:\n     \
+      \             ColumnName: operation\n                  DataSetIdentifier: bedrock_invocations_view\n\
+      \                FieldId: visual_0c29e820_operation_count_measure3\n       \
+      \     - CategoricalMeasureField:\n                AggregationFunction: COUNT\n\
+      \                Column:\n                  ColumnName: region\n           \
+      \       DataSetIdentifier: bedrock_invocations_view\n                FieldId:\
+      \ visual_0c29e820_region_count_measure4\n            - NumericalMeasureField:\n\
+      \                AggregationFunction:\n                  SimpleNumericalAggregation:\
+      \ COUNT\n                Column:\n                  ColumnName: input_token_count\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_0c29e820_input_token_count_count_measure5\n          \
+      \  - NumericalMeasureField:\n                AggregationFunction:\n        \
+      \          SimpleNumericalAggregation: COUNT\n                Column:\n    \
+      \              ColumnName: output_token_count\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_0c29e820_output_token_count_count_measure6\n\
+      \            - NumericalMeasureField:\n                AggregationFunction:\n\
+      \                  SimpleNumericalAggregation: COUNT\n                Column:\n\
+      \                  ColumnName: usage_total_tokens\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_0c29e820_usage_total_tokens_count_measure7\n\
+      \            - CategoricalMeasureField:\n                AggregationFunction:\
+      \ COUNT\n                Column:\n                  ColumnName: stop_reason\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_0c29e820_stop_reason_count_measure8\n        SortConfiguration:\
+      \ {}\n      Subtitle:\n        FormatText:\n          RichText: <visual-subtitle>Timestamped\
+      \ listing of model calls with token\n            usage</visual-subtitle>\n \
+      \       Visibility: VISIBLE\n      Title:\n        FormatText:\n          RichText:\
+      \ \"<visual-title>\\n  <b>Bedrock Invocation Records Detail</b>\\n\\\n     \
+      \       </visual-title>\"\n        Visibility: VISIBLE\n      VisualContentAltText:\
+      \ Table displaying individual Bedrock invocation records\n        with timestamps,\
+      \ models, operations, regions, token counts, and prompt previews\n      VisualId:\
+      \ 4efb80fd-17db-4561-82be-953b29982baf\n  - TableVisual:\n      Actions: []\n\
+      \      ChartConfiguration:\n        FieldWells:\n          TableAggregatedFieldWells:\n\
+      \            GroupBy:\n            - CategoricalDimensionField:\n          \
+      \      Column:\n                  ColumnName: requestid\n                  DataSetIdentifier:\
+      \ bedrock_invocations_view\n                FieldId: visual_1eab78ce_requestid_field\n\
+      \            Values:\n            - NumericalMeasureField:\n               \
+      \ AggregationFunction:\n                  SimpleNumericalAggregation: SUM\n\
+      \                Column:\n                  ColumnName: input_token_count\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_1eab78ce_input_token_count_measure_0\n            - NumericalMeasureField:\n\
+      \                AggregationFunction:\n                  SimpleNumericalAggregation:\
+      \ SUM\n                Column:\n                  ColumnName: output_token_count\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_1eab78ce_output_token_count_measure_1\n            - NumericalMeasureField:\n\
+      \                AggregationFunction:\n                  SimpleNumericalAggregation:\
+      \ SUM\n                Column:\n                  ColumnName: usage_total_tokens\n\
+      \                  DataSetIdentifier: bedrock_invocations_view\n           \
+      \     FieldId: visual_1eab78ce_usage_total_tokens_measure_2\n        SortConfiguration:\
+      \ {}\n      Subtitle:\n        FormatText:\n          RichText: <visual-subtitle>Input,\
+      \ output, and total tokens per request ID</visual-subtitle>\n        Visibility:\
+      \ VISIBLE\n      Title:\n        FormatText:\n          RichText: \"<visual-title>\\\
+      n  <b>Total Token Usage by Request</b>\\n</visual-title>\"\n        Visibility:\
+      \ VISIBLE\n      VisualContentAltText: Table listing request IDs with total\
+      \ input, output, and\n        combined token counts, revealing highest token-consuming\
+      \ API calls\n      VisualId: 49097c00-df0a-4a4e-a484-7ad0a92b138a\n- ContentType:\
+      \ INTERACTIVE\n  Layouts:\n  - Configuration:\n      GridLayout:\n        CanvasSizeOptions:\n\
+      \          ScreenCanvasSizeOptions:\n            OptimizedViewPortWidth: 1600px\n\
+      \            ResizeOption: FIXED\n        Elements:\n        - ColumnIndex:\
+      \ 0\n          ColumnSpan: 24\n          ElementId: b1cfaf9f-52b4-4dc3-ae96-6dcb5fbedb12\n\
+      \          ElementType: TEXT_BOX\n          RowIndex: 0\n          RowSpan:\
+      \ 2\n        - ColumnIndex: 0\n          ColumnSpan: 24\n          ElementId:\
+      \ 3717e9d6-5a3c-4ffb-8548-947b4e570e2f\n          ElementType: TEXT_BOX\n  \
+      \        RowIndex: 2\n          RowSpan: 4\n        - ColumnIndex: 0\n     \
+      \     ColumnSpan: 24\n          ElementId: fce61cd4-ca91-407d-802e-0ea2c70e801d\n\
+      \          ElementType: TEXT_BOX\n          RowIndex: 6\n          RowSpan:\
+      \ 6\n        - ColumnIndex: 0\n          ColumnSpan: 24\n          ElementId:\
+      \ 78eb4a03-ba18-4563-afa2-7775e526599f\n          ElementType: TEXT_BOX\n  \
+      \        RowIndex: 12\n          RowSpan: 6\n  Name: About\n  SheetId: cffc5c5e-5c1f-4655-8337-f034ca91b184\n\
+      \  TextBoxes:\n  - Content: \"<text-box>\\n  <block align=\\\"center\\\">\\\
+      n    <inline font-size=\\\"40px\\\"\\\n      >Notices</inline>\\n  </block>\\\
+      n</text-box>\"\n    SheetTextBoxId: b1cfaf9f-52b4-4dc3-ae96-6dcb5fbedb12\n \
+      \ - Content: \"<text-box>Customers are responsible for making their own independent\\\
+      \n      \\ assessment of\\_this dashboard and its content.\\_This dashboard\
+      \ and its content:\\\n      \\ (a) is for informational purposes only, (b) represents\
+      \ current AWS product\\\n      \\ offerings and practices, which are subject\
+      \ to change without notice, and (c)\\\n      \\ does not create any commitments\
+      \ or assurances from AWS and its affiliates,\\\n      \\ suppliers or licensors.\
+      \ AWS\\_content, products or services are provided \\u201C\\\n      as is\\\
+      u201D without warranties, representations, or conditions of any kind,\\\n  \
+      \    \\ whether express or implied. The responsibilities and liabilities of\
+      \ AWS to\\\n      \\ its customers are controlled by AWS agreements, and this\
+      \ document is not part\\\n      \\ of, nor does it modify, any agreement between\
+      \ AWS and its customers.</text-box>\"\n    SheetTextBoxId: 3717e9d6-5a3c-4ffb-8548-947b4e570e2f\n\
+      \  - Content: \"<text-box>\\n  <block align=\\\"center\\\">\\n    <inline color=\\\
+      \"#18cffd\\\"\\\n      \\ font-size=\\\"40px\\\">\\n      <b>BUILD</b>\\n  \
+      \  </inline>\\n  </block>\\n  <br/>\\n\\\n      \\  <block align=\\\"center\\\
+      \">\\n    <inline font-size=\\\"40px\\\">\\n      <b>v1.0.0</b>\\n\\\n     \
+      \ \\    </inline>\\n  </block>\\n  <br/>\\n  <block align=\\\"center\\\"/>\\\
+      n  <br/>\\n\\\n      \\  <block align=\\\"center\\\">\\n    <inline font-size=\\\
+      \"40px\\\">Bedrock Unified\\\n      \\ Insights Lens Dashboard</inline>\\n \
+      \ </block>\\n  <br/>\\n</text-box>\"\n    SheetTextBoxId: fce61cd4-ca91-407d-802e-0ea2c70e801d\n\
+      \  - Content: \"<text-box>\\n  <block align=\\\"right\\\">Built by: Steph Gooch</block>\\\
+      n\\\n      \\  <br/>\\n  <block align=\\\"right\\\">\\n    Learn more\\n   \
+      \ about AWS Cloud Intelligence\\\n      \\ Dashboards (CID) on\\n    <inline\
+      \ color=\\\"#61d1d6\\\">\\n      <a href=\\\"https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/getting-started.html\\\
+      \"\\\n      \\ target=\\\"_blank\\\">\\n        <u>AWS Well-Architected Labs</u>\\\
+      n      </a>\\n\\\n      \\    </inline>\\n    \\_and\\n    <inline color=\\\"\
+      #61d1d6\\\">\\n      <a href=\\\"\\\n      https://www.youtube.com/channel/UCl0O3ASMCwA_gw0QIKzoU3Q\\\
+      \" target=\\\"_blank\\\"\\\n      >\\n        <u>CID YouTube Channel</u>\\n\
+      \      </a>\\n    </inline>\\n  </block>\\n\\\n      \\  <br/>\\n  <block align=\\\
+      \"right\\\">\\n    If you wish to provide feedback or\\\n      \\ report an\
+      \ error, please email:\\n    <inline background-color=\\\"PrimaryBackground\\\
+      \"\\\n      \\ color=\\\"#61d1d6\\\">\\n      <a href=\\\"mailto:cloud-intelligence-dashboards@amazon.com?subject=BUILD%20Dashboard%20Feedback\\\
+      \"\\\n      \\ target=\\\"_blank\\\">cloud-intelligence-dashboards@amazon.com</a>\\\
+      n    </inline>\\n\\\n      \\  </block>\\n  <br/>\\n  <block align=\\\"right\\\
+      \">Powered by: Amazon Quick, Amazon\\\n      \\ Athena, Amazon S3</block>\\\
+      n  <br/>\\n  <block align=\\\"right\\\"/>\\n  <br/>\\n\\\n      </text-box>\"\
+      \n    SheetTextBoxId: 78eb4a03-ba18-4563-afa2-7775e526599f\n  Visuals: []\n"
 datasets:
   bedrock_invocations_view:
     data:
@@ -1806,33 +998,30 @@ crawlers: {}
 views:
   bedrock_invocations_view:
     dependsOn: {}
-    data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".bedrock_invocations_view AS
-      SELECT
-        account_id
-      , CAST(from_iso8601_timestamp(timestamp) AS timestamp) timestamp
-      , region
-      , requestid
-      , operation
-      , modelid
-      , identity_arn
-      , IF((identity_arn LIKE '%:assumed-role/%'), element_at(split(identity_arn, '/'), -1), identity_arn) identity
-      , JSON_FORMAT(CAST(requestmetadata AS JSON)) requestmetadata
-      , year
-      , month
-      , day
-      , input.inputtokencount input_token_count
-      , input.inputcontenttype input_content_type
-      , output.outputtokencount output_token_count
-      , output.outputcontenttype output_content_type
-      , input.inputtokencount usage_input_tokens
-      , output.outputtokencount usage_output_tokens
-      , (input.inputtokencount + output.outputtokencount) usage_total_tokens
-      , CAST(COALESCE(json_extract_scalar(output.outputbodyjson, '$.usage.cacheReadInputTokens'), json_extract_scalar(output.outputbodyjson, '$.usage.cacheReadInputTokenCount'), json_extract_scalar(output.outputbodyjson, '$.usage.cache_read_input_tokens')) AS INTEGER) usage_cache_read_tokens
-      , CAST(COALESCE(json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokens'), json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokenCount'), json_extract_scalar(output.outputbodyjson, '$.usage.cache_creation_input_tokens')) AS INTEGER) usage_cache_write_tokens
-      , COALESCE(json_extract_scalar(output.outputbodyjson, '$.stopReason'), json_extract_scalar(output.outputbodyjson, '$.stop_reason')) stop_reason
-      , substr(COALESCE(json_extract_scalar(output.outputbodyjson, '$.output.message.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.completion'), json_extract_scalar(output.outputbodyjson, '$.outputText')), 1, 1000) response_preview
-      , substr(COALESCE(json_extract_scalar(input.inputbodyjson, '$.messages[0].content[0].text'), json_extract_scalar(input.inputbodyjson, '$.messages[0].content'), json_extract_scalar(input.inputbodyjson, '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText')), 1, 1000) prompt_preview
-      FROM
-        "${athena_database_name}".bedrock_logs
-      WHERE (from_iso8601_timestamp(timestamp) >= date_add('month', -6, current_timestamp))
+    data: "CREATE OR REPLACE VIEW \"${athena_database_name}\".bedrock_invocations_view\
+      \ AS\nSELECT\n  account_id\n, CAST(from_iso8601_timestamp(timestamp) AS timestamp)\
+      \ timestamp\n, region\n, requestid\n, operation\n, modelid\n, identity_arn\n\
+      , IF((identity_arn LIKE '%:assumed-role/%'), element_at(split(identity_arn,\
+      \ '/'), -1), identity_arn) identity\n, JSON_FORMAT(CAST(requestmetadata AS JSON))\
+      \ requestmetadata\n, year\n, month\n, day\n, input.inputtokencount input_token_count\n\
+      , input.inputcontenttype input_content_type\n, output.outputtokencount output_token_count\n\
+      , output.outputcontenttype output_content_type\n, input.inputtokencount usage_input_tokens\n\
+      , output.outputtokencount usage_output_tokens\n, (input.inputtokencount + output.outputtokencount)\
+      \ usage_total_tokens\n, CAST(COALESCE(json_extract_scalar(output.outputbodyjson,\
+      \ '$.usage.cacheReadInputTokens'), json_extract_scalar(output.outputbodyjson,\
+      \ '$.usage.cacheReadInputTokenCount'), json_extract_scalar(output.outputbodyjson,\
+      \ '$.usage.cache_read_input_tokens')) AS INTEGER) usage_cache_read_tokens\n\
+      , CAST(COALESCE(json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokens'),\
+      \ json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokenCount'),\
+      \ json_extract_scalar(output.outputbodyjson, '$.usage.cache_creation_input_tokens'))\
+      \ AS INTEGER) usage_cache_write_tokens\n, COALESCE(json_extract_scalar(output.outputbodyjson,\
+      \ '$.stopReason'), json_extract_scalar(output.outputbodyjson, '$.stop_reason'))\
+      \ stop_reason\n, substr(COALESCE(json_extract_scalar(output.outputbodyjson,\
+      \ '$.output.message.content[0].text'), json_extract_scalar(output.outputbodyjson,\
+      \ '$.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.completion'),\
+      \ json_extract_scalar(output.outputbodyjson, '$.outputText')), 1, 1000) response_preview\n\
+      , substr(COALESCE(json_extract_scalar(input.inputbodyjson, '$.messages[0].content[0].text'),\
+      \ json_extract_scalar(input.inputbodyjson, '$.messages[0].content'), json_extract_scalar(input.inputbodyjson,\
+      \ '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText')), 1,\
+      \ 1000) prompt_preview\nFROM\n  \"${athena_database_name}\".bedrock_logs\nWHERE\
+      \ (from_iso8601_timestamp(timestamp) >= date_add('month', -6, current_timestamp))"
