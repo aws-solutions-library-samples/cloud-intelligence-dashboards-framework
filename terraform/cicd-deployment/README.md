@@ -51,7 +51,7 @@ global_values = {
   aws_region            = "us-east-1"         # AWS region for deployment
   quicksight_user       = "user@example.com" # QuickSight username
   cid_cfn_version       = "4.4.18"          # CID CloudFormation version
-  data_export_version   = "0.9.0"           # Data Export version
+  data_export_version   = "0.12.0"          # Data Export version
   environment           = "prod"              # Environment (dev, staging, prod)
 }
 
@@ -278,7 +278,7 @@ If you're upgrading from the previous non-modular Terraform configuration, pleas
      aws_region            = "your-region"          # From your old config
      quicksight_user       = "your-qs-user"        # From your old config
      cid_cfn_version       = "4.4.18"              # Updated version
-     data_export_version   = "0.9.0"               # Updated version
+     data_export_version   = "0.12.0"              # Updated version
      environment           = "prod"                 # From your old config
    }
    
@@ -336,7 +336,7 @@ While the cross-account setup is recommended for production environments, you ca
      aws_region             = "us-east-1"         # AWS region for deployment
      quicksight_user        = "user/example"      # QuickSight username
      cid_cfn_version        = "4.4.18"            # CID CloudFormation version
-     data_export_version    = "0.9.0"             # Data Export version
+     data_export_version    = "0.12.0"            # Data Export version
      environment            = "dev"               # Environment (dev, staging, prod)
    }
    ```
