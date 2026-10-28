@@ -68,7 +68,7 @@ _REGIONS_BY_PARTITION = {
     partition=st.sampled_from(sorted(PARTITION_DOMAINS)),
     region_index=st.integers(min_value=0, max_value=2),
     explicit_domain=st.one_of(st.none(), st.just(''), st.sampled_from(['aws.amazon.com', 'amazonaws.cn', 'amazonaws-us-gov.com'])),
-    resource_kind=st.sampled_from(['dashboard', 'agent', 'space', 'dashboards', 'agents', 'spaces', 'Agent ', 'SPACE']),
+    resource_kind=st.sampled_from(['dashboard', 'agent', 'dashboards', 'agents', 'Agent ', 'AGENT']),
     resource_id=st.text(alphabet='abcdefghijklmnopqrstuvwxyz0123456789-', min_size=1, max_size=20),
 )
 def test_property_6_console_urls_partition_correct(account_id, partition, region_index, explicit_domain, resource_kind, resource_id):
@@ -81,10 +81,10 @@ def test_property_6_console_urls_partition_correct(account_id, partition, region
     assert url.startswith(f'https://{region}.quicksight.{expected_domain}/')
     # The resource id is present in the path
     assert resource_id in url
-    # gen-AI resources are account-scoped
-    kind = resource_kind.strip().lower().rstrip('s')
-    if kind in ('agent', 'space'):
-        assert account_id in url
+    # no account segment: the console resolves the account from the session
+    assert '/sn/account/' not in url
+    if resource_kind.strip().lower().rstrip('s') == 'agent':
+        assert url.endswith(f'/sn/start/agents?view={resource_id}')
     # When no domain is supplied, the domain is derived purely from the partition
     if not explicit_domain:
         assert PARTITION_DOMAINS[partition] in url

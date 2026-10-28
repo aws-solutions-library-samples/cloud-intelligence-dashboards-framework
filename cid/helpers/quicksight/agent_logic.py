@@ -20,16 +20,16 @@ PARTITION_DOMAINS = {
 }
 
 # Console path templates per resource kind. Dashboards keep the existing
-# Cid.qs_url shape (common.py); gen-AI resources are account-scoped.
+# Cid.qs_url shape (common.py); agents use the console's "Copy link" shape. No account
+# segment: sn/account/<name>/ expects the Quick account name, not the AWS account id.
 _CONSOLE_PATHS = {
     'dashboard': 'sn/dashboards/{resource_id}',
-    'agent': 'sn/account/{account_id}/agents/{resource_id}',
-    'space': 'sn/account/{account_id}/spaces/{resource_id}',
+    'agent': 'sn/start/agents?view={resource_id}',
 }
 
 
 def build_console_url(account_id: str, region: str, partition: str, domain: str, resource_kind: str, resource_id: str) -> str:
-    """Quick console URL of a dashboard, agent or space for the given partition and region."""
+    """Quick console URL of a dashboard or agent for the given partition and region."""
     if not domain:
         domain = PARTITION_DOMAINS.get(partition, PARTITION_DOMAINS['aws'])
     kind = str(resource_kind or '').strip().lower()
