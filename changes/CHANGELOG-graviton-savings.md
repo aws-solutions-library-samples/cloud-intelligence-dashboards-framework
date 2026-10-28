@@ -1,5 +1,18 @@
 # What's new in the Graviton Savings Dashboard
 
+## Graviton Savings Dashboard v3.0.6:
+```
+cid-cmd update --dashboard-id graviton-savings --force --recursive
+```
+* RDS, OpenSearch, ElastiCache: Add Database Savings Plan (DBSP) awareness. Derive the purchase type from the savings-plan/reservation ARN and price DBSP-covered usage at its effective DBSP rate via a new `pricing_databasesavingsplan_data` join, so DBSP-covered Graviton resources are no longer absent from the scan or priced at On-Demand
+* RDS and OpenSearch: Remap the DBSP purchase type to On-Demand on the Graviton and Intel pricing joins so DBSP-covered rows resolve their comparator rate (previously this blanked realized/potential savings, and on OpenSearch mislabeled DBSP rows as "No equivalent graviton instance")
+* OpenSearch: Fix the duplicated ".search" suffix in the Graviton target instance type that left unit cost and savings blank on Gen7 (m7g/r7g) rows; de-duplicate domain engine version with `MAX(engineversion)` grouped by domain and account to stop a multi-version cost double-count
+* ElastiCache: Fix a cache-cluster engine-version fan-out that double-counted spend for clusters reporting more than one engine version, by grouping on `cacheclusterid, accountid`
+* OpenSearch and ElastiCache: Add a `graviton_unit_cost` column exposing the per-unit Graviton rate
+* ElastiCache: "Current Unit Cost" now uses amortized cost instead of unblended, so DBSP-covered rows show the effective DBSP rate rather than the On-Demand rate
+* ElastiCache and OpenSearch: Base "Existing Savings %" on amortized cost instead of unblended
+* Requires the `pricing_databasesavingsplan_data` table to be populated in the data-collection database. Deploy or update the [Data Collection pricing module](https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection) to a release that includes [data-collection#468](https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/pull/468), which adds the `AWSDatabaseSavingsPlan` price list
+
 ## Graviton Savings Dashboard v3.0.5:
 ```
 cid-cmd update --dashboard-id graviton-savings --force --recursive

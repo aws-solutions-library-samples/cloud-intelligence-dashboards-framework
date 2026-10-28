@@ -200,7 +200,7 @@ CalculatedFields:
   Expression: '{graviton_cost}'
   Name: Current Graviton Instance Amortized Cost
 - DataSetIdentifier: elasticache_graviton_dashboard
-  Expression: sum({existing_savings})/sum({sum_line_item_unblended_cost})
+  Expression: sum({existing_savings})/sum({sum_amortized_cost})
   Name: Existing Savings %
 - DataSetIdentifier: elasticache_graviton_dashboard
   Expression: sumIf({sum_line_item_usage_amount}, generation = "Graviton")/sum({sum_line_item_usage_amount})
@@ -218,7 +218,7 @@ CalculatedFields:
   Expression: '{existing_savings}'
   Name: Realized Graviton Savings
 - DataSetIdentifier: elasticache_graviton_dashboard
-  Expression: 'sum({sum_line_item_unblended_cost}) / sum({sum_line_item_usage_amount}) '
+  Expression: 'sum({sum_amortized_cost}) / sum({sum_line_item_usage_amount}) '
   Name: Unit Cost
 - DataSetIdentifier: elasticache_graviton_dashboard
   Expression: 'ifelse(generation = ''Graviton'', ''Graviton'', ''Intel'')  '
@@ -297,7 +297,7 @@ CalculatedFields:
     )
   Name: Databases Group By
 - DataSetIdentifier: opensearch_graviton_dashboard
-  Expression: sum({existing_savings})/sum({line_item_unblended_cost})
+  Expression: sum({existing_savings})/sum({amortized_cost})
   Name: Existing Savings %
 - DataSetIdentifier: opensearch_graviton_dashboard
   Expression: '{existing_savings}'
@@ -30126,7 +30126,7 @@ Sheets:
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline color=\"#61d1d6\"\
       \ font-size=\"24px\">\n      <b>\n        <u>Graviton Savings Dashboard</u>\n\
       \      </b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n\
-      \    <inline font-size=\"20px\">\n      <b>v3.0.5</b>\n    </inline>\n  </block>\n\
+      \    <inline font-size=\"20px\">\n      <b>v3.0.6</b>\n    </inline>\n  </block>\n\
       \  <br/>\n  <block align=\"right\"/>\n  <br/>\n  <block align=\"right\"/>\n\
       \  <br/>\n  <block align=\"right\"/>\n  <br/>\n  <block align=\"center\"/>\n\
       \  <br/>\n  <block align=\"center\"/>\n  <br/>\n  <block align=\"right\">Authors:\
