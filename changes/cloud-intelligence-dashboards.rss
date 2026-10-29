@@ -5,8 +5,63 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Fri, 09 Oct 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 27 Oct 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] Graviton Savings Dashboard v3.0.6</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-graviton-savings.md
+      </link>
+      <pubDate>Tue, 27 Oct 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">39759b53-afe7-4d37-a221-ae059e36e8c6</guid>
+      <description>Graviton Savings Dashboard v3.0.6</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Database Savings Plans:</strong> RDS, OpenSearch and ElastiCache now recognize Database Savings Plan (DBSP) coverage and price covered usage at its effective DBSP rate, so DBSP-covered Graviton resources are no longer missing from the scan or priced at On-Demand.</li>
+    <li><strong>Savings Accuracy:</strong> ElastiCache and OpenSearch "Current Unit Cost" and "Existing Savings %" now use amortized cost, and a new <code>graviton_unit_cost</code> column shows the per-unit Graviton rate.</li>
+    <li><strong>Fixes:</strong> OpenSearch Gen7 (m7g/r7g) rows no longer show blank unit cost and savings. Cost is no longer double-counted for OpenSearch domains and ElastiCache clusters that report more than one engine version.</li>
+  </ul>
+  <p>Requires the <code>pricing_databasesavingsplan_data</code> table. Update the <a href="https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection">Data Collection pricing module</a> to a release that includes data-collection#468, then run <code>cid-cmd update --dashboard-id graviton-savings --force --recursive</code>.</p>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] CUDOS Dashboard v5.10.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-cudos.md#cudos---5100
+      </link>
+      <pubDate>Fri, 23 Oct 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">4fbe7b48-31cd-4d97-b278-7ed13f700504</guid>
+      <description>CUDOS Dashboard v5.10.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Databases:</strong> Added 'Modernize Amazon Redshift: RA3 to RG Migration' section with 'Monthly Cost Savings Opportunities with Migration to Redshift RG', 'Amazon Redshift RA3: Cost Savings Opportunities with migration to RG', 'Amazon Redshift: RA3 to RG: Cost Breakdown' and 'Amazon Redshift RG: Achieved Cost Efficiency Gains vs RA3' visuals to track Graviton-based RG adoption and estimate savings. Use the Purchase Option and Incremental Snapshot Size controls to adjust the estimate</li>
+    <li><strong>Databases:</strong> Replaced 'Cost by Service Product Family' with 'Cost by Usage Type Group' visual. It groups cost by service and pricing component as named on the AWS pricing pages, for example 'RDS DB Instances', 'Aurora Database Storage and I/Os' or 'OpenSearch UltraWarm and Cold Storage'</li>
+    <li><strong>Databases:</strong> 'Daily Storage Cost' visual now separates io1 and io2, I/O-Optimized and Elastic Clusters storage, and labels backups and other storage components that previously showed as raw usage types</li>
+    <li><strong>Data Transfer &amp; Networking:</strong> Added 'NAT Gateways Optimization Opportunities' section with 'Zonal NAT Gateways: Regional NAT Savings Opportunities (Last 30 Days)' visual. It highlights zonal NAT gateways that receive cross-AZ traffic and compares their current cost with a Regional NAT gateway, which improves resilience and can reduce inter-AZ data transfer cost. Use the Assumed AZs control to match your setup</li>
+    <li><strong>Data Transfer &amp; Networking:</strong> Added 'Regional via Public IP' and 'Cloud WAN Data Processed' Data Transfer Types. Regional traffic sent to public or Elastic IPs is no longer reported as 'Inter AZ'. Inter-Region VPC peering, S3 Multi-Region Access Points, CloudFront origin traffic and new cross-AZ usage types no longer show as 'Other'</li>
+    <li><strong>Data Transfer &amp; Networking:</strong> Updated Public IPv4 and Single-AZ VPC Endpoints descriptions. IPAM contiguous IPv4 blocks have their own usage type label</li>
+    <li><strong>Amazon DynamoDB:</strong> Added 'DynamoDB Backup Optimization' section with 'DynamoDB Backup Cost by Type', 'Native Backup Cost', 'Native Backup Cost by Age', 'Native Backups of Deleted Tables', 'Native Backups: Estimated Savings with Cold Storage' and 'Native Backups to Review (Last 30 days)' visuals. Use them to find backups of deleted tables and older backups that are good candidates for cold storage</li>
+    <li><strong>Amazon DynamoDB:</strong> Usage Type Group now shows Standard-IA table storage, restores, exports, imports, change data capture and vector search separately</li>
+    <li><strong>Executive: Billing Summary:</strong> Added 'Credits, Refunds and Discounts detailed view' pivot table</li>
+    <li><strong>Executive: Billing Summary:</strong> Split 'Marketplace' Charge Type Group into 'Marketplace Usage' and 'Marketplace Fees', so 'Usage' plus 'Marketplace Usage' matches Cost Explorer usage (for example third-party models in Amazon Bedrock)</li>
+    <li><strong>Executive: Billing Summary:</strong> Database Savings Plans are now included in the 'Databases' Service Category</li>
+    <li><strong>Analytics:</strong> Renamed Quick Suite visuals and labels to Amazon Quick. Added Amazon Quick plans (Free, Plus, Max) and agent hours to the Usage Type Group, and added a Group By control</li>
+    <li><strong>AI/ML:</strong> Amazon Bedrock Resource Group now shows Mantle model usage. SageMaker Usage Type Group now covers Serverless Inference, Feature Store, Augmented AI, Ground Truth labeling, inference optimization and other previously unlabeled usage. Kiro Individual plans have their own labels</li>
+    <li><strong>Monitoring &amp; Observability:</strong> CloudWatch Usage Type Group and Sub Group now cover log storage tiers (Infrequent Access, Archive Instant Access), OpenTelemetry metrics and logs, PromQL, RUM, Network Flow Monitor, log delivery to Firehose and centralization. AWS Config separates periodic recording and proactive evaluations</li>
+    <li><strong>Security:</strong> Cognito Usage Type Group now covers the Lite, Essentials and Plus tiers, multi-Region replication, request rate quota increases and Bedrock AgentCore identity requests. Shield-protected Anti-DDoS rule groups are now reported under 'AWS WAF Shield Protected'</li>
+    <li><strong>Amazon S3:</strong> Usage Type Group now separates S3 Tables, S3 Vectors, S3 Files, S3 Metadata, S3 Express One Zone, Intelligent-Tiering archive restores, Access Grants and other features that were mislabeled as Glacier Instant Retrieval or One Zone-IA</li>
+    <li><strong>Messaging and Streaming:</strong> Replaced 'Amazon MSK Cost by Usage Type' with 'Amazon MSK Cost by Usage Type Group'. It groups instance sizes into broker, storage, Serverless, MSK Connect and Replicator categories</li>
+    <li><strong>Storage &amp; Backup:</strong> 'Storage FS Usage Cost per Account' now shows all accounts. Shared FS Usage Type Group separates EFS storage classes and shows FSx cost by file system type (Lustre, ONTAP, OpenZFS, Windows File Server)</li>
+  </ul>
+  <p>To update, run <code>cid-cmd update --dashboard-id cudos-v5</code>.</p>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] cid-cmd v4.4.18</title>
       <link>

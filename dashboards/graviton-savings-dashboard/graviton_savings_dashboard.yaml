@@ -11,7 +11,7 @@ dashboards:
     dashboardId: graviton-savings
     category: Advanced
     theme: MIDNIGHT
-    version: v3.0.5
+    version: v3.0.6
     file: ./graviton_savings_dashboard-definition.yaml
     nonTaxonomyDatasets:
     - graviton_mapping
@@ -925,20 +925,21 @@ views:
       - pricing_term
       - pricing_unit
       - product
+      - product['vcpu']
       - product_instance_type
       - product_location
       - product_product_family
-      - product['vcpu']
       - reservation_effective_cost
       - reservation_reservation_a_r_n
       - reservation_unused_amortized_upfront_fee_for_billing_period
       - reservation_unused_recurring_fee
       - resource_tags
+      - savings_plan_savings_plan_a_r_n
       - savings_plan_savings_plan_effective_cost
       - savings_plan_total_commitment_to_date
       - savings_plan_used_commitment
     data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".graviton_opensearch_view AS
+      CREATE OR REPLACE VIEW "${athena_database_name}".graviton_opensearch_view AS 
       WITH
         cur_data AS (
          SELECT
@@ -950,13 +951,13 @@ views:
          , SPLIT_PART(product_instance_type, '.', 1) instance_family
          , (CASE WHEN (SPLIT_PART(product_instance_type, '.', 1) LIKE '%g%') THEN 'Graviton' WHEN (map.generation LIKE 'Graviton%') THEN 'Graviton' WHEN (map.generation = 'OpenSearch Optimized') THEN 'OpenSearch Optimized' ELSE 'Intel' END) processor_type
          , cur.product_location
-         , cur.pricing_term
          , COALESCE(cur.pricing_lease_contract_length, '') pricing_lease_contract_length
          , COALESCE(cur.pricing_offering_class, '') pricing_offering_class
          , COALESCE(cur.pricing_purchase_option, '') pricing_purchase_option
          , pricing_unit
+         , (CASE WHEN (cur.savings_plan_savings_plan_a_r_n <> '') THEN 'DatabaseSavingsPlan' WHEN (cur.reservation_reservation_a_r_n <> '') THEN 'Reserved' ELSE 'OnDemand' END) pricing_term
          , map.generation
-         , (CASE WHEN (map.latest_arm <> '') THEN CONCAT(map.latest_arm, '.', SPLIT_PART(cur.product_instance_type, '.', 2), '.search') ELSE '' END) graviton_instance
+         , (CASE WHEN (map.latest_arm <> '') THEN CONCAT(SPLIT_PART(map.latest_arm, '.', 1), '.', SPLIT_PART(cur.product_instance_type, '.', 2), '.search') ELSE '' END) graviton_instance
          , (CASE WHEN (map.previous_intel <> '') THEN CONCAT(map.previous_intel, '.', SPLIT_PART(cur.product_instance_type, '.', 2), '.search') ELSE '' END) previous_intel_instance
          , ${cur_tags_json} tags_json
          , SUM((CASE WHEN (cur.line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN cur.line_item_usage_amount WHEN (cur.line_item_line_item_type = 'DiscountedUsage') THEN cur.line_item_usage_amount WHEN (cur.line_item_line_item_type = 'Usage') THEN cur.line_item_usage_amount ELSE 0 END)) line_item_usage_amount
@@ -968,19 +969,36 @@ views:
          LEFT JOIN modernization_mapping map ON (CONCAT(SPLIT_PART(cur.product_instance_type, '.', 1), '.search') = map.family))
          WHERE ((cur.product['product_name'] IN ('Amazon Elasticsearch Service', 'Amazon OpenSearch Service')) AND (cur.line_item_product_code = 'AmazonES') AND (cur.line_item_line_item_type IN ('DiscountedUsage', 'Usage', 'SavingsPlanCoveredUsage')) AND (cur.product_product_family = 'Amazon OpenSearch Service Instance') AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(split_part("billing_period", '-', 1), '-', split_part("billing_period", '-', 2), '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH))))
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, cur.product['vcpu']
-      )
+      ) 
       , describe_domains AS (
-         SELECT DISTINCT
+         SELECT
            domainname
          , accountid
-         , engineversion
-         , SPLIT_PART(engineversion, '_', 1) engine
-         , SPLIT_PART(engineversion, '_', 2) version
-         , SPLIT_PART(SPLIT_PART(engineversion, '_', 2), '.', 1) major
-         , SPLIT_PART(SPLIT_PART(engineversion, '_', 2), '.', 2) minor
+         , MAX(engineversion) engineversion
+         , SPLIT_PART(MAX(engineversion), '_', 1) engine
+         , SPLIT_PART(MAX(engineversion), '_', 2) version
+         , SPLIT_PART(SPLIT_PART(MAX(engineversion), '_', 2), '.', 1) major
+         , SPLIT_PART(SPLIT_PART(MAX(engineversion), '_', 2), '.', 2) minor
          FROM
            ${data_collection_database_name}.inventory_opensearch_domains_data
-      )
+         GROUP BY domainname, accountid
+      ) 
+      , dbsp_by_sku AS (
+         SELECT
+           discountedsku
+         , CAST(discountedrate AS double) dbsp_rate
+         FROM
+           (
+            SELECT
+              discountedsku
+            , discountedrate
+            , ROW_NUMBER() OVER (PARTITION BY discountedsku ORDER BY effectivedate DESC) rn
+            FROM
+              ${data_collection_database_name}.pricing_databasesavingsplan_data
+            WHERE ((discountedservicecode = 'AmazonES') AND (servicecode = 'DatabaseSavingsPlans') AND (unit = 'Hrs') AND (leasecontractlength = '1') AND (purchaseoption = 'No Upfront'))
+         ) 
+         WHERE (rn = 1)
+      ) 
       , pricing AS (
          SELECT
            od.location
@@ -992,25 +1010,30 @@ views:
          , od.offeringclass
          , od.unit
          , (CASE WHEN (od.TermType = 'OnDemand') THEN CAST(od.priceperunit AS double) WHEN (od.TermType = 'Reserved') THEN COALESCE((CAST(od.priceperunit AS double) + (CAST(fee.priceperunit AS double) / ((CAST(RTRIM(fee.leasecontractlength, 'yr') AS int) * 24) * 365))), CAST(od.priceperunit AS double)) ELSE 0 END) effective_priceperunit
+         , ds.dbsp_rate dbsp_rate
          FROM
-           (${data_collection_database_name}.pricing_opensearch_data od
+           ((${data_collection_database_name}.pricing_opensearch_data od
          LEFT JOIN ${data_collection_database_name}.pricing_opensearch_data fee ON ((od.sku = fee.sku) AND (od."region code" = fee."region code") AND (fee.purchaseoption = od.purchaseoption) AND (fee.leasecontractlength = od.leasecontractlength) AND (fee.unit = 'Quantity') AND (od.offeringclass = fee.offeringclass)))
+         LEFT JOIN dbsp_by_sku ds ON (ds.discountedsku = od.sku))
          WHERE ((od."instance type" <> '') AND (od.operation = 'ESDomain') AND (od.unit = 'Hrs'))
-      )
+      ) 
       SELECT
         cur.*
       , describe_domains.engine
       , describe_domains.version
       , (CASE WHEN (cur.processor_type = 'Graviton') THEN 'Already Graviton' WHEN (cur.processor_type = 'OpenSearch Optimized') THEN 'Already Optimized' WHEN (cur.graviton_instance = '') THEN 'No equivalent graviton instance' WHEN (PL1.effective_priceperunit IS NULL) THEN 'No equivalent graviton instance' WHEN (LOWER(describe_domains.engine) = 'opensearch') THEN 'Eligible' WHEN (LOWER(describe_domains.engine) = 'elasticsearch') THEN (CASE WHEN (describe_domains.major > '7') THEN 'Eligible' WHEN ((describe_domains.major = '7') AND (describe_domains.minor >= '9')) THEN 'Eligible' WHEN ((describe_domains.major = '7') AND (describe_domains.minor < '9')) THEN 'Requires Update' WHEN (describe_domains.major < '7') THEN 'Requires Update' END) ELSE 'Unknown' END) graviton_eligibility
-      , (PL1.effective_priceperunit * cur.line_item_usage_amount) graviton_price
-      , (cur.amortized_cost - (PL1.effective_priceperunit * cur.line_item_usage_amount)) graviton_savings
-      , (PL2.effective_priceperunit * cur.line_item_usage_amount) intel_equivilant_price
-      , ((PL2.effective_priceperunit * cur.line_item_usage_amount) - cur.amortized_cost) existing_savings
+      , (CASE WHEN (cur.graviton_instance = '') THEN null WHEN (cur.pricing_term = 'DatabaseSavingsPlan') THEN PL1_SP.dbsp_rate ELSE PL1.effective_priceperunit END) graviton_unit_cost
+      , (CASE WHEN (cur.graviton_instance = '') THEN null WHEN (cur.pricing_term = 'DatabaseSavingsPlan') THEN (PL1_SP.dbsp_rate * cur.line_item_usage_amount) ELSE (PL1.effective_priceperunit * cur.line_item_usage_amount) END) graviton_price
+      , (cur.amortized_cost - (CASE WHEN (cur.graviton_instance = '') THEN null WHEN (cur.pricing_term = 'DatabaseSavingsPlan') THEN (PL1_SP.dbsp_rate * cur.line_item_usage_amount) ELSE (PL1.effective_priceperunit * cur.line_item_usage_amount) END)) graviton_savings
+      , ((CASE WHEN (cur.previous_intel_instance = '') THEN null WHEN (cur.pricing_term = 'DatabaseSavingsPlan') THEN COALESCE(PL2_SP.dbsp_rate, PL2.effective_priceperunit) ELSE PL2.effective_priceperunit END) * cur.line_item_usage_amount) intel_equivilant_price
+      , (((CASE WHEN (cur.previous_intel_instance = '') THEN null WHEN (cur.pricing_term = 'DatabaseSavingsPlan') THEN COALESCE(PL2_SP.dbsp_rate, PL2.effective_priceperunit) ELSE PL2.effective_priceperunit END) * cur.line_item_usage_amount) - cur.amortized_cost) existing_savings
       FROM
-        (((cur_data cur
-      LEFT JOIN describe_domains ON (cur.line_item_resource_id = describe_domains.domainname AND cur.line_item_usage_account_id = describe_domains.accountid))
-      LEFT JOIN pricing PL1 ON ((PL1."instance type" = cur.graviton_instance) AND (PL1.location = cur.product_location) AND (PL1.termtype = (CASE WHEN (cur.pricing_term = 'Reserved') THEN 'Reserved Instance' ELSE cur.pricing_term END)) AND (COALESCE(PL1.leasecontractlength, '') = COALESCE(cur.pricing_lease_contract_length, '')) AND (COALESCE(PL1.purchaseoption, '') = COALESCE(cur.pricing_purchase_option, '')) AND (COALESCE(PL1.offeringclass, '') = COALESCE(cur.pricing_offering_class, '')) AND (cur.pricing_unit = PL1.unit)))
-      LEFT JOIN pricing PL2 ON ((PL2."instance type" = cur.previous_intel_instance) AND (PL2.location = cur.product_location) AND (PL2.termtype = (CASE WHEN (cur.pricing_term = 'Reserved') THEN 'Reserved Instance' ELSE cur.pricing_term END)) AND (COALESCE(PL2.leasecontractlength, '') = COALESCE(cur.pricing_lease_contract_length, '')) AND (COALESCE(PL2.purchaseoption, '') = COALESCE(cur.pricing_purchase_option, '')) AND (COALESCE(PL2.offeringclass, '') = COALESCE(cur.pricing_offering_class, '')) AND (cur.pricing_unit = PL2.unit)))
+        (((((cur_data cur
+      LEFT JOIN describe_domains ON ((cur.line_item_resource_id = describe_domains.domainname) AND (cur.line_item_usage_account_id = describe_domains.accountid)))
+      LEFT JOIN pricing PL1 ON ((PL1."instance type" = cur.graviton_instance) AND (PL1.location = cur.product_location) AND (PL1.termtype = (CASE WHEN (cur.pricing_term = 'Reserved') THEN 'Reserved Instance' WHEN (cur.pricing_term = 'DatabaseSavingsPlan') THEN 'OnDemand' ELSE cur.pricing_term END)) AND (COALESCE(PL1.leasecontractlength, '') = COALESCE(cur.pricing_lease_contract_length, '')) AND (COALESCE(PL1.purchaseoption, '') = COALESCE(cur.pricing_purchase_option, '')) AND (COALESCE(PL1.offeringclass, '') = COALESCE(cur.pricing_offering_class, '')) AND (cur.pricing_unit = PL1.unit)))
+      LEFT JOIN pricing PL1_SP ON ((PL1_SP."instance type" = cur.graviton_instance) AND (PL1_SP.location = cur.product_location) AND (PL1_SP.termtype = 'OnDemand') AND (COALESCE(PL1_SP.leasecontractlength, '') = '') AND (COALESCE(PL1_SP.purchaseoption, '') = '') AND (PL1_SP.unit = 'Hrs')))
+      LEFT JOIN pricing PL2 ON ((PL2."instance type" = cur.previous_intel_instance) AND (PL2.location = cur.product_location) AND (PL2.termtype = (CASE WHEN (cur.pricing_term = 'Reserved') THEN 'Reserved Instance' WHEN (cur.pricing_term = 'DatabaseSavingsPlan') THEN 'OnDemand' ELSE cur.pricing_term END)) AND (COALESCE(PL2.leasecontractlength, '') = COALESCE(cur.pricing_lease_contract_length, '')) AND (COALESCE(PL2.purchaseoption, '') = COALESCE(cur.pricing_purchase_option, '')) AND (COALESCE(PL2.offeringclass, '') = COALESCE(cur.pricing_offering_class, '')) AND (cur.pricing_unit = PL2.unit)))
+      LEFT JOIN pricing PL2_SP ON ((PL2_SP."instance type" = cur.previous_intel_instance) AND (PL2_SP.location = cur.product_location) AND (PL2_SP.termtype = 'OnDemand') AND (COALESCE(PL2_SP.leasecontractlength, '') = '') AND (COALESCE(PL2_SP.purchaseoption, '') = '') AND (PL2_SP.unit = 'Hrs')))
   graviton_elasticache_view:
     parameters:
       data_collection_database_name:
@@ -1047,8 +1070,10 @@ views:
       - reservation_reservation_a_r_n
       - reservation_unused_amortized_upfront_fee_for_billing_period
       - reservation_unused_recurring_fee
+      - savings_plan_savings_plan_a_r_n
+      - savings_plan_savings_plan_effective_cost
     data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".graviton_elasticache_view AS
+      CREATE OR REPLACE VIEW "${athena_database_name}".graviton_elasticache_view AS 
       WITH
         elasticache_spend AS (
          SELECT
@@ -1058,43 +1083,60 @@ views:
          , SPLIT_PART(line_item_resource_id, ':', 7) split_line_item_resource_id
          , SPLIT_PART(line_item_usage_type, ':', 2) split_line_item_usage_type
          , product_location
-         , pricing_term
          , product['cache_engine'] product_cache_engine
-         , (CASE WHEN (line_item_line_item_type = 'DiscountedUsage') THEN 'Reserved Instance' WHEN (line_item_line_item_type = 'Usage') THEN 'OnDemand' ELSE 'Others' END) case_purchase_option
+         , (CASE WHEN (line_item_line_item_type = 'DiscountedUsage') THEN 'Reserved Instance' WHEN (line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN 'OnDemand' WHEN (line_item_line_item_type = 'Usage') THEN 'OnDemand' ELSE 'Others' END) case_purchase_option
          , COALESCE(pricing_lease_contract_length, '') pricing_lease_contract_length
          , COALESCE(pricing_offering_class, '') pricing_offering_class
          , COALESCE(pricing_purchase_option, '') pricing_purchase_option
          , pricing_unit
          , (CASE WHEN (SPLIT_PART(product_instance_type, '.', 2) LIKE '%g%') THEN 'Graviton' ELSE 'Intel' END) processor_type
+         , (CASE WHEN (savings_plan_savings_plan_a_r_n <> '') THEN 'DatabaseSavingsPlan' WHEN (reservation_reservation_a_r_n <> '') THEN 'Reserved' ELSE 'OnDemand' END) pricing_term
          , map.generation
          , map.latest_arm graviton_family
          , map.previous_intel previous_intel_family
          , (CASE WHEN (map.latest_arm <> '') THEN CONCAT(map.latest_arm, '.', SPLIT_PART(line_item_usage_type, '.', 3)) ELSE '' END) graviton_instance
          , (CASE WHEN (map.previous_intel <> '') THEN CONCAT(map.previous_intel, '.', SPLIT_PART(line_item_usage_type, '.', 3)) ELSE '' END) previous_intel
          , ${cur_tags_json} tags_json
-         , SUM((CASE WHEN (line_item_line_item_type = 'DiscountedUsage') THEN line_item_usage_amount WHEN (line_item_line_item_type = 'Usage') THEN line_item_usage_amount ELSE 0 END)) sum_line_item_usage_amount
+         , SUM((CASE WHEN (line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN line_item_usage_amount WHEN (line_item_line_item_type = 'DiscountedUsage') THEN line_item_usage_amount WHEN (line_item_line_item_type = 'Usage') THEN line_item_usage_amount ELSE 0 END)) sum_line_item_usage_amount
          , SUM(line_item_unblended_cost) sum_line_item_unblended_cost
-         , SUM((CASE WHEN (line_item_line_item_type = 'DiscountedUsage') THEN reservation_effective_cost WHEN (line_item_line_item_type = 'RIFee') THEN (reservation_unused_amortized_upfront_fee_for_billing_period + reservation_unused_recurring_fee) WHEN ((line_item_line_item_type = 'Fee') AND (reservation_reservation_a_r_n <> '')) THEN 0 ELSE line_item_unblended_cost END)) sum_amortized_cost
+         , SUM((CASE WHEN (line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN savings_plan_savings_plan_effective_cost WHEN (line_item_line_item_type = 'DiscountedUsage') THEN reservation_effective_cost WHEN (line_item_line_item_type = 'RIFee') THEN (reservation_unused_amortized_upfront_fee_for_billing_period + reservation_unused_recurring_fee) WHEN ((line_item_line_item_type = 'Fee') AND (reservation_reservation_a_r_n <> '')) THEN 0 ELSE line_item_unblended_cost END)) sum_amortized_cost
          , SUM((CASE WHEN (line_item_line_item_type = 'RIFee') THEN -(reservation_amortized_upfront_fee_for_billing_period) ELSE 0 END)) sum_ri_trueup
          , SUM((CASE WHEN ((line_item_line_item_type = 'Fee') AND (reservation_reservation_a_r_n <> '')) THEN line_item_unblended_cost ELSE 0 END)) ri_upfront_fees
          FROM
            ("${cur2_database}"."${cur2_table_name}"
          LEFT JOIN modernization_mapping map ON (CONCAT('cache.', SPLIT_PART(line_item_usage_type, '.', 2)) = map.family))
-         WHERE ((product['product_name'] = 'Amazon ElastiCache') AND (product_product_family = 'Cache Instance') AND (line_item_line_item_type IN ('DiscountedUsage', 'Usage', 'RIFee', 'Fee')) AND (line_item_usage_type NOT LIKE '%SyncDurability%') AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(split_part("billing_period", '-', 1), '-', split_part("billing_period", '-', 2), '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH))))
+         WHERE ((product['product_name'] = 'Amazon ElastiCache') AND (product_product_family = 'Cache Instance') AND (line_item_line_item_type IN ('DiscountedUsage', 'Usage', 'RIFee', 'Fee', 'SavingsPlanCoveredUsage')) AND (NOT (line_item_usage_type LIKE '%SyncDurability%')) AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(split_part("billing_period", '-', 1), '-', split_part("billing_period", '-', 2), '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH))))
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
-      )
+      ) 
       , elasticache_engineversion AS (
          SELECT DISTINCT
            cacheclusterid
          , accountid
-         , engineversion
-         , engine
-         , SPLIT_PART(engineversion, '.', 1) major
-         , SPLIT_PART(engineversion, '.', 2) minor
-         , SPLIT_PART(engineversion, '.', 3) fix
+         , MAX(engineversion) engineversion
+         , MAX(engine) engine
+         , SPLIT_PART(MAX(engineversion), '.', 1) major
+         , SPLIT_PART(MAX(engineversion), '.', 2) minor
+         , SPLIT_PART(MAX(engineversion), '.', 3) fix
          FROM
            ${data_collection_database_name}.inventory_elasticache_clusters_data
-      )
+         GROUP BY cacheclusterid, accountid
+      ) 
+      , dbsp_by_sku AS (
+         SELECT
+           discountedsku
+         , CAST(discountedrate AS double) dbsp_rate
+         FROM
+           (
+            SELECT
+              discountedsku
+            , discountedrate
+            , ROW_NUMBER() OVER (PARTITION BY discountedsku ORDER BY effectivedate DESC) rn
+            FROM
+              ${data_collection_database_name}.pricing_databasesavingsplan_data
+            WHERE ((discountedservicecode = 'AmazonElastiCache') AND (servicecode = 'DatabaseSavingsPlans') AND (unit = 'Hrs') AND (leasecontractlength = '1') AND (purchaseoption = 'No Upfront'))
+         ) 
+         WHERE (rn = 1)
+      ) 
       , elasticache_pricedata AS (
          SELECT
            'ElastiCache' cache_type
@@ -1110,24 +1152,29 @@ views:
          , od.priceperunit
          , od.unit
          , (CASE WHEN (od.TermType = 'OnDemand') THEN CAST(od.priceperunit AS double) WHEN (od.TermType = 'Reserved') THEN COALESCE((CAST(od.priceperunit AS double) + (CAST(fee.priceperunit AS double) / ((CAST(RTRIM(fee.leasecontractlength, 'yr') AS int) * 24) * 365))), CAST(od.priceperunit AS double)) ELSE 0 END) odri_priceperunit
+         , ds.dbsp_rate dbsp_rate
          FROM
-           (${data_collection_database_name}.pricing_elasticache_data od
+           ((${data_collection_database_name}.pricing_elasticache_data od
          LEFT JOIN ${data_collection_database_name}.pricing_elasticache_data fee ON ((od.sku = fee.sku) AND (od."region code" = fee."region code") AND (fee.purchaseoption = od.purchaseoption) AND (fee.leasecontractlength = od.leasecontractlength) AND (fee.unit = 'Quantity') AND (od.offeringclass = fee.offeringclass)))
-         WHERE ((od."location type" = 'AWS Region') AND (od."product family" = 'Cache Instance') AND (od.usagetype NOT LIKE '%ExtendedSupport%') AND (od.usagetype NOT LIKE '%SyncDurability%'))
-      )
+         LEFT JOIN dbsp_by_sku ds ON (ds.discountedsku = od.sku))
+         WHERE ((od."location type" = 'AWS Region') AND (od."product family" = 'Cache Instance') AND (NOT (od.usagetype LIKE '%ExtendedSupport%')) AND (NOT (od.usagetype LIKE '%SyncDurability%')))
+      ) 
       SELECT
         elasticache_spend.*
       , ev.engineversion
       , (CASE WHEN (elasticache_spend.product_cache_engine = 'Redis') THEN (CASE WHEN (ev.major >= '5') THEN 'Eligible' WHEN ((ev.major = '5') AND (ev.minor > '0')) THEN 'Eligible' WHEN ((ev.major = '5') AND (ev.minor = '0') AND (ev.fix >= '6')) THEN 'Eligible' ELSE 'Requires Upgrade' END) WHEN (elasticache_spend.product_cache_engine = 'Valkey') THEN (CASE WHEN (ev.major >= '5') THEN 'Eligible' WHEN ((ev.major = '5') AND (ev.minor > '0')) THEN 'Eligible' WHEN ((ev.major = '5') AND (ev.minor = '0') AND (ev.fix >= '6')) THEN 'Eligible' ELSE 'Requires Upgrade' END) WHEN (elasticache_spend.product_cache_engine = 'Memcached') THEN (CASE WHEN (ev.major > '1') THEN 'Eligible' WHEN ((ev.major = '1') AND (ev.minor > '5')) THEN 'Eligible' WHEN ((ev.major = '1') AND (ev.minor = '5') AND (ev.fix >= '16')) THEN 'Eligible' ELSE 'Requires Upgrade' END) ELSE 'Requires Upgrade' END) graviton_eligibility
-      , (PL1.odri_priceperunit * elasticache_spend.sum_line_item_usage_amount) graviton_cost
-      , (elasticache_spend.sum_amortized_cost - (PL1.odri_priceperunit * elasticache_spend.sum_line_item_usage_amount)) graviton_savings
-      , ((PL2.odri_priceperunit * elasticache_spend.sum_line_item_usage_amount) - elasticache_spend.sum_amortized_cost) existing_savings
-      , (PL2.odri_priceperunit * elasticache_spend.sum_line_item_usage_amount) intel_equivilant_price
+      , (CASE WHEN (elasticache_spend.graviton_instance = '') THEN null WHEN (elasticache_spend.pricing_term = 'DatabaseSavingsPlan') THEN PL1_SP.dbsp_rate ELSE PL1.odri_priceperunit END) graviton_unit_cost
+      , (CASE WHEN (elasticache_spend.graviton_instance = '') THEN null WHEN (elasticache_spend.pricing_term = 'DatabaseSavingsPlan') THEN (PL1_SP.dbsp_rate * elasticache_spend.sum_line_item_usage_amount) ELSE (PL1.odri_priceperunit * elasticache_spend.sum_line_item_usage_amount) END) graviton_cost
+      , (elasticache_spend.sum_amortized_cost - (CASE WHEN (elasticache_spend.graviton_instance = '') THEN null WHEN (elasticache_spend.pricing_term = 'DatabaseSavingsPlan') THEN (PL1_SP.dbsp_rate * elasticache_spend.sum_line_item_usage_amount) ELSE (PL1.odri_priceperunit * elasticache_spend.sum_line_item_usage_amount) END)) graviton_savings
+      , (((CASE WHEN (elasticache_spend.previous_intel = '') THEN null WHEN (elasticache_spend.pricing_term = 'DatabaseSavingsPlan') THEN COALESCE(PL2_SP.dbsp_rate, PL2.odri_priceperunit) ELSE PL2.odri_priceperunit END) * elasticache_spend.sum_line_item_usage_amount) - elasticache_spend.sum_amortized_cost) existing_savings
+      , ((CASE WHEN (elasticache_spend.previous_intel = '') THEN null WHEN (elasticache_spend.pricing_term = 'DatabaseSavingsPlan') THEN COALESCE(PL2_SP.dbsp_rate, PL2.odri_priceperunit) ELSE PL2.odri_priceperunit END) * elasticache_spend.sum_line_item_usage_amount) intel_equivilant_price
       FROM
-        (((elasticache_spend
-      LEFT JOIN elasticache_engineversion ev ON (elasticache_spend.split_line_item_resource_id = ev.cacheclusterid AND elasticache_spend.line_item_usage_account_id = ev.accountid))
+        (((((elasticache_spend
+      LEFT JOIN elasticache_engineversion ev ON ((elasticache_spend.split_line_item_resource_id = ev.cacheclusterid) AND (elasticache_spend.line_item_usage_account_id = ev.accountid)))
       LEFT JOIN elasticache_pricedata PL1 ON ((elasticache_spend.graviton_instance = PL1."instance type") AND (elasticache_spend.product_location = PL1.location) AND (elasticache_spend.product_cache_engine = PL1."cache engine") AND (elasticache_spend.case_purchase_option = PL1.TermType) AND (COALESCE(elasticache_spend.pricing_lease_contract_length, '') = COALESCE(PL1.leasecontractlength, '')) AND (COALESCE(elasticache_spend.pricing_purchase_option, '') = COALESCE(PL1.purchaseoption, '')) AND (COALESCE(elasticache_spend.pricing_offering_class, '') = COALESCE(PL1.offeringclass, '')) AND (elasticache_spend.pricing_unit = PL1.unit)))
+      LEFT JOIN elasticache_pricedata PL1_SP ON ((elasticache_spend.graviton_instance = PL1_SP."instance type") AND (elasticache_spend.product_location = PL1_SP.location) AND (elasticache_spend.product_cache_engine = PL1_SP."cache engine") AND (PL1_SP.TermType = 'OnDemand') AND (COALESCE(PL1_SP.leasecontractlength, '') = '') AND (COALESCE(PL1_SP.purchaseoption, '') = '') AND (PL1_SP.unit = 'Hrs')))
       LEFT JOIN elasticache_pricedata PL2 ON ((elasticache_spend.previous_intel = PL2."instance type") AND (elasticache_spend.product_location = PL2.location) AND (elasticache_spend.product_cache_engine = PL2."cache engine") AND (elasticache_spend.case_purchase_option = PL2.TermType) AND (COALESCE(elasticache_spend.pricing_lease_contract_length, '') = COALESCE(PL2.leasecontractlength, '')) AND (COALESCE(elasticache_spend.pricing_purchase_option, '') = COALESCE(PL2.purchaseoption, '')) AND (COALESCE(elasticache_spend.pricing_offering_class, '') = COALESCE(PL2.offeringclass, '')) AND (elasticache_spend.pricing_unit = PL2.unit)))
+      LEFT JOIN elasticache_pricedata PL2_SP ON ((elasticache_spend.previous_intel = PL2_SP."instance type") AND (elasticache_spend.product_location = PL2_SP.location) AND (elasticache_spend.product_cache_engine = PL2_SP."cache engine") AND (PL2_SP.TermType = 'OnDemand') AND (COALESCE(PL2_SP.leasecontractlength, '') = '') AND (COALESCE(PL2_SP.purchaseoption, '') = '') AND (PL2_SP.unit = 'Hrs')))
   graviton_mapping:
     parameters:
       data_collection_database_name:
@@ -1403,8 +1450,10 @@ views:
       - reservation_reservation_a_r_n
       - reservation_unused_amortized_upfront_fee_for_billing_period
       - reservation_unused_recurring_fee
+      - savings_plan_savings_plan_a_r_n
+      - savings_plan_savings_plan_effective_cost
     data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".graviton_rds_view AS
+      CREATE OR REPLACE VIEW "${athena_database_name}".graviton_rds_view AS 
       WITH
         cur_data AS (
          SELECT
@@ -1413,7 +1462,7 @@ views:
          , bill_billing_period_start_date
          , product_instance_type
          , product['storage'] product_storage
-         , pricing_term
+         , (CASE WHEN (savings_plan_savings_plan_a_r_n <> '') THEN 'DatabaseSavingsPlan' WHEN (reservation_reservation_a_r_n <> '') THEN 'Reserved' ELSE 'OnDemand' END) pricing_term
          , COALESCE(pricing_lease_contract_length, '') pricing_lease_contract_length
          , COALESCE(pricing_purchase_option, '') pricing_purchase_option
          , pricing_unit
@@ -1433,15 +1482,15 @@ views:
          , (CASE WHEN (map.latest_arm <> '') THEN CONCAT('db.', map.latest_arm, '.', SPLIT_PART(product_instance_type, '.', 3)) ELSE '' END) graviton_instance_type
          , (CASE WHEN (map.previous_intel <> '') THEN CONCAT('db.', map.previous_intel, '.', SPLIT_PART(product_instance_type, '.', 3)) ELSE '' END) latest_intel_instance_type
          , ${cur_tags_json} tags_json
-         , SUM((CASE WHEN (line_item_line_item_type = 'DiscountedUsage') THEN line_item_usage_amount WHEN (line_item_line_item_type = 'Usage') THEN line_item_usage_amount ELSE 0 END)) line_item_usage_amount
+         , SUM((CASE WHEN (line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN line_item_usage_amount WHEN (line_item_line_item_type = 'DiscountedUsage') THEN line_item_usage_amount WHEN (line_item_line_item_type = 'Usage') THEN line_item_usage_amount ELSE 0 END)) line_item_usage_amount
          , SUM(line_item_unblended_cost) line_item_unblended_cost
-         , SUM((CASE WHEN (line_item_line_item_type = 'DiscountedUsage') THEN reservation_effective_cost WHEN (line_item_line_item_type = 'RIFee') THEN (reservation_unused_amortized_upfront_fee_for_billing_period + reservation_unused_recurring_fee) WHEN ((line_item_line_item_type = 'Fee') AND (reservation_reservation_a_r_n <> '')) THEN 0 ELSE line_item_unblended_cost END)) sum_amortized_cost
+         , SUM((CASE WHEN (line_item_line_item_type = 'SavingsPlanCoveredUsage') THEN savings_plan_savings_plan_effective_cost WHEN (line_item_line_item_type = 'DiscountedUsage') THEN reservation_effective_cost WHEN (line_item_line_item_type = 'RIFee') THEN (reservation_unused_amortized_upfront_fee_for_billing_period + reservation_unused_recurring_fee) WHEN ((line_item_line_item_type = 'Fee') AND (reservation_reservation_a_r_n <> '')) THEN 0 ELSE line_item_unblended_cost END)) sum_amortized_cost
          FROM
            ("${cur2_database}"."${cur2_table_name}"
          LEFT JOIN modernization_mapping map ON (lower(product['instance_type_family']) = map.family))
-         WHERE (((product['product_name'] = 'Amazon Relational Database Service') AND (line_item_line_item_type IN ('DiscountedUsage', 'Usage', 'Fee', 'RIFee')) AND (product_product_family = 'Database Instance')) AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(split_part("billing_period", '-', 1), '-', split_part("billing_period", '-', 2), '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH))))
+         WHERE (((product['product_name'] = 'Amazon Relational Database Service') AND (line_item_line_item_type IN ('DiscountedUsage', 'Usage', 'Fee', 'RIFee', 'SavingsPlanCoveredUsage')) AND (product_product_family = 'Database Instance')) AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(concat(split_part("billing_period", '-', 1), '-', split_part("billing_period", '-', 2), '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH))))
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25
-      )
+      ) 
       , describe_db_data AS (
          SELECT DISTINCT
            dbinstanceidentifier
@@ -1458,7 +1507,23 @@ views:
          FROM
            ${data_collection_database_name}.inventory_rds_db_instances_data
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-      )
+      ) 
+      , dbsp_by_sku AS (
+         SELECT
+           discountedsku
+         , CAST(discountedrate AS double) dbsp_rate
+         FROM
+           (
+            SELECT
+              discountedsku
+            , discountedrate
+            , ROW_NUMBER() OVER (PARTITION BY discountedsku ORDER BY effectivedate DESC) rn
+            FROM
+              ${data_collection_database_name}.pricing_databasesavingsplan_data
+            WHERE ((discountedservicecode = 'AmazonRDS') AND (servicecode = 'DatabaseSavingsPlans') AND (unit = 'Hrs') AND (leasecontractlength = '1') AND (purchaseoption = 'No Upfront'))
+         ) 
+         WHERE (rn = 1)
+      ) 
       , engine_logic AS (
          SELECT
            *
@@ -1467,7 +1532,7 @@ views:
          , (CASE WHEN (engineversion LIKE '%aurora%') THEN "split_part"("substr"(engineversion, 18, 6), '.', 3) ELSE "split_part"(engineversion, '.', 3) END) fix
          FROM
            describe_db_data
-      )
+      ) 
       , rds_pricedata AS (
          SELECT
            (CASE WHEN (od."database engine" LIKE 'Aurora%') THEN 'Aurora' WHEN (od."database engine" = 'Any') THEN 'Any' ELSE 'AmazonRDS' END) rds_type
@@ -1484,11 +1549,13 @@ views:
          , od.priceperunit
          , od.unit
          , (CASE WHEN (od.TermType LIKE 'OnDemand') THEN CAST(od.priceperunit AS double) WHEN (od.TermType LIKE 'Reserved') THEN COALESCE((CAST(od.priceperunit AS double) + (CAST(fee.priceperunit AS double) / ((CAST(rtrim(fee.leasecontractlength, 'yr') AS int) * 24) * 365))), CAST(od.priceperunit AS double)) ELSE 0 END) odri_priceperunit
+         , ds.dbsp_rate dbsp_rate
          FROM
-           (${data_collection_database_name}.pricing_rds_data od
+           ((${data_collection_database_name}.pricing_rds_data od
          LEFT JOIN ${data_collection_database_name}.pricing_rds_data fee ON ((od.sku = fee.sku) AND (od."region code" = fee."region code") AND (fee.purchaseoption = od.purchaseoption) AND (fee.leasecontractlength = od.leasecontractlength) AND (fee.unit = 'Quantity') AND (od.operation = fee.operation) AND (od.offeringclass = fee.offeringclass)))
+         LEFT JOIN dbsp_by_sku ds ON (ds.discountedsku = od.sku))
          WHERE ((od."location type" = 'AWS Region') AND (od."product family" = 'Database Instance'))
-      )
+      ) 
       SELECT
         cur_data.*
       , describe_db_data.engineversion
@@ -1496,18 +1563,20 @@ views:
       , PL1.storage storage
       , PL2.storage new_intel_storage
       , PL1.storage_type storage_type
-      , CAST(PL1.odri_priceperunit AS double) graviton_unit_cost
-      , (CAST(PL1.odri_priceperunit AS double) * cur_data.line_item_usage_amount) graviton_cost
-      , (cur_data.sum_amortized_cost - (CAST(PL1.odri_priceperunit AS double) * cur_data.line_item_usage_amount)) graviton_unblended_savings
-      , CAST(PL2.odri_priceperunit AS double) previous_intel_unit_cost
-      , (CAST(PL2.odri_priceperunit AS double) * cur_data.line_item_usage_amount) previous_intel_cost
-      , ((CAST(PL2.odri_priceperunit AS double) * cur_data.line_item_usage_amount) - cur_data.sum_amortized_cost) previous_intel_unblended_savings
+      , (CASE WHEN (cur_data.graviton_instance_type = '') THEN null WHEN (cur_data.pricing_term = 'DatabaseSavingsPlan') THEN PL1_SP.dbsp_rate ELSE CAST(PL1.odri_priceperunit AS double) END) graviton_unit_cost
+      , (CASE WHEN (cur_data.graviton_instance_type = '') THEN null WHEN (cur_data.pricing_term = 'DatabaseSavingsPlan') THEN (PL1_SP.dbsp_rate * cur_data.line_item_usage_amount) ELSE (CAST(PL1.odri_priceperunit AS double) * cur_data.line_item_usage_amount) END) graviton_cost
+      , (cur_data.sum_amortized_cost - (CASE WHEN (cur_data.graviton_instance_type = '') THEN null WHEN (cur_data.pricing_term = 'DatabaseSavingsPlan') THEN (PL1_SP.dbsp_rate * cur_data.line_item_usage_amount) ELSE (CAST(PL1.odri_priceperunit AS double) * cur_data.line_item_usage_amount) END)) graviton_unblended_savings
+      , (CASE WHEN (cur_data.latest_intel_instance_type = '') THEN null WHEN (cur_data.pricing_term = 'DatabaseSavingsPlan') THEN COALESCE(PL2_SP.dbsp_rate, CAST(PL2.odri_priceperunit AS double)) ELSE CAST(PL2.odri_priceperunit AS double) END) previous_intel_unit_cost
+      , (CASE WHEN (cur_data.latest_intel_instance_type = '') THEN null WHEN (cur_data.pricing_term = 'DatabaseSavingsPlan') THEN (COALESCE(PL2_SP.dbsp_rate, CAST(PL2.odri_priceperunit AS double)) * cur_data.line_item_usage_amount) ELSE (CAST(PL2.odri_priceperunit AS double) * cur_data.line_item_usage_amount) END) previous_intel_cost
+      , ((CASE WHEN (cur_data.latest_intel_instance_type = '') THEN null WHEN (cur_data.pricing_term = 'DatabaseSavingsPlan') THEN (COALESCE(PL2_SP.dbsp_rate, CAST(PL2.odri_priceperunit AS double)) * cur_data.line_item_usage_amount) ELSE (CAST(PL2.odri_priceperunit AS double) * cur_data.line_item_usage_amount) END) - cur_data.sum_amortized_cost) previous_intel_unblended_savings
       FROM
-        ((((cur_data
+        ((((((cur_data
       LEFT JOIN describe_db_data ON ((cur_data.line_item_resource_id = describe_db_data.dbinstanceidentifier) AND (cur_data.line_item_usage_account_id = describe_db_data.accountid) AND (cur_data.line_item_availability_zone = describe_db_data.region)))
       LEFT JOIN engine_logic ON ((cur_data.line_item_resource_id = engine_logic.dbinstanceidentifier) AND (cur_data.line_item_usage_account_id = engine_logic.accountid) AND (cur_data.line_item_availability_zone = engine_logic.region)))
-      LEFT JOIN rds_pricedata PL1 ON ((cur_data.rds_type = PL1.rds_type) AND (cur_data.db_engine = PL1.db_engine) AND (cur_data.pricing_lease_contract_length = PL1.leasecontractlength) AND (cur_data.pricing_purchase_option = PL1.purchaseoption) AND (cur_data.product_deployment_option = PL1."deployment option") AND (cur_data.product_location = PL1.location) AND (cur_data.graviton_instance_type = PL1."instance type") AND (cur_data.product_storage_type = PL1.storage_type) AND (cur_data.pricing_unit = PL1.unit) AND (PL1.termtype = cur_data.pricing_term)))
-      LEFT JOIN rds_pricedata PL2 ON ((cur_data.rds_type = PL2.rds_type) AND (cur_data.db_engine = PL2.db_engine) AND (cur_data.pricing_lease_contract_length = PL2.leasecontractlength) AND (cur_data.pricing_purchase_option = PL2.purchaseoption) AND (cur_data.product_deployment_option = PL2."deployment option") AND (cur_data.product_location = PL2.location) AND (cur_data.latest_intel_instance_type = PL2."instance type") AND (cur_data.product_storage_type = PL2.storage_type) AND (cur_data.pricing_unit = PL2.unit) AND (PL2.termtype = cur_data.pricing_term)))
+      LEFT JOIN rds_pricedata PL1 ON ((cur_data.rds_type = PL1.rds_type) AND (cur_data.db_engine = PL1.db_engine) AND (cur_data.pricing_lease_contract_length = PL1.leasecontractlength) AND (cur_data.pricing_purchase_option = PL1.purchaseoption) AND (cur_data.product_deployment_option = PL1."deployment option") AND (cur_data.product_location = PL1.location) AND (cur_data.graviton_instance_type = PL1."instance type") AND (cur_data.product_storage_type = PL1.storage_type) AND (cur_data.pricing_unit = PL1.unit) AND (PL1.termtype = (CASE WHEN (cur_data.pricing_term = 'DatabaseSavingsPlan') THEN 'OnDemand' ELSE cur_data.pricing_term END)))) --AND (PL1.termtype = cur_data.pricing_term)))
+      LEFT JOIN rds_pricedata PL1_SP ON ((cur_data.rds_type = PL1_SP.rds_type) AND (cur_data.db_engine = PL1_SP.db_engine) AND (cur_data.product_deployment_option = PL1_SP."deployment option") AND (cur_data.product_location = PL1_SP.location) AND (cur_data.graviton_instance_type = PL1_SP."instance type") AND (cur_data.product_storage_type = PL1_SP.storage_type) AND (PL1_SP.termtype = 'OnDemand') AND (PL1_SP.leasecontractlength = '') AND (PL1_SP.purchaseoption = '') AND (PL1_SP.unit = 'Hrs')))
+      LEFT JOIN rds_pricedata PL2 ON ((cur_data.rds_type = PL2.rds_type) AND (cur_data.db_engine = PL2.db_engine) AND (cur_data.pricing_lease_contract_length = PL2.leasecontractlength) AND (cur_data.pricing_purchase_option = PL2.purchaseoption) AND (cur_data.product_deployment_option = PL2."deployment option") AND (cur_data.product_location = PL2.location) AND (cur_data.latest_intel_instance_type = PL2."instance type") AND (cur_data.product_storage_type = PL2.storage_type) AND (cur_data.pricing_unit = PL2.unit) AND (PL2.termtype = (CASE WHEN (cur_data.pricing_term = 'DatabaseSavingsPlan') THEN 'OnDemand' ELSE cur_data.pricing_term END)))) --AND (PL2.termtype = cur_data.pricing_term)))
+      LEFT JOIN rds_pricedata PL2_SP ON ((cur_data.rds_type = PL2_SP.rds_type) AND (cur_data.db_engine = PL2_SP.db_engine) AND (cur_data.product_deployment_option = PL2_SP."deployment option") AND (cur_data.product_location = PL2_SP.location) AND (cur_data.latest_intel_instance_type = PL2_SP."instance type") AND (cur_data.product_storage_type = PL2_SP.storage_type) AND (PL2_SP.termtype = 'OnDemand') AND (PL2_SP.leasecontractlength = '') AND (PL2_SP.purchaseoption = '') AND (PL2_SP.unit = 'Hrs')))
   modernization_mapping:
     data: |-
       CREATE OR REPLACE VIEW "modernization_mapping" AS 
