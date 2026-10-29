@@ -13,6 +13,7 @@ Every dashboard that shows account names gets them from the shared `account_map`
 - **One source of truth.** `cid-cmd` creates `account_map` once per Athena database and every dashboard reuses it, so names match across CUDOS, Health, Graviton, and so on.
 - **No hard dependency on the Org Data module.** If `account_map` is missing, `cid-cmd` builds it from the best available source: it auto-discovers account metadata tables such as `organization_data` (Data Collection), or falls back to a one-time AWS Organizations listing (`organization`), a CSV file (`csv`), or "dummy" data from CUR with IDs only (`dummy`). Customers can choose with `--account-map-source` and `--account-map-file`. Reading `organization_data` directly makes view creation fail for single-account setups, accounts without AWS Organizations access, and deployments without the Org Data module.
 - **No lost rows.** A `LEFT` join keeps every fact row even when an account has no name (new, closed, or outside the Organization). An `INNER` join silently drops those rows and understates totals.
+- **Organizational taxonomy works only with a dataset-level join.** `cid-cmd map` can add taxonomy columns to `account_map` (business unit, cost center, OU levels, …). `Dataset.patch` (`cid/helpers/quicksight/dataset.py`) adds new Athena columns of **each physical table** in a dataset, so `cid-cmd update --recursive --force` brings the new columns into every dataset that has `account_map` as its own physical table. `_get_dataset_account_map_columns` (`cid/common.py`) and `TaxonomyMerger` also look for that physical table to merge tags with account attributes. If the join is in view SQL, the view exposes only the columns it selects, so the dashboard never receives taxonomy columns. A `LEFT JOIN` in SQL returns the right names, but it's still wrong for this reason.
 
 ### 1.2 Pattern
 
@@ -132,7 +133,10 @@ views:
 
 - Start every view with `CREATE OR REPLACE VIEW "${athena_database_name}".<view_name> AS`.
 - Prefer columns that are stable across CUR versions and pricing models. For amortized cost, follow the existing CID formula (`SavingsPlanCoveredUsage` → `savings_plan_savings_plan_effective_cost`, `DiscountedUsage` → `reservation_effective_cost`, otherwise `line_item_unblended_cost`).
-- Recommendation logic must be driven by the computed dollar impact, not by a rule-of-thumb percentage alone. Show the percentage as context.
+- Recommendation logic must be driven by the computed dollar impact, not by a rule-of-thumb percentage alone. Show the percentage as context. For example, Aurora I/O-Optimized is recommended when `io − 0.3 × compute − 1.25 × storage > 0`, not when I/O is above 25% of spend (the AWS [CUR query](https://github.com/awslabs/aws-well-architected-labs/blob/master/static/Cost/300_CUR_Queries/Code/Cost_Optimization/aurora_io_optimized.sql) and analyzer use the same rule).
+- Exclude items a recommendation doesn't apply to (for example, resources already in the recommended configuration) and return `NULL` savings for them rather than a negative number.
+- "Total savings" KPIs must aggregate only positive savings, for example with a calculated field `ifelse({estimated_savings} > 0, {estimated_savings}, 0)`. Summing raw estimates lets items that aren't recommended reduce the total.
+- Prefer a resource's own attribute over one derived from another table when both exist (for example, an instance's `dbclusteridentifier` over the cluster's member list), with `COALESCE` as the fallback. Derived values depend on which table was collected last.
 - Avoid `INNER JOIN` between fact data and enrichment or lookup data unless dropping unmatched rows is intended. Use `LEFT JOIN`.
 
 ---
@@ -149,8 +153,8 @@ views:
 
 - `dashboardId`: short, lowercase, stable (it becomes the URL and the `--dashboard-id` value).
 - `category`: one of the categories used in the catalog and the documentation (`Foundational`, `Advanced`, `Additional`, `Security`), written in that case. Don't use `Custom` for dashboards in the catalog.
-- `version`: a real semantic version (for example `v1.0.0`) matching the changelog. `cid-cmd update` compares it with the deployed version, and `v0.0.0` makes an update look like a downgrade.
-- Add the dashboard to `dashboards/catalog.yaml` and a changelog under `changes/`.
+- `version`: a real semantic version (for example `v1.0.0` for a first release, `v0.x` for a preview) that matches the version shown in the dashboard's About text box and the changelog. Bump it with every change to the dashboard, views, or datasets: `cid-cmd` offers an update only when the resource file's version is higher than the version tagged on the deployed dashboard. A version that's never bumped means customers running `cid-cmd update` are told they're up to date and don't get fixes unless they add `--force`.
+- Add the dashboard to `dashboards/catalog.yaml` and a changelog under `changes/`. Keep the changelog consistent with the current dashboard name and logic, and add an entry with the new version for every release.
 
 ---
 
@@ -162,5 +166,6 @@ views:
 - [ ] **No dependencies on other dashboards' helper views**: read CUR directly (section 3).
 - [ ] **Prerequisite checks** cover every Data Collection table, with errors naming the module to enable (section 4).
 - [ ] **No unintended `INNER JOIN`s** that drop fact rows (section 5).
-- [ ] **Metadata**: `category`, a real `version`, catalog entry, changelog (section 7).
-- [ ] **Deployed and tested** with `cid-cmd deploy --resources <file>`, then `cid-cmd update --resources <file> --force --recursive`. Confirm every view returns data and every dataset ingests into SPICE.
+- [ ] **Recommendations and savings**: labels driven by computed savings, non-applicable items excluded, savings KPIs sum only positive values (section 5).
+- [ ] **Metadata**: `category`, a `version` that matches the About text and is bumped for this change, catalog entry, up-to-date changelog (section 7).
+- [ ] **Deployed and tested** with `cid-cmd deploy --resources <file>`, then `cid-cmd update --resources <file> --force --recursive` (`--recursive` is an `update` option; `deploy` rejects it). `deploy` on an existing dashboard updates only datasets and keeps existing views. After `update`, confirm the views in Athena match the branch (`SHOW CREATE VIEW`, or the view's update time in Glue), because an existing view isn't always recreated. Confirm every view returns data and every dataset ingests into SPICE. If the dashboard reads Data Collection tables whose types changed, re-run their crawlers first; old partitions cause `HIVE_PARTITION_SCHEMA_MISMATCH` until re-crawled.
