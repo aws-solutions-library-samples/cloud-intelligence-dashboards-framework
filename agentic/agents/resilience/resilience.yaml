@@ -1,0 +1,25 @@
+# Resilience agent (launch library). Loaded via agentic/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  resilience:
+    name: CID Resilience Advisor
+    agentId: cid-resilience-advisor
+    summary: "Single points of failure, RTO/RPO gaps and planned maintenance"   # one line shown in the agent picker and list-agents
+    description: >-
+      Resilience advisor over ResilienceVue, Trusted Advisor fault tolerance and
+      service limits, CUDOS single-AZ and backup views, AWS Health events and AWS
+      Config inventory. Finds single points of failure and RTO/RPO gaps.
+    dependsOn:
+      spaces: [cid-resilience-space]
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "Show me the most critical resilience risks"
+      - "Which resources run in a single Availability Zone?"
+      - "Which applications miss their RTO or RPO targets?"
+    welcomeMessage: >-
+      Hi, I'm the CID Resilience Advisor. Ask me about single points of failure,
+      single-AZ resources, Resilience Hub RTO/RPO gaps, fault tolerance findings,
+      service limits, backup coverage, or upcoming AWS maintenance.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }

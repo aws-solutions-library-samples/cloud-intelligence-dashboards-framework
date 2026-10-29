@@ -27,6 +27,7 @@ from cid.helpers.parameter_store import ParametersController
 from cid.helpers.taxonomy_merger import TaxonomyMerger
 from cid.helpers import Athena, S3, IAM, CUR, ProxyCUR, Glue, QuickSight, Dashboard, Dataset, Datasource, csv2view, Organizations, CFN
 from cid.helpers.quicksight.template import Template as CidQsTemplate
+from cid.agents import AgentCommands
 from cid._version import __version__
 from cid.export import export_analysis
 from cid.logger import set_cid_logger
@@ -35,7 +36,7 @@ from cid.commands import InitQsCommand
 
 logger = logging.getLogger(__name__)
 
-class Cid():
+class Cid(AgentCommands):
 
     def __init__(self, **kwargs) -> None:
         self.base: CidBase = None
@@ -53,6 +54,10 @@ class Cid():
         self._logger = None
         self.catalog_urls = [
             'https://raw.githubusercontent.com/aws-samples/aws-cudos-framework-deployment/main/dashboards/catalog.yaml',
+        ]
+        # Agentic catalog (agents, Spaces, later flows): loaded only by the agent commands, on top of the dashboards catalog
+        self.agentic_catalog_urls = [
+            'https://raw.githubusercontent.com/aws-samples/aws-cudos-framework-deployment/main/agentic/catalog.yaml',
         ]
 
     def aws_login(self):
@@ -257,9 +262,9 @@ class Cid():
         :noparams: do not process parameters as they may not exist by this time
         """
         res = None
-        if type not in ['dashboard', 'dataset', 'view', 'schedule', 'crawler']:
+        if type not in ['dashboard', 'dataset', 'view', 'schedule', 'crawler', 'agent', 'space']:
             raise ValueError(f'{type} is not a valid definition type')
-        if type in ['dataset', 'view', 'schedule', 'crawler'] and name:
+        if type in ['dataset', 'view', 'schedule', 'crawler', 'agent', 'space'] and name:
             res = self.resources.get(f'{type}s').get(name)
         elif type in ['dashboard']:
             for definition in self.resources.get(f'{type}s').values():
@@ -278,6 +283,11 @@ class Cid():
             for key, value in res.items():
                 if isinstance(value, str):
                     res[key] = Template(value).safe_substitute(params)
+                    if type in ['agent', 'space']:
+                        for match in Template.pattern.finditer(res[key]):
+                            token = match.group('named') or match.group('braced')
+                            if token:
+                                raise ValueError(f'Unresolved token ${{{token}}} in {type} definition {name!r}')
         return res
 
 
@@ -753,6 +763,29 @@ class Cid():
 
         self.dump_default_parameters()
         return dashboard_id
+
+
+    # --- Quick Agents: create/update/list/delete (implementation in cid/agents.py) ---
+
+    @command
+    def create_agent(self, agent_id: str=None, space_name: str=None, **kwargs):
+        """Create a Quick Agent and its Space over already-deployed dashboards (never deploys dashboards)."""
+        return self._agent_apply_flow(agent_id=agent_id, space_name=space_name, mode='create')
+
+    @command
+    def update_agent(self, agent_id: str=None, space_name: str=None, **kwargs):
+        """Update a deployed CID-managed Quick Agent to match the catalog."""
+        return self._agent_apply_flow(agent_id=agent_id, space_name=space_name, mode='update')
+
+    @command
+    def list_agents(self, **kwargs):
+        """List catalog agents with their summary, Space and live deployment status."""
+        return self._list_agents()
+
+    @command
+    def delete_agent(self, agent_id: str=None, **kwargs):
+        """Delete a CID-managed Quick Agent (never deletes dashboards)."""
+        return self._delete_agent(agent_id=agent_id)
 
 
     @command
