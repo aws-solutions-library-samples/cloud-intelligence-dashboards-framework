@@ -1248,6 +1248,7 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                 Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws-glue/crawlers'
                   - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws-glue/crawlers:*'
               - Effect: Allow
                 Action:
