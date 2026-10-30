@@ -7,7 +7,7 @@ The DROID Dashboard provides comprehensive RDS instance analysis across multi-ac
 3. **Backup Coverage Monitoring**: Daily, 14-day, and 30-day backup compliance tracking with certificate backup status and cluster snapshot analysis
 4. **Maintenance Action Tracking**: Centralized view of pending maintenance actions across all accounts and regions
 5. **Aurora I/O Optimized Recommendations**: Cost analysis identifying clusters where switching to I/O Optimized configuration is estimated to reduce cost, based on projected dollar savings (eliminated I/O charges net of higher compute and storage)
-6. **Security & Resiliency Insights**: Encryption status, Multi-AZ configuration, storage autoscaling, and certificate expiration tracking
+6. **Security and Resiliency Insights**: Encryption status, Multi-AZ configuration, storage autoscaling, and certificate expiration tracking
 7. **Multi-Account Cost Analysis**: RDS spending breakdown by account, region, engine, and instance type with processor type (Graviton vs x86) identification
 8. **Dynamic Filtering**: Interactive parameter controls for collection date, account, region, engine, and custom tag-based filtering
 
@@ -19,7 +19,7 @@ The DROID Dashboard provides comprehensive RDS instance analysis across multi-ac
 
 ## DROID Dashboard - v1.0.0
 * Initial release
-* 5 tabs: Inventory, Version & Maintenance, Security & Resiliency, Backup, Cost
+* 5 tabs: Inventory, Version and Maintenance, Security and Resiliency, Backup, Cost
 * Plus an About tab with dashboard information and credits
 * 90 visuals: 29 KPIs, 24 tables (including 5 pivot tables), 12 bar charts, 4 combo charts, 1 scatter plot, 4 pie charts, 1 tree map, 7 gauges, and 8 insights
 * Supports Aurora (MySQL/PostgreSQL), RDS (MySQL, PostgreSQL, MariaDB, SQL Server, Oracle, Db2)
