@@ -9,7 +9,7 @@ The DROID Dashboard provides comprehensive RDS instance analysis across multi-ac
 5. **Aurora I/O Optimized Recommendations**: Cost analysis identifying clusters where switching to I/O Optimized configuration is estimated to reduce cost, based on projected dollar savings (eliminated I/O charges net of higher compute and storage)
 6. **Security & Resiliency Insights**: Encryption status, Multi-AZ configuration, storage autoscaling, and certificate expiration tracking
 7. **Multi-Account Cost Analysis**: RDS spending breakdown by account, region, engine, and instance type with processor type (Graviton vs x86) identification
-8. **Dynamic Filtering**: Interactive parameter controls for date range, account, region, engine, and custom tag-based filtering
+8. **Dynamic Filtering**: Interactive parameter controls for collection date, account, region, engine, and custom tag-based filtering
 
 ## Technical Highlights
 - **Multi-account Support**: Cross-account data collection via AssumeRole with organization-wide visibility
