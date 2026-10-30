@@ -281,11 +281,11 @@ CalculatedFields:
     parseDate({collection_date_filter},'yyyy-MM-dd'))
   Name: data_collection_date
 - DataSetIdentifier: rds_maintenance_dataset
+  Expression: distinct_countIf({dbinstanceidentifier_distinct}, isNotNull(action))
+  Name: db_pending_maint_kpi
+- DataSetIdentifier: rds_maintenance_dataset
   Expression: ' concat(accountid, ''|'', dbinstanceidentifier, ''|'', region)'
   Name: dbinstanceidentifier_distinct
-- DataSetIdentifier: rds_maintenance_dataset
-  Expression: distinct_countIf({dbinstanceidentifier_distinct}, isNotNull({action}))
-  Name: db_pending_maint_kpi
 - DataSetIdentifier: rds_maintenance_dataset
   Expression: |-
     ifelse(
@@ -401,10 +401,10 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 9b677fc7-3c43-4428-a48d-f90161519ebb
-        - 3efa125d-9fcf-4887-8aa4-b01db2dbe8e2
+        - 90bef72a-080d-4d2d-bf74-9ae35d832798
+        - 91907841-96de-45f6-a5c0-b3916e404c94
   Status: ENABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: 0490f80d-3779-4f3a-99d7-cd39065f44bc
@@ -441,9 +441,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - bda96edf-96fe-413d-b608-bf363fd2f84a
+        - 0044d4e0-e0bf-420f-8aa5-8f80ebc2b937
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: b2cc9401-0b2c-4a3d-88d3-70dd4f1a7cdf
@@ -464,9 +464,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - 43216477-b936-4144-9279-4b47d3f62af2
+        - 8e3e0efe-9849-4059-ab08-4dd079ad063e
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 5efbe391-1cef-4196-b1a0-4627b88384c3
@@ -491,9 +491,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - 76a58053-c957-4a1c-916b-6750f39133ea
+        - f961acad-19b6-426d-a5c8-58c1a6cdbbd6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 555e565e-3851-44ce-8334-7dd6164cecab
@@ -514,9 +514,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - 983cf404-7a73-485e-861b-7f375e87089b
+        - 5403cd12-09bf-4183-9837-8b5b933638fc
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: c73c2c83-b111-4761-afa4-b1388826cfb4
@@ -540,9 +540,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - 3b22ee77-a84d-4c49-ac00-306276394a79
+        - 8be0b52d-af85-4b58-a5fa-765d37415445
   Status: ENABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: 79e4b0a3-bc0d-4554-ab30-ccb3392621b1
@@ -610,7 +610,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 5590d283-173c-42c7-a466-56ae2f523b8d
@@ -631,25 +631,25 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - c87e4bd1-c7ef-43d4-8c18-f4a38872bdd0
-        - 428a0fd8-261b-44ba-a0fd-5e08303ccea4
-        - a22b2ce7-6435-446c-8153-9d3e0fbcdc44
-        - fe5cde4e-136f-41a2-9b02-f73176a6efff
-        - d60249f0-5914-4c3a-94ca-34edbf787b2c
-        - 87065104-00be-44c0-bf19-f0465b4c402d
-        - 6f2f10b5-11c4-4f10-a09b-63a0304d41cd
-        - dca22dce-50e1-4255-a2b1-5bf3ea8e9362
-        - 1978fdf5-0c91-4348-9b82-efeea18abeaf
-        - 7fd521ec-ae3d-4ecd-a8df-b9de551e9ecd
-        - 05ce2f2e-77a3-4933-a38f-9fd42508c11a
-        - 0b4dd61c-332d-4d8d-ac9b-11277ec2ff53
-        - 8ebd9072-11c3-407e-b11d-7f3d90c74434
-        - 9ef29264-2bec-416a-af93-e4469bd39a37
-        - f218133a-fb32-4f62-b8c7-c4d0901c85ae
-        - a4814d15-de29-4892-9de6-6a716039d58f
-        - 51e86474-9897-437b-b902-efbd473cf6a2
+        - cf3acb03-e1a6-45c0-96f7-315c29946900
+        - aadfa4f5-92f6-4e51-b9fc-7711a3a0098c
+        - 470d7874-09fa-44d1-bc63-9c0ecbc418d6
+        - f1eeac54-8b49-4a34-99c8-fbc9dedb492d
+        - 14bc130d-884f-415c-8d03-cda062cb8b57
+        - 796e45bd-a902-4b44-ab74-cb41e6680c06
+        - b76a7abf-5f63-4bbe-9870-27791a9a2259
+        - 758c139b-db24-4432-a808-5e295eb7c11d
+        - abe858a1-cb72-40bd-8f65-7ae575a4a164
+        - 90e569e9-686d-4438-9b8e-d39e9ecabc32
+        - 1c1d710a-d9dd-4a4b-ba77-348614c35aad
+        - adc9cb5f-fc3c-4a62-aa6a-136b219a5013
+        - d0b9b08a-0c25-4c63-866d-8584cabd253e
+        - 5d270b78-0f31-41a2-b0a7-38467d2973da
+        - 63060a2b-096f-4e74-9fac-ce938e551734
+        - 75b99b83-b641-424c-99a6-d3d0d2433b56
+        - 90642cb0-a940-46b1-ba1c-5c8532087e9f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 924f79f0-00bb-4118-b75c-c0fb55d3210b
@@ -668,9 +668,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 7fd521ec-ae3d-4ecd-a8df-b9de551e9ecd
+        - 90e569e9-686d-4438-9b8e-d39e9ecabc32
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 2878d1ab-6b24-4c5c-9a5a-d5b4292186b0
@@ -689,9 +689,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 05ce2f2e-77a3-4933-a38f-9fd42508c11a
+        - 1c1d710a-d9dd-4a4b-ba77-348614c35aad
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 3dd0e015-0be2-45a6-967c-67fd1d4d69f9
@@ -710,9 +710,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - a22b2ce7-6435-446c-8153-9d3e0fbcdc44
+        - 470d7874-09fa-44d1-bc63-9c0ecbc418d6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 02c2fc13-ae8c-4e3f-bbe0-0be9ea9970f5
@@ -735,9 +735,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 8ebd9072-11c3-407e-b11d-7f3d90c74434
+        - d0b9b08a-0c25-4c63-866d-8584cabd253e
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: bb6d44c5-35ca-438b-9d84-7b9a6c170a63
@@ -760,9 +760,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 428a0fd8-261b-44ba-a0fd-5e08303ccea4
+        - aadfa4f5-92f6-4e51-b9fc-7711a3a0098c
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 12f92d96-23b7-4e7c-9365-9068802cb217
@@ -785,9 +785,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - c87e4bd1-c7ef-43d4-8c18-f4a38872bdd0
+        - cf3acb03-e1a6-45c0-96f7-315c29946900
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 5cd6e9e4-fd0d-40fe-9bf1-34e203785d3c
@@ -806,9 +806,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 9ef29264-2bec-416a-af93-e4469bd39a37
+        - 5d270b78-0f31-41a2-b0a7-38467d2973da
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: ae0ea142-2e10-4f48-a25a-a08623639ca5
@@ -827,9 +827,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - b1b5429d-7885-4751-a2bc-fc96392827f4
+        - c1dec042-86eb-4f38-8d80-7a8a5a130d28
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 13391258-52bb-482a-a86d-5d0348934968
@@ -848,9 +848,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - a4814d15-de29-4892-9de6-6a716039d58f
+        - 75b99b83-b641-424c-99a6-d3d0d2433b56
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: ba18e5a5-1958-4fef-9ef7-bb2c0bb56147
@@ -871,9 +871,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 120846b8-c76d-485a-abc0-5b81319a794b
+        - de1d956c-640a-45df-9ad7-2884e9c9388b
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 9d2965b7-02f9-4891-8099-94e3a11b0337
@@ -892,9 +892,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 2c046a4b-6e10-4fc6-88ea-d181b8ab7c1c
+        - 2ee4fb88-787d-438e-8105-93cc0ea692da
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: e54b554a-5bae-4b01-85e8-660afd72626f
@@ -913,9 +913,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 7fd1114e-ed9d-4e0a-a9f0-6586decbc4fd
+        - d0b3800c-4d16-41f9-9f56-0ce7eb45e348
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: d72869b2-514c-4bca-a862-a429cd67d6cf
@@ -932,10 +932,10 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: b62c48ea-d1b8-46f5-9d3d-0de152816f4c
+        SheetId: aeb310bd-35ae-4106-a551-4ef55a38cb86
         VisualIds:
-        - ce8778aa-4ea3-4038-9a2f-f7b786c0d384
-        - f2fc8f4b-d0b8-4059-82ac-91e9c0a63e3a
+        - df330f95-e1ef-4ba9-9229-d914993b0464
+        - 9ec331b4-f25c-4096-8866-a2bf1f3201a0
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 1e57acc6-ed7e-4f0b-a919-e6783692c37b
@@ -954,9 +954,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - 983cf404-7a73-485e-861b-7f375e87089b
+        - 5403cd12-09bf-4183-9837-8b5b933638fc
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 27e8e922-3c4f-44da-a282-f8cb84e3364e
@@ -975,9 +975,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 51e86474-9897-437b-b902-efbd473cf6a2
+        - 90642cb0-a940-46b1-ba1c-5c8532087e9f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 4b8f4054-4835-4639-b28a-6561fb7d49cb
@@ -998,9 +998,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - 2784942f-ddb9-49cd-9572-3f8ea9c23564
+        - b1594826-b54b-4b39-9222-944a9cb474d3
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 194da935-6971-4ad5-b060-593b57cc9d4f
@@ -1017,9 +1017,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - ae1feb83-2630-4c23-b970-540ea6d4cec6
+        - 23af4729-cc91-4815-baaf-75f4a4c5c022
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: e06d8311-99aa-45d1-9fc8-ac5c7ccee37f
@@ -1036,9 +1036,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - 36f1a7c1-faf3-4ab8-b342-1766d2024d8f
+        - e7c9c884-31ac-4441-81c7-81cdd8b289f6
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 0ca026bd-a465-422c-871a-3d8bd718718e
@@ -1055,9 +1055,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - 6b06b500-6254-4569-9a05-86b4c1f92370
+        - 05ebc5ce-2e7f-4bb9-814e-6b0bbe26288f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 536bf913-a21c-4649-9a74-ae51a40408d0
@@ -1074,20 +1074,20 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: b62c48ea-d1b8-46f5-9d3d-0de152816f4c
+        SheetId: aeb310bd-35ae-4106-a551-4ef55a38cb86
         VisualIds:
-        - 8ce9f4b8-3a64-4f93-975d-4ddb54275667
-        - f8ff9e8d-a895-4945-a6e8-3ec703b91a87
-        - 087b48c1-59ca-427e-8cb6-99565eb4dd2b
-        - 15e16147-4d82-4174-b6c4-0ddd3244ccc8
-        - 5bcafe87-abe6-4798-a3d2-65dc0f495770
-        - 17262659-1f7a-4bf6-92b2-4d57ebaa996c
-        - 6efbda68-056b-4067-b560-dec0e16b2762
-        - 5702fb8c-3ffc-49ef-8898-92f4c20a3d0d
-        - 73b50bd6-a7f3-49c5-8d23-8a306d705a97
-        - e5e057d8-7f87-4b33-8802-3d690ebb9adb
-        - f88a20f0-511a-441d-8a99-73abc4b8afa1
-        - 17edd15e-1ad0-456e-a8b1-5926590a96ef
+        - a6d4c2cc-2980-42d4-9ccb-249f7fc37b80
+        - 5c7564f7-e450-43bf-a281-b425c03aa6cb
+        - 72443cc6-24e7-40d7-8434-ffe72a5e8a19
+        - 92fcdd5e-90a4-40b3-aaf9-86b61ffc38e0
+        - adb0601c-49d9-4d51-b12c-165072f3210b
+        - 234f4ab6-cabe-4645-b64f-44ba01226ddb
+        - 1deed789-aa51-43cc-9e4a-2100b5b70f1d
+        - 76aa14a2-10b4-4efe-82b2-17545e3926a5
+        - f4883c63-9c42-42cb-a36a-3ff2fba8fac8
+        - 0859d1b6-b1d2-4c4f-97a1-e673eb068a88
+        - 05510013-407c-4c88-94a0-9272dc791925
+        - 3db302f0-b357-4f81-a8f1-20db97089f66
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: e7893b5f-de7e-4eae-a1cf-d6e7f998224f
@@ -1105,9 +1105,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: b62c48ea-d1b8-46f5-9d3d-0de152816f4c
+        SheetId: aeb310bd-35ae-4106-a551-4ef55a38cb86
         VisualIds:
-        - ce8778aa-4ea3-4038-9a2f-f7b786c0d384
+        - df330f95-e1ef-4ba9-9229-d914993b0464
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: b6bd290d-37a3-489b-8e90-1a9c5665fe4c
@@ -1144,9 +1144,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 7a4ecaa0-879d-459e-9735-722088a01b64
+        SheetId: c8f765ef-7421-4773-830e-77a78f6bf900
         VisualIds:
-        - 8db7ccba-e323-47ba-9228-84ff4d14b5fe
+        - fb4d55af-e89a-47a3-bc68-5280c40ce2b5
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: c4ca4a4f-3578-4e72-b904-6b1fd091f0b7
@@ -1165,9 +1165,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 7a4ecaa0-879d-459e-9735-722088a01b64
+        SheetId: c8f765ef-7421-4773-830e-77a78f6bf900
         VisualIds:
-        - 8db7ccba-e323-47ba-9228-84ff4d14b5fe
+        - fb4d55af-e89a-47a3-bc68-5280c40ce2b5
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 10ebf012-f579-4eee-a2d9-3d5b9c79419c
@@ -1188,9 +1188,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 7a4ecaa0-879d-459e-9735-722088a01b64
+        SheetId: c8f765ef-7421-4773-830e-77a78f6bf900
         VisualIds:
-        - 192ff4f3-4b75-4f9a-9e3d-e5b6057ed313
+        - fdc736ce-6e4c-4da5-b1f6-2288cb993f94
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: a90acaee-b0b9-46dd-a008-928930e457d8
@@ -1207,20 +1207,20 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 361b71cd-5c43-42dd-b3cf-c7a34b29507f
+        SheetId: d2489648-9362-426d-b49c-8242fd477b37
         VisualIds:
-        - 68eb09c9-506a-4732-8eea-12ef51b93406
-        - 3492c80b-e1db-4ac9-a933-57c6dacb392c
-        - 11701083-7abe-4056-80c2-e9b19a520b4c
-        - d0e5dbf3-3ab9-4b63-a6f7-6d7580689090
-        - a269ba1b-04f6-4ace-9353-88d23642cb31
-        - fd7aa14f-4d23-432b-9573-4bfe1d2d71c0
-        - b9c55be0-3f0f-488f-b953-a0c4637f978e
-        - 7d3e292c-c58b-4586-b1b5-b556a0c66f69
-        - 30317af7-9558-42e7-822f-2a73a48b1cd2
-        - 7dca590b-4dc0-4a48-8b73-4a9eb99ab7aa
-        - 66425336-0f1d-43bd-b6dc-b8b0f707b853
-        - 3e821c26-aa47-4357-9970-09e93232230c
+        - f467e5cd-1a64-458c-9e65-9a626a786ff0
+        - 85471008-9745-49bf-a42e-c412fcf7b7bb
+        - 28983890-2b01-410a-a235-078b4b3c5fc9
+        - 628ff4e6-055c-407a-b3ba-c55ebfcb6fda
+        - 670e94e6-c1a8-4560-ba66-22ab8a1ed3aa
+        - 5a14c29b-12d9-4ce7-89b0-c356a8b13cc3
+        - bcaf7f7c-0951-4cd0-b232-71f7c46b9ac5
+        - 309a1916-2bfd-4b38-8ff7-53850c0b2f59
+        - 1d4f20ed-bb6c-4f40-8dfe-585bfef4391d
+        - 3eed350c-098f-4158-b71f-8ac922411428
+        - 095e6dd9-5a58-40c7-8eb6-6f188f854dc3
+        - 8eedfb34-9052-48db-9fb2-6c75dd3437c0
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 92206e66-c8e3-48f8-884b-44179f72b3e6
@@ -1333,14 +1333,14 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - c05f3324-656e-49e1-b506-6af9c114b7fb
-        - 8026cbcf-93b3-4f99-bbd1-bf72106cba4b
-        - 895fb410-6b73-494c-bb20-bcc72eb55f20
-        - 1b56ea82-9fb8-4237-b490-5b458c1e6851
-        - 18191061-7dfa-481b-84bc-c82ba27cd500
-        - 893e2952-4ccf-46b6-a317-a91b3bddbbc5
+        - 02f5dc04-3198-49e9-91ea-675dd7c31bfd
+        - 54f8dfe4-bbd6-41bd-9762-56ef596fc905
+        - 0b867933-1033-4b52-b4a7-430ce97b371d
+        - e2263776-09a2-4403-9b32-6ce5fe351421
+        - 06da6301-a3ae-472a-9096-2db30f8b56aa
+        - ae8bcd21-1347-4aad-b8de-1c0383c6d46b
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 26342266-4d37-4a94-ad79-3e70124a9d21
@@ -1361,9 +1361,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+        SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         VisualIds:
-        - a4211bf3-6744-4366-828a-8d6d44c8ef81
+        - 0b50c667-d903-4009-903b-2137e9b93ab3
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 828c9a27-5597-40ed-8728-81030df2f0ce
@@ -1387,13 +1387,13 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 5717da56-39af-4ff5-ba66-f0de440856a6
-        - 7fd1114e-ed9d-4e0a-a9f0-6586decbc4fd
-        - 2c046a4b-6e10-4fc6-88ea-d181b8ab7c1c
-        - b1b5429d-7885-4751-a2bc-fc96392827f4
-        - a0dcbe71-7162-4545-b253-c8f7dfb49a65
+        - bd268e2c-077b-4475-95e0-8ab897326412
+        - d0b3800c-4d16-41f9-9f56-0ce7eb45e348
+        - 2ee4fb88-787d-438e-8105-93cc0ea692da
+        - c1dec042-86eb-4f38-8d80-7a8a5a130d28
+        - 0c6de82e-387f-4b18-8da3-1967ee3c6ce4
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 4183dc2e-612f-4082-bdb2-046b04c5d7cb
@@ -1414,9 +1414,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
         VisualIds:
-        - 79d5e061-a996-4686-9209-e07a95d60b39
+        - 106055de-fecd-4392-a8af-f9f0ae84ef9f
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: ae8a420a-855c-40b3-8c47-7119d0beac21
@@ -1435,7 +1435,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 341fa36e-1270-4b67-99db-c3fd73165959
@@ -1454,7 +1454,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 95245587-ca11-4661-a316-7859385a66df
@@ -1473,7 +1473,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: f94ac1d3-a17e-41a6-be4b-09b1576725a3
@@ -1492,7 +1492,7 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: ALL_VISUALS
-        SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+        SheetId: f0103593-92f8-4507-b981-088f1a28c474
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: 2db6e004-29e2-4a33-8131-d09ec4850d06
@@ -1511,9 +1511,9 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: b62c48ea-d1b8-46f5-9d3d-0de152816f4c
+        SheetId: aeb310bd-35ae-4106-a551-4ef55a38cb86
         VisualIds:
-        - b116632e-b08b-4070-8edc-0d203e41ac98
+        - ba065e2e-6826-412d-a13b-f39b2e9e32f7
   Status: ENABLED
 - CrossDataset: SINGLE_DATASET
   FilterGroupId: d1cd10ca-6a23-4559-98c1-1a3a8da21758
@@ -1546,19 +1546,19 @@ FilterGroups:
     SelectedSheets:
       SheetVisualScopingConfigurations:
       - Scope: SELECTED_VISUALS
-        SheetId: 7a4ecaa0-879d-459e-9735-722088a01b64
+        SheetId: c8f765ef-7421-4773-830e-77a78f6bf900
         VisualIds:
-        - 8df7ccab-8c01-486a-835f-6ae8cc1b062b
-        - 25cae40b-0520-4871-aff8-e6be49eb6791
-        - b258df69-0acc-4af8-adfe-824c0e0fd017
-        - e0a5fd9d-a8e3-4f33-a3e6-2b777e3a56f9
-        - 9559e546-d671-4648-8ec3-dce25306ca8e
-        - 8f7f8c5b-abd0-4487-827c-9e0554c6a3b5
-        - 820a644e-abbc-4342-b9f4-77574e06d642
-        - 6c9036cf-9161-4edc-b2b8-5c9990d2997d
-        - 7fead612-d7b0-4104-be95-603b38e15f8f
-        - 1291826a-1943-4d5e-aa1d-4556a7dc63ef
-        - e22c1aaf-afeb-4b80-aa51-c5455db8e018
+        - 37fa6448-674d-4778-8f30-5e42498aea93
+        - 37d63d90-31db-42a6-b6dd-166b7fb20a41
+        - 844ea854-ebbc-4c7f-9a0e-b442c1ed3ca9
+        - 99eed0ea-1932-41f4-b8a0-dbd71f68361c
+        - 8a4dda48-7c64-4155-84d6-3a4e010630e1
+        - 18a71908-14e1-47c7-b34d-8cabc951cbf4
+        - 4b0c625f-d2b0-4778-9390-7f8a2197d584
+        - d43eb5db-35a0-44ab-adc4-6373e689b37d
+        - 8c630c27-f5ed-4610-95d7-d5420bee4e55
+        - e37f38f1-d4cd-4893-b18d-175b65f1ff55
+        - 2e7614ce-ec9a-4883-81a1-92a55ba7f4b3
   Status: ENABLED
 - CrossDataset: ALL_DATASETS
   FilterGroupId: 3327f288-6eb6-40fc-be55-855c203a5388
@@ -1724,7 +1724,7 @@ Sheets:
           RowSpan: 5
         - ColumnIndex: 5
           ColumnSpan: 6
-          ElementId: 77162300-9ecb-4781-a8b0-07c717737874
+          ElementId: 1f0c5ab8-0efe-471c-8c61-ac8e26d29dd7
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 5
@@ -1736,55 +1736,55 @@ Sheets:
           RowSpan: 1
         - ColumnIndex: 11
           ColumnSpan: 5
-          ElementId: 1291826a-1943-4d5e-aa1d-4556a7dc63ef
+          ElementId: e37f38f1-d4cd-4893-b18d-175b65f1ff55
           ElementType: VISUAL
           RowIndex: 6
           RowSpan: 4
         - ColumnIndex: 16
           ColumnSpan: 5
-          ElementId: 9559e546-d671-4648-8ec3-dce25306ca8e
+          ElementId: 8a4dda48-7c64-4155-84d6-3a4e010630e1
           ElementType: VISUAL
           RowIndex: 6
           RowSpan: 4
         - ColumnIndex: 21
           ColumnSpan: 5
-          ElementId: e0a5fd9d-a8e3-4f33-a3e6-2b777e3a56f9
+          ElementId: 99eed0ea-1932-41f4-b8a0-dbd71f68361c
           ElementType: VISUAL
           RowIndex: 6
           RowSpan: 4
         - ColumnIndex: 26
           ColumnSpan: 5
-          ElementId: 25cae40b-0520-4871-aff8-e6be49eb6791
+          ElementId: 37d63d90-31db-42a6-b6dd-166b7fb20a41
           ElementType: VISUAL
           RowIndex: 6
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 5
-          ElementId: b258df69-0acc-4af8-adfe-824c0e0fd017
+          ElementId: 844ea854-ebbc-4c7f-9a0e-b442c1ed3ca9
           ElementType: VISUAL
           RowIndex: 6
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 11
-          ElementId: 6c9036cf-9161-4edc-b2b8-5c9990d2997d
+          ElementId: d43eb5db-35a0-44ab-adc4-6373e689b37d
           ElementType: VISUAL
           RowIndex: 10
           RowSpan: 10
         - ColumnIndex: 11
           ColumnSpan: 25
-          ElementId: e22c1aaf-afeb-4b80-aa51-c5455db8e018
+          ElementId: 2e7614ce-ec9a-4883-81a1-92a55ba7f4b3
           ElementType: VISUAL
           RowIndex: 10
           RowSpan: 11
         - ColumnIndex: 0
           ColumnSpan: 18
-          ElementId: 7fead612-d7b0-4104-be95-603b38e15f8f
+          ElementId: 8c630c27-f5ed-4610-95d7-d5420bee4e55
           ElementType: VISUAL
           RowIndex: 21
           RowSpan: 12
         - ColumnIndex: 18
           ColumnSpan: 18
-          ElementId: 8df7ccab-8c01-486a-835f-6ae8cc1b062b
+          ElementId: 37fa6448-674d-4778-8f30-5e42498aea93
           ElementType: VISUAL
           RowIndex: 21
           RowSpan: 12
@@ -1796,19 +1796,19 @@ Sheets:
           RowSpan: 12
         - ColumnIndex: 5
           ColumnSpan: 31
-          ElementId: 192ff4f3-4b75-4f9a-9e3d-e5b6057ed313
+          ElementId: fdc736ce-6e4c-4da5-b1f6-2288cb993f94
           ElementType: VISUAL
           RowIndex: 33
           RowSpan: 12
         - ColumnIndex: 0
           ColumnSpan: 18
-          ElementId: 8f7f8c5b-abd0-4487-827c-9e0554c6a3b5
+          ElementId: 18a71908-14e1-47c7-b34d-8cabc951cbf4
           ElementType: VISUAL
           RowIndex: 45
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
-          ElementId: 820a644e-abbc-4342-b9f4-77574e06d642
+          ElementId: 4b0c625f-d2b0-4778-9390-7f8a2197d584
           ElementType: VISUAL
           RowIndex: 45
           RowSpan: 9
@@ -1832,7 +1832,7 @@ Sheets:
           RowSpan: 3
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 8db7ccba-e323-47ba-9228-84ff4d14b5fe
+          ElementId: fb4d55af-e89a-47a3-bc68-5280c40ce2b5
           ElementType: VISUAL
           RowIndex: 60
           RowSpan: 14
@@ -2007,7 +2007,7 @@ Sheets:
           ElementId: 76bc4dde-4ff6-4f2d-8251-ce7f29e9a8f4
           ElementType: PARAMETER_CONTROL
           RowSpan: 1
-  SheetId: 7a4ecaa0-879d-459e-9735-722088a01b64
+  SheetId: c8f765ef-7421-4773-830e-77a78f6bf900
   TextBoxes:
   - Content: "<text-box>\n  <inline font-size=\"32px\">&#128221;\_</inline>\n  <inline\
       \ color=\"#f0f6f6\" font-size=\"35px\">RDS Inventory View</inline>\n  <br/>\n\
@@ -2114,7 +2114,7 @@ Sheets:
             #f0f6f6\" font-size=\"15px\">\n    <parameter>${pCollectionDateFilter}</parameter>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 8df7ccab-8c01-486a-835f-6ae8cc1b062b
+      VisualId: 37fa6448-674d-4778-8f30-5e42498aea93
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -2126,7 +2126,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789101217567
-              HierarchyId: 283f4fa5-bde2-47b7-8c1c-5d7255832bf1
+              HierarchyId: 6dc134ed-a6d3-4183-b459-3e952890ea32
           Values:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
@@ -2160,7 +2160,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 283f4fa5-bde2-47b7-8c1c-5d7255832bf1
+          HierarchyId: 6dc134ed-a6d3-4183-b459-3e952890ea32
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -2202,7 +2202,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 25cae40b-0520-4871-aff8-e6be49eb6791
+      VisualId: 37d63d90-31db-42a6-b6dd-166b7fb20a41
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -2214,7 +2214,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789101221964
-              HierarchyId: fd97150e-ea31-4226-b342-360cf3719ef3
+              HierarchyId: d5dd3c6e-a546-41a1-aa18-35a950ada695
           Values:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
@@ -2248,7 +2248,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: fd97150e-ea31-4226-b342-360cf3719ef3
+          HierarchyId: d5dd3c6e-a546-41a1-aa18-35a950ada695
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -2290,7 +2290,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: b258df69-0acc-4af8-adfe-824c0e0fd017
+      VisualId: 844ea854-ebbc-4c7f-9a0e-b442c1ed3ca9
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -2302,7 +2302,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789101198398
-              HierarchyId: d4100491-733e-4d3e-aca7-f84c8b6bf3fb
+              HierarchyId: 3278febb-8ce2-4e47-bd0c-d7dc1f442fad
           Values:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
@@ -2336,7 +2336,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: d4100491-733e-4d3e-aca7-f84c8b6bf3fb
+          HierarchyId: 3278febb-8ce2-4e47-bd0c-d7dc1f442fad
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -2378,7 +2378,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: e0a5fd9d-a8e3-4f33-a3e6-2b777e3a56f9
+      VisualId: 99eed0ea-1932-41f4-b8a0-dbd71f68361c
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -2390,7 +2390,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789101192164
-              HierarchyId: 40964a72-de81-43d3-9721-708c7f261a24
+              HierarchyId: 75243ba7-6c8c-43f6-80e4-d4e3b5a0e211
           Values:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
@@ -2424,7 +2424,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 40964a72-de81-43d3-9721-708c7f261a24
+          HierarchyId: 75243ba7-6c8c-43f6-80e4-d4e3b5a0e211
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -2466,7 +2466,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 9559e546-d671-4648-8ec3-dce25306ca8e
+      VisualId: 8a4dda48-7c64-4155-84d6-3a4e010630e1
   - InsightVisual:
       Actions: []
       DataSetIdentifier: rds_inventory_dataset
@@ -2479,7 +2479,7 @@ Sheets:
                   ColumnName: accountname
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: rds-analysis-logical.accountname.3.1782938954648
-            ComputationId: fb5320b8-a405-45ce-92de-3c715b54a70a
+            ComputationId: 4b6d962c-eb5f-4496-bf5e-a1e4e8708c7c
             Name: Top
             ResultSize: 5
             Type: TOP
@@ -2497,7 +2497,7 @@ Sheets:
                   ColumnName: accountname
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: rds-analysis-logical.accountname.3.1782938954648
-            ComputationId: 03029ec4-3e95-4495-ad4e-f731c870e34e
+            ComputationId: 4a18ab83-cf3e-4a25-af92-982a8448b895
             Name: Top2
             ResultSize: 5
             Type: TOP
@@ -2509,7 +2509,7 @@ Sheets:
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: 89a6ea90-658c-45f6-921b-19de525d50fb.dbinstanceidentifier.2.1741305054778
         - TotalAggregation:
-            ComputationId: c755d75e-027a-4106-8bec-89b122e640c3
+            ComputationId: 23f26cf0-44fd-4dd0-bc90-549109e881bb
             Name: TotalAggregate
             Value:
               CategoricalMeasureField:
@@ -2519,7 +2519,7 @@ Sheets:
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: 89a6ea90-658c-45f6-921b-19de525d50fb.dbinstanceidentifier.2.1741305054778
         - TotalAggregation:
-            ComputationId: b7042e8b-963a-41ee-8231-a29b8fd3b641
+            ComputationId: cf4ecb04-21d9-44de-92b6-13d5f86863c7
             Name: TotalAggregate2
             Value:
               CategoricalMeasureField:
@@ -2561,7 +2561,7 @@ Sheets:
             \ by Account -\_</b>\n  <b>\n    <parameter>${pCollectionDateFilter}</parameter>\n\
             \  </b>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 8f7f8c5b-abd0-4487-827c-9e0554c6a3b5
+      VisualId: 18a71908-14e1-47c7-b34d-8cabc951cbf4
   - InsightVisual:
       Actions: []
       DataSetIdentifier: rds_inventory_dataset
@@ -2574,7 +2574,7 @@ Sheets:
                   ColumnName: region
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: 89a6ea90-658c-45f6-921b-19de525d50fb.region.3.1741324626692
-            ComputationId: 66679d8c-7977-41cb-82c3-20f72d32dc71
+            ComputationId: 9d5a30f7-a7a6-46f0-af93-f1f6ccbb9b01
             Name: Top2
             ResultSize: 5
             Type: TOP
@@ -2586,7 +2586,7 @@ Sheets:
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: 89a6ea90-658c-45f6-921b-19de525d50fb.region.5.1741362368014
         - TotalAggregation:
-            ComputationId: e9099743-5f78-418a-9bef-5b9dfc66b0be
+            ComputationId: 6cceab36-fcca-458a-9436-9bbd5f6cc3fb
             Name: TotalAggregate
             Value:
               CategoricalMeasureField:
@@ -2596,7 +2596,7 @@ Sheets:
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: 89a6ea90-658c-45f6-921b-19de525d50fb.dbinstanceidentifier.2.1741305054778
         - TotalAggregation:
-            ComputationId: 849f3e26-6ea6-4b88-98bc-9373dccaffa5
+            ComputationId: b853f020-5cc3-4bdd-81be-8afa0e8ae76b
             Name: TotalAggregate2
             Value:
               CategoricalMeasureField:
@@ -2606,7 +2606,7 @@ Sheets:
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: 89a6ea90-658c-45f6-921b-19de525d50fb.accountid.0.1741304867783
         - TotalAggregation:
-            ComputationId: f27a119c-34d3-44a6-929e-2c0e6a6f8e55
+            ComputationId: 8e7f0153-b5f9-45c3-9760-ac09c18e70fd
             Name: TotalAggregate3
             Value:
               CategoricalMeasureField:
@@ -2648,7 +2648,7 @@ Sheets:
             \ -\_</b>\n  <b>\n    <parameter>${pCollectionDateFilter}</parameter>\n\
             \  </b>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 820a644e-abbc-4342-b9f4-77574e06d642
+      VisualId: 4b0c625f-d2b0-4778-9390-7f8a2197d584
   - PieChartVisual:
       Actions:
       - ActionOperations:
@@ -2659,7 +2659,7 @@ Sheets:
             TargetVisualsConfiguration:
               SameSheetTargetVisualConfiguration:
                 TargetVisuals:
-                - e22c1aaf-afeb-4b80-aa51-c5455db8e018
+                - 2e7614ce-ec9a-4883-81a1-92a55ba7f4b3
         CustomActionId: 68aecddb-6d73-4e86-93b5-cf00f90a1901
         Name: Action 1
         Status: ENABLED
@@ -2728,12 +2728,13 @@ Sheets:
             15px\">\n    <parameter>${pCollectionDateFilter}</parameter>\n  </inline>\n\
             </visual-title>"
         Visibility: VISIBLE
-      VisualId: 6c9036cf-9161-4edc-b2b8-5c9990d2997d
+      VisualId: d43eb5db-35a0-44ab-adc4-6373e689b37d
   - TableVisual:
       Actions: []
       ChartConfiguration:
         FieldOptions:
           Order:
+          - 454534d7-6bb7-456e-a5c5-b33decba0e32.datacollectiontime.12.1735839384580
           - 454534d7-6bb7-456e-a5c5-b33decba0e32.accountid.0.1735659273058
           - a6ea088a-5ad5-46a4-8dd1-736343f07a3c.accountname.20.1750691259047
           - 454534d7-6bb7-456e-a5c5-b33decba0e32.dbinstanceidentifier.1.1735659281396
@@ -2752,8 +2753,10 @@ Sheets:
           - 454534d7-6bb7-456e-a5c5-b33decba0e32.cacertificateexpiry.10.1735659425265
           - a8f44c9a-a7f4-4224-ae9b-81a80e4ee7a4.13.1736176970142
           - rds-analysis-logical.engine_version_status.19.1784933470643
-          - 454534d7-6bb7-456e-a5c5-b33decba0e32.datacollectiontime.12.1735839384580
           SelectedFieldOptions:
+          - CustomLabel: Collection Date
+            FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.datacollectiontime.12.1735839384580
+            Width: 84px
           - CustomLabel: Account ID
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.accountid.0.1735659273058
             Width: 107px
@@ -2765,7 +2768,7 @@ Sheets:
             Width: 115px
           - CustomLabel: Cluster ID
             FieldId: 89a6ea90-658c-45f6-921b-19de525d50fb.dbclusteridentifier.15.1743516241077
-            Width: 99px
+            Width: 88px
           - CustomLabel: Engine
             FieldId: 89a6ea90-658c-45f6-921b-19de525d50fb.engine.13.1741364544373
             Width: 94px
@@ -2774,7 +2777,7 @@ Sheets:
             Width: 125px
           - CustomLabel: Region
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.region.11.1735664623107
-            Width: 68px
+            Width: 82px
           - CustomLabel: DB Instance Class
             FieldId: rds-analysis-logical.dbinstanceclass.19.1785021347140
             Width: 104px
@@ -2806,12 +2809,14 @@ Sheets:
           - CustomLabel: Engine Version Status
             FieldId: rds-analysis-logical.engine_version_status.19.1784933470643
             Width: 107px
-          - CustomLabel: Collection Date
-            FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.datacollectiontime.12.1735839384580
-            Width: 84px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: collection_date_filter
+                  DataSetIdentifier: rds_inventory_dataset
+                FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.datacollectiontime.12.1735839384580
             - CategoricalDimensionField:
                 Column:
                   ColumnName: accountid
@@ -2902,17 +2907,12 @@ Sheets:
                   ColumnName: engine_version_status
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: rds-analysis-logical.engine_version_status.19.1784933470643
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: collection_date_filter
-                  DataSetIdentifier: rds_inventory_dataset
-                FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.datacollectiontime.12.1735839384580
             Values: []
         SortConfiguration:
           RowSort:
           - FieldSort:
-              Direction: ASC
-              FieldId: rds-analysis-logical.dbinstanceclass.19.1785021347140
+              Direction: DESC
+              FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.datacollectiontime.12.1735839384580
         TableOptions:
           CellStyle:
             Height: 26
@@ -2944,24 +2944,6 @@ Sheets:
                   IconOptions:
                     Icon: FLAG
         - Cell:
-            FieldId: a8f44c9a-a7f4-4224-ae9b-81a80e4ee7a4.13.1736176970142
-            TextFormat:
-              Icon:
-                CustomCondition:
-                  Color: '#2CAD00'
-                  Expression: '{Backup Enabled Status} = "True"'
-                  IconOptions:
-                    Icon: FLAG
-        - Cell:
-            FieldId: a8f44c9a-a7f4-4224-ae9b-81a80e4ee7a4.13.1736176970142
-            TextFormat:
-              Icon:
-                CustomCondition:
-                  Color: '#DE3B00'
-                  Expression: '{Backup Enabled Status} = "False"'
-                  IconOptions:
-                    Icon: FLAG
-        - Cell:
             FieldId: 29cbc612-02b7-42e0-be61-2dc80b9c73be.21.1768865498597
             TextFormat:
               Icon:
@@ -2979,6 +2961,24 @@ Sheets:
                   Expression: '{Latest Minor Version Status} = "False"'
                   IconOptions:
                     Icon: FLAG
+        - Cell:
+            FieldId: a8f44c9a-a7f4-4224-ae9b-81a80e4ee7a4.13.1736176970142
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  Color: '#2CAD00'
+                  Expression: '{Backup Enabled Status} = "True"'
+                  IconOptions:
+                    Icon: FLAG
+        - Cell:
+            FieldId: a8f44c9a-a7f4-4224-ae9b-81a80e4ee7a4.13.1736176970142
+            TextFormat:
+              Icon:
+                CustomCondition:
+                  Color: '#DE3B00'
+                  Expression: '{Backup Enabled Status} = "False"'
+                  IconOptions:
+                    Icon: FLAG
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -2988,7 +2988,7 @@ Sheets:
               <inline color="#f7f9fc" font-size="15px">Inventory Details</inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 8db7ccba-e323-47ba-9228-84ff4d14b5fe
+      VisualId: fb4d55af-e89a-47a3-bc68-5280c40ce2b5
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -3058,7 +3058,7 @@ Sheets:
             #f0f6f6\" font-size=\"15px\">\n    <parameter>${pCollectionDateFilter}</parameter>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 7fead612-d7b0-4104-be95-603b38e15f8f
+      VisualId: 8c630c27-f5ed-4610-95d7-d5420bee4e55
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -3070,7 +3070,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789101118917
-              HierarchyId: c2739a0e-7b0f-4e83-b5f7-d098b159d968
+              HierarchyId: 53e4ce58-b04a-4676-b583-381fe4e3e641
           Values:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
@@ -3104,7 +3104,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: c2739a0e-7b0f-4e83-b5f7-d098b159d968
+          HierarchyId: 53e4ce58-b04a-4676-b583-381fe4e3e641
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -3146,7 +3146,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 1291826a-1943-4d5e-aa1d-4556a7dc63ef
+      VisualId: e37f38f1-d4cd-4893-b18d-175b65f1ff55
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -3167,7 +3167,7 @@ Sheets:
                   DateTimeFormat: MM-DD-YYYY
                   NullValueFormatConfiguration:
                     NullString: 'null'
-                HierarchyId: c15e8f7a-b4d3-4491-804d-5b4c5bf8e44b
+                HierarchyId: 239ba80f-01c1-4491-8a12-447a0f2876fc
             Colors:
             - CategoricalDimensionField:
                 Column:
@@ -3207,7 +3207,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: c15e8f7a-b4d3-4491-804d-5b4c5bf8e44b
+          HierarchyId: 239ba80f-01c1-4491-8a12-447a0f2876fc
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -3217,7 +3217,7 @@ Sheets:
             \ font-size=\"15px\">\n    <parameter>${pCollectionDateFilter}</parameter>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 192ff4f3-4b75-4f9a-9e3d-e5b6057ed313
+      VisualId: fdc736ce-6e4c-4da5-b1f6-2288cb993f94
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -3227,15 +3227,16 @@ Sheets:
             FieldId: rds-analysis-logical.accountid.0.1782776825457
           - CustomLabel: Account Name
             FieldId: rds-analysis-logical.accountname.1.1782776827122
-            Width: 120px
+            Width: 129px
           - CustomLabel: Cluster ID
             FieldId: rds-analysis-logical.dbclusteridentifier.2.1782776845524
-            Width: 129px
+            Width: 99px
           - CustomLabel: DB Instance
             FieldId: rds-analysis-logical.dbinstanceidentifier.3.1782776850906
             Width: 167px
           - CustomLabel: Engine
             FieldId: rds-analysis-logical.engine.7.1785021296225
+            Width: 119px
           - CustomLabel: Engine Version
             FieldId: rds-analysis-logical.engineversion.5.1782776876173
             Width: 121px
@@ -3243,9 +3244,10 @@ Sheets:
             FieldId: rds-analysis-logical.dbinstanceclass.8.1785023299237
           - CustomLabel: Region
             FieldId: rds-analysis-logical.region.7.1783027914494
+            Width: 79px
           - CustomLabel: Collection Date
             FieldId: rds-analysis-logical.collection_date.6.1785021254272
-            Width: 130px
+            Width: 113px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -3319,13 +3321,13 @@ Sheets:
               <parameter>${pCollectionDateFilter}</parameter>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: e22c1aaf-afeb-4b80-aa51-c5455db8e018
+      VisualId: 2e7614ce-ec9a-4883-81a1-92a55ba7f4b3
   - TableVisual:
       Actions:
       - ActionOperations:
         - NavigationOperation:
             LocalNavigationConfiguration:
-              TargetSheetId: 7a4ecaa0-879d-459e-9735-722088a01b64
+              TargetSheetId: c8f765ef-7421-4773-830e-77a78f6bf900
         - SetParametersOperation:
             ParameterValueConfigurations:
             - DestinationParameterName: pCollectionDateFilter
@@ -3422,7 +3424,7 @@ Sheets:
               <block align="left">Collection Date List</block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 77162300-9ecb-4781-a8b0-07c717737874
+      VisualId: 1f0c5ab8-0efe-471c-8c61-ac8e26d29dd7
 - ContentType: INTERACTIVE
   Layouts:
   - Configuration:
@@ -3452,7 +3454,7 @@ Sheets:
           RowSpan: 5
         - ColumnIndex: 5
           ColumnSpan: 5
-          ElementId: 758a9e4e-a473-4ad5-88d0-444b14826c52
+          ElementId: a8e2b50a-03c7-4974-b1d3-e1c83aba0235
           ElementType: VISUAL
           RowIndex: 7
           RowSpan: 5
@@ -3464,37 +3466,37 @@ Sheets:
           RowSpan: 1
         - ColumnIndex: 10
           ColumnSpan: 4
-          ElementId: 5702fb8c-3ffc-49ef-8898-92f4c20a3d0d
+          ElementId: 76aa14a2-10b4-4efe-82b2-17545e3926a5
           ElementType: VISUAL
           RowIndex: 8
           RowSpan: 4
         - ColumnIndex: 14
           ColumnSpan: 4
-          ElementId: 17edd15e-1ad0-456e-a8b1-5926590a96ef
+          ElementId: 3db302f0-b357-4f81-a8f1-20db97089f66
           ElementType: VISUAL
           RowIndex: 8
           RowSpan: 4
         - ColumnIndex: 18
           ColumnSpan: 4
-          ElementId: 17262659-1f7a-4bf6-92b2-4d57ebaa996c
+          ElementId: 234f4ab6-cabe-4645-b64f-44ba01226ddb
           ElementType: VISUAL
           RowIndex: 8
           RowSpan: 4
         - ColumnIndex: 22
           ColumnSpan: 4
-          ElementId: 5bcafe87-abe6-4798-a3d2-65dc0f495770
+          ElementId: adb0601c-49d9-4d51-b12c-165072f3210b
           ElementType: VISUAL
           RowIndex: 8
           RowSpan: 4
         - ColumnIndex: 26
           ColumnSpan: 5
-          ElementId: f2fc8f4b-d0b8-4059-82ac-91e9c0a63e3a
+          ElementId: 9ec331b4-f25c-4096-8866-a2bf1f3201a0
           ElementType: VISUAL
           RowIndex: 8
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 5
-          ElementId: 6efbda68-056b-4067-b560-dec0e16b2762
+          ElementId: 1deed789-aa51-43cc-9e4a-2100b5b70f1d
           ElementType: VISUAL
           RowIndex: 8
           RowSpan: 4
@@ -3506,19 +3508,19 @@ Sheets:
           RowSpan: 1
         - ColumnIndex: 0
           ColumnSpan: 12
-          ElementId: 087b48c1-59ca-427e-8cb6-99565eb4dd2b
+          ElementId: 72443cc6-24e7-40d7-8434-ffe72a5e8a19
           ElementType: VISUAL
           RowIndex: 13
           RowSpan: 8
         - ColumnIndex: 12
           ColumnSpan: 12
-          ElementId: 15e16147-4d82-4174-b6c4-0ddd3244ccc8
+          ElementId: 92fcdd5e-90a4-40b3-aaf9-86b61ffc38e0
           ElementType: VISUAL
           RowIndex: 13
           RowSpan: 8
         - ColumnIndex: 24
           ColumnSpan: 12
-          ElementId: f8ff9e8d-a895-4945-a6e8-3ec703b91a87
+          ElementId: 5c7564f7-e450-43bf-a281-b425c03aa6cb
           ElementType: VISUAL
           RowIndex: 13
           RowSpan: 8
@@ -3542,7 +3544,7 @@ Sheets:
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 8ce9f4b8-3a64-4f93-975d-4ddb54275667
+          ElementId: a6d4c2cc-2980-42d4-9ccb-249f7fc37b80
           ElementType: VISUAL
           RowIndex: 25
           RowSpan: 14
@@ -3560,25 +3562,25 @@ Sheets:
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 10
-          ElementId: 73b50bd6-a7f3-49c5-8d23-8a306d705a97
+          ElementId: f4883c63-9c42-42cb-a36a-3ff2fba8fac8
           ElementType: VISUAL
           RowIndex: 52
           RowSpan: 7
         - ColumnIndex: 10
           ColumnSpan: 26
-          ElementId: e5e057d8-7f87-4b33-8802-3d690ebb9adb
+          ElementId: 0859d1b6-b1d2-4c4f-97a1-e673eb068a88
           ElementType: VISUAL
           RowIndex: 52
           RowSpan: 13
         - ColumnIndex: 0
           ColumnSpan: 10
-          ElementId: b116632e-b08b-4070-8edc-0d203e41ac98
+          ElementId: ba065e2e-6826-412d-a13b-f39b2e9e32f7
           ElementType: VISUAL
           RowIndex: 59
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: f88a20f0-511a-441d-8a99-73abc4b8afa1
+          ElementId: 05510013-407c-4c88-94a0-9272dc791925
           ElementType: VISUAL
           RowIndex: 65
           RowSpan: 12
@@ -3590,7 +3592,7 @@ Sheets:
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: ce8778aa-4ea3-4038-9a2f-f7b786c0d384
+          ElementId: df330f95-e1ef-4ba9-9229-d914993b0464
           ElementType: VISUAL
           RowIndex: 84
           RowSpan: 12
@@ -3789,7 +3791,7 @@ Sheets:
           ElementId: 76bc4dde-4ff6-4f2d-8251-ce7f29e9a8f5
           ElementType: PARAMETER_CONTROL
           RowSpan: 1
-  SheetId: b62c48ea-d1b8-46f5-9d3d-0de152816f4c
+  SheetId: aeb310bd-35ae-4106-a551-4ef55a38cb86
   TextBoxes:
   - Content: "<text-box>\n  <br/>\n  <inline color=\"#f0f6f6\" font-size=\"30px\"\
       >\n    <b>RDS Version and Maintenance Analysis</b>\n  </inline>\n  <inline color=\"\
@@ -3918,7 +3920,7 @@ Sheets:
       - ActionOperations:
         - NavigationOperation:
             LocalNavigationConfiguration:
-              TargetSheetId: b62c48ea-d1b8-46f5-9d3d-0de152816f4c
+              TargetSheetId: aeb310bd-35ae-4106-a551-4ef55a38cb86
         - SetParametersOperation:
             ParameterValueConfigurations:
             - DestinationParameterName: pCollectionDateFilter
@@ -4019,7 +4021,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 758a9e4e-a473-4ad5-88d0-444b14826c52
+      VisualId: a8e2b50a-03c7-4974-b1d3-e1c83aba0235
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -4056,7 +4058,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Monthly Extended Support Cost</visual-title>
         Visibility: VISIBLE
-      VisualId: b116632e-b08b-4070-8edc-0d203e41ac98
+      VisualId: ba065e2e-6826-412d-a13b-f39b2e9e32f7
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -4068,7 +4070,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789102474495
-              HierarchyId: 01dd9d5a-2335-4af1-b9e9-6c6ea8c496ff
+              HierarchyId: 6f1ef381-3bb4-4403-8712-1ccd238c3f19
           Values:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
@@ -4102,7 +4104,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 01dd9d5a-2335-4af1-b9e9-6c6ea8c496ff
+          HierarchyId: 6f1ef381-3bb4-4403-8712-1ccd238c3f19
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -4146,7 +4148,7 @@ Sheets:
               <block align="center"/>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 5702fb8c-3ffc-49ef-8898-92f4c20a3d0d
+      VisualId: 76aa14a2-10b4-4efe-82b2-17545e3926a5
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -4158,7 +4160,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789102489343
-              HierarchyId: b208ac1e-3925-4295-9f6e-1d2bd23cad9f
+              HierarchyId: 98c8ff8c-9692-42d3-8eef-74f411373e0f
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -4193,7 +4195,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: b208ac1e-3925-4295-9f6e-1d2bd23cad9f
+          HierarchyId: 98c8ff8c-9692-42d3-8eef-74f411373e0f
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -4237,7 +4239,7 @@ Sheets:
               <block align="center"/>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 6efbda68-056b-4067-b560-dec0e16b2762
+      VisualId: 1deed789-aa51-43cc-9e4a-2100b5b70f1d
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -4249,7 +4251,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789102480212
-              HierarchyId: 489a8081-2ab0-4c99-84c0-3c475d65534d
+              HierarchyId: 71f1ce4d-d6df-483a-8f7a-cec868f22a2d
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -4284,7 +4286,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 489a8081-2ab0-4c99-84c0-3c475d65534d
+          HierarchyId: 71f1ce4d-d6df-483a-8f7a-cec868f22a2d
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -4326,7 +4328,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 17262659-1f7a-4bf6-92b2-4d57ebaa996c
+      VisualId: 234f4ab6-cabe-4645-b64f-44ba01226ddb
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -4338,7 +4340,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789102483927
-              HierarchyId: 4bc6d44a-6d39-44a8-9ce6-535326723c6f
+              HierarchyId: b6e1d1fb-9a04-4d04-bf02-c080f8537d38
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -4373,7 +4375,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 4bc6d44a-6d39-44a8-9ce6-535326723c6f
+          HierarchyId: b6e1d1fb-9a04-4d04-bf02-c080f8537d38
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -4415,18 +4417,9 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 5bcafe87-abe6-4798-a3d2-65dc0f495770
+      VisualId: adb0601c-49d9-4d51-b12c-165072f3210b
   - TableVisual:
-      Actions:
-      - ActionOperations:
-        - URLOperation:
-            URLTarget: NEW_TAB
-            URLTemplate: https://<<accountid>>.signin.aws.amazon.com/console/rds?region=<<region>>#database:id=<<dbinstanceidentifier>>;is-cluster=false;tab=configuration
-        CustomActionId: 08aae785-b94d-4d66-95a2-9f7b203c5dd7
-        Name: "Open RDS Console for database\_\_\_\_\_\_\_\_ <<dbinstanceidentifier>>@<<accountid>>\
-          \ in region\_\_\_\_\_\_\_\_ <<region>>"
-        Status: ENABLED
-        Trigger: DATA_POINT_MENU
+      Actions: []
       ChartConfiguration:
         FieldOptions:
           Order:
@@ -4443,7 +4436,6 @@ Sheets:
           - 49a887d6-863c-4174-9d73-bae81a4da4cc.13.1785129096730
           - b16ce63c-49f4-473c-bc8e-5868f3800be9.10.1747436124744
           - 3d331f9b-2eca-4236-941a-5bcab9282fe5.14.1770163452704
-          - a47e02b0-ab46-4053-ab74-c070b523a965.13.1775620804014
           SelectedFieldOptions:
           - CustomLabel: Collection Date
             FieldId: 61e7bada-2b5d-45cc-81ec-c83342689f07.12.1749053591633
@@ -4479,15 +4471,13 @@ Sheets:
             Width: 105px
           - CustomLabel: Current Minor Version
             FieldId: b1dcd2c6-9df1-4c61-82f9-c66798c0e049.analysis_current_minor_version.9.1745244395810
-            Width: 124px
+            Width: 178px
           - FieldId: 49a887d6-863c-4174-9d73-bae81a4da4cc.13.1785129096730
-            Width: 136px
+            Width: 199px
           - FieldId: b16ce63c-49f4-473c-bc8e-5868f3800be9.10.1747436124744
             Width: 107px
           - FieldId: 3d331f9b-2eca-4236-941a-5bcab9282fe5.14.1770163452704
             Width: 127px
-          - FieldId: a47e02b0-ab46-4053-ab74-c070b523a965.13.1775620804014
-            Width: 93px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -4556,11 +4546,6 @@ Sheets:
                   ColumnName: Auto Minor Version Upg Status
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: 3d331f9b-2eca-4236-941a-5bcab9282fe5.14.1770163452704
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: RDS Console Link
-                  DataSetIdentifier: rds_inventory_dataset
-                FieldId: a47e02b0-ab46-4053-ab74-c070b523a965.13.1775620804014
             Values: []
         SortConfiguration:
           PaginationConfiguration:
@@ -4616,16 +4601,6 @@ Sheets:
                 Solid:
                   Color: '#FF8700'
                   Expression: '{Selected Major Version Status} = "False"'
-        - Cell:
-            FieldId: a47e02b0-ab46-4053-ab74-c070b523a965.13.1775620804014
-            TextFormat:
-              Icon:
-                CustomCondition:
-                  DisplayConfiguration:
-                    IconDisplayOption: ICON_ONLY
-                  Expression: left({RDS Console Link}, 3) = "RDS"
-                  IconOptions:
-                    UnicodeIcon: "\U0001F310"
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -4635,7 +4610,7 @@ Sheets:
             \ font-size=\"15px\">\n    <parameter>${pCollectionDateFilter}</parameter>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 8ce9f4b8-3a64-4f93-975d-4ddb54275667
+      VisualId: a6d4c2cc-2980-42d4-9ccb-249f7fc37b80
   - GaugeChartVisual:
       Actions: []
       ChartConfiguration:
@@ -4688,7 +4663,7 @@ Sheets:
             \  </block>\n  <br/>\n  <block align=\"right\">&#128994; OK &#128992;\
             \ Warning</block>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: f8ff9e8d-a895-4945-a6e8-3ec703b91a87
+      VisualId: 5c7564f7-e450-43bf-a281-b425c03aa6cb
   - GaugeChartVisual:
       Actions: []
       ChartConfiguration:
@@ -4753,7 +4728,7 @@ Sheets:
             \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_&#128994; OK  &#128992;\
             \ Warning\n  </block>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 087b48c1-59ca-427e-8cb6-99565eb4dd2b
+      VisualId: 72443cc6-24e7-40d7-8434-ffe72a5e8a19
   - GaugeChartVisual:
       Actions: []
       ChartConfiguration:
@@ -4804,18 +4779,9 @@ Sheets:
             \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_&#128994; OK &#128992;\
             \ Warning\n  </block>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 15e16147-4d82-4174-b6c4-0ddd3244ccc8
+      VisualId: 92fcdd5e-90a4-40b3-aaf9-86b61ffc38e0
   - PivotTableVisual:
-      Actions:
-      - ActionOperations:
-        - URLOperation:
-            URLTarget: NEW_TAB
-            URLTemplate: https://<<accountid>>.signin.aws.amazon.com/console/rds?region=<<region>>#database:id=<<dbinstanceidentifier>>;is-cluster=false;tab=maintenance-and-backups
-        CustomActionId: 8787f086-744f-45a1-884c-a6147b4e9727
-        Name: "Open RDS Console for\_\_\_\_\_\_\_\_ <<dbinstanceidentifier>>@<<accountid>>\
-          \ in region\_\_\_\_\_\_\_\_ <<region>>"
-        Status: ENABLED
-        Trigger: DATA_POINT_MENU
+      Actions: []
       ChartConfiguration:
         FieldOptions:
           DataPathOptions:
@@ -4823,6 +4789,14 @@ Sheets:
             - FieldId: d27d1e09-3be4-47d5-abe2-3931497f097c.description.5.1768435581803
               FieldValue: description
             Width: 280px
+          - DataPathList:
+            - FieldId: d27d1e09-3be4-47d5-abe2-3931497f097c.dbinstanceidentifier.6.1768435588689
+              FieldValue: dbinstanceidentifier
+            Width: 150px
+          - DataPathList:
+            - FieldId: d27d1e09-3be4-47d5-abe2-3931497f097c.currentapplydate.7.1768435595402
+              FieldValue: currentapplydate
+            Width: 122px
           - DataPathList:
             - FieldId: d27d1e09-3be4-47d5-abe2-3931497f097c.forcedapplydate.8.1768435600263
               FieldValue: forcedapplydate
@@ -4840,17 +4814,9 @@ Sheets:
               FieldValue: rds_maintenance_status
             Width: 92px
           - DataPathList:
-            - FieldId: d27d1e09-3be4-47d5-abe2-3931497f097c.currentapplydate.7.1768435595402
-              FieldValue: currentapplydate
-            Width: 85px
-          - DataPathList:
             - FieldId: d27d1e09-3be4-47d5-abe2-3931497f097c.year.0.1768435551417
               FieldValue: year
             Width: 82px
-          - DataPathList:
-            - FieldId: 96179d9d-626e-44c9-9f59-f1bc922794b3.12.1768435682731
-              FieldValue: RDS_Console_Link
-            Width: 77px
           SelectedFieldOptions:
           - CustomLabel: Year
             FieldId: d27d1e09-3be4-47d5-abe2-3931497f097c.year.0.1768435551417
@@ -4887,9 +4853,6 @@ Sheets:
             Visibility: VISIBLE
           - CustomLabel: Maintenance Status
             FieldId: 13e732d5-dcf6-415b-a722-116ebfeb4626.11.1768435644335
-            Visibility: VISIBLE
-          - CustomLabel: RDS Console Link
-            FieldId: 96179d9d-626e-44c9-9f59-f1bc922794b3.12.1768435682731
             Visibility: VISIBLE
         FieldWells:
           PivotTableAggregatedFieldWells:
@@ -4958,12 +4921,6 @@ Sheets:
                   ColumnName: rds_maintenance_status
                   DataSetIdentifier: rds_maintenance_dataset
                 FieldId: 13e732d5-dcf6-415b-a722-116ebfeb4626.11.1768435644335
-            - CategoricalMeasureField:
-                AggregationFunction: COUNT
-                Column:
-                  ColumnName: RDS_Console_Link
-                  DataSetIdentifier: rds_maintenance_dataset
-                FieldId: 96179d9d-626e-44c9-9f59-f1bc922794b3.12.1768435682731
         SortConfiguration:
           FieldSortOptions: []
         TableOptions:
@@ -5019,18 +4976,6 @@ Sheets:
                   Expression: SUM({rds_maintenance_status}) <= 0
                   IconOptions:
                     Icon: MINUS
-        - Cell:
-            FieldId: 96179d9d-626e-44c9-9f59-f1bc922794b3.12.1768435682731
-            Scopes:
-            - Role: FIELD
-            TextFormat:
-              Icon:
-                CustomCondition:
-                  DisplayConfiguration:
-                    IconDisplayOption: ICON_ONLY
-                  Expression: COUNT({RDS_Console_Link}) >= 1
-                  IconOptions:
-                    UnicodeIcon: "\U0001F310"
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -5041,7 +4986,7 @@ Sheets:
               <parameter>${pCollectionDateFilter}</parameter>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: ce8778aa-4ea3-4038-9a2f-f7b786c0d384
+      VisualId: df330f95-e1ef-4ba9-9229-d914993b0464
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -5053,7 +4998,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789102506678
-              HierarchyId: 20750e7d-def0-4d84-8395-28e57505fa16
+              HierarchyId: c4b23002-2037-43d5-9dae-42287362f034
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -5088,7 +5033,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 20750e7d-def0-4d84-8395-28e57505fa16
+          HierarchyId: c4b23002-2037-43d5-9dae-42287362f034
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -5130,7 +5075,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 17edd15e-1ad0-456e-a8b1-5926590a96ef
+      VisualId: 3db302f0-b357-4f81-a8f1-20db97089f66
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -5142,9 +5087,9 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_maintenance_dataset
               FieldId: f85b3ed9-93b5-4bdf-9cda-7efaeea362e9.1.1789102493491
-              HierarchyId: ec0fa99b-6810-4777-90cf-0f9e05a1f4f2
+              HierarchyId: 7bff2850-7100-4cd9-a47a-4ab157d11a21
           Values:
-          - CategoricalMeasureField:
+          - NumericalMeasureField:
               Column:
                 ColumnName: db_pending_maint_kpi
                 DataSetIdentifier: rds_maintenance_dataset
@@ -5177,37 +5122,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: ec0fa99b-6810-4777-90cf-0f9e05a1f4f2
-      ConditionalFormatting:
-        ConditionalFormattingOptions:
-        - ComparisonValue:
-            TextColor:
-              Solid:
-                Color: '#2CAD00'
-                Expression: percentDifference(COUNT({dbinstanceidentifier_distinct}),[COUNT({dbinstanceidentifier_distinct})
-                  DESC],1,[]) > 0.0
-        - ComparisonValue:
-            TextColor:
-              Solid:
-                Color: '#DE3B00'
-                Expression: percentDifference(COUNT({dbinstanceidentifier_distinct}),[COUNT({dbinstanceidentifier_distinct})
-                  DESC],1,[]) < 0.0
-        - ComparisonValue:
-            Icon:
-              CustomCondition:
-                Color: '#2CAD00'
-                Expression: percentDifference(COUNT({dbinstanceidentifier_distinct}),[COUNT({dbinstanceidentifier_distinct})
-                  DESC],1,[]) > 0.0
-                IconOptions:
-                  Icon: CARET_UP
-        - ComparisonValue:
-            Icon:
-              CustomCondition:
-                Color: '#DE3B00'
-                Expression: percentDifference(COUNT({dbinstanceidentifier_distinct}),[COUNT({dbinstanceidentifier_distinct})
-                  DESC],1,[]) < 0.0
-                IconOptions:
-                  Icon: CARET_DOWN
+          HierarchyId: 7bff2850-7100-4cd9-a47a-4ab157d11a21
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -5219,7 +5134,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: f2fc8f4b-d0b8-4059-82ac-91e9c0a63e3a
+      VisualId: 9ec331b4-f25c-4096-8866-a2bf1f3201a0
   - GaugeChartVisual:
       Actions: []
       ChartConfiguration:
@@ -5275,18 +5190,9 @@ Sheets:
               <br/>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 73b50bd6-a7f3-49c5-8d23-8a306d705a97
+      VisualId: f4883c63-9c42-42cb-a36a-3ff2fba8fac8
   - TableVisual:
-      Actions:
-      - ActionOperations:
-        - URLOperation:
-            URLTarget: NEW_TAB
-            URLTemplate: https://<<accountid>>.signin.aws.amazon.com/console/rds?region=<<region>>#database:id=<<dbinstanceidentifier>>;is-cluster=false;tab=connectivity
-        CustomActionId: e0010002-e202-40e0-8718-2544888c5327
-        Name: "Open RDS Console for\_\_\_\_\_\_\_\_ <<dbinstanceidentifier>>@<<accountid>>\
-          \ in region\_\_\_\_\_\_\_\_ <<region>>"
-        Status: ENABLED
-        Trigger: DATA_POINT_MENU
+      Actions: []
       ChartConfiguration:
         FieldOptions:
           Order:
@@ -5299,7 +5205,6 @@ Sheets:
           - rds-analysis-logical.engineversion.5.1784936059589
           - rds-analysis-logical.rds_support_status.6.1784936068538
           - rds-analysis-logical.collection_date.7.1784936083256
-          - a30ccaad-c6dc-437e-a456-7d5396c68720.8.1784936556142
           SelectedFieldOptions:
           - CustomLabel: Account ID
             FieldId: rds-analysis-logical.accountid.0.1784936031290
@@ -5308,7 +5213,7 @@ Sheets:
             Width: 117px
           - CustomLabel: DB Instance
             FieldId: rds-analysis-logical.dbinstanceidentifier.2.1784936049512
-            Width: 111px
+            Width: 144px
           - CustomLabel: Cluster ID
             FieldId: rds-analysis-logical.dbclusteridentifier.3.1784936050637
             Width: 100px
@@ -5319,14 +5224,12 @@ Sheets:
             Width: 92px
           - CustomLabel: Engine Version
             FieldId: rds-analysis-logical.engineversion.5.1784936059589
-            Width: 147px
+            Width: 218px
           - CustomLabel: RDS Support Status
             FieldId: rds-analysis-logical.rds_support_status.6.1784936068538
           - CustomLabel: Collection Date
             FieldId: rds-analysis-logical.collection_date.7.1784936083256
-            Width: 116px
-          - FieldId: a30ccaad-c6dc-437e-a456-7d5396c68720.8.1784936556142
-            Width: 108px
+            Width: 109px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -5375,14 +5278,11 @@ Sheets:
                   ColumnName: collection_date_filter
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: rds-analysis-logical.collection_date.7.1784936083256
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: RDS Console Link
-                  DataSetIdentifier: rds_inventory_dataset
-                FieldId: a30ccaad-c6dc-437e-a456-7d5396c68720.8.1784936556142
             Values: []
         SortConfiguration: {}
         TableOptions:
+          CellStyle:
+            Height: 25
           HeaderStyle:
             Height: 44
             TextWrap: WRAP
@@ -5402,16 +5302,6 @@ Sheets:
                 Solid:
                   Color: '#FF8700'
                   Expression: '{rds_support_status} <> "Standard Support"'
-        - Cell:
-            FieldId: a30ccaad-c6dc-437e-a456-7d5396c68720.8.1784936556142
-            TextFormat:
-              Icon:
-                CustomCondition:
-                  DisplayConfiguration:
-                    IconDisplayOption: ICON_ONLY
-                  Expression: locate({RDS Console Link}, "RDS") > 0
-                  IconOptions:
-                    UnicodeIcon: "\U0001F310"
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -5422,7 +5312,7 @@ Sheets:
               <parameter>${pCollectionDateFilter}</parameter>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: e5e057d8-7f87-4b33-8802-3d690ebb9adb
+      VisualId: 0859d1b6-b1d2-4c4f-97a1-e673eb068a88
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -5430,6 +5320,7 @@ Sheets:
           SelectedFieldOptions:
           - CustomLabel: Account ID
             FieldId: rds-analysis-logical.accountid.0.1784937640156
+            Width: 106px
           - CustomLabel: Account Name
             FieldId: rds-analysis-logical.accountname.1.1784937641206
             Width: 128px
@@ -5438,11 +5329,13 @@ Sheets:
             Width: 142px
           - CustomLabel: Engine
             FieldId: rds-analysis-logical.engine.6.1784937668343
+            Width: 121px
           - CustomLabel: Engine Version
             FieldId: rds-analysis-logical.engineversion.7.1784937670101
             Width: 150px
           - CustomLabel: Region
             FieldId: rds-analysis-logical.region.12.1784937741138
+            Width: 81px
           - CustomLabel: Standard Support Start
             FieldId: rds-analysis-logical.standard_support_start.12.1784937682802
           - CustomLabel: Standard Support End
@@ -5455,7 +5348,7 @@ Sheets:
             FieldId: rds-analysis-logical.rds_support_status.10.1784937677808
           - CustomLabel: Collection Date
             FieldId: rds-analysis-logical.collection_date.12.1784937775754
-            Width: 115px
+            Width: 110px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -5554,7 +5447,7 @@ Sheets:
             \  </block>\n  <br/>\n  <block align=\"right\">\_&#128994; OK  &#128992;\
             \ Warning</block>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: f88a20f0-511a-441d-8a99-73abc4b8afa1
+      VisualId: 05510013-407c-4c88-94a0-9272dc791925
 - ContentType: INTERACTIVE
   Layouts:
   - Configuration:
@@ -5578,7 +5471,7 @@ Sheets:
           RowSpan: 5
         - ColumnIndex: 4
           ColumnSpan: 5
-          ElementId: e626e4bd-792f-4d11-9674-d63464ac7208
+          ElementId: 3184884c-4ddf-49ff-9376-3a3de15e9d61
           ElementType: VISUAL
           RowIndex: 4
           RowSpan: 5
@@ -5590,37 +5483,37 @@ Sheets:
           RowSpan: 1
         - ColumnIndex: 9
           ColumnSpan: 4
-          ElementId: 3492c80b-e1db-4ac9-a933-57c6dacb392c
+          ElementId: 85471008-9745-49bf-a42e-c412fcf7b7bb
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 13
           ColumnSpan: 4
-          ElementId: 3e821c26-aa47-4357-9970-09e93232230c
+          ElementId: 8eedfb34-9052-48db-9fb2-6c75dd3437c0
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 17
           ColumnSpan: 4
-          ElementId: 66425336-0f1d-43bd-b6dc-b8b0f707b853
+          ElementId: 095e6dd9-5a58-40c7-8eb6-6f188f854dc3
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 21
           ColumnSpan: 5
-          ElementId: 11701083-7abe-4056-80c2-e9b19a520b4c
+          ElementId: 28983890-2b01-410a-a235-078b4b3c5fc9
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 26
           ColumnSpan: 5
-          ElementId: 68eb09c9-506a-4732-8eea-12ef51b93406
+          ElementId: f467e5cd-1a64-458c-9e65-9a626a786ff0
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
         - ColumnIndex: 31
           ColumnSpan: 5
-          ElementId: 7dca590b-4dc0-4a48-8b73-4a9eb99ab7aa
+          ElementId: 3eed350c-098f-4158-b71f-8ac922411428
           ElementType: VISUAL
           RowIndex: 5
           RowSpan: 4
@@ -5632,19 +5525,19 @@ Sheets:
           RowSpan: 8
         - ColumnIndex: 24
           ColumnSpan: 12
-          ElementId: 30317af7-9558-42e7-822f-2a73a48b1cd2
+          ElementId: 1d4f20ed-bb6c-4f40-8dfe-585bfef4391d
           ElementType: VISUAL
           RowIndex: 9
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 15
-          ElementId: 7d3e292c-c58b-4586-b1b5-b556a0c66f69
+          ElementId: 309a1916-2bfd-4b38-8ff7-53850c0b2f59
           ElementType: VISUAL
           RowIndex: 17
           RowSpan: 12
         - ColumnIndex: 15
           ColumnSpan: 21
-          ElementId: b9c55be0-3f0f-488f-b953-a0c4637f978e
+          ElementId: bcaf7f7c-0951-4cd0-b232-71f7c46b9ac5
           ElementType: VISUAL
           RowIndex: 17
           RowSpan: 12
@@ -5656,7 +5549,7 @@ Sheets:
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: fd7aa14f-4d23-432b-9573-4bfe1d2d71c0
+          ElementId: 5a14c29b-12d9-4ce7-89b0-c356a8b13cc3
           ElementType: VISUAL
           RowIndex: 36
           RowSpan: 12
@@ -5668,13 +5561,13 @@ Sheets:
           RowSpan: 2
         - ColumnIndex: 0
           ColumnSpan: 10
-          ElementId: a269ba1b-04f6-4ace-9353-88d23642cb31
+          ElementId: 670e94e6-c1a8-4560-ba66-22ab8a1ed3aa
           ElementType: VISUAL
           RowIndex: 50
           RowSpan: 12
         - ColumnIndex: 10
           ColumnSpan: 26
-          ElementId: d0e5dbf3-3ab9-4b63-a6f7-6d7580689090
+          ElementId: 628ff4e6-055c-407a-b3ba-c55ebfcb6fda
           ElementType: VISUAL
           RowIndex: 50
           RowSpan: 12
@@ -5823,7 +5716,7 @@ Sheets:
           ElementId: 76bc4dde-4ff6-4f2d-8251-ce7f29e9a8f6
           ElementType: PARAMETER_CONTROL
           RowSpan: 1
-  SheetId: 361b71cd-5c43-42dd-b3cf-c7a34b29507f
+  SheetId: d2489648-9362-426d-b49c-8242fd477b37
   TextBoxes:
   - Content: |-
       <text-box>
@@ -5917,7 +5810,7 @@ Sheets:
       - ActionOperations:
         - NavigationOperation:
             LocalNavigationConfiguration:
-              TargetSheetId: 361b71cd-5c43-42dd-b3cf-c7a34b29507f
+              TargetSheetId: d2489648-9362-426d-b49c-8242fd477b37
         - SetParametersOperation:
             ParameterValueConfigurations:
             - DestinationParameterName: pCollectionDateFilter
@@ -6018,7 +5911,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: e626e4bd-792f-4d11-9674-d63464ac7208
+      VisualId: 3184884c-4ddf-49ff-9376-3a3de15e9d61
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -6030,7 +5923,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789104935364
-              HierarchyId: e25724d6-5f5b-45c6-bfad-bbb66574f29e
+              HierarchyId: 402698b4-54c1-43a7-9603-dc477ddbd3f3
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -6065,7 +5958,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: e25724d6-5f5b-45c6-bfad-bbb66574f29e
+          HierarchyId: 402698b4-54c1-43a7-9603-dc477ddbd3f3
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -6107,7 +6000,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 68eb09c9-506a-4732-8eea-12ef51b93406
+      VisualId: f467e5cd-1a64-458c-9e65-9a626a786ff0
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -6119,7 +6012,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789104914363
-              HierarchyId: fa1220bf-26f8-4434-9360-6a6dde797337
+              HierarchyId: 350812c4-25b6-411f-9d30-715190d1f525
           Values:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
@@ -6153,7 +6046,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: fa1220bf-26f8-4434-9360-6a6dde797337
+          HierarchyId: 350812c4-25b6-411f-9d30-715190d1f525
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -6195,7 +6088,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 3492c80b-e1db-4ac9-a933-57c6dacb392c
+      VisualId: 85471008-9745-49bf-a42e-c412fcf7b7bb
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -6207,7 +6100,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789104939398
-              HierarchyId: 306a2815-875f-4a8f-99e6-5821434daca2
+              HierarchyId: 8a217b99-68f4-48b2-b71b-8ab6b6330658
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -6242,7 +6135,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 306a2815-875f-4a8f-99e6-5821434daca2
+          HierarchyId: 8a217b99-68f4-48b2-b71b-8ab6b6330658
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -6284,18 +6177,9 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 11701083-7abe-4056-80c2-e9b19a520b4c
+      VisualId: 28983890-2b01-410a-a235-078b4b3c5fc9
   - TableVisual:
-      Actions:
-      - ActionOperations:
-        - URLOperation:
-            URLTarget: NEW_TAB
-            URLTemplate: https://<<accountid>>.signin.aws.amazon.com/console/rds?region=<<region>>#database:id=<<dbinstanceidentifier>>;is-cluster=false;tab=connectivity
-        CustomActionId: 2a3095bb-8d3e-488b-8860-57470bae2d17
-        Name: "Open RDS Console for\_\_\_\_\_\_\_\_ <<dbinstanceidentifier>>@<<accountid>>\
-          \ in region\_\_\_\_\_\_\_\_ <<region>>"
-        Status: ENABLED
-        Trigger: DATA_POINT_MENU
+      Actions: []
       ChartConfiguration:
         FieldOptions:
           Order:
@@ -6308,7 +6192,6 @@ Sheets:
           - e6b2bbca-e7e5-43cf-b1c5-be43a6f21c66.8.1736872913532
           - 454534d7-6bb7-456e-a5c5-b33decba0e32.dbcertificatestatus.3.1735663609790
           - 454534d7-6bb7-456e-a5c5-b33decba0e32.datacollectiontime.9.1735834670112
-          - a63d0007-eb10-426e-bb35-cf56f1138cee.7.1750688081177
           SelectedFieldOptions:
           - CustomLabel: Account ID
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.accountid.8.1735834658941
@@ -6320,7 +6203,7 @@ Sheets:
             Width: 102px
           - CustomLabel: Engine
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.engine.1.1735663578753
-            Width: 95px
+            Width: 118px
           - CustomLabel: Engine Version
             FieldId: d406e7ee-7e97-4373-8f93-444f64829e9c.engineversion.10.1736872836434
             Width: 112px
@@ -6331,12 +6214,10 @@ Sheets:
             Width: 101px
           - CustomLabel: Certificate Status
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.dbcertificatestatus.3.1735663609790
-            Width: 189px
+            Width: 236px
           - CustomLabel: Collection Date
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.datacollectiontime.9.1735834670112
             Width: 94px
-          - FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.7.1750688081177
-            Width: 92px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -6385,11 +6266,6 @@ Sheets:
                   ColumnName: collection_date_filter
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.datacollectiontime.9.1735834670112
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: RDS Console Link
-                  DataSetIdentifier: rds_inventory_dataset
-                FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.7.1750688081177
             Values: []
         SortConfiguration:
           RowSort:
@@ -6418,16 +6294,6 @@ Sheets:
                 Solid:
                   Color: '#E86B5F'
                   Expression: '{DB Certificate Status} = "Expired"'
-        - Cell:
-            FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.7.1750688081177
-            TextFormat:
-              Icon:
-                CustomCondition:
-                  DisplayConfiguration:
-                    IconDisplayOption: ICON_ONLY
-                  Expression: left({RDS Console Link}, 3) = "RDS"
-                  IconOptions:
-                    UnicodeIcon: "\U0001F310"
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -6437,7 +6303,7 @@ Sheets:
             15px\">\n    <parameter>${pCollectionDateFilter}</parameter>\n  </inline>\n\
             </visual-title>"
         Visibility: VISIBLE
-      VisualId: d0e5dbf3-3ab9-4b63-a6f7-6d7580689090
+      VisualId: 628ff4e6-055c-407a-b3ba-c55ebfcb6fda
   - GaugeChartVisual:
       Actions: []
       ChartConfiguration:
@@ -6491,18 +6357,9 @@ Sheets:
             \  <br/>\n  <block align=\"right\">&#128994; OK &#128992; Warning</block>\n\
             </visual-title>"
         Visibility: VISIBLE
-      VisualId: a269ba1b-04f6-4ace-9353-88d23642cb31
+      VisualId: 670e94e6-c1a8-4560-ba66-22ab8a1ed3aa
   - TableVisual:
-      Actions:
-      - ActionOperations:
-        - URLOperation:
-            URLTarget: NEW_TAB
-            URLTemplate: https://<<accountid>>.signin.aws.amazon.com/console/rds?region=<<region>>#database:id=<<dbinstanceidentifier>>;is-cluster=false;tab=configuration
-        CustomActionId: 68229371-cbbc-4022-8b64-736a5d7ea95d
-        Name: "Open RDS Console for database\_\_\_\_\_\_\_\_ <<dbinstanceidentifier>>@<<accountid>>\
-          \ in Region\_\_\_\_\_\_\_\_ <<region>>"
-        Status: ENABLED
-        Trigger: DATA_POINT_MENU
+      Actions: []
       ChartConfiguration:
         FieldOptions:
           Order:
@@ -6517,19 +6374,18 @@ Sheets:
           - c7ef0b3b-e6c7-4115-a88d-de137b9f84e1.10.1736874464157
           - 6e6d882c-76cf-4a4f-8b50-e8a957a08d9c.11.1782278362272
           - 89a6ea90-658c-45f6-921b-19de525d50fb.collection_date.9.1743431272772
-          - a63d0007-eb10-426e-bb35-cf56f1138cee.10.1749078723022
           SelectedFieldOptions:
           - CustomLabel: Account ID
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.accountid.0.1735664839588
           - CustomLabel: Account Name
             FieldId: a6ea088a-5ad5-46a4-8dd1-736343f07a3c.accountname.11.1750691249497
-            Width: 122px
+            Width: 134px
           - CustomLabel: DB Instance
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.dbinstanceidentifier.1.1735664845662
             Width: 164px
           - CustomLabel: Major Engine Version
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.dbmajorengineversion.2.1735664853354
-            Width: 95px
+            Width: 149px
           - CustomLabel: Region
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.region.3.1735664857565
             Width: 75px
@@ -6604,11 +6460,6 @@ Sheets:
                   ColumnName: collection_date_filter
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: 89a6ea90-658c-45f6-921b-19de525d50fb.collection_date.9.1743431272772
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: RDS Console Link
-                  DataSetIdentifier: rds_inventory_dataset
-                FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.10.1749078723022
             Values: []
         SortConfiguration:
           RowSort:
@@ -6716,16 +6567,6 @@ Sheets:
                   Expression: '{MultiAZ Enabled Status} = "False"'
                   IconOptions:
                     Icon: CIRCLE
-        - Cell:
-            FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.10.1749078723022
-            TextFormat:
-              Icon:
-                CustomCondition:
-                  DisplayConfiguration:
-                    IconDisplayOption: ICON_ONLY
-                  Expression: left({RDS Console Link}, 3) = "RDS"
-                  IconOptions:
-                    UnicodeIcon: "\U0001F310"
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -6736,18 +6577,9 @@ Sheets:
             \  </inline>\n  <br/>\n  <block align=\"right\">&#128994; OK  &#128992;\
             \ Warning</block>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: fd7aa14f-4d23-432b-9573-4bfe1d2d71c0
+      VisualId: 5a14c29b-12d9-4ce7-89b0-c356a8b13cc3
   - TableVisual:
-      Actions:
-      - ActionOperations:
-        - URLOperation:
-            URLTarget: NEW_TAB
-            URLTemplate: https://<<accountid>>.signin.aws.amazon.com/console/rds?region=<<region>>#database:id=<<dbinstanceidentifier>>;is-cluster=false;tab=configuration
-        CustomActionId: d08bfcbf-3b39-4309-b2d7-d23997feef45
-        Name: "Open RDS Console for database\_\_\_\_\_\_\_\_ <<dbinstanceidentifier>>@<<accountid>>\
-          \ in Region\_\_\_\_\_\_\_\_ <<region>>"
-        Status: ENABLED
-        Trigger: DATA_POINT_MENU
+      Actions: []
       ChartConfiguration:
         FieldOptions:
           Order:
@@ -6759,19 +6591,18 @@ Sheets:
           - 454534d7-6bb7-456e-a5c5-b33decba0e32.region.10.1735664656404
           - 208b531f-53ea-4e94-9675-0399631b6da5.7.1744307052765
           - rds-analysis-logical.collection_date.8.1785022330264
-          - a63d0007-eb10-426e-bb35-cf56f1138cee.9.1749078560694
           SelectedFieldOptions:
           - CustomLabel: Account ID
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.accountid.0.1735663365089
           - CustomLabel: DB Instance
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.dbinstanceidentifier.1.1735663375167
-            Width: 111px
+            Width: 154px
           - CustomLabel: Cluster ID
             FieldId: a53198d7-1984-4016-9ef7-621b2bfc052e.dbclusteridentifier.6.1744305059698
-            Width: 99px
+            Width: 114px
           - CustomLabel: Major Engine Version
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.dbmajorengineversion.2.1735663380187
-            Width: 97px
+            Width: 120px
           - CustomLabel: DB Instance Class
             FieldId: a53198d7-1984-4016-9ef7-621b2bfc052e.dbinstanceclass.7.1744305091465
             Width: 102px
@@ -6781,8 +6612,6 @@ Sheets:
             Width: 101px
           - CustomLabel: Collection Date
             FieldId: rds-analysis-logical.collection_date.8.1785022330264
-          - FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.9.1749078560694
-            Width: 102px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -6826,11 +6655,6 @@ Sheets:
                   ColumnName: collection_date_filter
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: rds-analysis-logical.collection_date.8.1785022330264
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: RDS Console Link
-                  DataSetIdentifier: rds_inventory_dataset
-                FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.9.1749078560694
             Values: []
         SortConfiguration:
           RowSort:
@@ -6848,16 +6672,6 @@ Sheets:
             TextWrap: WRAP
       ConditionalFormatting:
         ConditionalFormattingOptions:
-        - Cell:
-            FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.9.1749078560694
-            TextFormat:
-              Icon:
-                CustomCondition:
-                  DisplayConfiguration:
-                    IconDisplayOption: ICON_ONLY
-                  Expression: left({RDS Console Link}, 3) = "RDS"
-                  IconOptions:
-                    UnicodeIcon: "\U0001F310"
         - Cell:
             FieldId: 208b531f-53ea-4e94-9675-0399631b6da5.7.1744307052765
             TextFormat:
@@ -6881,7 +6695,7 @@ Sheets:
             \ font-size=\"15px\">\n    <parameter>${pCollectionDateFilter}</parameter>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: b9c55be0-3f0f-488f-b953-a0c4637f978e
+      VisualId: bcaf7f7c-0951-4cd0-b232-71f7c46b9ac5
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -6956,7 +6770,7 @@ Sheets:
             #f0f6f6\" font-size=\"15px\">\n    <parameter>${pCollectionDateFilter}</parameter>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 7d3e292c-c58b-4586-b1b5-b556a0c66f69
+      VisualId: 309a1916-2bfd-4b38-8ff7-53850c0b2f59
   - GaugeChartVisual:
       Actions: []
       ChartConfiguration:
@@ -7006,7 +6820,7 @@ Sheets:
             >Storage Encryption %</inline>\n  \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\
             \_\_\_\_\_\_\_\_\_\_\_\_\_&#128994; OK &#128992; Warning\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 30317af7-9558-42e7-822f-2a73a48b1cd2
+      VisualId: 1d4f20ed-bb6c-4f40-8dfe-585bfef4391d
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -7018,7 +6832,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789104931999
-              HierarchyId: 1e2614ff-a3c0-430b-a9c2-cee21696bfc0
+              HierarchyId: d202dd9d-6481-4959-88ef-5265155f0de2
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -7053,7 +6867,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 1e2614ff-a3c0-430b-a9c2-cee21696bfc0
+          HierarchyId: d202dd9d-6481-4959-88ef-5265155f0de2
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -7095,7 +6909,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 7dca590b-4dc0-4a48-8b73-4a9eb99ab7aa
+      VisualId: 3eed350c-098f-4158-b71f-8ac922411428
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -7107,7 +6921,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789104927780
-              HierarchyId: 7db69b89-975f-4801-a005-25757bc32746
+              HierarchyId: 18cdd8f7-e7e4-4c70-958d-696e2b5f7ebd
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -7142,7 +6956,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 7db69b89-975f-4801-a005-25757bc32746
+          HierarchyId: 18cdd8f7-e7e4-4c70-958d-696e2b5f7ebd
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -7184,7 +6998,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 66425336-0f1d-43bd-b6dc-b8b0f707b853
+      VisualId: 095e6dd9-5a58-40c7-8eb6-6f188f854dc3
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -7196,7 +7010,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_inventory_dataset
               FieldId: e932e5e8-d101-41a7-a472-c56edb678eca.1.1789104922132
-              HierarchyId: 5a78d17c-efc9-4e9a-9c95-456f90d05fb0
+              HierarchyId: 5ef7e480-e4ab-4fea-9d79-043f7c548462
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -7231,7 +7045,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 5a78d17c-efc9-4e9a-9c95-456f90d05fb0
+          HierarchyId: 5ef7e480-e4ab-4fea-9d79-043f7c548462
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -7273,7 +7087,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 3e821c26-aa47-4357-9970-09e93232230c
+      VisualId: 8eedfb34-9052-48db-9fb2-6c75dd3437c0
 - ContentType: INTERACTIVE
   FilterControls:
   - RelativeDateTime:
@@ -7321,7 +7135,7 @@ Sheets:
           RowSpan: 5
         - ColumnIndex: 5
           ColumnSpan: 5
-          ElementId: f79dfe2d-7734-46fe-be5f-05553729baa9
+          ElementId: aafb4981-1670-4906-a793-5290f0e17f1c
           ElementType: VISUAL
           RowIndex: 10
           RowSpan: 5
@@ -7333,61 +7147,61 @@ Sheets:
           RowSpan: 1
         - ColumnIndex: 10
           ColumnSpan: 6
-          ElementId: c05f3324-656e-49e1-b506-6af9c114b7fb
+          ElementId: 02f5dc04-3198-49e9-91ea-675dd7c31bfd
           ElementType: VISUAL
           RowIndex: 11
           RowSpan: 4
         - ColumnIndex: 16
           ColumnSpan: 7
-          ElementId: 893e2952-4ccf-46b6-a317-a91b3bddbbc5
+          ElementId: ae8bcd21-1347-4aad-b8de-1c0383c6d46b
           ElementType: VISUAL
           RowIndex: 11
           RowSpan: 4
         - ColumnIndex: 23
           ColumnSpan: 7
-          ElementId: 895fb410-6b73-494c-bb20-bcc72eb55f20
+          ElementId: 0b867933-1033-4b52-b4a7-430ce97b371d
           ElementType: VISUAL
           RowIndex: 11
           RowSpan: 4
         - ColumnIndex: 30
           ColumnSpan: 6
-          ElementId: 8026cbcf-93b3-4f99-bbd1-bf72106cba4b
+          ElementId: 54f8dfe4-bbd6-41bd-9762-56ef596fc905
           ElementType: VISUAL
           RowIndex: 11
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 18
-          ElementId: 18191061-7dfa-481b-84bc-c82ba27cd500
+          ElementId: 06da6301-a3ae-472a-9096-2db30f8b56aa
           ElementType: VISUAL
           RowIndex: 15
           RowSpan: 13
         - ColumnIndex: 18
           ColumnSpan: 18
-          ElementId: 1b56ea82-9fb8-4237-b490-5b458c1e6851
+          ElementId: e2263776-09a2-4403-9b32-6ce5fe351421
           ElementType: VISUAL
           RowIndex: 15
           RowSpan: 13
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 76a58053-c957-4a1c-916b-6750f39133ea
+          ElementId: f961acad-19b6-426d-a5c8-58c1a6cdbbd6
           ElementType: VISUAL
           RowIndex: 28
           RowSpan: 12
         - ColumnIndex: 0
           ColumnSpan: 18
-          ElementId: 3b22ee77-a84d-4c49-ac00-306276394a79
+          ElementId: 8be0b52d-af85-4b58-a5fa-765d37415445
           ElementType: VISUAL
           RowIndex: 40
           RowSpan: 9
         - ColumnIndex: 18
           ColumnSpan: 18
-          ElementId: a4211bf3-6744-4366-828a-8d6d44c8ef81
+          ElementId: 0b50c667-d903-4009-903b-2137e9b93ab3
           ElementType: VISUAL
           RowIndex: 40
           RowSpan: 9
         - ColumnIndex: 23
           ColumnSpan: 13
-          ElementId: ae1feb83-2630-4c23-b970-540ea6d4cec6
+          ElementId: 23af4729-cc91-4815-baaf-75f4a4c5c022
           ElementType: VISUAL
           RowIndex: 49
           RowSpan: 7
@@ -7399,31 +7213,31 @@ Sheets:
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 13
-          ElementId: 36f1a7c1-faf3-4ab8-b342-1766d2024d8f
+          ElementId: e7c9c884-31ac-4441-81c7-81cdd8b289f6
           ElementType: VISUAL
           RowIndex: 68
           RowSpan: 12
         - ColumnIndex: 13
           ColumnSpan: 23
-          ElementId: 6b06b500-6254-4569-9a05-86b4c1f92370
+          ElementId: 05ebc5ce-2e7f-4bb9-814e-6b0bbe26288f
           ElementType: VISUAL
           RowIndex: 68
           RowSpan: 12
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: bda96edf-96fe-413d-b608-bf363fd2f84a
+          ElementId: 0044d4e0-e0bf-420f-8aa5-8f80ebc2b937
           ElementType: VISUAL
           RowIndex: 80
           RowSpan: 8
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 2784942f-ddb9-49cd-9572-3f8ea9c23564
+          ElementId: b1594826-b54b-4b39-9222-944a9cb474d3
           ElementType: VISUAL
           RowIndex: 88
           RowSpan: 9
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 43216477-b936-4144-9279-4b47d3f62af2
+          ElementId: 8e3e0efe-9849-4059-ab08-4dd079ad063e
           ElementType: VISUAL
           RowIndex: 97
           RowSpan: 12
@@ -7447,7 +7261,7 @@ Sheets:
           RowSpan: 2
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 983cf404-7a73-485e-861b-7f375e87089b
+          ElementId: 5403cd12-09bf-4183-9837-8b5b933638fc
           ElementType: VISUAL
           RowIndex: 115
           RowSpan: 12
@@ -7572,7 +7386,7 @@ Sheets:
           ElementType: PARAMETER_CONTROL
           RowIndex: 0
           RowSpan: 1
-  SheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+  SheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
   TextBoxes:
   - Content: "<text-box>\n  <br/>\n  <inline color=\"#f0f6f6\" font-size=\"30px\"\
       >\n    <b>RDS Snapshot Backup Insights\_</b>\n  </inline>\n  <inline font-size=\"\
@@ -7661,7 +7475,7 @@ Sheets:
       - ActionOperations:
         - NavigationOperation:
             LocalNavigationConfiguration:
-              TargetSheetId: 27d748c2-ef88-4531-b7c4-20e607409356
+              TargetSheetId: 844f4158-8400-4ae2-ac33-e042ff2f8ce6
         - SetParametersOperation:
             ParameterValueConfigurations:
             - DestinationParameterName: pCollectionDateFilter
@@ -7762,18 +7576,9 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: f79dfe2d-7734-46fe-be5f-05553729baa9
+      VisualId: aafb4981-1670-4906-a793-5290f0e17f1c
   - TableVisual:
-      Actions:
-      - ActionOperations:
-        - URLOperation:
-            URLTarget: NEW_TAB
-            URLTemplate: https://<<accountid>>.signin.aws.amazon.com/console/rds?region=<<region>>#database:id=<<dbinstanceidentifier>>;is-cluster=false;tab=maintenance-and-backups
-        CustomActionId: 94eb3034-825e-43cd-bba5-5a822b5be5d7
-        Name: "Open RDS Console for database\_\_\_\_\_\_\_\_ <<dbinstanceidentifier>>@<<accountid>>\
-          \ in Region\_\_\_\_\_\_\_\_ <<region>>"
-        Status: ENABLED
-        Trigger: DATA_POINT_MENU
+      Actions: []
       ChartConfiguration:
         FieldOptions:
           SelectedFieldOptions:
@@ -7782,10 +7587,10 @@ Sheets:
             Width: 106px
           - CustomLabel: Account Name
             FieldId: a6ea088a-5ad5-46a4-8dd1-736343f07a3c.accountname.12.1750691238899
-            Width: 116px
+            Width: 132px
           - CustomLabel: DB Instance
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.dbinstanceidentifier.1.1735663375167
-            Width: 109px
+            Width: 147px
           - CustomLabel: Cluster ID
             FieldId: a53198d7-1984-4016-9ef7-621b2bfc052e.dbclusteridentifier.6.1744305059698
             Width: 99px
@@ -7803,8 +7608,6 @@ Sheets:
           - CustomLabel: Collection Date
             FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.collection_date_filter.20.1789300001
             Width: 84px
-          - FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.9.1749069864622
-            Width: 93px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
@@ -7853,11 +7656,6 @@ Sheets:
                   ColumnName: collection_date_filter
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: 454534d7-6bb7-456e-a5c5-b33decba0e32.collection_date_filter.20.1789300001
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: RDS Console Link
-                  DataSetIdentifier: rds_inventory_dataset
-                FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.9.1749069864622
             Values: []
         SortConfiguration:
           RowSort:
@@ -7890,16 +7688,6 @@ Sheets:
                 Solid:
                   Color: '#FF8700'
                   Expression: '{Backup Enabled Status} = "BackupNotEnabled"'
-        - Cell:
-            FieldId: a63d0007-eb10-426e-bb35-cf56f1138cee.9.1749069864622
-            TextFormat:
-              Icon:
-                CustomCondition:
-                  DisplayConfiguration:
-                    IconDisplayOption: ICON_ONLY
-                  Expression: left({RDS Console Link}, 3) = "RDS"
-                  IconOptions:
-                    UnicodeIcon: "\U0001F310"
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -7909,7 +7697,7 @@ Sheets:
             15px\">\n    <parameter>${pCollectionDateFilter}</parameter>\n  </inline>\n\
             </visual-title>"
         Visibility: VISIBLE
-      VisualId: 6b06b500-6254-4569-9a05-86b4c1f92370
+      VisualId: 05ebc5ce-2e7f-4bb9-814e-6b0bbe26288f
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -7988,7 +7776,7 @@ Sheets:
               <parameter>${pCollectionDateFilter}</parameter>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 36f1a7c1-faf3-4ab8-b342-1766d2024d8f
+      VisualId: e7c9c884-31ac-4441-81c7-81cdd8b289f6
   - GaugeChartVisual:
       Actions: []
       ChartConfiguration:
@@ -8042,7 +7830,7 @@ Sheets:
             \    </inline>\n    \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_&#128994; OK &#128992;\
             \ Warning\n  </block>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: ae1feb83-2630-4c23-b970-540ea6d4cec6
+      VisualId: 23af4729-cc91-4815-baaf-75f4a4c5c022
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -8054,7 +7842,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_backup_dataset
               FieldId: 9646eebd-6d72-4496-af5f-3670faf9a421.1.1769577367884
-              HierarchyId: 91da0b26-72c5-4d75-98bd-60edfffdc1f6
+              HierarchyId: ef30a5ab-37c9-40ca-bef7-6d2f007fd8cf
           Values:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
@@ -8092,7 +7880,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 91da0b26-72c5-4d75-98bd-60edfffdc1f6
+          HierarchyId: ef30a5ab-37c9-40ca-bef7-6d2f007fd8cf
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -8134,7 +7922,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: c05f3324-656e-49e1-b506-6af9c114b7fb
+      VisualId: 02f5dc04-3198-49e9-91ea-675dd7c31bfd
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -8146,7 +7934,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_backup_dataset
               FieldId: 9646eebd-6d72-4496-af5f-3670faf9a421.1.1769577367884
-              HierarchyId: 5a5c05a1-97d6-4a2a-8873-482f5ace439f
+              HierarchyId: 88ecea68-124a-4445-a1ef-6b4939f779b4
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -8185,7 +7973,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 5a5c05a1-97d6-4a2a-8873-482f5ace439f
+          HierarchyId: 88ecea68-124a-4445-a1ef-6b4939f779b4
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -8227,7 +8015,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 8026cbcf-93b3-4f99-bbd1-bf72106cba4b
+      VisualId: 54f8dfe4-bbd6-41bd-9762-56ef596fc905
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -8239,7 +8027,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_backup_dataset
               FieldId: 9646eebd-6d72-4496-af5f-3670faf9a421.1.1769577367884
-              HierarchyId: dda3062e-8de0-440f-bf2e-f21b8bd658a7
+              HierarchyId: 1490c9d6-6210-4c69-b888-83516d49021c
           Values:
           - NumericalMeasureField:
               Column:
@@ -8275,7 +8063,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: dda3062e-8de0-440f-bf2e-f21b8bd658a7
+          HierarchyId: 1490c9d6-6210-4c69-b888-83516d49021c
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -8317,7 +8105,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 895fb410-6b73-494c-bb20-bcc72eb55f20
+      VisualId: 0b867933-1033-4b52-b4a7-430ce97b371d
   - InsightVisual:
       Actions: []
       DataSetIdentifier: rds_backup_dataset
@@ -8330,7 +8118,7 @@ Sheets:
                   ColumnName: engine
                   DataSetIdentifier: rds_backup_dataset
                 FieldId: d048c01d-4011-453f-9eaa-b6e82b549f0c.engine.3.1768367926414
-            ComputationId: 214833a5-37f9-425f-830e-fa9b14310377
+            ComputationId: 4f135155-3af9-4881-93b8-0a232fb6fba1
             Name: Top
             ResultSize: 10
             Type: TOP
@@ -8356,7 +8144,7 @@ Sheets:
                           Visibility: VISIBLE
                       Suffix: '%'
         - TotalAggregation:
-            ComputationId: 2c29c8c8-4555-49f2-9c5c-fca84953be5e
+            ComputationId: 1988c4f9-1388-4702-ac21-a012717002a9
             Name: TotalAggregate
             Value:
               NumericalMeasureField:
@@ -8417,7 +8205,7 @@ Sheets:
         FormatText:
           PlainText: Insight
         Visibility: HIDDEN
-      VisualId: a4211bf3-6744-4366-828a-8d6d44c8ef81
+      VisualId: 0b50c667-d903-4009-903b-2137e9b93ab3
   - ComboChartVisual:
       Actions: []
       ChartConfiguration:
@@ -8441,7 +8229,7 @@ Sheets:
                   ColumnName: CollectionDay
                   DataSetIdentifier: rds_backup_dataset
                 FieldId: 9646eebd-6d72-4496-af5f-3670faf9a421.0.1738640939978
-                HierarchyId: a55f37cf-5e07-455b-82e0-cc971c3855b7
+                HierarchyId: 3d4b4646-0f68-4029-9255-edefb9c830a8
             Colors: []
             LineValues:
             - NumericalMeasureField:
@@ -8489,7 +8277,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: a55f37cf-5e07-455b-82e0-cc971c3855b7
+          HierarchyId: 3d4b4646-0f68-4029-9255-edefb9c830a8
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -8499,18 +8287,9 @@ Sheets:
               <inline color="#f0f6f6">Average Snapshot Backup % for past 30 days</inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 76a58053-c957-4a1c-916b-6750f39133ea
+      VisualId: f961acad-19b6-426d-a5c8-58c1a6cdbbd6
   - PivotTableVisual:
-      Actions:
-      - ActionOperations:
-        - URLOperation:
-            URLTarget: NEW_TAB
-            URLTemplate: https://<<accountid>>.signin.aws.amazon.com/console/rds?region=<<region>>#database:id=<<dbinstanceidentifier>>;is-cluster=false;tab=maintenance-and-backups
-        CustomActionId: 31913fca-6114-47b7-88fb-7a98908a7768
-        Name: Open RDS Console for <<dbinstanceidentifier>>@<<accountid>> in Region
-          <<region>>
-        Status: ENABLED
-        Trigger: DATA_POINT_MENU
+      Actions: []
       ChartConfiguration:
         FieldOptions:
           CollapseStateOptions:
@@ -8586,9 +8365,6 @@ Sheets:
           - CustomLabel: Backup Enabled
             FieldId: 7f652bba-b160-4213-b668-9b99e46a4781.4.1739385149408
             Visibility: VISIBLE
-          - CustomLabel: Database Count
-            FieldId: 2a6ec77d-b056-4be8-8ac4-4e52a6f54a25.9.1792190380074
-            Visibility: VISIBLE
           - CustomLabel: Collection Date
             FieldId: 9646eebd-6d72-4496-af5f-3670faf9a421.6.1744637951277
             Visibility: VISIBLE
@@ -8610,7 +8386,8 @@ Sheets:
           - CustomLabel: Backup Percentage
             FieldId: c7cc8ee3-fde4-4971-a2e4-18e69a921027.5.1739065085875
             Visibility: VISIBLE
-          - FieldId: 2a6ec77d-b056-4be8-8ac4-4e52a6f54a25.9.1792190380074
+          - CustomLabel: Database Count
+            FieldId: 2a6ec77d-b056-4be8-8ac4-4e52a6f54a25.9.1792190380074
             Visibility: VISIBLE
         FieldWells:
           PivotTableAggregatedFieldWells:
@@ -8729,7 +8506,7 @@ Sheets:
             >\_Backup % by account, region, engine and dbinstance for last 30 days</inline>\n\
             </visual-title>"
         Visibility: VISIBLE
-      VisualId: 43216477-b936-4144-9279-4b47d3f62af2
+      VisualId: 8e3e0efe-9849-4059-ab08-4dd079ad063e
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -8819,7 +8596,7 @@ Sheets:
             >\n    <parameter>${pCollectionDateFilter}</parameter>\n  </inline>\n\
             </visual-title>"
         Visibility: VISIBLE
-      VisualId: 1b56ea82-9fb8-4237-b490-5b458c1e6851
+      VisualId: e2263776-09a2-4403-9b32-6ce5fe351421
   - PieChartVisual:
       Actions: []
       ChartConfiguration:
@@ -8841,7 +8618,7 @@ Sheets:
                   ColumnName: Backup Enabled Status
                   DataSetIdentifier: rds_inventory_dataset
                 FieldId: a8f44c9a-a7f4-4224-ae9b-81a80e4ee7a4.1.1738687701428
-                HierarchyId: 4d2b0c9a-bdf5-40f1-9cca-6abb81c1561a
+                HierarchyId: 0656584e-5b92-4734-b055-86e89fd755db
             SmallMultiples:
             - CategoricalDimensionField:
                 Column:
@@ -8906,7 +8683,7 @@ Sheets:
           - ColumnName: accountid
             DataSetIdentifier: rds_inventory_dataset
           DrillDownFilters: []
-          HierarchyId: 4d2b0c9a-bdf5-40f1-9cca-6abb81c1561a
+          HierarchyId: 0656584e-5b92-4734-b055-86e89fd755db
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -8916,12 +8693,26 @@ Sheets:
               <inline color="#f0f6f6">AutoBackup Enabled status by Engine for last 14 Days</inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: bda96edf-96fe-413d-b608-bf363fd2f84a
+      VisualId: 0044d4e0-e0bf-420f-8aa5-8f80ebc2b937
   - TableVisual:
       Actions: []
       ChartConfiguration:
         FieldOptions:
+          Order:
+          - b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.collection_date.5.1739064902776
+          - b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.accountid.0.1739064740964
+          - b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.dbinstanceidentifier.3.1739064824804
+          - b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.engine.1.1739064751428
+          - b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.engineversion.8.1739425484619
+          - b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.region.8.1741368100524
+          - b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.dbsnapshotidentifier.7.1739383910303
+          - b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.snapshotcreatetime.4.1739064847335
+          - b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.snapshottype.9.1744604130179
+          - c7cc8ee3-fde4-4971-a2e4-18e69a921027.7.1739064990014
           SelectedFieldOptions:
+          - CustomLabel: Collection Date
+            FieldId: b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.collection_date.5.1739064902776
+            Width: 113px
           - CustomLabel: Account ID
             FieldId: b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.accountid.0.1739064740964
             Width: 112px
@@ -8949,12 +8740,14 @@ Sheets:
           - CustomLabel: Backup Percentage
             FieldId: c7cc8ee3-fde4-4971-a2e4-18e69a921027.7.1739064990014
             Width: 153px
-          - CustomLabel: Collection Date
-            FieldId: b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.collection_date.5.1739064902776
-            Width: 146px
         FieldWells:
           TableAggregatedFieldWells:
             GroupBy:
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: collection_date_filter
+                  DataSetIdentifier: rds_backup_dataset
+                FieldId: b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.collection_date.5.1739064902776
             - CategoricalDimensionField:
                 Column:
                   ColumnName: accountid
@@ -9000,11 +8793,6 @@ Sheets:
                   ColumnName: Backup Percentage (24hrs)
                   DataSetIdentifier: rds_backup_dataset
                 FieldId: c7cc8ee3-fde4-4971-a2e4-18e69a921027.7.1739064990014
-            - CategoricalDimensionField:
-                Column:
-                  ColumnName: collection_date_filter
-                  DataSetIdentifier: rds_backup_dataset
-                FieldId: b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.collection_date.5.1739064902776
             Values: []
         SortConfiguration:
           RowSort:
@@ -9045,7 +8833,7 @@ Sheets:
             \  </inline>\n  <b>Snapshot</b>\n  <inline color=\"#f0f6f6\">\n    <b>\_\
             Backup history last 35 days</b>\n  </inline>\n</visual-title>"
         Visibility: HIDDEN
-      VisualId: 983cf404-7a73-485e-861b-7f375e87089b
+      VisualId: 5403cd12-09bf-4183-9837-8b5b933638fc
   - InsightVisual:
       Actions: []
       DataSetIdentifier: rds_backup_dataset
@@ -9058,7 +8846,7 @@ Sheets:
                   ColumnName: accountname
                   DataSetIdentifier: rds_backup_dataset
                 FieldId: rds-dailybackup-logical.accountname.1.1783033090660
-            ComputationId: 6c028826-15ec-4233-9c4c-f91869def871
+            ComputationId: 9b85c3d5-b817-49d3-b212-90347592697e
             Name: Top
             ResultSize: 5
             Type: TOP
@@ -9084,7 +8872,7 @@ Sheets:
                           Visibility: VISIBLE
                       Suffix: '%'
         - TotalAggregation:
-            ComputationId: 9cc6d42a-c8c7-41ac-9dee-ae581369ef6f
+            ComputationId: d5488151-79a5-4dc2-b377-10d5df59e0f8
             Name: TotalAggregate
             Value:
               NumericalMeasureField:
@@ -9146,22 +8934,22 @@ Sheets:
             \        \_Accounts at 100% RDS Backups coverage \u2705\n      </li>\n\
             \      <li class=\"ql-indent-0\">Full backup compliance maintained \u2705\
             </li>\n      <li class=\"ql-indent-0\">Target: 100% coverage for all accounts\
-            \ \u2705</li>\n    </ul>\n    <br/>\n  </if>\n  <br/>\n  <br/>\n  <if\
-            \ condition=\"TotalAggregate.totalAggregate.value &lt; 1\" level=\"block\"\
-            >\n    <inline font-size=\"19.2px\">\n      <b>&#128161; Key Insights:</b>\n\
-            \    </inline>\n    <br/>\n    <ul>\n      <li class=\"ql-indent-0\">Review\
-            \ Backup policies for all accounts with backup percentage &lt; 100% &#128993;\_\
-            </li>\n      <li class=\"ql-indent-0\">Investigate the reason for non-availability\
+            \ \u2705</li>\n    </ul>\n  </if>\n  <br/>\n  <br/>\n  <if condition=\"\
+            TotalAggregate.totalAggregate.value &lt; 1\" level=\"block\">\n    <inline\
+            \ font-size=\"19.2px\">\n      <b>&#128161; Key Insights:</b>\n    </inline>\n\
+            \    <br/>\n    <ul>\n      <li class=\"ql-indent-0\">Review Backup policies\
+            \ for all accounts with backup percentage &lt; 100% &#128993;\_</li>\n\
+            \      <li class=\"ql-indent-0\">Investigate the reason for non-availability\
             \ of RDS backups &#128993;\_</li>\n      <li class=\"ql-indent-0\">Target\
             \ : 100% backup coverage for all accounts &#128993;\_</li>\n    </ul>\n\
-            \    <br/>\n  </if>\n</narrative>"
+            \  </if>\n</narrative>"
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
           PlainText: Insight
         Visibility: HIDDEN
-      VisualId: 3b22ee77-a84d-4c49-ac00-306276394a79
+      VisualId: 8be0b52d-af85-4b58-a5fa-765d37415445
   - ComboChartVisual:
       Actions: []
       ChartConfiguration:
@@ -9189,7 +8977,7 @@ Sheets:
                   ColumnName: engine
                   DataSetIdentifier: rds_backup_dataset
                 FieldId: b7aaa0ba-f57f-4e62-a63d-4110dce7e14b.engine.2.1744602558927
-                HierarchyId: 11b2433e-5737-4151-9da3-a42fe56c8f3e
+                HierarchyId: f2083dba-1d38-4f29-b4f6-8b9e37ff7291
             Colors: []
             LineValues:
             - NumericalMeasureField:
@@ -9249,7 +9037,7 @@ Sheets:
           - ColumnName: dbinstanceidentifier
             DataSetIdentifier: rds_backup_dataset
           DrillDownFilters: []
-          HierarchyId: 11b2433e-5737-4151-9da3-a42fe56c8f3e
+          HierarchyId: f2083dba-1d38-4f29-b4f6-8b9e37ff7291
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -9259,7 +9047,7 @@ Sheets:
             \  <inline color=\"#f0f6f6\">\n    <parameter>${pCollectionDateFilter}</parameter>\n\
             \  </inline>\n</visual-title>"
         Visibility: VISIBLE
-      VisualId: 18191061-7dfa-481b-84bc-c82ba27cd500
+      VisualId: 06da6301-a3ae-472a-9096-2db30f8b56aa
   - PivotTableVisual:
       Actions: []
       ChartConfiguration:
@@ -9377,7 +9165,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Daily Snapshot Backup % per Account - Last 14 Days</visual-title>
         Visibility: VISIBLE
-      VisualId: 2784942f-ddb9-49cd-9572-3f8ea9c23564
+      VisualId: b1594826-b54b-4b39-9222-944a9cb474d3
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -9389,7 +9177,7 @@ Sheets:
                 ColumnName: CollectionDay
                 DataSetIdentifier: rds_backup_dataset
               FieldId: 9646eebd-6d72-4496-af5f-3670faf9a421.1.1769577367884
-              HierarchyId: e246846e-f74c-4a1d-9e1d-1852c722fde6
+              HierarchyId: e2df0deb-f072-4afa-b6b6-3533cb16a745
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -9440,7 +9228,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: e246846e-f74c-4a1d-9e1d-1852c722fde6
+          HierarchyId: e2df0deb-f072-4afa-b6b6-3533cb16a745
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -9482,7 +9270,7 @@ Sheets:
               </block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 893e2952-4ccf-46b6-a317-a91b3bddbbc5
+      VisualId: ae8bcd21-1347-4aad-b8de-1c0383c6d46b
 - ContentType: INTERACTIVE
   FilterControls:
   - RelativeDateTime:
@@ -9518,61 +9306,61 @@ Sheets:
           RowSpan: 1
         - ColumnIndex: 0
           ColumnSpan: 7
-          ElementId: a0dcbe71-7162-4545-b253-c8f7dfb49a65
+          ElementId: 0c6de82e-387f-4b18-8da3-1967ee3c6ce4
           ElementType: VISUAL
           RowIndex: 7
           RowSpan: 6
         - ColumnIndex: 7
           ColumnSpan: 7
-          ElementId: b1b5429d-7885-4751-a2bc-fc96392827f4
+          ElementId: c1dec042-86eb-4f38-8d80-7a8a5a130d28
           ElementType: VISUAL
           RowIndex: 7
           RowSpan: 6
         - ColumnIndex: 14
           ColumnSpan: 7
-          ElementId: 2c046a4b-6e10-4fc6-88ea-d181b8ab7c1c
+          ElementId: 2ee4fb88-787d-438e-8105-93cc0ea692da
           ElementType: VISUAL
           RowIndex: 7
           RowSpan: 6
         - ColumnIndex: 21
           ColumnSpan: 7
-          ElementId: 7fd1114e-ed9d-4e0a-a9f0-6586decbc4fd
+          ElementId: d0b3800c-4d16-41f9-9f56-0ce7eb45e348
           ElementType: VISUAL
           RowIndex: 7
           RowSpan: 6
         - ColumnIndex: 28
           ColumnSpan: 8
-          ElementId: 5717da56-39af-4ff5-ba66-f0de440856a6
+          ElementId: bd268e2c-077b-4475-95e0-8ab897326412
           ElementType: VISUAL
           RowIndex: 7
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 18
-          ElementId: 0b4dd61c-332d-4d8d-ac9b-11277ec2ff53
+          ElementId: adc9cb5f-fc3c-4a62-aa6a-136b219a5013
           ElementType: VISUAL
           RowIndex: 13
           RowSpan: 12
         - ColumnIndex: 18
           ColumnSpan: 6
-          ElementId: 8ebd9072-11c3-407e-b11d-7f3d90c74434
+          ElementId: d0b9b08a-0c25-4c63-866d-8584cabd253e
           ElementType: VISUAL
           RowIndex: 13
           RowSpan: 3
         - ColumnIndex: 24
           ColumnSpan: 6
-          ElementId: 428a0fd8-261b-44ba-a0fd-5e08303ccea4
+          ElementId: aadfa4f5-92f6-4e51-b9fc-7711a3a0098c
           ElementType: VISUAL
           RowIndex: 13
           RowSpan: 3
         - ColumnIndex: 30
           ColumnSpan: 6
-          ElementId: c87e4bd1-c7ef-43d4-8c18-f4a38872bdd0
+          ElementId: cf3acb03-e1a6-45c0-96f7-315c29946900
           ElementType: VISUAL
           RowIndex: 13
           RowSpan: 3
         - ColumnIndex: 18
           ColumnSpan: 18
-          ElementId: 1978fdf5-0c91-4348-9b82-efeea18abeaf
+          ElementId: abe858a1-cb72-40bd-8f65-7ae575a4a164
           ElementType: VISUAL
           RowIndex: 16
           RowSpan: 9
@@ -9584,49 +9372,49 @@ Sheets:
           RowSpan: 15
         - ColumnIndex: 4
           ColumnSpan: 32
-          ElementId: 79d5e061-a996-4686-9209-e07a95d60b39
+          ElementId: 106055de-fecd-4392-a8af-f9f0ae84ef9f
           ElementType: VISUAL
           RowIndex: 25
           RowSpan: 15
         - ColumnIndex: 0
           ColumnSpan: 18
-          ElementId: d60249f0-5914-4c3a-94ca-34edbf787b2c
+          ElementId: 14bc130d-884f-415c-8d03-cda062cb8b57
           ElementType: VISUAL
           RowIndex: 40
           RowSpan: 12
         - ColumnIndex: 18
           ColumnSpan: 18
-          ElementId: fe5cde4e-136f-41a2-9b02-f73176a6efff
+          ElementId: f1eeac54-8b49-4a34-99c8-fbc9dedb492d
           ElementType: VISUAL
           RowIndex: 40
           RowSpan: 12
         - ColumnIndex: 0
           ColumnSpan: 18
-          ElementId: 87065104-00be-44c0-bf19-f0465b4c402d
+          ElementId: 796e45bd-a902-4b44-ab74-cb41e6680c06
           ElementType: VISUAL
           RowIndex: 52
           RowSpan: 12
         - ColumnIndex: 18
           ColumnSpan: 18
-          ElementId: 6f2f10b5-11c4-4f10-a09b-63a0304d41cd
+          ElementId: b76a7abf-5f63-4bbe-9870-27791a9a2259
           ElementType: VISUAL
           RowIndex: 52
           RowSpan: 12
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: dca22dce-50e1-4255-a2b1-5bf3ea8e9362
+          ElementId: 758c139b-db24-4432-a808-5e295eb7c11d
           ElementType: VISUAL
           RowIndex: 64
           RowSpan: 12
         - ColumnIndex: 0
           ColumnSpan: 17
-          ElementId: a4814d15-de29-4892-9de6-6a716039d58f
+          ElementId: 75b99b83-b641-424c-99a6-d3d0d2433b56
           ElementType: VISUAL
           RowIndex: 76
           RowSpan: 12
         - ColumnIndex: 17
           ColumnSpan: 19
-          ElementId: 120846b8-c76d-485a-abc0-5b81319a794b
+          ElementId: de1d956c-640a-45df-9ad7-2884e9c9388b
           ElementType: VISUAL
           RowIndex: 76
           RowSpan: 12
@@ -9638,19 +9426,19 @@ Sheets:
           RowSpan: 6
         - ColumnIndex: 0
           ColumnSpan: 18
-          ElementId: 7fd521ec-ae3d-4ecd-a8df-b9de551e9ecd
+          ElementId: 90e569e9-686d-4438-9b8e-d39e9ecabc32
           ElementType: VISUAL
           RowIndex: 94
           RowSpan: 12
         - ColumnIndex: 18
           ColumnSpan: 18
-          ElementId: 9ef29264-2bec-416a-af93-e4469bd39a37
+          ElementId: 5d270b78-0f31-41a2-b0a7-38467d2973da
           ElementType: VISUAL
           RowIndex: 94
           RowSpan: 12
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 51e86474-9897-437b-b902-efbd473cf6a2
+          ElementId: 90642cb0-a940-46b1-ba1c-5c8532087e9f
           ElementType: VISUAL
           RowIndex: 106
           RowSpan: 12
@@ -9662,13 +9450,13 @@ Sheets:
           RowSpan: 2
         - ColumnIndex: 0
           ColumnSpan: 18
-          ElementId: 05ce2f2e-77a3-4933-a38f-9fd42508c11a
+          ElementId: 1c1d710a-d9dd-4a4b-ba77-348614c35aad
           ElementType: VISUAL
           RowIndex: 120
           RowSpan: 12
         - ColumnIndex: 18
           ColumnSpan: 18
-          ElementId: a22b2ce7-6435-446c-8153-9d3e0fbcdc44
+          ElementId: 470d7874-09fa-44d1-bc63-9c0ecbc418d6
           ElementType: VISUAL
           RowIndex: 120
           RowSpan: 12
@@ -9686,37 +9474,37 @@ Sheets:
           RowSpan: 7
         - ColumnIndex: 25
           ColumnSpan: 11
-          ElementId: 3efa125d-9fcf-4887-8aa4-b01db2dbe8e2
+          ElementId: 91907841-96de-45f6-a5c0-b3916e404c94
           ElementType: VISUAL
           RowIndex: 134
           RowSpan: 11
         - ColumnIndex: 0
           ColumnSpan: 7
-          ElementId: b420c7e4-2786-49ac-9675-bbcc8a0278f2
+          ElementId: 47f9c557-2b92-4935-af6c-b9e23f85a08f
           ElementType: VISUAL
           RowIndex: 141
           RowSpan: 4
         - ColumnIndex: 7
           ColumnSpan: 6
-          ElementId: 2591665e-3cd7-4e90-bb2c-4599ccb2de1d
+          ElementId: eaf0708c-6008-4fd5-8a9c-fd62991b6b6c
           ElementType: VISUAL
           RowIndex: 141
           RowSpan: 4
         - ColumnIndex: 13
           ColumnSpan: 6
-          ElementId: b9dfc937-7218-4d90-9bc7-01ccb5360fdf
+          ElementId: 8b4b738c-31d5-43bb-ae4a-2291fe02958e
           ElementType: VISUAL
           RowIndex: 141
           RowSpan: 4
         - ColumnIndex: 19
           ColumnSpan: 6
-          ElementId: 31ba9d31-e833-4f00-94ee-095710ad044b
+          ElementId: 5ea88652-9123-4e54-abe1-3e54fb91de6a
           ElementType: VISUAL
           RowIndex: 141
           RowSpan: 4
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: 9b677fc7-3c43-4428-a48d-f90161519ebb
+          ElementId: 90bef72a-080d-4d2d-bf74-9ae35d832798
           ElementType: VISUAL
           RowIndex: 145
           RowSpan: 12
@@ -9728,7 +9516,7 @@ Sheets:
           RowSpan: 7
         - ColumnIndex: 0
           ColumnSpan: 36
-          ElementId: f218133a-fb32-4f62-b8c7-c4d0901c85ae
+          ElementId: 63060a2b-096f-4e74-9fac-ce938e551734
           ElementType: VISUAL
           RowIndex: 164
           RowSpan: 12
@@ -9863,7 +9651,7 @@ Sheets:
           ElementType: FILTER_CONTROL
           RowIndex: 0
           RowSpan: 1
-  SheetId: 2227d411-53d8-4e56-9fb2-3631bc889236
+  SheetId: f0103593-92f8-4507-b981-088f1a28c474
   TextBoxes:
   - Content: "<text-box>\n  <br/>\n  <inline color=\"#f0f6f6\" font-size=\"30px\"\
       >\n    <b>RDS Cost and Usage Summary\_</b>\n  </inline>\n  <inline font-size=\"\
@@ -9995,7 +9783,7 @@ Sheets:
                 DataSetIdentifier: rds_aurora_io_optimized_view
               DateGranularity: MONTH
               FieldId: 7e3c839b-f897-4c3d-bd00-293f476ba693.usage_month.1.1782531742140
-              HierarchyId: f9fd4bdc-08f4-4419-ac62-b5b0186383cd
+              HierarchyId: a785a02e-dd6a-4f5f-be11-c259fbd88419
           Values:
           - NumericalMeasureField:
               Column:
@@ -10044,7 +9832,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: f9fd4bdc-08f4-4419-ac62-b5b0186383cd
+          HierarchyId: a785a02e-dd6a-4f5f-be11-c259fbd88419
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -10084,7 +9872,7 @@ Sheets:
               <block align="center">Aurora IO Usage Percentage</block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 31ba9d31-e833-4f00-94ee-095710ad044b
+      VisualId: 5ea88652-9123-4e54-abe1-3e54fb91de6a
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -10097,7 +9885,7 @@ Sheets:
                 DataSetIdentifier: rds_aurora_io_optimized_view
               DateGranularity: MONTH
               FieldId: 7e3c839b-f897-4c3d-bd00-293f476ba693.usage_month.1.1782531742140
-              HierarchyId: c03cd35c-0404-451a-b042-140ff8a9919a
+              HierarchyId: 386c4cca-87c6-46be-bda8-710d42874e7a
           Values:
           - CategoricalMeasureField:
               AggregationFunction: DISTINCT_COUNT
@@ -10134,7 +9922,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: c03cd35c-0404-451a-b042-140ff8a9919a
+          HierarchyId: 386c4cca-87c6-46be-bda8-710d42874e7a
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -10174,7 +9962,7 @@ Sheets:
               <block align="center">Total Aurora Clusters</block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: b420c7e4-2786-49ac-9675-bbcc8a0278f2
+      VisualId: 47f9c557-2b92-4935-af6c-b9e23f85a08f
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -10187,7 +9975,7 @@ Sheets:
                 DataSetIdentifier: rds_aurora_io_optimized_view
               DateGranularity: MONTH
               FieldId: 7e3c839b-f897-4c3d-bd00-293f476ba693.usage_month.1.1782531742140
-              HierarchyId: 94f55af0-e4f2-4a52-a569-3942d28c4482
+              HierarchyId: 73ea8977-f0ff-4879-b667-f7a33fc53fb5
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -10240,7 +10028,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 94f55af0-e4f2-4a52-a569-3942d28c4482
+          HierarchyId: 73ea8977-f0ff-4879-b667-f7a33fc53fb5
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -10250,7 +10038,7 @@ Sheets:
               <block align="center">Total IO Optimized Savings</block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: b9dfc937-7218-4d90-9bc7-01ccb5360fdf
+      VisualId: 8b4b738c-31d5-43bb-ae4a-2291fe02958e
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -10263,7 +10051,7 @@ Sheets:
                 DataSetIdentifier: rds_cost_summary_view
               DateGranularity: MONTH
               FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.1.1768176447759
-              HierarchyId: 7754a959-6cfa-4c53-ad70-46ff163af169
+              HierarchyId: 2d3cf98f-ce49-4f63-a6fd-f56f2ab3b6a3
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -10314,7 +10102,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 7754a959-6cfa-4c53-ad70-46ff163af169
+          HierarchyId: 2d3cf98f-ce49-4f63-a6fd-f56f2ab3b6a3
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -10356,7 +10144,7 @@ Sheets:
               </inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 7fd1114e-ed9d-4e0a-a9f0-6586decbc4fd
+      VisualId: d0b3800c-4d16-41f9-9f56-0ce7eb45e348
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -10369,7 +10157,7 @@ Sheets:
                 DataSetIdentifier: rds_cost_summary_view
               DateGranularity: MONTH
               FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.1.1768176447759
-              HierarchyId: cc81ac68-31bd-498b-aaae-43296cfa63e7
+              HierarchyId: d40e0175-da15-4485-ace9-b0c54dff2568
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -10420,7 +10208,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: cc81ac68-31bd-498b-aaae-43296cfa63e7
+          HierarchyId: d40e0175-da15-4485-ace9-b0c54dff2568
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -10462,7 +10250,7 @@ Sheets:
               </inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 2c046a4b-6e10-4fc6-88ea-d181b8ab7c1c
+      VisualId: 2ee4fb88-787d-438e-8105-93cc0ea692da
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -10475,7 +10263,7 @@ Sheets:
                 DataSetIdentifier: rds_cost_summary_view
               DateGranularity: MONTH
               FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.1.1768176447759
-              HierarchyId: d4064b9c-7c34-463a-abfc-6147715e1e7f
+              HierarchyId: 47bdbc85-954a-4000-a277-f41a3eaf8a6b
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -10526,7 +10314,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: d4064b9c-7c34-463a-abfc-6147715e1e7f
+          HierarchyId: 47bdbc85-954a-4000-a277-f41a3eaf8a6b
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -10568,7 +10356,7 @@ Sheets:
               </inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: b1b5429d-7885-4751-a2bc-fc96392827f4
+      VisualId: c1dec042-86eb-4f38-8d80-7a8a5a130d28
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -10581,7 +10369,7 @@ Sheets:
                 DataSetIdentifier: rds_cost_summary_view
               DateGranularity: MONTH
               FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.1.1768087258569
-              HierarchyId: e78ebd32-999c-4282-b949-258d9a57157b
+              HierarchyId: b7888eeb-a72f-4023-81b8-34e83b7f0c19
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -10630,7 +10418,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: e78ebd32-999c-4282-b949-258d9a57157b
+          HierarchyId: b7888eeb-a72f-4023-81b8-34e83b7f0c19
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -10672,7 +10460,7 @@ Sheets:
               </inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: a0dcbe71-7162-4545-b253-c8f7dfb49a65
+      VisualId: 0c6de82e-387f-4b18-8da3-1967ee3c6ce4
   - InsightVisual:
       Actions: []
       DataSetIdentifier: rds_cost_summary_view
@@ -10685,7 +10473,7 @@ Sheets:
                   ColumnName: region
                   DataSetIdentifier: rds_cost_summary_view
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.region.2.1767936436360
-            ComputationId: 3a8da844-e5f9-4268-8ea4-eff0ede21828
+            ComputationId: 4bd91f25-55b8-436b-bd54-c9f1053027aa
             Name: Top
             ResultSize: 1
             Type: TOP
@@ -10731,7 +10519,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         Visibility: HIDDEN
-      VisualId: c87e4bd1-c7ef-43d4-8c18-f4a38872bdd0
+      VisualId: cf3acb03-e1a6-45c0-96f7-315c29946900
   - InsightVisual:
       Actions: []
       DataSetIdentifier: rds_cost_summary_view
@@ -10744,7 +10532,7 @@ Sheets:
                   ColumnName: database_engine
                   DataSetIdentifier: rds_cost_summary_view
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.database_engine.2.1767936392178
-            ComputationId: a690ed70-dd2f-4299-bcb0-d9179e3f69ec
+            ComputationId: 2cbc9f16-5c37-4003-9c31-27d92808524a
             Name: Top
             ResultSize: 1
             Type: TOP
@@ -10791,7 +10579,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         Visibility: HIDDEN
-      VisualId: 428a0fd8-261b-44ba-a0fd-5e08303ccea4
+      VisualId: aadfa4f5-92f6-4e51-b9fc-7711a3a0098c
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -10815,7 +10603,7 @@ Sheets:
                   DataSetIdentifier: rds_cost_summary_view
                 DateGranularity: MONTH
                 FieldId: rds-cost-summary-logical.usage_date.2.1782938217147
-                HierarchyId: 6687854e-a993-46d6-93bd-3b178f9c23cd
+                HierarchyId: 19703c14-9ab7-46f8-8cf0-2ab6e4d94626
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -10874,14 +10662,14 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 6687854e-a993-46d6-93bd-3b178f9c23cd
+          HierarchyId: 19703c14-9ab7-46f8-8cf0-2ab6e4d94626
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Monthly Backup Storage Cost per Region</visual-title>
         Visibility: VISIBLE
-      VisualId: a22b2ce7-6435-446c-8153-9d3e0fbcdc44
+      VisualId: 470d7874-09fa-44d1-bc63-9c0ecbc418d6
   - ComboChartVisual:
       Actions: []
       ChartConfiguration:
@@ -10921,7 +10709,7 @@ Sheets:
                   DataSetIdentifier: rds_cost_summary_view
                 DateGranularity: MONTH
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.0.1767387814823
-                HierarchyId: 66524da9-1fc4-4339-aa9c-d4ad3e697ad1
+                HierarchyId: 1845422b-4abc-45a2-aacb-cb6bc800d35c
             Colors:
             - CategoricalDimensionField:
                 Column:
@@ -10994,14 +10782,14 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 66524da9-1fc4-4339-aa9c-d4ad3e697ad1
+          HierarchyId: 1845422b-4abc-45a2-aacb-cb6bc800d35c
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Monthly Amortized Cost per DB Engine</visual-title>
         Visibility: VISIBLE
-      VisualId: fe5cde4e-136f-41a2-9b02-f73176a6efff
+      VisualId: f1eeac54-8b49-4a34-99c8-fbc9dedb492d
   - ComboChartVisual:
       Actions: []
       ChartConfiguration:
@@ -11041,7 +10829,7 @@ Sheets:
                   DataSetIdentifier: rds_cost_summary_view
                 DateGranularity: MONTH
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.0.1767387814823
-                HierarchyId: 4cb4d9d2-7f5a-4607-a0d2-4435cc69d73a
+                HierarchyId: e974f937-16ec-481d-a6eb-b95ea53e8a6a
             Colors:
             - CategoricalDimensionField:
                 Column:
@@ -11111,14 +10899,14 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 4cb4d9d2-7f5a-4607-a0d2-4435cc69d73a
+          HierarchyId: e974f937-16ec-481d-a6eb-b95ea53e8a6a
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Monthly Amortized Cost</visual-title>
         Visibility: VISIBLE
-      VisualId: d60249f0-5914-4c3a-94ca-34edbf787b2c
+      VisualId: 14bc130d-884f-415c-8d03-cda062cb8b57
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -11142,7 +10930,7 @@ Sheets:
                   DataSetIdentifier: rds_cost_summary_view
                 DateGranularity: MONTH
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.2.1767388826589
-                HierarchyId: c154a5ad-c4c3-4480-a3e0-02e7968359fd
+                HierarchyId: b6d6bd33-69e7-40a0-8aa7-19939cf426fa
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -11201,14 +10989,14 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: c154a5ad-c4c3-4480-a3e0-02e7968359fd
+          HierarchyId: b6d6bd33-69e7-40a0-8aa7-19939cf426fa
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Monthly Amortized Cost per Account</visual-title>
         Visibility: VISIBLE
-      VisualId: 87065104-00be-44c0-bf19-f0465b4c402d
+      VisualId: 796e45bd-a902-4b44-ab74-cb41e6680c06
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -11232,7 +11020,7 @@ Sheets:
                   DataSetIdentifier: rds_cost_summary_view
                 DateGranularity: MONTH
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.2.1767389801054
-                HierarchyId: bd7d380d-0e8c-47fd-aed7-28eb6bff9635
+                HierarchyId: aca95f18-a8ae-40eb-96b2-4d9cab222320
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -11294,14 +11082,14 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: bd7d380d-0e8c-47fd-aed7-28eb6bff9635
+          HierarchyId: aca95f18-a8ae-40eb-96b2-4d9cab222320
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Monthly Amortized Cost per Region</visual-title>
         Visibility: VISIBLE
-      VisualId: 6f2f10b5-11c4-4f10-a09b-63a0304d41cd
+      VisualId: b76a7abf-5f63-4bbe-9870-27791a9a2259
   - PivotTableVisual:
       Actions: []
       ChartConfiguration:
@@ -11445,7 +11233,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Monthly Amortized Cost by Region and Account</visual-title>
         Visibility: VISIBLE
-      VisualId: dca22dce-50e1-4255-a2b1-5bf3ea8e9362
+      VisualId: 758c139b-db24-4432-a808-5e295eb7c11d
   - PieChartVisual:
       Actions: []
       ChartConfiguration:
@@ -11518,7 +11306,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Amortized Cost per DB engine for last 30 days</visual-title>
         Visibility: VISIBLE
-      VisualId: 1978fdf5-0c91-4348-9b82-efeea18abeaf
+      VisualId: abe858a1-cb72-40bd-8f65-7ae575a4a164
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -11535,7 +11323,7 @@ Sheets:
                   DataSetIdentifier: rds_cost_summary_view
                 DateGranularity: MONTH
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.0.1767393432918
-                HierarchyId: 4c1b95bc-2c77-4c9b-8593-75f13b01853d
+                HierarchyId: d0907c41-8c45-4993-a24b-62b270c52ba8
             Colors:
             - CategoricalDimensionField:
                 Column:
@@ -11596,14 +11384,14 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: 4c1b95bc-2c77-4c9b-8593-75f13b01853d
+          HierarchyId: d0907c41-8c45-4993-a24b-62b270c52ba8
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Extended Support Cost per Month</visual-title>
         Visibility: VISIBLE
-      VisualId: 7fd521ec-ae3d-4ecd-a8df-b9de551e9ecd
+      VisualId: 90e569e9-686d-4438-9b8e-d39e9ecabc32
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -11621,14 +11409,14 @@ Sheets:
                   DataSetIdentifier: rds_cost_summary_view
                 DateGranularity: MONTH
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.0.1767484633733
-                HierarchyId: c7087b85-f22b-4d3d-9109-68df3783ffb2
+                HierarchyId: 79c074fe-85d8-43fe-afb8-6184db26292a
             Colors:
             - CategoricalDimensionField:
                 Column:
                   ColumnName: database_engine
                   DataSetIdentifier: rds_cost_summary_view
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.database_engine.2.1767484665632
-                HierarchyId: c23c0fc5-1614-4ffd-a03e-2f3fe7929f84
+                HierarchyId: e663ab91-fe71-4021-a6e1-e907938c686a
             Values:
             - NumericalMeasureField:
                 AggregationFunction:
@@ -11693,24 +11481,24 @@ Sheets:
           - ColumnName: account_name
             DataSetIdentifier: rds_cost_summary_view
           DrillDownFilters: []
-          HierarchyId: c23c0fc5-1614-4ffd-a03e-2f3fe7929f84
+          HierarchyId: e663ab91-fe71-4021-a6e1-e907938c686a
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: c7087b85-f22b-4d3d-9109-68df3783ffb2
+          HierarchyId: 79c074fe-85d8-43fe-afb8-6184db26292a
       Subtitle:
         Visibility: VISIBLE
       Title:
         FormatText:
           RichText: <visual-title>Monthly Backup Storage Cost per DB Engine</visual-title>
         Visibility: VISIBLE
-      VisualId: 05ce2f2e-77a3-4933-a38f-9fd42508c11a
+      VisualId: 1c1d710a-d9dd-4a4b-ba77-348614c35aad
   - InsightVisual:
       Actions: []
       DataSetIdentifier: rds_cost_summary_view
       InsightConfiguration:
         Computations:
         - PeriodOverPeriod:
-            ComputationId: bdf84a87-56ac-4577-8032-83b50fcfbd1f
+            ComputationId: 5fd3995c-0dfb-4691-9ba9-dfda664c2805
             Name: PeriodOverPeriod
             Time:
               DateDimensionField:
@@ -11749,7 +11537,7 @@ Sheets:
                   ColumnName: account_name
                   DataSetIdentifier: rds_cost_summary_view
                 FieldId: rds-cost-summary-logical.account_name.2.1782936842000
-            ComputationId: 6bf0f39c-793d-4a33-8377-411e9c3e31e5
+            ComputationId: 84e3ee92-c3c3-4890-b0b0-c55fb08fa94a
             MoverSize: 5
             Name: TopMovers
             SortOrder: PERCENT_DIFFERENCE
@@ -11791,7 +11579,7 @@ Sheets:
                   ColumnName: account_name
                   DataSetIdentifier: rds_cost_summary_view
                 FieldId: rds-cost-summary-logical.account_name.2.1782936842000
-            ComputationId: ba6265ae-f017-40a6-bd46-29700ad3006e
+            ComputationId: 96223ff5-4f63-425a-a6ce-b66cd60dd030
             MoverSize: 5
             Name: BottomMovers
             SortOrder: PERCENT_DIFFERENCE
@@ -11905,7 +11693,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         Visibility: HIDDEN
-      VisualId: 0b4dd61c-332d-4d8d-ac9b-11277ec2ff53
+      VisualId: adc9cb5f-fc3c-4a62-aa6a-136b219a5013
   - InsightVisual:
       Actions: []
       DataSetIdentifier: rds_cost_summary_view
@@ -11918,7 +11706,7 @@ Sheets:
                   ColumnName: account_name
                   DataSetIdentifier: rds_cost_summary_view
                 FieldId: rds-cost-summary-logical.account_name.1.1782938458816
-            ComputationId: 719dff24-b6f8-4008-a64a-e4d829aa780c
+            ComputationId: 8ffabe5f-2953-43a9-adbd-7e807acd679e
             Name: Top
             ResultSize: 1
             Type: TOP
@@ -11959,7 +11747,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         Visibility: HIDDEN
-      VisualId: 8ebd9072-11c3-407e-b11d-7f3d90c74434
+      VisualId: d0b9b08a-0c25-4c63-866d-8584cabd253e
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -12029,41 +11817,75 @@ Sheets:
         FormatText:
           RichText: <visual-title>Extended Support Cost per Month</visual-title>
         Visibility: VISIBLE
-      VisualId: 9ef29264-2bec-416a-af93-e4469bd39a37
-  - TableVisual:
+      VisualId: 5d270b78-0f31-41a2-b0a7-38467d2973da
+  - PivotTableVisual:
       Actions: []
       ChartConfiguration:
         FieldOptions:
+          DataPathOptions:
+          - DataPathList:
+            - FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.resource_id.5.1767980223511
+              FieldValue: resource_id
+            Width: 301px
+          - DataPathList:
+            - FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type.8.1767980236034
+              FieldValue: usage_type
+            Width: 198px
+          - DataPathList:
+            - FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.database_engine.2.1767980163029
+              FieldValue: database_engine
+            Width: 164px
+          - DataPathList:
+            - FieldId: 6216b450-cc86-4960-9db1-36557c62fdd0.account_name.1.1767980151066
+              FieldValue: account_name
+            Width: 156px
+          - DataPathList:
+            - FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.unblended_cost.9.1767981369082
+              FieldValue: amortized_cost
+            Width: 133px
+          - DataPathList:
+            - FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_quantity.7.1767980235277
+              FieldValue: usage_quantity
+            Width: 133px
+          - DataPathList:
+            - FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.region.4.1767980205944
+              FieldValue: region
+            Width: 106px
           SelectedFieldOptions:
           - CustomLabel: Usage Date
             FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date.6.1767980233112
-            Width: 95px
+            Visibility: VISIBLE
           - CustomLabel: Payer Account ID
             FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.payer_account_id.3.1767980184161
+            Visibility: VISIBLE
           - CustomLabel: Account ID
             FieldId: 6216b450-cc86-4960-9db1-36557c62fdd0.account_id.3.1767980196560
+            Visibility: VISIBLE
           - CustomLabel: Account Name
             FieldId: 6216b450-cc86-4960-9db1-36557c62fdd0.account_name.1.1767980151066
-            Width: 122px
-          - CustomLabel: Database Engine
-            FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.database_engine.2.1767980163029
-            Width: 132px
+            Visibility: VISIBLE
           - CustomLabel: Region
             FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.region.4.1767980205944
+            Visibility: VISIBLE
+          - CustomLabel: Database Engine
+            FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.database_engine.2.1767980163029
+            Visibility: VISIBLE
           - CustomLabel: Resource ID
             FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.resource_id.5.1767980223511
-            Width: 460px
+            Visibility: VISIBLE
           - CustomLabel: Usage Type
             FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_type.8.1767980236034
-            Width: 209px
+            Visibility: VISIBLE
           - CustomLabel: Usage Quantity
             FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_quantity.7.1767980235277
-            Width: 115px
+            Visibility: VISIBLE
           - CustomLabel: Amortized Cost
             FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.unblended_cost.9.1767981369082
+            Visibility: VISIBLE
         FieldWells:
-          TableAggregatedFieldWells:
-            GroupBy:
+          PivotTableAggregatedFieldWells:
+            Columns: []
+            Rows:
             - DateDimensionField:
                 Column:
                   ColumnName: usage_date
@@ -12087,14 +11909,14 @@ Sheets:
                 FieldId: 6216b450-cc86-4960-9db1-36557c62fdd0.account_name.1.1767980151066
             - CategoricalDimensionField:
                 Column:
-                  ColumnName: database_engine
-                  DataSetIdentifier: rds_cost_summary_view
-                FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.database_engine.2.1767980163029
-            - CategoricalDimensionField:
-                Column:
                   ColumnName: region
                   DataSetIdentifier: rds_cost_summary_view
                 FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.region.4.1767980205944
+            - CategoricalDimensionField:
+                Column:
+                  ColumnName: database_engine
+                  DataSetIdentifier: rds_cost_summary_view
+                FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.database_engine.2.1767980163029
             - CategoricalDimensionField:
                 Column:
                   ColumnName: resource_id
@@ -12136,16 +11958,42 @@ Sheets:
                           Visibility: VISIBLE
                       Symbol: USD
         SortConfiguration:
-          RowSort:
-          - FieldSort:
-              Direction: DESC
-              FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.unblended_cost.9.1767981369082
+          FieldSortOptions:
+          - FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date.6.1767980233112
+            SortBy:
+              Field:
+                Direction: DESC
+                FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date.6.1767980233112
         TableOptions:
           CellStyle:
             Height: 25
-          HeaderStyle:
+          ColumnHeaderStyle:
             Height: 25
             TextWrap: WRAP
+          RowAlternateColorOptions:
+            Status: DISABLED
+            UsePrimaryBackgroundColor: ENABLED
+          RowFieldNamesStyle:
+            Height: 25
+            TextWrap: WRAP
+          RowsLayout: TABULAR
+        TotalOptions:
+          RowSubtotalOptions:
+            CustomLabel: <<$aws:subtotalDimension>> Subtotal
+            FieldLevel: CUSTOM
+            FieldLevelOptions:
+            - FieldId: c3a83f91-b920-419d-a4fa-d5f023bd1aa6.usage_date.6.1767980233112
+            MetricHeaderCellStyle:
+              BackgroundColor: '#35647C'
+            StyleTargets:
+            - CellType: VALUE
+            - CellType: TOTAL
+            - CellType: METRIC_HEADER
+            TotalCellStyle:
+              BackgroundColor: '#35647C'
+            TotalsVisibility: VISIBLE
+            ValueCellStyle:
+              BackgroundColor: '#35647C'
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -12155,7 +12003,7 @@ Sheets:
               <b>RDS Database Usage - Last 30 Days</b>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: f218133a-fb32-4f62-b8c7-c4d0901c85ae
+      VisualId: 63060a2b-096f-4e74-9fac-ce938e551734
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -12257,7 +12105,7 @@ Sheets:
               </inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 5717da56-39af-4ff5-ba66-f0de440856a6
+      VisualId: bd268e2c-077b-4475-95e0-8ab897326412
   - ScatterPlotVisual:
       Actions: []
       ChartConfiguration:
@@ -12284,7 +12132,7 @@ Sheets:
                   DataSetIdentifier: rds_cost_summary_view
                 DateGranularity: MONTH
                 FieldId: f211f5c0-a896-4932-80a0-73cd7f0e2ac8.billing_period.3.1768540658218
-                HierarchyId: eb5cff8c-bd48-4a3f-8f23-1168f0645258
+                HierarchyId: aeb0a2ec-2883-4782-9a16-185ae8683fe1
             Size:
             - NumericalMeasureField:
                 Column:
@@ -12356,7 +12204,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: eb5cff8c-bd48-4a3f-8f23-1168f0645258
+          HierarchyId: aeb0a2ec-2883-4782-9a16-185ae8683fe1
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -12366,7 +12214,7 @@ Sheets:
               <inline font-size="14px">DB Instance CPU KPI Summary</inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: a4814d15-de29-4892-9de6-6a716039d58f
+      VisualId: 75b99b83-b641-424c-99a6-d3d0d2433b56
   - TreeMapVisual:
       Actions: []
       ChartConfiguration:
@@ -12448,7 +12296,7 @@ Sheets:
         FormatText:
           RichText: <visual-title>Top Usage Type for last 30 days</visual-title>
         Visibility: VISIBLE
-      VisualId: 120846b8-c76d-485a-abc0-5b81319a794b
+      VisualId: de1d956c-640a-45df-9ad7-2884e9c9388b
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -12552,7 +12400,7 @@ Sheets:
         FormatText:
           RichText: "<visual-title>\_Extended Support Cost by Usage Type</visual-title>"
         Visibility: VISIBLE
-      VisualId: 51e86474-9897-437b-b902-efbd473cf6a2
+      VisualId: 90642cb0-a940-46b1-ba1c-5c8532087e9f
   - TableVisual:
       Actions: []
       ChartConfiguration:
@@ -12783,7 +12631,7 @@ Sheets:
               <inline font-size="14px">Aurora IO Optimized Savings Analysis - Current Month to Date</inline>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 9b677fc7-3c43-4428-a48d-f90161519ebb
+      VisualId: 90bef72a-080d-4d2d-bf74-9ae35d832798
   - KPIVisual:
       Actions: []
       ChartConfiguration:
@@ -12796,7 +12644,7 @@ Sheets:
                 DataSetIdentifier: rds_aurora_io_optimized_view
               DateGranularity: MONTH
               FieldId: 7e3c839b-f897-4c3d-bd00-293f476ba693.usage_month.1.1782531742140
-              HierarchyId: bf16756a-5e80-4f68-bf0a-b216b3f4cee1
+              HierarchyId: 4cb571cf-06e3-415d-b4cc-ebf6a7030d81
           Values:
           - NumericalMeasureField:
               AggregationFunction:
@@ -12850,7 +12698,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: bf16756a-5e80-4f68-bf0a-b216b3f4cee1
+          HierarchyId: 4cb571cf-06e3-415d-b4cc-ebf6a7030d81
       ConditionalFormatting:
         ConditionalFormattingOptions:
         - ComparisonValue:
@@ -12890,7 +12738,7 @@ Sheets:
               <block align="center">Total IO Optimized recommendations</block>
             </visual-title>
         Visibility: VISIBLE
-      VisualId: 2591665e-3cd7-4e90-bb2c-4599ccb2de1d
+      VisualId: eaf0708c-6008-4fd5-8a9c-fd62991b6b6c
   - PieChartVisual:
       Actions: []
       ChartConfiguration:
@@ -12945,9 +12793,10 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: <visual-title>Aurora Cluster IO Optimized Recommendation - Current Month to Date</visual-title>
+          RichText: <visual-title>Aurora Cluster IO Optimized Recommendation - Current
+            Month to Date</visual-title>
         Visibility: VISIBLE
-      VisualId: 3efa125d-9fcf-4887-8aa4-b01db2dbe8e2
+      VisualId: 91907841-96de-45f6-a5c0-b3916e404c94
   - BarChartVisual:
       Actions: []
       ChartConfiguration:
@@ -12969,7 +12818,7 @@ Sheets:
                   DateTimeFormat: MM-DD-YYYY
                   NullValueFormatConfiguration:
                     NullString: 'null'
-                HierarchyId: b70df386-3a91-459c-8d5c-0b0d588062fb
+                HierarchyId: f244e4dd-ebf2-44bb-b955-938970627cec
             Colors:
             - CategoricalDimensionField:
                 Column:
@@ -13035,7 +12884,7 @@ Sheets:
       ColumnHierarchies:
       - DateTimeHierarchy:
           DrillDownFilters: []
-          HierarchyId: b70df386-3a91-459c-8d5c-0b0d588062fb
+          HierarchyId: f244e4dd-ebf2-44bb-b955-938970627cec
       Subtitle:
         Visibility: VISIBLE
       Title:
@@ -13043,7 +12892,7 @@ Sheets:
           RichText: <visual-title>Total Amortised cost by account, region, engine
             and instance class for last 30 days</visual-title>
         Visibility: VISIBLE
-      VisualId: 79d5e061-a996-4686-9209-e07a95d60b39
+      VisualId: 106055de-fecd-4392-a8af-f9f0ae84ef9f
 - ContentType: INTERACTIVE
   Layouts:
   - Configuration:
@@ -13066,7 +12915,7 @@ Sheets:
           RowIndex: 8
           RowSpan: 10
   Name: About
-  SheetId: ff7ce51d-d724-40e4-a99f-9366b6388a98
+  SheetId: da92513f-f8bd-4ab9-bbf0-b614855ce1b6
   TextBoxes:
   - Content: |-
       <text-box>

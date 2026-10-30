@@ -53,11 +53,11 @@ quicksight_datasource_id="${quicksight_datasource_id:-CID-CMD-Athena}" # If vari
   [ "$status" -eq 0 ]
 }
 
-@test "Views created - rds_aurora_io_optimization_view" {
+@test "Views created - rds_aurora_io_optimized_view" {
   run aws athena get-table-metadata \
     --catalog-name 'AwsDataCatalog'\
     --database-name $database_name \
-    --table-name 'rds_aurora_io_optimization_view'
+    --table-name 'rds_aurora_io_optimized_view'
 
   [ "$status" -eq 0 ]
 }
