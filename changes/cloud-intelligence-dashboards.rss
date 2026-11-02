@@ -22,6 +22,7 @@
   <ul>
     <li>Migrated the RDS, EKS, OpenSearch, ElastiCache and tagging datasets to the new Quick Sight data preparation experience. No changes to visuals or calculations.</li>
     <li>RDS view now includes usage covered by Savings Plans (SavingsPlanCoveredUsage), so RDS and Aurora resources in Extended Support that are covered by Database Savings Plans are no longer missing.</li>
+    <li>RDS view no longer fails when a line item has a non-numeric vCPU value. Such rows are kept, with no vCPU-based cost.</li>
   </ul>
 </div>
     ]]></content:encoded>

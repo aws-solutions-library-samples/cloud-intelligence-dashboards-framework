@@ -1287,7 +1287,7 @@ views:
          , c.product['instance_type_family'] instance_type_family
          , c.product['instance_type'] instance_type
          , c.line_item_line_item_description item_description
-         , (CASE WHEN ((c.product_product_family like 'Serverless%') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage')) THEN 0 ELSE CAST(c.product['vcpu'] AS int) END) vcpus
+         , (CASE WHEN ((c.product_product_family like 'Serverless%') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage')) THEN 0 ELSE TRY_CAST(c.product['vcpu'] AS int) END) vcpus
          , (CASE WHEN ((c.product_product_family = 'ServerlessV2') AND (c.line_item_usage_type like '%Aurora:ServerlessV2%Usage')) THEN 'acu-hour' ELSE 'vcpu-hour' END) usage_unit
          , split_part(c.line_item_resource_id, ':', 7) dbresourceidentifier
          , c.line_item_resource_id resource_id
@@ -1295,7 +1295,7 @@ views:
          , c.line_item_usage_type original_usage_type
          , ${cur_tags_json} tags_json
          , sum(c.line_item_usage_amount) usage_amount
-         , sum((CASE WHEN (c.pricing_unit = 'ACU-Hr') THEN c.line_item_usage_amount WHEN (c.line_item_usage_type LIKE '%Multi-AZUsage%') THEN (CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount * 2) ELSE (CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount) END)) vcpu_acu_hours
+         , sum((CASE WHEN (c.pricing_unit = 'ACU-Hr') THEN c.line_item_usage_amount WHEN (c.line_item_usage_type LIKE '%Multi-AZUsage%') THEN (TRY_CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount * 2) ELSE (TRY_CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount) END)) vcpu_acu_hours
          FROM
            (("${cur2_database}"."${cur2_table_name}" c
          INNER JOIN all_sanitised_rds_resources rdsu ON ((c.bill_payer_account_id = rdsu.payer_id) AND (c.line_item_usage_account_id = rdsu.accountid) AND (c.product['region'] = rdsu.region) AND (split_part(c.line_item_resource_id, ':', 7) = rdsu.dbresourceidentifier))))

@@ -16,6 +16,7 @@ cid-cmd update --dashboard-id extended-support-cost-projection --recursive
 
 - Migrated the RDS, EKS, OpenSearch, ElastiCache and tagging datasets to the new Quick Sight data preparation experience. No changes to visuals or calculations.
 - RDS view now includes usage covered by Savings Plans (`SavingsPlanCoveredUsage`), so RDS and Aurora resources in Extended Support that are covered by Database Savings Plans are no longer missing. The view update is shown as a diff during the recursive update; choose to override it to apply the change.
+- RDS view no longer fails when a line item has a non-numeric vCPU value. Such rows are kept, with no vCPU-based cost.
 
 ## Extended Support Cost Projection - v5.2.3
 
