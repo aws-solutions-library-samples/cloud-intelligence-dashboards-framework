@@ -2148,10 +2148,11 @@ Resources:
             - !Sub '${LambdaLayerBucketPrefix}-${AWS::Region}' # Region added for backward compatibility
         S3Key: 'cid-resource-lambda-layer/cid-4.4.19.zip' #replace version here if needed
       CompatibleRuntimes:
-        - python3.10
         - python3.11
         - python3.12
         - python3.13
+        - python3.14
+        - python3.15
 
   CostIntelligenceDashboard:
     Type: Custom::CidDashboard
