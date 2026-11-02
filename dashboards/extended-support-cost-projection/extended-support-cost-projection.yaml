@@ -1299,7 +1299,7 @@ views:
          FROM
            (("${cur2_database}"."${cur2_table_name}" c
          INNER JOIN all_sanitised_rds_resources rdsu ON ((c.bill_payer_account_id = rdsu.payer_id) AND (c.line_item_usage_account_id = rdsu.accountid) AND (c.product['region'] = rdsu.region) AND (split_part(c.line_item_resource_id, ':', 7) = rdsu.dbresourceidentifier))))
-         WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND (c.product_servicecode = 'AmazonRDS') AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage')) AND ((c.product_product_family = 'Database Instance') OR ((c.product_product_family like 'Serverless%') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage'))))
+         WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND (c.product_servicecode = 'AmazonRDS') AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage', 'SavingsPlanCoveredUsage')) AND ((c.product_product_family = 'Database Instance') OR ((c.product_product_family like 'Serverless%') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage'))))
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
       )
       SELECT
