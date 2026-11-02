@@ -534,8 +534,11 @@ class Athena(CidBase):
 
         return all_views
 
-    def create_or_update_view(self, view_name, view_query):
+    def create_or_update_view(self, view_name, view_query, replace_if_no_tty=False):
         """ update view while asking user
+
+        Without a terminal an existing view is kept, unless replace_if_no_tty is set
+        (for CID-managed views like the CUR proxy, where replacing only adds columns).
         """
         update_view = None
         # first understand if view exists
@@ -544,6 +547,8 @@ class Athena(CidBase):
         if view_name not in self._metadata:
             update_view = True
         else: # view exists
+            if replace_if_no_tty and not isatty():
+                update_view = True # no terminal to ask, and the caller allows replacing
             if get_parameters().get('on-drift', 'show').lower() == 'override' and isatty():
                 update_view = True # override without showing a diff
             while get_parameters().get('on-drift', 'show').lower() != 'override' and isatty():
