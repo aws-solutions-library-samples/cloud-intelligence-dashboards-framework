@@ -50,6 +50,10 @@ FOCUS_MINIMUM_COLUMNS = [
     'subaccountid',
 ]
 
+# Provider-specific key/value array column used to build 'tags' when the source has no 'tags' column.
+# GCP FOCUS export provides resource tags as x_tags ARRAY<STRUCT<key, value, ...>> instead of a FOCUS Tags map.
+TAGS_FALLBACK_COLUMN = 'x_tags'
+
 # Canonical Athena SQL type for each normalized type name.
 _ATHENA_TYPE = {
     'varchar': 'VARCHAR',
@@ -247,6 +251,12 @@ class FocusConsolidationView:
         if col_name == 'billing_period':
             return f'{self._billing_period_expr(source_columns, partition_keys)} {col_name}'
 
+        # Special case: tags built from provider key/value array (GCP x_tags)
+        if col_name == 'tags' and col_name not in source_columns:
+            tags_expr = self._tags_fallback_expr(source_columns)
+            if tags_expr:
+                return f'{tags_expr} {col_name}'
+
         # Column exists in source by canonical name
         if col_name in source_columns:
             source_type = source_columns[col_name]
@@ -287,6 +297,23 @@ class FocusConsolidationView:
             return "date_format(CAST(billing_period AS DATE), '%Y-%m')"
         # billing_period absent — compute from billingperiodstart
         return "date_format(CAST(billingperiodstart AS DATE), '%Y-%m')"
+
+    @staticmethod
+    def _tags_fallback_expr(source_columns):
+        """SQL expression building a tags map from an ARRAY<STRUCT<key, value, ...>> column, or None.
+
+        multimap_from_entries + first element is used instead of map_from_entries,
+        because the latter fails on duplicate keys (e.g. same tag key in different namespaces).
+        """
+        col = TAGS_FALLBACK_COLUMN
+        col_type = _normalize_type(source_columns.get(col))
+        if not (col_type.startswith('array<struct') and 'key:' in col_type and 'value:' in col_type):
+            return None
+        return (
+            f'COALESCE(transform_values(multimap_from_entries(transform('
+            f'filter({col}, x -> x.key IS NOT NULL), x -> ROW(x.key, x.value))), '
+            f'(k, v) -> element_at(v, 1)), MAP())'
+        )
 
     def generate_view_sql(self, tables):
         """Generate the full CREATE OR REPLACE VIEW SQL with UNION ALL."""

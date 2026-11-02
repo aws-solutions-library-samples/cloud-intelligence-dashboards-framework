@@ -218,7 +218,8 @@ The alias lookup occurs after the canonical name check fails, and before the NUL
 ### Special case: `tags`
 
 - If `tags` column exists in source → use it directly
-- If `tags` column is missing → `CAST(NULL AS MAP<VARCHAR,VARCHAR>) AS tags`
+- If `tags` column is missing but `x_tags` exists as `ARRAY<STRUCT<key, value, ...>>` (GCP FOCUS export) → build the map from `x_tags`. The first value wins on duplicate keys (`multimap_from_entries` is used because `map_from_entries` fails on duplicates, e.g. the same key in two namespaces). GCP `x_labels` are not mapped: they are mostly labels applied automatically by GCP (`goog-*`)
+- Otherwise → `CAST(NULL AS MAP<VARCHAR,VARCHAR>) AS tags`
 
 ## SQL Generation
 
