@@ -5,8 +5,26 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Tue, 27 Oct 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 02 Nov 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] Extended Support Cost Projection v5.3.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v530
+      </link>
+      <pubDate>Mon, 02 Nov 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">ead68ef1-3f65-42e4-86ae-9f357161707c</guid>
+      <description>Extended Support Cost Projection v5.3.0</description>
+      <content:encoded><![CDATA[
+<div>
+    <strong>Important:</strong> This update requires cid-cmd v4.4.12 or later. Quick Sight datasets will be migrated to the new data preparation experience — if you have custom dataset modifications, make a copy before updating. Run the update with <code>--recursive</code>; without it, only the dashboard is updated and the datasets are not migrated.
+  <ul>
+    <li>Migrated the RDS, EKS, OpenSearch, ElastiCache and tagging datasets to the new Quick Sight data preparation experience. No changes to visuals or calculations.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Graviton Savings Dashboard v3.0.6</title>
       <link>
