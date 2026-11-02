@@ -595,7 +595,11 @@ class ProxyView():
             FROM
                 "{self.cur.database}"."{self.cur.table_name}"
         ''')
-        res = self.athena.create_or_update_view(self.name, query) # this cost 3 athena calls
+        new_fields = sorted(set(all_target_fields) - set(self.exposed_fields))
+        if self.exposed_fields and new_fields:
+            logger.info(f'{self.name}: adding columns {", ".join(new_fields)}')
+        # The proxy is CID-managed and a rebuild keeps all exposed columns, so replace it even without a terminal
+        res = self.athena.create_or_update_view(self.name, query, replace_if_no_tty=True) # this cost 3 athena calls
         logging.debug(res)
 
         self.exposed_fields = all_target_fields
