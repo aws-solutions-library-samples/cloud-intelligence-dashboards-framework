@@ -22,7 +22,7 @@
     The <strong>DROID (Database Resilience, Operations &amp; Insights) Dashboard</strong> gives you a single view of your Amazon RDS and Amazon Aurora fleet across accounts and Regions: engine versions and end of support, backups, pending maintenance, security and resiliency settings, and cost.
   </p>
   <p>
-    <strong>Important:</strong> Requires CUR 2.0 and CID Data Collection with the RDS, Inventory and Reference modules enabled.
+    <strong>Important:</strong> Requires CUR 2.0 and CID Data Collection v3.14.11 or later with the RDS, Inventory and Reference modules enabled.
   </p>
   <h3>Key Features:</h3>
   <ul>
@@ -32,6 +32,26 @@
     <li><strong>Backup:</strong> Daily, 14-day and 30-day backup coverage, and cluster snapshot analysis.</li>
     <li><strong>Cost:</strong> RDS spend by account, Region, engine and instance type, and Aurora I/O-Optimized recommendations based on estimated savings (I/O charges removed, net of higher compute and storage prices).</li>
     <li><strong>Supported engines:</strong> Aurora MySQL, Aurora PostgreSQL, and RDS for MySQL, PostgreSQL, MariaDB, SQL Server, Oracle and Db2.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
+      <title>[Update] CID Data Collection v3.14.11</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/releases/tag/3.14.11
+      </link>
+      <pubDate>Tue, 03 Nov 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Data Collection Update]]></category>
+      <guid isPermaLink="false">69df4a58-0b49-4e7e-bdfc-c67dd5c0b8a0</guid>
+      <description>CID Data Collection v3.14.11</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>RDS:</strong> New module that collects RDS and Aurora cluster and instance details, snapshots and pending maintenance actions across accounts, to power the DROID Dashboard.</li>
+    <li><strong>Pricing:</strong> Added price lists for Database Savings Plans, Amazon Redshift, Amazon EKS, Amazon EMR, Amazon ECS, Amazon MSK, Amazon DocumentDB, Amazon MemoryDB, Amazon Neptune and Amazon SageMaker.</li>
+    <li><strong>Inventory:</strong> Fixed the <code>inventory_ec2_instances_data</code> table, which failed every Athena query with <code>HIVE_SERDE_NOT_FOUND</code>.</li>
+    <li><strong>Data Exports:</strong> Fixed a permissions error that could stop the CUR crawler from writing its CloudWatch logs.</li>
   </ul>
 </div>
     ]]></content:encoded>
