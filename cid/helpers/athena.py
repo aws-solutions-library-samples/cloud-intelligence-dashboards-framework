@@ -619,7 +619,8 @@ class Athena(CidBase):
         )
         # We cannot rely on search to find directly columns as there might be Nulls. So iterating old fashion.
         for table in iterator.search('TableMetadataList'):
-            column_names = [c['Name'] for c in table.get('Columns', [])]
-            if all([(col in column_names) for col in columns]):
+            # partition keys count as columns (e.g. GCP FOCUS export is partitioned by billingaccountid)
+            column_names = [c['Name'].lower() for c in table.get('Columns', []) + table.get('PartitionKeys', [])]
+            if all([(col.lower() in column_names) for col in columns]):
                 yield table
 
