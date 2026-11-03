@@ -1,0 +1,25 @@
+# FinOps agent (launch library). Loaded via agentic/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  finops:
+    name: CID FinOps Advisor
+    agentId: cid-finops-advisor
+    summary: "Cost savings, idle resources, commitments and upcoming fees"   # one line shown in the agent picker and list-agents
+    description: >-
+      Cost optimization advisor over CUDOS, CORA, Graviton Savings, Extended
+      Support Cost Projection and Pricing Change Analysis. Ranks savings
+      opportunities, idle resources and upcoming fees, and explains spend changes.
+    dependsOn:
+      spaces: [cid-finops-space]
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "What are my top cost optimization opportunities right now?"
+      - "Show services with increased spend last week and the likely drivers"
+      - "Which Extended Support charges are coming and what should we upgrade first?"
+    welcomeMessage: >-
+      Hi, I'm the CID FinOps Advisor. Ask me about savings opportunities, idle
+      resources, rightsizing, commitments, Graviton migration, upcoming Extended
+      Support charges, or why your spend changed.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }

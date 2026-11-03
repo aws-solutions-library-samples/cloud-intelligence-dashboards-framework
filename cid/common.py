@@ -27,6 +27,7 @@ from cid.helpers.parameter_store import ParametersController
 from cid.helpers.taxonomy_merger import TaxonomyMerger
 from cid.helpers import Athena, S3, IAM, CUR, ProxyCUR, Glue, QuickSight, Dashboard, Dataset, Datasource, csv2view, Organizations, CFN
 from cid.helpers.quicksight.template import Template as CidQsTemplate
+from cid.agents import AgentCommands
 from cid._version import __version__
 from cid.export import export_analysis
 from cid.logger import set_cid_logger
@@ -35,7 +36,7 @@ from cid.commands import InitQsCommand
 
 logger = logging.getLogger(__name__)
 
-class Cid():
+class Cid(AgentCommands):
 
     def __init__(self, **kwargs) -> None:
         self.base: CidBase = None
@@ -53,6 +54,10 @@ class Cid():
         self._logger = None
         self.catalog_urls = [
             'https://raw.githubusercontent.com/aws-samples/aws-cudos-framework-deployment/main/dashboards/catalog.yaml',
+        ]
+        # Agentic catalog (agents, Spaces, later flows): loaded only by the agent commands, on top of the dashboards catalog
+        self.agentic_catalog_urls = [
+            'https://raw.githubusercontent.com/aws-samples/aws-cudos-framework-deployment/main/agentic/catalog.yaml',
         ]
 
     def aws_login(self):
@@ -257,9 +262,9 @@ class Cid():
         :noparams: do not process parameters as they may not exist by this time
         """
         res = None
-        if type not in ['dashboard', 'dataset', 'view', 'schedule', 'crawler']:
+        if type not in ['dashboard', 'dataset', 'view', 'schedule', 'crawler', 'agent', 'space']:
             raise ValueError(f'{type} is not a valid definition type')
-        if type in ['dataset', 'view', 'schedule', 'crawler'] and name:
+        if type in ['dataset', 'view', 'schedule', 'crawler', 'agent', 'space'] and name:
             res = self.resources.get(f'{type}s').get(name)
         elif type in ['dashboard']:
             for definition in self.resources.get(f'{type}s').values():
@@ -278,6 +283,11 @@ class Cid():
             for key, value in res.items():
                 if isinstance(value, str):
                     res[key] = Template(value).safe_substitute(params)
+                    if type in ['agent', 'space']:
+                        for match in Template.pattern.finditer(res[key]):
+                            token = match.group('named') or match.group('braced')
+                            if token:
+                                raise ValueError(f'Unresolved token ${{{token}}} in {type} definition {name!r}')
         return res
 
 
@@ -412,13 +422,9 @@ class Cid():
                 cache_key = f'_tags_json_sql_{prefix}{key}'
                 if hasattr(self, cache_key):
                     params[key] = getattr(self, cache_key)
-                elif get_parameters().get((prefix + key).replace('_', '-')): # priority to user input
-                    params[key] = get_parameters().get((prefix + key).replace('_', '-'))
-                    if isinstance(params[key], str):
-                        params[key] = params[key].split(',')
-                elif not utils.isatty():
+                elif not get_parameters().get((prefix + key).replace('_', '-')) and not utils.isatty():
                     params[key] = "'{}'"
-                else:
+                else: # tags provided by user or to be selected: discover tags to build json sql
                     if 'query' not in value:
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: parameter with type Athena must have query value.')
                     query = Template(value['query']).safe_substitute(params|others)
@@ -428,7 +434,7 @@ class Cid():
                         raise CidCritical(f'Failed fetching parameter {prefix}{key}: {exc}.') from exc
                     options = ['-'.join(res) for res in (res_list or [])]
                     params[key] = self.generic_tags_json(
-                        param_name=key,
+                        param_name=prefix + key,
                         options=options,
                     )
                 # Cache rendered SQL for reuse by subsequent views
@@ -757,6 +763,29 @@ class Cid():
 
         self.dump_default_parameters()
         return dashboard_id
+
+
+    # --- Quick Agents: create/update/list/delete (implementation in cid/agents.py) ---
+
+    @command
+    def create_agent(self, agent_id: str=None, space_name: str=None, **kwargs):
+        """Create a Quick Agent and its Space over already-deployed dashboards (never deploys dashboards)."""
+        return self._agent_apply_flow(agent_id=agent_id, space_name=space_name, mode='create')
+
+    @command
+    def update_agent(self, agent_id: str=None, space_name: str=None, **kwargs):
+        """Update a deployed CID-managed Quick Agent to match the catalog."""
+        return self._agent_apply_flow(agent_id=agent_id, space_name=space_name, mode='update')
+
+    @command
+    def list_agents(self, **kwargs):
+        """List catalog agents with their summary, Space and live deployment status."""
+        return self._list_agents()
+
+    @command
+    def delete_agent(self, agent_id: str=None, **kwargs):
+        """Delete a CID-managed Quick Agent (never deletes dashboards)."""
+        return self._delete_agent(agent_id=agent_id)
 
 
     @command
@@ -1238,8 +1267,40 @@ class Cid():
             logger.debug(exc, exc_info=True)
             print(f'failed with an error message: {exc}')
 
+        self.update_account_sharing(dashboard_id)
         self.dump_default_parameters()
         return dashboard_id
+
+
+    def update_account_sharing(self, dashboard_id):
+        """ Grant or revoke sharing with everyone in the account on update, only if share-with-account is explicitly provided """
+        share_with_account = get_parameters().get('share-with-account')
+        if share_with_account is None:
+            return
+        if str(share_with_account).lower() in ('yes', 'true'):
+            set_parameters({'share-method': 'account'})
+            self.share(dashboard_id)
+            return
+
+        namespace_suffix = f':{self.qs.account_id}:namespace/default'
+        try:
+            permissions = self.qs.get_dashboard_permissions(dashboard_id)
+            link_permissions = self.qs.get_dashboard_link_permissions(dashboard_id)
+        except self.qs.client.exceptions.ClientError as exc:
+            raise CidCritical(f'Unable to read permissions of dashboard {dashboard_id} to revoke sharing with the account: {exc}') from exc
+        revoke = {
+            'RevokePermissions': [p for p in permissions if p['Principal'].endswith(namespace_suffix)],
+            'RevokeLinkPermissions': [p for p in link_permissions if p['Principal'].endswith(namespace_suffix)],
+        }
+        revoke = {key: value for key, value in revoke.items() if value}
+        if not revoke:
+            logger.debug(f'Dashboard {dashboard_id} is not shared with the account, nothing to revoke')
+            return
+        try:
+            self.qs.update_dashboard_permissions(DashboardId=dashboard_id, **revoke)
+            cid_print(f'Revoked sharing of dashboard {dashboard_id} with everyone in the account')
+        except self.qs.client.exceptions.ClientError as exc:
+            raise CidCritical(f'Unable to revoke sharing of dashboard {dashboard_id} with the account: {exc}') from exc
 
 
     def create_datasets(self, _datasets: list, known_datasets: dict={}, recursive: bool=True, update: bool=False) -> dict:
@@ -2100,6 +2161,10 @@ class Cid():
                 default=resource_tags or [],
             )
 
+        unknown_tags = [name for name in resource_tags or [] if name not in tags_and_names]
+        if unknown_tags:
+            logger.warning(f'Tags {unknown_tags} are not found in the data and will be skipped. Available: {sorted(tags_and_names.keys())[:50]}')
+            resource_tags = [name for name in resource_tags if name in tags_and_names]
         if not resource_tags:
             return "'{}'"
         logger.debug(f'selected_tag_names = {resource_tags}')

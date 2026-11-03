@@ -2,6 +2,27 @@
 
 # CUDOS v5
 
+# CUDOS - 5.10.0
+
+* **Databases**: Added 'Modernize Amazon Redshift: RA3 to RG Migration' section with 'Monthly Cost Savings Opportunities with Migration to Redshift RG', 'Amazon Redshift RA3: Cost Savings Opportunities with migration to RG', 'Amazon Redshift: RA3 to RG: Cost Breakdown' and 'Amazon Redshift RG: Achieved Cost Efficiency Gains vs RA3' visuals to track Graviton-based RG adoption and estimate savings. Use the Purchase Option and Incremental Snapshot Size controls to adjust the estimate
+* **Databases**: Replaced 'Cost by Service Product Family' with 'Cost by Usage Type Group' visual. It groups cost by service and pricing component as named on the AWS pricing pages, for example 'RDS DB Instances', 'Aurora Database Storage and I/Os' or 'OpenSearch UltraWarm and Cold Storage'
+* **Databases**: 'Daily Storage Cost' visual now separates io1 and io2, I/O-Optimized and Elastic Clusters storage, and labels backups and other storage components that previously showed as raw usage types
+* **Data Transfer & Networking**: Added 'NAT Gateways Optimization Opportunities' section with 'Zonal NAT Gateways: Regional NAT Savings Opportunities (Last 30 Days)' visual. It highlights zonal NAT gateways that receive cross-AZ traffic and compares their current cost with a Regional NAT gateway, which improves resilience and can reduce inter-AZ data transfer cost. Use the Assumed AZs control to match your setup
+* **Data Transfer & Networking**: Added 'Regional via Public IP' and 'Cloud WAN Data Processed' Data Transfer Types. Regional traffic sent to public or Elastic IPs is no longer reported as 'Inter AZ'. Inter-Region VPC peering, S3 Multi-Region Access Points, CloudFront origin traffic and new cross-AZ usage types no longer show as 'Other'
+* **Data Transfer & Networking**: Updated Public IPv4 and Single-AZ VPC Endpoints descriptions. IPAM contiguous IPv4 blocks have their own usage type label
+* **Amazon DynamoDB**: Added 'DynamoDB Backup Optimization' section with 'DynamoDB Backup Cost by Type', 'Native Backup Cost', 'Native Backup Cost by Age', 'Native Backups of Deleted Tables', 'Native Backups: Estimated Savings with Cold Storage' and 'Native Backups to Review (Last 30 days)' visuals. Use them to find backups of deleted tables and older backups that are good candidates for cold storage
+* **Amazon DynamoDB**: Usage Type Group now shows Standard-IA table storage, restores, exports, imports, change data capture and vector search separately
+* **Executive: Billing Summary**: Added 'Credits, Refunds and Discounts detailed view' pivot table
+* **Executive: Billing Summary**: Split 'Marketplace' Charge Type Group into 'Marketplace Usage' and 'Marketplace Fees', so 'Usage' plus 'Marketplace Usage' matches Cost Explorer usage (for example third-party models in Amazon Bedrock)
+* **Executive: Billing Summary**: Database Savings Plans are now included in the 'Databases' Service Category
+* **Analytics**: Renamed Quick Suite visuals and labels to Amazon Quick. Added Amazon Quick plans (Free, Plus, Max) and agent hours to the Usage Type Group, and added a Group By control
+* **AI/ML**: Amazon Bedrock Resource Group now shows Mantle model usage. SageMaker Usage Type Group now covers Serverless Inference, Feature Store, Augmented AI, Ground Truth labeling, inference optimization and other previously unlabeled usage. Kiro Individual plans have their own labels
+* **Monitoring & Observability**: CloudWatch Usage Type Group and Sub Group now cover log storage tiers (Infrequent Access, Archive Instant Access), OpenTelemetry metrics and logs, PromQL, RUM, Network Flow Monitor, log delivery to Firehose and centralization. AWS Config separates periodic recording and proactive evaluations
+* **Security**: Cognito Usage Type Group now covers the Lite, Essentials and Plus tiers, multi-Region replication, request rate quota increases and Bedrock AgentCore identity requests. Shield-protected Anti-DDoS rule groups are now reported under 'AWS WAF Shield Protected'
+* **Amazon S3**: Usage Type Group now separates S3 Tables, S3 Vectors, S3 Files, S3 Metadata, S3 Express One Zone, Intelligent-Tiering archive restores, Access Grants and other features that were mislabeled as Glacier Instant Retrieval or One Zone-IA
+* **Messaging and Streaming**: Replaced 'Amazon MSK Cost by Usage Type' with 'Amazon MSK Cost by Usage Type Group'. It groups instance sizes into broker, storage, Serverless, MSK Connect and Replicator categories
+* **Storage & Backup**: 'Storage FS Usage Cost per Account' now shows all accounts. Shared FS Usage Type Group separates EFS storage classes and shows FSx cost by file system type (Lustre, ONTAP, OpenZFS, Windows File Server)
+
 # CUDOS - 5.9.1
 
 * **AI/ML**: Fix typo in Amazon Bedrock Tokens Cache Read and Cache Write Ratio visual

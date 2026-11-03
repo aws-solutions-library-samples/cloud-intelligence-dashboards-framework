@@ -1,7 +1,6 @@
 # Working files for legacy (bash) automation
 */work/
 work/
-.kiro
 
 *~
 *#
@@ -65,6 +64,14 @@ sandbox/
 
 # Misc files added by VS Code or Kiro plugins
 sqlite_mcp_server.db
-.kiro/
+.kiro/*
+!.kiro/steering/
 setup_dev.sh
 debug_test.py
+
+# Personal AI steering (see .ai/specs/README.md)
+.ai/local/
+
+# Claude Code: share only rules; settings are personal
+.claude/*
+!.claude/rules/

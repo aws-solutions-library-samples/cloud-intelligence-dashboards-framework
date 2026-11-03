@@ -28,6 +28,8 @@ COLUMN_ALIASES = {
 # Minimum columns that identify a table as FOCUS-compliant (FOCUS 1.0 core).
 # A table must have ALL of these columns (case-insensitive) to be considered a FOCUS table.
 # NOTE: Only columns common across ALL providers (AWS, Azure, OCI, GCP) are listed here.
+# GCP FOCUS export does not provide ServiceCategory and CommitmentDiscount* columns, so they are not listed.
+# See https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-tables/focus-export
 FOCUS_MINIMUM_COLUMNS = [
     'billedcost',
     'billingaccountid',
@@ -36,16 +38,12 @@ FOCUS_MINIMUM_COLUMNS = [
     'chargecategory',
     'chargedescription',
     'chargeperiodstart',
-    'commitmentdiscountcategory',
-    'commitmentdiscountid',
-    'commitmentdiscountname',
     'effectivecost',
     'listcost',
     'listunitprice',
     'pricingcategory',
     'pricingquantity',
     'pricingunit',
-    'servicecategory',
     'servicename',
     'skuid',
     'skupriceid',

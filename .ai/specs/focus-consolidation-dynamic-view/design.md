@@ -131,13 +131,22 @@ FOCUS_MINIMUM_COLUMNS = [
     'billingcurrency',
     'billingperiodstart',
     'chargecategory',
+    'chargedescription',
+    'chargeperiodstart',
     'effectivecost',
     'listcost',
-    'providername',
+    'listunitprice',
+    'pricingcategory',
+    'pricingquantity',
+    'pricingunit',
     'servicename',
+    'skuid',
+    'skupriceid',
     'subaccountid',
 ]
 ```
+
+Only columns present in every provider's export are listed. GCP FOCUS export has no `ServiceCategory` and `CommitmentDiscount*` columns ([GCP FOCUS export schema](https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-tables/focus-export)), so they are not required.
 
 ### NULL Type Mapping
 

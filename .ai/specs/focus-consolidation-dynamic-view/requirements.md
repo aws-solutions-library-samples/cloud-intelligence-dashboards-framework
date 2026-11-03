@@ -21,7 +21,7 @@ This creates maintenance burden for customers who need to manually update the vi
 
 **Acceptance Criteria:**
 1.1. cid-cmd discovers FOCUS tables across all Athena databases during deployment
-1.2. Discovery uses FOCUS 1.0 minimum required columns (21 columns) to identify valid FOCUS tables
+1.2. Discovery uses FOCUS 1.0 minimum required columns (17 columns) to identify valid FOCUS tables
 1.3. Discovery works regardless of database naming conventions
 1.4. Discovery excludes non-FOCUS tables even if they have similar column names
 1.5. Discovery excludes non-table objects (views, etc.) by checking `TableType == 'EXTERNAL_TABLE'`
@@ -74,7 +74,7 @@ This creates maintenance burden for customers who need to manually update the vi
 
 **Acceptance Criteria:**
 6.1. FOCUS 1.2 column schema is defined in `focus.yaml` under `focus_consolidation_view.columns` as the single source of truth
-6.2. FOCUS 1.0 minimum columns for discovery are defined in code (21 columns)
+6.2. FOCUS 1.0 minimum columns for discovery are defined in code (17 columns)
 6.3. Column type mappings use a normalization system that handles `string`/`varchar`, `map<string,string>`/`map<varchar,varchar>`, etc.
 6.4. Special column handling (like `billing_period`) is well-documented
 6.5. Python code reads columns from YAML config (required parameter, no fallback)
@@ -105,7 +105,7 @@ This creates maintenance burden for customers who need to manually update the vi
 - Must handle tables at any version between 1.0 and 1.2
 
 ### FOCUS 1.0 Minimum Columns (for discovery)
-Required columns to identify a table as FOCUS-compliant (21 columns, common across all providers):
+Required columns to identify a table as FOCUS-compliant (17 columns, common across all providers). GCP FOCUS export has no `ServiceCategory` and `CommitmentDiscount*` columns, so they are not required:
 - `billedcost`
 - `billingaccountid`
 - `billingcurrency`
@@ -113,16 +113,12 @@ Required columns to identify a table as FOCUS-compliant (21 columns, common acro
 - `chargecategory`
 - `chargedescription`
 - `chargeperiodstart`
-- `commitmentdiscountcategory`
-- `commitmentdiscountid`
-- `commitmentdiscountname`
 - `effectivecost`
 - `listcost`
 - `listunitprice`
 - `pricingcategory`
 - `pricingquantity`
 - `pricingunit`
-- `servicecategory`
 - `servicename`
 - `skuid`
 - `skupriceid`
