@@ -5,8 +5,37 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Mon, 02 Nov 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 03 Nov 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[New Dashboard] DROID - Database Resilience, Operations &amp; Insights Dashboard v1.0.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-rds-health.md#droid-dashboard---v100
+      </link>
+      <pubDate>Tue, 03 Nov 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[New Dashboard]]></category>
+      <guid isPermaLink="false">613321ac-f08d-49d4-831a-2f03c32998c4</guid>
+      <description>DROID - Database Resilience, Operations &amp; Insights Dashboard v1.0.0 - Initial Release</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    The <strong>DROID (Database Resilience, Operations &amp; Insights) Dashboard</strong> gives you a single view of your Amazon RDS and Amazon Aurora fleet across accounts and Regions: engine versions and end of support, backups, pending maintenance, security and resiliency settings, and cost.
+  </p>
+  <p>
+    <strong>Important:</strong> Requires CUR 2.0 and CID Data Collection with the RDS, Inventory and Reference modules enabled.
+  </p>
+  <h3>Key Features:</h3>
+  <ul>
+    <li><strong>Inventory:</strong> RDS instances and Aurora clusters by account, Region, engine, instance class and processor (Graviton or x86), with filters for collection date, account, Region, engine and tags.</li>
+    <li><strong>Version and Maintenance:</strong> Current engine versions compared with the latest available, standard and extended support end dates, and pending maintenance actions across accounts.</li>
+    <li><strong>Security and Resiliency:</strong> Encryption, Multi-AZ, deletion protection, storage autoscaling and certificate expiration.</li>
+    <li><strong>Backup:</strong> Daily, 14-day and 30-day backup coverage, and cluster snapshot analysis.</li>
+    <li><strong>Cost:</strong> RDS spend by account, Region, engine and instance type, and Aurora I/O-Optimized recommendations based on estimated savings (I/O charges removed, net of higher compute and storage prices).</li>
+    <li><strong>Supported engines:</strong> Aurora MySQL, Aurora PostgreSQL, and RDS for MySQL, PostgreSQL, MariaDB, SQL Server, Oracle and Db2.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Extended Support Cost Projection v5.3.0</title>
       <link>
