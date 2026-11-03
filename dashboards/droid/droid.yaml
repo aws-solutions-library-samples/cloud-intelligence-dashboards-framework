@@ -13,7 +13,7 @@ dashboards:
     category: Advanced
     theme: MIDNIGHT
     version: v1.0.0
-    file: ./rds-dashboard-definition.yaml
+    file: ./droid-definition.yaml
 datasets:
   rds_backup_view:
     data:
