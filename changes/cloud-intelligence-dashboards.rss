@@ -57,6 +57,25 @@
     ]]></content:encoded>
     </item>
     <item>
+      <title>[Update] CID Data Exports v0.13.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/blob/main/data-exports/CHANGELOG.md#v0130
+      </link>
+      <pubDate>Tue, 03 Nov 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">b41039fe-d9a2-4203-a39e-03b41c5f4b0d</guid>
+      <description>CID Data Exports v0.13.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>CUR 2.0 table:</strong> Added the <code>net_*</code> columns and other columns, such as <code>line_item_net_unblended_cost</code>, <code>pricing_public_on_demand_rate</code>, <code>product_region_code</code> and <code>product_sku</code>.</li>
+    <li><strong>Crawler logs:</strong> The crawler role can create its log group by log group ARN, ahead of the CloudWatch Logs IAM change in April 2027.</li>
+    <li><strong>Secondary destination bucket:</strong> Fixed <code>SecondaryDestinationBucket</code>, which stopped receiving data in v0.11.0. If you use it, follow the upgrade note in the changelog.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
+    <item>
       <title>[Update] Extended Support Cost Projection v5.3.0</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v530
