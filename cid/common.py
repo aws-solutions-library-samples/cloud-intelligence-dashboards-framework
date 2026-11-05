@@ -20,7 +20,7 @@ from botocore.exceptions import ClientError, NoCredentialsError, CredentialRetri
 from cid import utils
 from cid.base import CidBase
 from cid.plugin import Plugin
-from cid.utils import get_parameter, get_parameters, set_parameters, unset_parameter, get_yesno_parameter, cid_print, isatty, merge_objects, IsolatedParameters, set_defaults
+from cid.utils import get_parameter, get_parameters, get_loggable_parameters, set_parameters, unset_parameter, get_yesno_parameter, cid_print, isatty, merge_objects, IsolatedParameters, set_defaults
 from cid.helpers.account_map import AccountMap
 from cid.helpers.account_mapper import AccountMapper
 from cid.helpers.parameter_store import ParametersController
@@ -192,7 +192,7 @@ class Cid(AgentCommands):
             if kwargs.get('verbose'): # Count params need special treatment
                 self.verbose = self.verbose + kwargs.get('verbose')
             set_parameters(kwargs, all_yes=self.all_yes)
-            logger.debug(json.dumps(get_parameters()))
+            logger.debug(json.dumps(get_loggable_parameters()))
             if not self._logger:
                 self._logger = set_cid_logger(
                     verbosity=self.verbose,

@@ -5,7 +5,7 @@ import platform
 import click
 
 from cid.common import Cid
-from cid.utils import get_parameters, set_parameters, get_latest_tool_version, cid_print
+from cid.utils import get_parameters, set_parameters, get_latest_tool_version, cid_print, is_sensitive_parameter
 from cid._version import __version__
 from cid.exceptions import CidCritical, CidError
 
@@ -22,10 +22,12 @@ def cid_command(func):
     def wrapper(ctx, **kwargs):
 
         def get_command_line():
-            params = get_parameters()
+            # Credentials are never echoed: re-running authenticates again (profile, env or plugin federation)
+            params = {k: v for k, v in get_parameters().items() if not is_sensitive_parameter(k)}
+            cli_params = {k: v for k, v in ctx.params.items() if not is_sensitive_parameter(k)}
             return ('cid-cmd ' + ctx.info_name
-                + ''.join([f" --{k.replace('_','-')}" for k, v in ctx.params.items() if isinstance(v, bool) and v])
-                + ''.join([f" --{k.replace('_','-')} '{v}'" for k, v in ctx.params.items() if not isinstance(v, bool) and v is not None])
+                + ''.join([f" --{k.replace('_','-')}" for k, v in cli_params.items() if isinstance(v, bool) and v])
+                + ''.join([f" --{k.replace('_','-')} '{v}'" for k, v in cli_params.items() if not isinstance(v, bool) and v is not None])
                 + ''.join([f" --{k} '{v}' " for k, v in params.items() if not isinstance(v, bool) and v is not None])
             )
 
@@ -135,7 +137,7 @@ def deploy(ctx, **kwargs):
      --view-{view_name}-{parameter} TEXT   a custom parameter for a view creation, can use variable: {account_id}
      --account-map-source TEXT             csv, dummy, organization (if autodiscovery impossible)
      --account-map-file TEXT               csv file path relative to current directory (if autodiscovery impossible and csv selected as a source )
-     --on-drift (show|override)            Action if a drift of view and dataset is discovered. 'override' = override drift(will destroy customization) or 'show' (default) = show a diff. Without a terminal, existing views are not replaced (except the CID-managed CUR proxy view, which only gains columns) and datasets are updated without a diff; run cid-cmd update --recursive in a terminal to review view changes.
+     --on-drift (show|override)            Action if a drift of view and dataset is discovered. 'override' = override drift(will destroy customization) or 'show' (default) = show a diff. Without a terminal and with 'show', existing views are not replaced (except the CID-managed CUR proxy view, which only gains columns) and datasets are updated without a diff; pass --on-drift override to replace views unattended, or run cid-cmd update --recursive in a terminal to review view changes.
      --update (yes|no)                     Update if some elements are already installed. Default = 'no'
      --resources TEXT                      CID resources yaml file or url
      --category TEXT                       Comma separated list of categories of dashboards (ex: foundational,advanced )
@@ -211,7 +213,7 @@ def update(ctx, dashboard_id, force, recursive, **kwargs):
     """Update Dashboard
 
     \b
-     --on-drift (show|override)            Action if a drift of view and dataset is discovered. 'override' = override drift(will destroy customization) or 'show' (default) = show a diff. Without a terminal, existing views are not replaced (except the CID-managed CUR proxy view, which only gains columns) and datasets are updated without a diff; run cid-cmd update --recursive in a terminal to review view changes.
+     --on-drift (show|override)            Action if a drift of view and dataset is discovered. 'override' = override drift(will destroy customization) or 'show' (default) = show a diff. Without a terminal and with 'show', existing views are not replaced (except the CID-managed CUR proxy view, which only gains columns) and datasets are updated without a diff; pass --on-drift override to replace views unattended, or run cid-cmd update --recursive in a terminal to review view changes.
      --theme TEXT                          A QuickSight Theme (CLASSIC|MIDNIGHT|SEASIDE|RAINIER)
      --currency TEXT                       A currency symbol instead of default USD (USD|GBP|EUR|JPY|KRW|DKK|TWD|INR)
      --rls TEXT                            Desired RLS status (CLEAR|ENABLED|DISABLED) Clear = No RLS configuration.

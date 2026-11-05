@@ -1,8 +1,8 @@
 """ Unit tests for Athena.create_or_update_view drift handling (cid/helpers/athena.py)
 
-An existing view is replaced with --on-drift override in a terminal, and is
-kept as is without a terminal, unless the caller passes replace_if_no_tty
-(used for the CID-managed CUR proxy).
+An existing view is replaced with --on-drift override (with or without a
+terminal), and is kept as is without a terminal otherwise, unless the caller
+passes replace_if_no_tty (used for the CID-managed CUR proxy).
 """
 from unittest.mock import MagicMock, patch
 
@@ -31,9 +31,15 @@ def test_override_in_terminal_replaces_view():
 
 
 def test_no_terminal_keeps_view():
-    for on_drift in ('show', 'override'):
-        athena = _run(on_drift, terminal=False)
-        athena.execute_query.assert_not_called()
+    athena = _run('show', terminal=False)
+    athena.execute_query.assert_not_called()
+
+
+def test_no_terminal_override_replaces_view():
+    """ explicit --on-drift override is honored in unattended runs (agents, CI, Lambda) """
+    athena = _run('override', terminal=False)
+    athena.get_view_diff.assert_not_called()
+    athena.execute_query.assert_called_once()
 
 
 def test_no_terminal_replaces_view_when_allowed():
