@@ -178,9 +178,9 @@ Some providers (e.g. OCI) use non-canonical column names in their FOCUS exports 
 
 ### Tag Discovery Query Fix
 The tag discovery query in downstream views (`focus_resource_view`, `focus_summary_view`) is updated:
-- UNNEST is moved inside the subquery (before LIMIT) to ensure deterministic tag discovery
-- LIMIT raised from 10,000 to 100,000 to cover large datasets
-- Original query applied LIMIT to raw rows before UNNEST, causing non-deterministic results
+- `SELECT DISTINCT` over `UNNEST(map_keys(tags))` for the last 60 days, with no `LIMIT`
+- An earlier version applied `LIMIT 100000` to (row, tag key) pairs before `DISTINCT`. On large multi-cloud data (millions of pairs), this sampled an arbitrary subset, so keys of one provider could be missing from the selection list and results changed between runs
+- Without the `LIMIT`, the query returns all keys every time. Measured on ~3.4M pairs: 885 MB scanned, ~5 s, run only during `cid-cmd deploy`/`update`
 
 ### `tags_json` Parameter Caching Fix
 The `tags_json` parameter type (used by `focus_resource_view` and `focus_summary_view`) requires a caching mechanism:

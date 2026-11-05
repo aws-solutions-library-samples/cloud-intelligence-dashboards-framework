@@ -218,7 +218,7 @@ The alias lookup occurs after the canonical name check fails, and before the NUL
 ### Special case: `tags`
 
 - If `tags` column exists in source → use it directly
-- If `tags` column is missing → `CAST(NULL AS MAP<VARCHAR,VARCHAR>) AS tags`
+- If `tags` column is missing → `CAST(NULL AS MAP<VARCHAR,VARCHAR>) AS tags`. GCP `x_tags` is not mapped: it lists raw, unresolved tag bindings (a key can repeat, inherited and direct), unlike FOCUS `Tags`, which must be finalized to one value per key
 
 ## SQL Generation
 
