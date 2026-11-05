@@ -1,9 +1,5 @@
 """ Credentials must never be echoed in the 'Next time you can use following command' line or logs """
-from unittest.mock import MagicMock, patch
-
-from click.testing import CliRunner
-
-import cid.cli
+from cid.cli import command_line
 from cid.utils import IsolatedParameters, get_loggable_parameters, is_sensitive_parameter, set_parameters
 
 SECRETS = {
@@ -28,19 +24,13 @@ def test_loggable_parameters_mask_credentials():
 
 
 def test_next_time_command_line_has_no_credentials():
-    """ a plugin (e.g. cid-internal) injects federated credentials as parameters during the command """
-    @cid.cli.cid_command
-    def fake_cmd(ctx, **kwargs):
-        set_parameters(SECRETS)
-
-    logged = []
-    fake_logger = MagicMock()
-    fake_logger.info.side_effect = lambda msg, *a, **k: logged.append(str(msg))
-    fake_logger.debug.side_effect = lambda msg, *a, **k: logged.append(str(msg))
-    with IsolatedParameters(), patch('cid.cli.logger', fake_logger):
-        CliRunner().invoke(cid.cli.main, ['fake-cmd', '--dashboard-id', 'cudos-v5'], obj=None, catch_exceptions=True)
-    text = '\n'.join(logged)
-    assert 'cid-cmd fake-cmd' in text, f'command line was not logged: {text!r}'
-    assert '--dashboard-id' in text
+    """ credentials passed on the command line or injected by a plugin (e.g. cid-internal) are left out """
+    cli_params = {'dashboard_id': 'cudos-v5', 'aws_session_token': SECRETS['aws_session_token'], 'recursive': True}
+    params = {k.replace('_', '-'): v for k, v in SECRETS.items()}
+    params['timezone'] = 'Europe/London'
+    line = command_line('deploy', cli_params, params)
+    assert line.startswith('cid-cmd deploy')
+    assert "--dashboard-id 'cudos-v5'" in line and '--recursive' in line and "--timezone 'Europe/London'" in line
     for value in SECRETS.values():
-        assert value not in text
+        assert value not in line
+    assert 'aws-session-token' not in line and 'aws-secret-access-key' not in line

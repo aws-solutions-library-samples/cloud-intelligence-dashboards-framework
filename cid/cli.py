@@ -18,18 +18,23 @@ print(f'{prog_name} {version}\n')
 if __version__ != latest_version and latest_version != 'UNDEFINED':
     cid_print(f'<YELLOW>A new version {latest_version} is available, please update <BLUE><BOLD>pip install -U cid-cmd<END>\n\n')
 
+def command_line(command_name: str, cli_params: dict, params: dict) -> str:
+    """ the 'Next time you can use following command' line. Credentials are never included:
+    re-running authenticates again (profile, environment or plugin federation). """
+    cli_params = {k: v for k, v in cli_params.items() if not is_sensitive_parameter(k)}
+    params = {k: v for k, v in params.items() if not is_sensitive_parameter(k)}
+    return ('cid-cmd ' + command_name
+        + ''.join([f" --{k.replace('_','-')}" for k, v in cli_params.items() if isinstance(v, bool) and v])
+        + ''.join([f" --{k.replace('_','-')} '{v}'" for k, v in cli_params.items() if not isinstance(v, bool) and v is not None])
+        + ''.join([f" --{k} '{v}' " for k, v in params.items() if not isinstance(v, bool) and v is not None])
+    )
+
+
 def cid_command(func):
     def wrapper(ctx, **kwargs):
 
         def get_command_line():
-            # Credentials are never echoed: re-running authenticates again (profile, env or plugin federation)
-            params = {k: v for k, v in get_parameters().items() if not is_sensitive_parameter(k)}
-            cli_params = {k: v for k, v in ctx.params.items() if not is_sensitive_parameter(k)}
-            return ('cid-cmd ' + ctx.info_name
-                + ''.join([f" --{k.replace('_','-')}" for k, v in cli_params.items() if isinstance(v, bool) and v])
-                + ''.join([f" --{k.replace('_','-')} '{v}'" for k, v in cli_params.items() if not isinstance(v, bool) and v is not None])
-                + ''.join([f" --{k} '{v}' " for k, v in params.items() if not isinstance(v, bool) and v is not None])
-            )
+            return command_line(ctx.info_name, ctx.params, get_parameters())
 
         # Complete kwargs with other parameters
         if len(ctx.args) % 2 != 0:
