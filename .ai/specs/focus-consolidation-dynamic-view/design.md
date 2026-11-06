@@ -218,7 +218,8 @@ The alias lookup occurs after the canonical name check fails, and before the NUL
 ### Special case: `tags`
 
 - If `tags` column exists in source → use it directly
-- If `tags` column is missing → `CAST(NULL AS MAP<VARCHAR,VARCHAR>) AS tags`. GCP `x_tags` is not mapped: it lists raw, unresolved tag bindings (a key can repeat, inherited and direct), unlike FOCUS `Tags`, which must be finalized to one value per key
+- If `tags` column is missing but `x_tags` exists as `ARRAY<STRUCT<key, value, ...>>` → build the map from `x_tags`. This is a GCP-specific workaround for a FOCUS conformance gap: the GCP FOCUS export has no `Tags` column ([GCP FOCUS export schema](https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-tables/focus-export)). If a key repeats, the first value is kept (`multimap_from_entries` is used because `map_from_entries` fails on duplicate keys). GCP labels (`x_labels`) are not mapped
+- Otherwise → `CAST(NULL AS MAP<VARCHAR,VARCHAR>) AS tags`
 
 ## SQL Generation
 
