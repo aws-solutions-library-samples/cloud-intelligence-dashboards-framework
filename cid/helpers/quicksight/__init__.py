@@ -14,6 +14,7 @@ from cid.base import CidBase
 from cid.helpers import diff, timezone, randtime
 from cid.helpers.quicksight.dashboard import Dashboard
 from cid.helpers.quicksight.dataset import Dataset
+from cid.helpers.quicksight.version import CidVersion
 from cid.helpers.quicksight.dashboard_patching import add_filter_to_dashboard_definition, patch_currency, patch_group_by, patch_spaces
 from cid.helpers.quicksight.datasource import Datasource
 from cid.helpers.quicksight.template import Template as CidQsTemplate
@@ -1291,7 +1292,8 @@ class QuickSight(CidBase):
         logger.debug(f"describe_dashboard { definition.get('dashboardId')}")
         dashboard = self.describe_dashboard(poll=True, **describe_parameters)
         logger.debug('dashboard={dashboard}')
-        self.set_tags(dashboard.arn, cid_version_tag=dashboard.cid_version) # try to update version tag
+        # Tag with the catalog version (same source as update_dashboard); the About-text version is only a fallback
+        self.set_tags(dashboard.arn, cid_version_tag=CidVersion(definition['version']) if definition.get('version') else dashboard.cid_version)
 
         self.discover_dashboard(dashboard.id)
         if not dashboard.health:
