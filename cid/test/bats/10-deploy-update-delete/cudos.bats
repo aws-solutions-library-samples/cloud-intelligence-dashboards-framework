@@ -23,6 +23,7 @@ cur_table="${cur_table:-cur2}" # If variable not set or null, use default. FIXME
     --quicksight-datasource-id $quicksight_datasource_id \
     --resource-tags '' \
     --taxonomy 'payer_account_id,account_id,account_name' \
+    --view-summary-view-retention-months '7' \
 
   [ "$status" -eq 0 ]
 }
