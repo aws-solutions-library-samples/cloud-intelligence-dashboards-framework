@@ -12,7 +12,7 @@ dashboards:
     dashboardId: droid
     category: Advanced
     theme: MIDNIGHT
-    version: v1.0.0
+    version: v1.0.1
     file: ./droid-definition.yaml
 datasets:
   rds_backup_view:
@@ -1314,7 +1314,7 @@ views:
            r.bill_payer_account_id payer_account_id
          , r.line_item_usage_account_id account_id
          , r.line_item_usage_account_name account_name
-         , r.product_region_code region
+         , r.product['region'] region
          , r.product['database_engine'] database_engine
          , r.line_item_resource_id resource_id
          , r.line_item_usage_type usage_type

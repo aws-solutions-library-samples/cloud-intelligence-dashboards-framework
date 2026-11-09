@@ -5,8 +5,30 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Tue, 03 Nov 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 09 Nov 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] DROID - Database Resilience, Operations &amp; Insights Dashboard v1.0.1</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-droid.md#droid-dashboard---v101
+      </link>
+      <pubDate>Mon, 09 Nov 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">2e322fdb-afc2-47fb-a2fc-3ae8f1711ff0</guid>
+      <description>DROID - Database Resilience, Operations &amp; Insights Dashboard v1.0.1 - CUR Legacy support and fixes</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    <strong>Important:</strong> Update with <code>cid-cmd update --dashboard-id droid --force --recursive</code> to get the <code>rds_aurora_io_optimized_view</code> fix.
+  </p>
+  <ul>
+    <li><strong>RDS Cost and Usage:</strong> Aurora I/O-Optimized recommendations now also work on CUR Legacy through the CUR 2.0 proxy view.</li>
+    <li><strong>RDS Security and Resiliency:</strong> DB Certificate Status shows Not Collected when the certificate expiry date is not available, instead of Expired.</li>
+    <li><strong>RDS Snapshot Backup:</strong> The 30-day average and the 14-day by-account backup visuals now include the current day.</li>
+  </ul>
+</div>
+      ]]></content:encoded>
+    </item>
     <item>
       <title>[New Dashboard] DROID - Database Resilience, Operations &amp; Insights Dashboard v1.0.0</title>
       <link>
