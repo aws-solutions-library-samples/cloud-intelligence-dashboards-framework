@@ -17,6 +17,12 @@ The DROID Dashboard provides comprehensive RDS instance analysis across multi-ac
 - **Efficient Storage**: Partitioned S3 data (account/region/date) with Glue crawlers for automatic schema updates
 - **CID Framework Integration**: Seamless deployment via cid-cmd with standard CID patterns and naming conventions
 
+## DROID Dashboard - v1.0.1
+**Important:** Update with `cid-cmd update --dashboard-id droid --force --recursive` to get the `rds_aurora_io_optimized_view` fix.
+* **RDS Cost and Usage**: Aurora I/O-Optimized recommendations now also work on CUR Legacy through the CUR 2.0 proxy view (the region is read from `product['region']` instead of `product_region_code`)
+* **RDS Security and Resiliency**: DB Certificate Status shows `Not Collected` when the certificate expiry date is not available, instead of `Expired`
+* **RDS Snapshot Backup**: "Average Snapshot Backup % for past 30 days" and "Snapshot Backup % by Account - Last 14 Days" now include the current day, so they show data right after a collection
+
 ## DROID Dashboard - v1.0.0
 * Initial release
 * 5 tabs: Inventory, Version and Maintenance, Security and Resiliency, Backup, Cost

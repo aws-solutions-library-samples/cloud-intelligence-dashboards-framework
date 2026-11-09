@@ -108,10 +108,9 @@ CalculatedFields:
 - DataSetIdentifier: rds_inventory_dataset
   Expression: |-
     ifelse(
-      parseDate(
-        left(split(certificatedetails, 'validtill=', 2), 10),
-        'yyyy-MM-dd'
-      ) > now(),
+      isNull(parseDate(left(split(certificatedetails, 'validtill=', 2), 10), 'yyyy-MM-dd')),
+      'Not Collected',
+      parseDate(left(split(certificatedetails, 'validtill=', 2), 10), 'yyyy-MM-dd') > now(),
       'Active',
       'Expired'
     )
@@ -480,7 +479,7 @@ FilterGroups:
       ExcludePeriodConfiguration:
         Amount: 1
         Granularity: DAY
-        Status: ENABLED
+        Status: DISABLED
       FilterId: 49ddb464-2e02-46e7-a42a-ca5c3429128a
       MinimumGranularity: DAY
       NullOption: NON_NULLS_ONLY
@@ -531,10 +530,10 @@ FilterGroups:
       NullOption: NON_NULLS_ONLY
       RangeMaximumValue:
         RollingDate:
-          Expression: truncDate('DD', now())
+          Expression: addDateTime(1, 'DD', truncDate('DD', now()))
       RangeMinimumValue:
         RollingDate:
-          Expression: addDateTime(-14, 'DD', truncDate('DD', now()))
+          Expression: addDateTime(-13, 'DD', truncDate('DD', now()))
       TimeGranularity: DAY
   ScopeConfiguration:
     SelectedSheets:
@@ -12928,7 +12927,7 @@ Sheets:
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline color=\"#61d1d6\"\
       \ font-size=\"40px\">\n      <b>DROID \u2013 Database Resilience, Operations,\
       \ and Insights Dashboard</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"\
-      center\">\n    <inline font-size=\"40px\">\n      <b>v1.0.0</b>\n    </inline>\n\
+      center\">\n    <inline font-size=\"40px\">\n      <b>v1.0.1</b>\n    </inline>\n\
       \  </block>\n  <br/>\n  <br/>\n  <br/>\n  <br/>\n  <block align=\"right\">Built\
       \ by: Anish Kumar Gopal, Yuriy Prykhodko, Eric Christensen, Prashob Krishnan</block>\n\
       \  <br/>\n  <block align=\"right\">\n    Learn more about AWS Cloud Intelligence\
