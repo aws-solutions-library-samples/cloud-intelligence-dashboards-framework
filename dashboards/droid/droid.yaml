@@ -8,7 +8,7 @@ dashboards:
       - rds_inventory_view
       - rds_maintenance_view
       - rds_tags_view
-    name: DROID - Database Resilience, Operations & Insights
+    name: DROID - Data Resilience, Operations & Insights
     dashboardId: droid
     category: Advanced
     theme: MIDNIGHT
