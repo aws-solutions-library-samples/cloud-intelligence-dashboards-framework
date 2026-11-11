@@ -9,6 +9,13 @@ permissions:
   id-token: write
   contents: read
 
+# All PRs deploy the same stack names into one test account with one shared state key
+# (terraform/cid-test/terraform.tfstate). Overlapping runs delete each other's stacks
+# and state, leaving stacks that terraform no longer tracks. Queue runs instead.
+concurrency:
+  group: cid-terraform-test-account
+  cancel-in-progress: false
+
 jobs:
   test-deployment:
     runs-on: ubuntu-latest

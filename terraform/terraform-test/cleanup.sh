@@ -16,6 +16,7 @@ export AWS_REGION="${S3_REGION}"  # Some AWS tools use this variable instead
 
 # Verify account access
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+PARTITION=$(aws sts get-caller-identity --query Arn --output text | cut -d: -f2)
 echo "Account ID: $ACCOUNT_ID"
 
 # Get the script directory and project root
@@ -86,71 +87,146 @@ echo "Emptying CID S3 buckets..."
 CID_DATA_BUCKETS=(
   "${RESOURCE_PREFIX}-${ACCOUNT_ID}-data-exports"
   "${RESOURCE_PREFIX}-${ACCOUNT_ID}-data-local"
-  "aws-athena-query-results-cid-${ACCOUNT_ID}"
+  # Must match MyAthenaQueryResultsBucket in cfn-templates/cid-cfn.yml. This bucket has
+  # DeletionPolicy: Delete, so if it is not empty the Cloud-Intelligence-Dashboards stack
+  # ends in DELETE_FAILED and blocks every subsequent deployment.
+  "${PARTITION}-athena-query-results-cid-${ACCOUNT_ID}-${S3_REGION}"
 )
+
+# CloudFormation stacks managed by terraform/cicd-deployment, in reverse dependency order
+STACKS_DELETE_ORDER=(
+  "CORA-Dashboard"
+  "FOCUS-Dashboard"
+  "SCAD-Containers-Dashboard"
+  "Amazon-Connect-Cost-Insight-Dashboard"
+  "AWS-Marketplace-SPG-Dashboard"
+  "DataTransfer-Cost-Analysis-Dashboard"
+  "Trends-Dashboard"
+  "Cloud-Intelligence-Dashboards"
+  "CID-DataExports-Source"
+  "CID-DataExports-Destination"
+)
+
+stack_status() {
+  aws cloudformation describe-stacks --stack-name "$1" \
+    --query 'Stacks[0].StackStatus' --output text 2>/dev/null || echo "NOT_FOUND"
+}
+
+empty_bucket() {
+  local bucket=$1
+  aws s3api head-bucket --bucket "$bucket" 2>/dev/null || return 0
+  aws s3 rm "s3://$bucket" --recursive || true
+  # delete-objects accepts at most 1000 keys per call, so page through versions
+  for attempt in {1..50}; do
+    VERSIONS=$(aws s3api list-object-versions --bucket "$bucket" --max-items 1000 --output json 2>/dev/null || echo '{}')
+    OBJECTS=$(echo "$VERSIONS" | jq -c '[(.Versions // [])[], (.DeleteMarkers // [])[] | {Key:.Key, VersionId:.VersionId}]')
+    if [ "$(echo "$OBJECTS" | jq 'length')" -eq 0 ]; then
+      echo "Bucket $bucket is empty"
+      return 0
+    fi
+    echo "Deleting $(echo "$OBJECTS" | jq 'length') object versions from $bucket (batch $attempt)"
+    echo "{\"Objects\": $OBJECTS, \"Quiet\": true}" | aws s3api delete-objects --bucket "$bucket" --delete file:///dev/stdin >/dev/null || true
+  done
+  echo "WARNING: $bucket still not empty after 50 batches"
+}
+
+# CloudFormation refuses to delete a stack while another stack imports one of its
+# exports (e.g. cid-CidExecArn is imported by every cid-plugin dashboard stack). The
+# delete is rejected and the stack goes back to CREATE_COMPLETE/UPDATE_COMPLETE, which
+# terraform reports as "unexpected state 'CREATE_COMPLETE'". Importing stacks can exist
+# outside terraform state (left over from earlier runs or other branches), so find
+# them through the CloudFormation API and delete them first.
+delete_importers() {
+  local stack=$1 exports exp_name importers importer
+  exports=$(aws cloudformation describe-stacks --stack-name "$stack" \
+    --query 'Stacks[0].Outputs[?ExportName!=`null`].ExportName' --output text 2>/dev/null) || return 0
+  for exp_name in $exports; do
+    [ "$exp_name" = "None" ] && continue
+    importers=$(aws cloudformation list-imports --export-name "$exp_name" \
+      --query 'Imports' --output text 2>/dev/null) || continue  # errors when not imported
+    for importer in $importers; do
+      [ "$importer" = "None" ] && continue
+      echo "Stack $importer imports export $exp_name from $stack. Deleting $importer first..."
+      force_delete_stack "$importer"
+    done
+  done
+}
+
+# Delete a stack directly through CloudFormation. Used when terraform destroy fails
+# or when state is out of sync with what exists in the account.
+force_delete_stack() {
+  local stack=$1
+  local status
+  status=$(stack_status "$stack")
+  if [ "$status" = "NOT_FOUND" ] || [ "$status" = "DELETE_COMPLETE" ]; then
+    return 0
+  fi
+
+  echo "Stack $stack still exists (status: $status). Deleting via CloudFormation API..."
+  delete_importers "$stack"
+  if [[ "$status" == *_IN_PROGRESS && "$status" != "DELETE_IN_PROGRESS" ]]; then
+    echo "Waiting for in-progress operation on $stack to finish..."
+    aws cloudformation wait stack-update-complete --stack-name "$stack" 2>/dev/null \
+      || aws cloudformation wait stack-create-complete --stack-name "$stack" 2>/dev/null || true
+  fi
+
+  # Empty the CID buckets again in case anything was written since the first pass
+  for bucket in "${CID_DATA_BUCKETS[@]}"; do empty_bucket "$bucket"; done
+
+  aws cloudformation delete-stack --stack-name "$stack" || true
+  if aws cloudformation wait stack-delete-complete --stack-name "$stack" 2>/dev/null; then
+    return 0
+  fi
+
+  status=$(stack_status "$stack")
+  if [ "$status" != "NOT_FOUND" ] && [ "$status" != "DELETE_FAILED" ]; then
+    echo "Delete of $stack was rejected (status back to $status). Reason:"
+    aws cloudformation describe-stack-events --stack-name "$stack" --max-items 20 \
+      --query "StackEvents[?LogicalResourceId=='$stack' && ResourceStatusReason!=\`null\`].ResourceStatusReason" \
+      --output text | head -3 || true
+  fi
+  if [ "$status" = "DELETE_FAILED" ]; then
+    echo "Stack $stack is DELETE_FAILED. Resources that failed to delete:"
+    aws cloudformation describe-stack-events --stack-name "$stack" \
+      --query "StackEvents[?ResourceStatus=='DELETE_FAILED'].[LogicalResourceId,ResourceStatusReason]" \
+      --output text | sort -u || true
+    # Last resort for the test account: retain the failed resources so the stack
+    # itself is removed and the next deployment is unblocked. Retained S3 buckets
+    # are removed by the bucket sweep below / on the next run.
+    RETAIN=$(aws cloudformation list-stack-resources --stack-name "$stack" \
+      --query "StackResourceSummaries[?ResourceStatus=='DELETE_FAILED'].LogicalResourceId" --output text)
+    if [ -n "$RETAIN" ]; then
+      echo "Retrying delete of $stack, retaining: $RETAIN"
+      # shellcheck disable=SC2086
+      aws cloudformation delete-stack --stack-name "$stack" --retain-resources $RETAIN || true
+      aws cloudformation wait stack-delete-complete --stack-name "$stack" 2>/dev/null || true
+    fi
+  fi
+}
 
 for bucket in "${CID_DATA_BUCKETS[@]}"; do
   echo "Checking if bucket $bucket exists..."
-  if aws s3api head-bucket --bucket $bucket 2>/dev/null; then
-    # Skip if this is the backend bucket
-    if [ "$bucket" = "$S3_BUCKET" ]; then
-      echo "Skipping backend bucket: $bucket"
-      continue
-    fi
-
+  if [ "$bucket" = "$S3_BUCKET" ]; then
+    echo "Skipping backend bucket: $bucket"
+    continue
+  fi
+  if aws s3api head-bucket --bucket "$bucket" 2>/dev/null; then
     echo "Emptying and deleting bucket $bucket..."
-    
-    # First delete all non-versioned objects
-    aws s3 rm s3://$bucket --recursive || true
-    
-    # Loop to ensure all versioned objects are deleted
-    for attempt in {1..3}; do
-      echo "Attempt $attempt to delete all versions..."
-      
-      # Get all versions and delete markers
-      VERSIONS=$(aws s3api list-object-versions --bucket $bucket --output json 2>/dev/null || echo '{"Versions":[],"DeleteMarkers":[]}')
-      
-      # Process versions
-      VERSION_COUNT=$(echo "$VERSIONS" | jq -r '.Versions | length // 0')
-      VERSION_COUNT=${VERSION_COUNT:-0}
-      
-      if [ "$VERSION_COUNT" -gt 0 ]; then
-        echo "Found $VERSION_COUNT versions to delete"
-        echo "$VERSIONS" | jq -c '{Objects: [.Versions[] | {Key:.Key, VersionId:.VersionId}] | select(length > 0)}' | aws s3api delete-objects --bucket $bucket --delete file:///dev/stdin || true
-      fi
-      
-      # Process delete markers
-      MARKER_COUNT=$(echo "$VERSIONS" | jq -r '.DeleteMarkers | length // 0')
-      MARKER_COUNT=${MARKER_COUNT:-0}
-      
-      if [ "$MARKER_COUNT" -gt 0 ]; then
-        echo "Found $MARKER_COUNT delete markers to remove"
-        echo "$VERSIONS" | jq -c '{Objects: [.DeleteMarkers[] | {Key:.Key, VersionId:.VersionId}] | select(length > 0)}' | aws s3api delete-objects --bucket $bucket --delete file:///dev/stdin || true
-      fi
-      
-      # Check if bucket is empty
-      REMAINING=$(aws s3api list-object-versions --bucket $bucket --output json 2>/dev/null || echo '{"Versions":[],"DeleteMarkers":[]}')
-      VERSION_COUNT=$(echo "$REMAINING" | jq -r '.Versions | length // 0')
-      MARKER_COUNT=$(echo "$REMAINING" | jq -r '.DeleteMarkers | length // 0')
-      
-      VERSION_COUNT=${VERSION_COUNT:-0}
-      MARKER_COUNT=${MARKER_COUNT:-0}
-      
-      if [ "$VERSION_COUNT" -eq 0 ] && [ "$MARKER_COUNT" -eq 0 ]; then
-        echo "Bucket $bucket is now empty!"
-        break
-      fi
-      
-      echo "Bucket still has objects, continuing..."
-    done
-
+    empty_bucket "$bucket"
     # Delete the bucket before terraform destroy to prevent CloudFormation conflicts
-    echo "Deleting bucket $bucket..."
-    aws s3 rb s3://$bucket --force || true
+    aws s3 rb "s3://$bucket" --force || true
     echo "Deleted bucket: $bucket"
   else
     echo "Bucket $bucket does not exist or is not accessible"
   fi
+done
+
+# Remove every stack that imports an export from a CID stack before terraform destroy,
+# whether or not terraform tracks it. Otherwise an untracked importer makes destroy fail
+# with "unexpected state 'CREATE_COMPLETE'". Terraform's refresh drops stacks deleted here.
+echo "Deleting stacks that import CID exports..."
+for stack in "${STACKS_DELETE_ORDER[@]}"; do
+  delete_importers "$stack"
 done
 
 # Run terraform destroy
@@ -187,18 +263,42 @@ global_values = {
 EOF
 fi
 
-terraform destroy "${TFVARS_FILES[@]}" -auto-approve
+DESTROY_RC=0
+terraform destroy "${TFVARS_FILES[@]}" -auto-approve || DESTROY_RC=$?
 cd "$SCRIPT_DIR"
+if [ "$DESTROY_RC" -ne 0 ]; then
+  echo "WARNING: terraform destroy exited with $DESTROY_RC. Falling back to CloudFormation deletes."
+fi
+
+# Delete anything terraform did not remove (failed destroy or out-of-sync state)
+for stack in "${STACKS_DELETE_ORDER[@]}"; do
+  force_delete_stack "$stack"
+done
 
 # Post-destroy safety check: ensure CID buckets are truly gone
 echo "Post-destroy safety check: verifying CID buckets are deleted..."
 for bucket in "${CID_DATA_BUCKETS[@]}"; do
   if aws s3api head-bucket --bucket $bucket 2>/dev/null; then
     echo "WARNING: Bucket $bucket still exists after destroy. Force deleting..."
-    aws s3 rm s3://$bucket --recursive || true
-    aws s3 rb s3://$bucket --force || true
+    empty_bucket "$bucket"
+    aws s3 rb "s3://$bucket" --force || true
   fi
 done
+
+# Fail loudly if any stack survived, so the problem is visible in this job
+# rather than surfacing as a confusing failure in the next PR's deployment.
+REMAINING_STACKS=()
+for stack in "${STACKS_DELETE_ORDER[@]}"; do
+  status=$(stack_status "$stack")
+  if [ "$status" != "NOT_FOUND" ] && [ "$status" != "DELETE_COMPLETE" ]; then
+    REMAINING_STACKS+=("$stack ($status)")
+  fi
+done
+if [ ${#REMAINING_STACKS[@]} -gt 0 ]; then
+  echo "ERROR: stacks still present after cleanup:"
+  printf '  - %s\n' "${REMAINING_STACKS[@]}"
+  exit 1
+fi
 
 # Clean up temporary directory if created for standalone execution
 if [[ "$TEMP_DIR" == /tmp/* ]]; then
