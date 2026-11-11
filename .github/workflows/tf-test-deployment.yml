@@ -123,10 +123,11 @@ jobs:
           export S3_KEY="terraform/cid-test/terraform.tfstate"
           export S3_REGION="${{ secrets.AWS_REGION_TF }}"
           export BACKEND_REGION="${{ secrets.AWS_REGION }}"
-          # cleanup.sh finds CID stacks by their terraform tags (ManagedBy, Project,
-          # DashboardType), deletes them in dependency order, removes CID data buckets,
-          # and exits non-zero if anything is left. It is a no-op on a clean account,
-          # so it runs every time and no stack list has to be maintained here.
+          # cleanup.sh reads the stack names from the terraform config (locals.tf),
+          # checks each one by name, and only deletes stacks that carry the terraform
+          # ManagedBy/Project tags. It never lists or touches other stacks in the account.
+          # It is a no-op on a clean account, so it runs every time and no stack list
+          # has to be maintained here.
           bash ./terraform/terraform-test/cleanup.sh
           # Start the deployment from empty state
           aws s3 rm "s3://${S3_BUCKET}/${S3_KEY}" --region "${BACKEND_REGION}" || echo "No state file to clear"

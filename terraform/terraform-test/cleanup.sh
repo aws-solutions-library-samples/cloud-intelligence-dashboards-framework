@@ -93,38 +93,92 @@ CID_DATA_BUCKETS=(
   "${PARTITION}-athena-query-results-cid-${ACCOUNT_ID}-${S3_REGION}"
 )
 
-# Stacks are discovered by the tags terraform/cicd-deployment puts on every stack
-# (local.common_tags), so new dashboards need no change here. Delete order comes from
-# the DashboardType tag: dashboards built on cid-plugin.yml ("Additional") import
-# cid-CidExecArn from the "Foundational" stack, which imports from the data exports
-# stacks (no DashboardType tag). Deleting in rank order respects those imports.
+# Stack names come from the terraform configuration itself (locals.tf), so new
+# dashboards need no change here, and only stacks this terraform can create are
+# ever looked at. The account is never listed. Before a stack is deleted its tags
+# are checked: a stack with an expected name that terraform did not create (no
+# ManagedBy/Project tags, e.g. deployed by hand in this shared account) is never
+# deleted, and the cleanup fails so someone can look at it.
+#
+# Rank gives delete order: dashboards built on cid-plugin.yml import cid-CidExecArn
+# from Cloud-Intelligence-Dashboards, which imports from the data exports stacks.
 CID_TAG_PROJECT=${CID_TAG_PROJECT:-"cloud-intelligence-dashboards"}
+CONFIG_STACKS=()   # "<rank> <stack name>", from terraform config
+CID_STACKS=()      # "<rank> <stack name> <status>", existing stacks created by terraform
+FOREIGN_STACKS=()  # stacks with an expected name but without the terraform tags
 
-# Fills CID_STACKS with "<rank> <stack name> <status>" entries, lowest rank first.
-# Exits if the API call fails, so a permissions error is never mistaken for "no stacks".
-load_cid_stacks() {
-  local out
-  if ! out=$(list_cid_stacks); then
-    echo "ERROR: could not list CloudFormation stacks"
+# Must run in the terraform directory after init. Exits if the config cannot be read,
+# so a broken config is never mistaken for "no stacks".
+load_config_stacks() {
+  local out line
+  local expr='concat([for k, v in local.additional_dashboards : "1 ${v.stack_name}"], [for k, v in local.foundational_stacks : "${k == "cloud_intelligence_dashboards" ? 2 : 3} ${v.stack_name}"])'
+  if ! out=$(echo "$expr" | terraform console "${TFVARS_FILES[@]}" 2>&1); then
+    echo "ERROR: could not read stack names from terraform config:"
+    echo "$out"
     exit 1
   fi
-  CID_STACKS=()
+  CONFIG_STACKS=()
   while IFS= read -r line; do
-    [ -n "$line" ] && CID_STACKS+=("$line")
-  done <<< "$out"
-  return 0
+    [ -n "$line" ] && CONFIG_STACKS+=("$line")
+  done < <(echo "$out" | grep -o '"[^"]*"' | tr -d '"' | sort -n -k1,1)
+  if [ ${#CONFIG_STACKS[@]} -eq 0 ]; then
+    echo "ERROR: terraform config returned no stack names"
+    exit 1
+  fi
+  echo "Stacks defined in terraform config: ${#CONFIG_STACKS[@]}"
 }
 
-list_cid_stacks() {
-  set -o pipefail
-  aws cloudformation describe-stacks --output text --query "Stacks[?
-      Tags[?Key=='ManagedBy' && Value=='terraform'] &&
-      Tags[?Key=='Project' && Value=='${CID_TAG_PROJECT}']
-    ].[StackName, StackStatus, Tags[?Key=='DashboardType'] | [0].Value]" |
-  awk '$1 != "" {
-    rank = ($3 == "Additional") ? 1 : ($3 == "Foundational") ? 2 : 3
-    print rank, $1, $2
-  }' | sort -n -k1,1
+# "<status> <ManagedBy tag> <Project tag>" for one stack, "NOT_FOUND" if it does not
+# exist, or "ERROR <message>" for any other failure (e.g. AccessDenied), so missing
+# permissions are never mistaken for a deleted stack.
+stack_info() {
+  local out
+  if out=$(aws cloudformation describe-stacks --stack-name "$1" --output text \
+      --query "Stacks[0].[StackStatus, Tags[?Key=='ManagedBy'] | [0].Value, Tags[?Key=='Project'] | [0].Value]" 2>&1); then
+    echo "$out"
+  elif [[ "$out" == *"does not exist"* ]]; then
+    echo "NOT_FOUND"
+  else
+    echo "ERROR $(echo "$out" | tr '\n' ' ')"
+  fi
+}
+
+# True if the stack carries the tags terraform/cicd-deployment sets on every stack
+is_cid_stack() {
+  local info managed project
+  info=$(stack_info "$1")
+  read -r _status managed project <<< "$info"
+  [ "$managed" = "terraform" ] && [ "$project" = "$CID_TAG_PROJECT" ]
+}
+
+note_foreign() {
+  [[ " ${FOREIGN_STACKS[*]} " == *" $1 "* ]] && return 0
+  echo "WARNING: stack $1 exists but was not created by this terraform (missing ManagedBy/Project tags). Not deleting it."
+  FOREIGN_STACKS+=("$1")
+}
+
+# Fills CID_STACKS with the config stacks that exist and were created by terraform
+load_cid_stacks() {
+  local entry rank stack info status managed project
+  CID_STACKS=()
+  for entry in "${CONFIG_STACKS[@]}"; do
+    read -r rank stack <<< "$entry"
+    info=$(stack_info "$stack")
+    if [[ "$info" == ERROR* ]]; then
+      echo "ERROR: could not describe stack $stack: ${info#ERROR }"
+      exit 1
+    fi
+    read -r status managed project <<< "$info"
+    if [ "$status" = "NOT_FOUND" ] || [ "$status" = "DELETE_COMPLETE" ]; then
+      continue
+    fi
+    if [ "$managed" != "terraform" ] || [ "$project" != "$CID_TAG_PROJECT" ]; then
+      note_foreign "$stack"
+      continue
+    fi
+    CID_STACKS+=("$rank $stack $status")
+  done
+  return 0
 }
 
 # Stack names currently tracked in terraform state (empty if no state)
@@ -133,9 +187,15 @@ tracked_stacks() {
     jq -r '[.. | objects | select(.type? == "aws_cloudformation_stack") | .values.name] | .[]' 2>/dev/null || true
 }
 
+# Stack status, "NOT_FOUND" if it does not exist, "UNKNOWN" on any other error
 stack_status() {
-  aws cloudformation describe-stacks --stack-name "$1" \
-    --query 'Stacks[0].StackStatus' --output text 2>/dev/null || echo "NOT_FOUND"
+  local info
+  info=$(stack_info "$1")
+  case "$info" in
+    NOT_FOUND) echo "NOT_FOUND" ;;
+    ERROR*) echo "UNKNOWN" ;;
+    *) echo "${info%%[[:space:]]*}" ;;
+  esac
 }
 
 empty_bucket() {
@@ -177,6 +237,10 @@ delete_importers() {
     fi
     for importer in $importers; do
       [ "$importer" = "None" ] && continue
+      if ! is_cid_stack "$importer"; then
+        note_foreign "$importer"
+        continue
+      fi
       echo "Stack $importer imports export $exp_name from $stack. Deleting $importer first..."
       force_delete_stack "$importer"
     done
@@ -318,14 +382,6 @@ if [ ! -d ".terraform" ]; then
   terraform init -reconfigure
 fi
 
-# Delete CID stacks that exist in the account but not in terraform state (left by
-# cancelled or overlapping runs). Terraform cannot order their deletion, and they
-# block the stacks it does track: CloudFormation rejects deleting a stack whose
-# exports are still imported, and terraform reports "unexpected state 'CREATE_COMPLETE'".
-TRACKED=" $(tracked_stacks | tr '\n' ' ') "
-echo "Stacks tracked in terraform state:${TRACKED}"
-delete_cid_stacks untracked
-
 # Use the override file if it exists
 TFVARS_FILES=()
 if [ -f "terraform.tfvars" ]; then
@@ -349,6 +405,16 @@ global_values = {
 }
 EOF
 fi
+
+load_config_stacks
+
+# Delete CID stacks that exist in the account but not in terraform state (left by
+# cancelled or overlapping runs). Terraform cannot order their deletion, and they
+# block the stacks it does track: CloudFormation rejects deleting a stack whose
+# exports are still imported, and terraform reports "unexpected state 'CREATE_COMPLETE'".
+TRACKED=" $(tracked_stacks | tr '\n' ' ') "
+echo "Stacks tracked in terraform state:${TRACKED}"
+delete_cid_stacks untracked
 
 DESTROY_RC=0
 terraform destroy "${TFVARS_FILES[@]}" -auto-approve || DESTROY_RC=$?
@@ -381,6 +447,13 @@ done
 if [ ${#REMAINING_STACKS[@]} -gt 0 ]; then
   echo "ERROR: stacks still present after cleanup:"
   printf '  - %s\n' "${REMAINING_STACKS[@]}"
+  exit 1
+fi
+if [ ${#FOREIGN_STACKS[@]} -gt 0 ]; then
+  echo "ERROR: these stacks use names this terraform deploys, but were not created by it."
+  echo "They were left untouched. The next deployment will collide with them; remove them"
+  echo "or deploy CI to another region/account:"
+  printf '  - %s\n' "${FOREIGN_STACKS[@]}"
   exit 1
 fi
 
