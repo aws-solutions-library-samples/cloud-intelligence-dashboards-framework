@@ -93,19 +93,45 @@ CID_DATA_BUCKETS=(
   "${PARTITION}-athena-query-results-cid-${ACCOUNT_ID}-${S3_REGION}"
 )
 
-# CloudFormation stacks managed by terraform/cicd-deployment, in reverse dependency order
-STACKS_DELETE_ORDER=(
-  "CORA-Dashboard"
-  "FOCUS-Dashboard"
-  "SCAD-Containers-Dashboard"
-  "Amazon-Connect-Cost-Insight-Dashboard"
-  "AWS-Marketplace-SPG-Dashboard"
-  "DataTransfer-Cost-Analysis-Dashboard"
-  "Trends-Dashboard"
-  "Cloud-Intelligence-Dashboards"
-  "CID-DataExports-Source"
-  "CID-DataExports-Destination"
-)
+# Stacks are discovered by the tags terraform/cicd-deployment puts on every stack
+# (local.common_tags), so new dashboards need no change here. Delete order comes from
+# the DashboardType tag: dashboards built on cid-plugin.yml ("Additional") import
+# cid-CidExecArn from the "Foundational" stack, which imports from the data exports
+# stacks (no DashboardType tag). Deleting in rank order respects those imports.
+CID_TAG_PROJECT=${CID_TAG_PROJECT:-"cloud-intelligence-dashboards"}
+
+# Fills CID_STACKS with "<rank> <stack name> <status>" entries, lowest rank first.
+# Exits if the API call fails, so a permissions error is never mistaken for "no stacks".
+load_cid_stacks() {
+  local out
+  if ! out=$(list_cid_stacks); then
+    echo "ERROR: could not list CloudFormation stacks"
+    exit 1
+  fi
+  CID_STACKS=()
+  while IFS= read -r line; do
+    [ -n "$line" ] && CID_STACKS+=("$line")
+  done <<< "$out"
+  return 0
+}
+
+list_cid_stacks() {
+  set -o pipefail
+  aws cloudformation describe-stacks --output text --query "Stacks[?
+      Tags[?Key=='ManagedBy' && Value=='terraform'] &&
+      Tags[?Key=='Project' && Value=='${CID_TAG_PROJECT}']
+    ].[StackName, StackStatus, Tags[?Key=='DashboardType'] | [0].Value]" |
+  awk '$1 != "" {
+    rank = ($3 == "Additional") ? 1 : ($3 == "Foundational") ? 2 : 3
+    print rank, $1, $2
+  }' | sort -n -k1,1
+}
+
+# Stack names currently tracked in terraform state (empty if no state)
+tracked_stacks() {
+  terraform show -json 2>/dev/null |
+    jq -r '[.. | objects | select(.type? == "aws_cloudformation_stack") | .values.name] | .[]' 2>/dev/null || true
+}
 
 stack_status() {
   aws cloudformation describe-stacks --stack-name "$1" \
@@ -142,14 +168,42 @@ delete_importers() {
     --query 'Stacks[0].Outputs[?ExportName!=`null`].ExportName' --output text 2>/dev/null) || return 0
   for exp_name in $exports; do
     [ "$exp_name" = "None" ] && continue
-    importers=$(aws cloudformation list-imports --export-name "$exp_name" \
-      --query 'Imports' --output text 2>/dev/null) || continue  # errors when not imported
+    if ! importers=$(aws cloudformation list-imports --export-name "$exp_name" \
+        --query 'Imports' --output text 2>&1); then
+      # ListImports errors when nothing imports the export; anything else is a real problem
+      [[ "$importers" == *"is not imported by any stack"* ]] || \
+        echo "WARNING: could not list imports of $exp_name: $importers"
+      continue
+    fi
     for importer in $importers; do
       [ "$importer" = "None" ] && continue
       echo "Stack $importer imports export $exp_name from $stack. Deleting $importer first..."
       force_delete_stack "$importer"
     done
   done
+}
+
+# Wait for a stack delete to finish. Returns 0 when the stack is gone, 1 otherwise.
+# The CLI waiter (stack-delete-complete) is not used because it keeps polling for up
+# to 60 minutes when CloudFormation rejects the delete and the stack returns to
+# CREATE_COMPLETE (e.g. export still imported). Here a rejection is detected quickly.
+wait_stack_deleted() {
+  local stack=$1 status settled=0 deadline=$(( $(date +%s) + ${STACK_DELETE_TIMEOUT:-2700} ))
+  while [ "$(date +%s)" -lt "$deadline" ]; do
+    status=$(stack_status "$stack")
+    case "$status" in
+      NOT_FOUND|DELETE_COMPLETE) return 0 ;;
+      DELETE_FAILED) return 1 ;;
+      DELETE_IN_PROGRESS) settled=0 ;;
+      *_IN_PROGRESS) settled=0 ;;
+      *) settled=$((settled + 1))
+         # Not deleting for two polls in a row: the delete was rejected
+         [ "$settled" -ge 2 ] && return 1 ;;
+    esac
+    sleep "${STACK_POLL_SECONDS:-15}"
+  done
+  echo "WARNING: timed out waiting for $stack to delete (status: $status)"
+  return 1
 }
 
 # Delete a stack directly through CloudFormation. Used when terraform destroy fails
@@ -174,7 +228,7 @@ force_delete_stack() {
   for bucket in "${CID_DATA_BUCKETS[@]}"; do empty_bucket "$bucket"; done
 
   aws cloudformation delete-stack --stack-name "$stack" || true
-  if aws cloudformation wait stack-delete-complete --stack-name "$stack" 2>/dev/null; then
+  if wait_stack_deleted "$stack"; then
     return 0
   fi
 
@@ -199,9 +253,42 @@ force_delete_stack() {
       echo "Retrying delete of $stack, retaining: $RETAIN"
       # shellcheck disable=SC2086
       aws cloudformation delete-stack --stack-name "$stack" --retain-resources $RETAIN || true
-      aws cloudformation wait stack-delete-complete --stack-name "$stack" 2>/dev/null || true
+      wait_stack_deleted "$stack" || true
     fi
   fi
+}
+
+# Delete CID stacks in tag order, repeating passes until none are left or a pass
+# makes no progress. Repeating makes the result independent of delete order: a stack
+# rejected because something still imports its exports is retried after the importer
+# is gone. Pass "untracked" to only delete stacks missing from terraform state.
+delete_cid_stacks() {
+  local mode=${1:-all} pass entry stack before after
+  for pass in 1 2 3 4 5; do
+    load_cid_stacks
+    before=0
+    for entry in "${CID_STACKS[@]}"; do
+      read -r _rank stack _status <<< "$entry"
+      [ "$mode" = untracked ] && [[ "$TRACKED" == *" $stack "* ]] && continue
+      before=$((before + 1))
+      [ "$mode" = untracked ] && echo "Stack $stack is not in terraform state. Deleting it before terraform destroy..."
+      force_delete_stack "$stack"
+    done
+    [ "$before" -eq 0 ] && return 0
+    load_cid_stacks
+    after=0
+    for entry in "${CID_STACKS[@]}"; do
+      read -r _rank stack _status <<< "$entry"
+      [ "$mode" = untracked ] && [[ "$TRACKED" == *" $stack "* ]] && continue
+      after=$((after + 1))
+    done
+    [ "$after" -eq 0 ] && return 0
+    if [ "$after" -ge "$before" ]; then
+      echo "WARNING: delete pass $pass made no progress ($after stacks left)"
+      return 0
+    fi
+    echo "Delete pass $pass left $after stacks, retrying..."
+  done
 }
 
 for bucket in "${CID_DATA_BUCKETS[@]}"; do
@@ -221,14 +308,6 @@ for bucket in "${CID_DATA_BUCKETS[@]}"; do
   fi
 done
 
-# Remove every stack that imports an export from a CID stack before terraform destroy,
-# whether or not terraform tracks it. Otherwise an untracked importer makes destroy fail
-# with "unexpected state 'CREATE_COMPLETE'". Terraform's refresh drops stacks deleted here.
-echo "Deleting stacks that import CID exports..."
-for stack in "${STACKS_DELETE_ORDER[@]}"; do
-  delete_importers "$stack"
-done
-
 # Run terraform destroy
 cd "$TEMP_DIR"
 echo "Running terraform destroy..."
@@ -238,6 +317,14 @@ if [ ! -d ".terraform" ]; then
   echo "Initializing Terraform..."
   terraform init -reconfigure
 fi
+
+# Delete CID stacks that exist in the account but not in terraform state (left by
+# cancelled or overlapping runs). Terraform cannot order their deletion, and they
+# block the stacks it does track: CloudFormation rejects deleting a stack whose
+# exports are still imported, and terraform reports "unexpected state 'CREATE_COMPLETE'".
+TRACKED=" $(tracked_stacks | tr '\n' ' ') "
+echo "Stacks tracked in terraform state:${TRACKED}"
+delete_cid_stacks untracked
 
 # Use the override file if it exists
 TFVARS_FILES=()
@@ -271,9 +358,7 @@ if [ "$DESTROY_RC" -ne 0 ]; then
 fi
 
 # Delete anything terraform did not remove (failed destroy or out-of-sync state)
-for stack in "${STACKS_DELETE_ORDER[@]}"; do
-  force_delete_stack "$stack"
-done
+delete_cid_stacks all
 
 # Post-destroy safety check: ensure CID buckets are truly gone
 echo "Post-destroy safety check: verifying CID buckets are deleted..."
@@ -288,11 +373,10 @@ done
 # Fail loudly if any stack survived, so the problem is visible in this job
 # rather than surfacing as a confusing failure in the next PR's deployment.
 REMAINING_STACKS=()
-for stack in "${STACKS_DELETE_ORDER[@]}"; do
-  status=$(stack_status "$stack")
-  if [ "$status" != "NOT_FOUND" ] && [ "$status" != "DELETE_COMPLETE" ]; then
-    REMAINING_STACKS+=("$stack ($status)")
-  fi
+load_cid_stacks
+for entry in "${CID_STACKS[@]}"; do
+  read -r _rank stack status <<< "$entry"
+  REMAINING_STACKS+=("$stack ($status)")
 done
 if [ ${#REMAINING_STACKS[@]} -gt 0 ]; then
   echo "ERROR: stacks still present after cleanup:"
