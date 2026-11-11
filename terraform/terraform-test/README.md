@@ -33,7 +33,7 @@ This testing framework provides comprehensive validation for CID Terraform deplo
 - Validates QuickSight dashboards exist and are accessible
 - Checks Athena views and datasets
 - Tests foundational dashboards (CUDOS, Cost Intelligence, KPI)
-- Validates additional dashboards (Trends, DataTransfer, Marketplace, Connect, Containers)
+- Validates additional dashboards (Trends, DataTransfer, Marketplace, Connect, Containers, FOCUS, CORA, Media Services Insights, Pricing Change Analysis)
 - Runs BATS test suite for comprehensive validation
 
 ### 5. Resource Cleanup
@@ -59,7 +59,7 @@ This testing framework provides comprehensive validation for CID Terraform deplo
 The test automatically extracts dashboard settings from `user-config.tf` (or falls back to `terraform.tfvars`):
 
 - **Foundational**: CUDOS v5, Cost Intelligence, KPI
-- **Additional**: Trends, DataTransfer, Marketplace, Connect, Containers
+- **Additional**: Trends, DataTransfer, Marketplace, Connect, Containers, FOCUS, CORA, Media Services Insights, Pricing Change Analysis
 
 ## Prerequisites
 

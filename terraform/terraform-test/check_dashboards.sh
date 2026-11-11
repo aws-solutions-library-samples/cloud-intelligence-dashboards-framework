@@ -44,6 +44,8 @@ connect="no"
 containers="no"
 focus="no"
 cora="no"
+msih="no"
+pca="no"
 
 # Check user-config.tf first, then fall back to terraform.tfvars
 CONFIG_FILE=""
@@ -89,6 +91,12 @@ if [ -n "$CONFIG_FILE" ]; then
   if grep -q "cora" "$CONFIG_FILE"; then
     cora=$(grep "cora" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
   fi
+  if grep -q "msih" "$CONFIG_FILE"; then
+    msih=$(grep "msih" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
+  if grep -q "pca" "$CONFIG_FILE"; then
+    pca=$(grep "pca" "$CONFIG_FILE" | grep -o '"[^"]*"' | tr -d '"' | head -1)
+  fi
 fi
 
 # Export all variables
@@ -102,6 +110,8 @@ export connect
 export containers
 export focus
 export cora
+export msih
+export pca
 
 # Echo the dashboard settings
 echo "Dashboard settings from Terraform configuration:"
@@ -117,6 +127,8 @@ echo "- connect: $connect"
 echo "- containers: $containers"
 echo "- focus: $focus"
 echo "- cora: $cora"
+echo "- msih: $msih"
+echo "- pca: $pca"
 
 cd "$PROJECT_ROOT"
 

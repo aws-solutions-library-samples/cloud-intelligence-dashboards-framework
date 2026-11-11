@@ -50,8 +50,8 @@ global_values = {
   source_account_ids     = "987654321098"     # Comma-separated list of Payer account IDs
   aws_region            = "us-east-1"         # AWS region for deployment
   quicksight_user       = "user@example.com" # QuickSight username
-  cid_cfn_version       = "4.4.6"           # CID CloudFormation version
-  data_export_version   = "0.9.0"           # Data Export version
+  cid_cfn_version       = "4.4.18"          # CID CloudFormation version
+  data_export_version   = "0.12.0"          # Data Export version
   environment           = "prod"              # Environment (dev, staging, prod)
 }
 
@@ -70,6 +70,8 @@ dashboards = {
   containers   = "yes"  # SCAD Containers Cost Allocation
   cora         = "yes"  # CORA Dashboard
   focus        = "yes"  # FOCUS Dashboard
+  msih         = "yes"  # Media Services Insights
+  pca          = "yes"  # Pricing Change Analysis (requires cid_cfn_version >= 4.4.15)
 }
 ```
 
@@ -178,6 +180,10 @@ These require a foundational dashboard to be deployed first and use the same CUR
 | Containers | `containers` | yes | SCAD Containers Cost Allocation |
 | CORA | `cora` | yes | CORA Dashboard |
 | FOCUS | `focus` | yes | FOCUS Dashboard |
+| Media Services Insights | `msih` | yes | AWS Elemental media services cost, usage and reservations |
+| Pricing Change Analysis | `pca` | yes | Public pricing changes and their cost impact |
+
+Pricing Change Analysis needs `cid_cfn_version` 4.4.15 or later. With an older version the module skips it, deploys the other dashboards, and creates it on the first apply after you upgrade. Media Services Insights only shows data if the payer has AWS Elemental usage, and Pricing Change Analysis only shows SKUs whose public price changed in the last 24 months.
 
 ## Advanced Configuration
 
@@ -231,7 +237,7 @@ After successful deployment, the module provides the following outputs:
 | `cid_dataexports_source_outputs` | Outputs from source stack |
 | `cloud_intelligence_dashboards_outputs` | QuickSight dashboard outputs |
 | `dashboard_summary` | Summary of all deployed dashboards (foundational and additional) |
-| `additional_dashboards_stacks` | Additional dashboard CloudFormation stacks (trends, datatransfer, marketplace, connect, containers) |
+| `additional_dashboards_stacks` | Additional dashboard CloudFormation stacks (trends, datatransfer, marketplace, connect, containers, focus, cora, msih, pca) |
 
 Access the dashboard URLs from the outputs to view your dashboards in QuickSight.
 
@@ -270,8 +276,8 @@ If you're upgrading from the previous non-modular Terraform configuration, pleas
      source_account_ids     = "your-source-ids"     # From your old config
      aws_region            = "your-region"          # From your old config
      quicksight_user       = "your-qs-user"        # From your old config
-     cid_cfn_version       = "4.4.6"               # Updated version
-     data_export_version   = "0.9.0"               # Updated version
+     cid_cfn_version       = "4.4.18"              # Updated version
+     data_export_version   = "0.12.0"              # Updated version
      environment           = "prod"                 # From your old config
    }
    
@@ -289,6 +295,8 @@ If you're upgrading from the previous non-modular Terraform configuration, pleas
      containers   = "no"   # Based on your previous setup or desired to deploy
      cora         = "no"   # Based on your previous setup or desired to deploy
      focus        = "no"   # Based on your previous setup or desired to deploy
+     msih         = "no"   # Based on your previous setup or desired to deploy
+     pca          = "no"   # Based on your previous setup or desired to deploy
    }
    ```
 
@@ -326,8 +334,8 @@ While the cross-account setup is recommended for production environments, you ca
      source_account_ids     = "123456789012"      # Same Payer account ID
      aws_region             = "us-east-1"         # AWS region for deployment
      quicksight_user        = "user/example"      # QuickSight username
-     cid_cfn_version        = "4.4.6"             # CID CloudFormation version
-     data_export_version    = "0.9.0"             # Data Export version
+     cid_cfn_version        = "4.4.18"            # CID CloudFormation version
+     data_export_version    = "0.12.0"            # Data Export version
      environment            = "dev"               # Environment (dev, staging, prod)
    }
    ```

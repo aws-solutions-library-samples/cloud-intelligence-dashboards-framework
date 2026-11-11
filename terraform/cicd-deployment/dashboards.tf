@@ -116,3 +116,26 @@ module "cora_dashboard" {
   config     = local.additional_dashboards.cora
   depends_on = [module.focus_dashboard]
 }
+
+# 8. Media Services Insights Dashboard - AWS Elemental media services cost and reservations
+module "msih_dashboard" {
+  source = "./modules/cloudformation_stack"
+  providers = {
+    aws = aws.datacollection
+  }
+
+  config     = local.additional_dashboards.msih
+  depends_on = [module.cora_dashboard]
+}
+
+# 9. Pricing Change Analysis Dashboard - Public pricing changes and their cost impact
+# Deployed last so a failure cannot block other dashboards. Skipped when cid_cfn_version < 4.4.15 (see locals.tf).
+module "pca_dashboard" {
+  source = "./modules/cloudformation_stack"
+  providers = {
+    aws = aws.datacollection
+  }
+
+  config     = local.additional_dashboards.pca
+  depends_on = [module.msih_dashboard]
+}
