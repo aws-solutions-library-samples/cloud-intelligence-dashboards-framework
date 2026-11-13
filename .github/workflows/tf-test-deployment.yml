@@ -42,6 +42,14 @@ jobs:
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
+          
+        with:
+          
+          # The default wrapper does not pass stdin to terraform (terraform console hangs)
+          
+          # and adds extra lines to stdout (breaks terraform show -json). No step uses its outputs.
+          
+          terraform_wrapper: false
 
       - name: Get CID versions
         id: versions
@@ -170,6 +178,14 @@ jobs:
       
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
+      
+        with:
+      
+          # The default wrapper does not pass stdin to terraform (terraform console hangs)
+      
+          # and adds extra lines to stdout (breaks terraform show -json). No step uses its outputs.
+      
+          terraform_wrapper: false
       
       - name: Get CID versions
         id: versions

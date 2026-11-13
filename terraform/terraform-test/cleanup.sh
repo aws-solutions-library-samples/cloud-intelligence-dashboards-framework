@@ -19,6 +19,17 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 PARTITION=$(aws sts get-caller-identity --query Arn --output text | cut -d: -f2)
 echo "Account ID: $ACCOUNT_ID"
 
+# hashicorp/setup-terraform installs a wrapper as "terraform" that does not pass stdin
+# through (terraform console waits forever) and adds lines to stdout (breaks
+# terraform show -json). Call the real binary when the wrapper is present.
+TF_BIN=terraform
+if [ -n "${TERRAFORM_CLI_PATH:-}" ] && [ -x "${TERRAFORM_CLI_PATH}/terraform-bin" ]; then
+  TF_BIN="${TERRAFORM_CLI_PATH}/terraform-bin"
+fi
+# Never let a terraform read hang the job; use coreutils timeout when available
+TF_READ_TIMEOUT=()
+command -v timeout >/dev/null 2>&1 && TF_READ_TIMEOUT=(timeout 300)
+
 # Get the script directory and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -112,7 +123,7 @@ FOREIGN_STACKS=()  # stacks with an expected name but without the terraform tags
 load_config_stacks() {
   local out line
   local expr='concat([for k, v in local.additional_dashboards : "1 ${v.stack_name}"], [for k, v in local.foundational_stacks : "${k == "cloud_intelligence_dashboards" ? 2 : 3} ${v.stack_name}"])'
-  if ! out=$(echo "$expr" | terraform console "${TFVARS_FILES[@]}" 2>&1); then
+  if ! out=$(echo "$expr" | "${TF_READ_TIMEOUT[@]}" "$TF_BIN" console "${TFVARS_FILES[@]}" 2>&1); then
     echo "ERROR: could not read stack names from terraform config:"
     echo "$out"
     exit 1
@@ -183,7 +194,7 @@ load_cid_stacks() {
 
 # Stack names currently tracked in terraform state (empty if no state)
 tracked_stacks() {
-  terraform show -json 2>/dev/null |
+  "${TF_READ_TIMEOUT[@]}" "$TF_BIN" show -json 2>/dev/null |
     jq -r '[.. | objects | select(.type? == "aws_cloudformation_stack") | .values.name] | .[]' 2>/dev/null || true
 }
 
