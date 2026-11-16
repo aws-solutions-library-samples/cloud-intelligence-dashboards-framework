@@ -11,7 +11,7 @@ dashboards:
     dashboardId: graviton-savings
     category: Advanced
     theme: MIDNIGHT
-    version: v3.0.6
+    version: v3.0.7
     file: ./graviton_savings_dashboard-definition.yaml
     nonTaxonomyDatasets:
     - graviton_mapping
@@ -1503,7 +1503,7 @@ views:
          , (CASE WHEN (engine LIKE 'aurora%') THEN 'Aurora' ELSE 'AmazonRDS' END) rds_type
          , engine
          , (CASE WHEN (engine LIKE '%postgres%') THEN 'PostgreSQL' WHEN (engine LIKE '%mysql%') THEN 'MySQL' WHEN (engine LIKE '%mariadb%') THEN 'MariaDB' WHEN (engine LIKE '%oracle%') THEN 'Oracle' WHEN (engine LIKE '%docdb%') THEN 'DocDB' WHEN (engine LIKE '%sqlserver%') THEN 'SQL Server' WHEN (engine LIKE 'aurora 5.6.10a') THEN 'aurora 5.6.10a' WHEN (engine LIKE '%neptune%') THEN 'Neptune' ELSE 'Check DB Engine' END) db_engine
-         , MAX((CASE WHEN (engineversion LIKE '%aurora%') THEN "concat"("split_part"("substr"(engineversion, 18, 6), '.', 1), '.', "split_part"("substr"(engineversion, 18, 6), '.', 2), '.', "split_part"("substr"(engineversion, 18, 6), '.', 3)) ELSE engineversion END)) engineversion
+         , max_by((CASE WHEN (engineversion LIKE '%aurora%') THEN "concat"("split_part"("substr"(engineversion, 18, 6), '.', 1), '.', "split_part"("substr"(engineversion, 18, 6), '.', 2), '.', "split_part"("substr"(engineversion, 18, 6), '.', 3)) ELSE engineversion END), collection_date) engineversion
          FROM
            ${data_collection_database_name}.inventory_rds_db_instances_data
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
@@ -1527,9 +1527,9 @@ views:
       , engine_logic AS (
          SELECT
            *
-         , (CASE WHEN (engineversion LIKE '%aurora%') THEN "split_part"("substr"(engineversion, 18, 6), '.', 1) ELSE "split_part"(engineversion, '.', 1) END) major
-         , (CASE WHEN (engineversion LIKE '%aurora%') THEN "split_part"("substr"(engineversion, 18, 6), '.', 2) ELSE "split_part"(engineversion, '.', 2) END) minor
-         , (CASE WHEN (engineversion LIKE '%aurora%') THEN "split_part"("substr"(engineversion, 18, 6), '.', 3) ELSE "split_part"(engineversion, '.', 3) END) fix
+         , (CASE WHEN (engineversion LIKE '%aurora%') THEN "split_part"("substr"(engineversion, 18, 6), '.', 1) ELSE "split_part"("split_part"(engineversion, '-', 1), '.', 1) END) major
+         , (CASE WHEN (engineversion LIKE '%aurora%') THEN "split_part"("substr"(engineversion, 18, 6), '.', 2) ELSE "split_part"("split_part"(engineversion, '-', 1), '.', 2) END) minor
+         , (CASE WHEN (engineversion LIKE '%aurora%') THEN "split_part"("substr"(engineversion, 18, 6), '.', 3) ELSE "split_part"("split_part"(engineversion, '-', 1), '.', 3) END) fix
          FROM
            describe_db_data
       ) 
@@ -1559,7 +1559,7 @@ views:
       SELECT
         cur_data.*
       , describe_db_data.engineversion
-      , (CASE WHEN (cur_data.product_instance_type LIKE '%g.%') THEN 'Already Graviton' WHEN (cur_data.product_instance_type LIKE '%gd.%') THEN 'Already Graviton' WHEN (cur_data.product_instance_type LIKE '%serverless%') THEN 'Ineligible' WHEN (cur_data.graviton_instance_type = '') THEN 'No equivalent graviton instance' ELSE (CASE WHEN (cur_data.rds_type = 'AmazonRDS') THEN (CASE WHEN (cur_data.db_engine = 'MySQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 8) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 8) AND (CAST(engine_logic.minor AS integer) > 0)) THEN 'Eligible' WHEN (((CAST(engine_logic.major AS integer) = 8) AND (CAST(engine_logic.minor AS integer) = 0)) AND (CAST(engine_logic.fix AS integer) >= 17)) THEN 'Eligible' ELSE 'Requires Update' END) WHEN (cur_data.db_engine = 'PostgreSQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 12) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 12) AND (CAST(engine_logic.minor AS integer) >= 3)) THEN 'Eligible' ELSE 'Requires Update' END) WHEN (cur_data.db_engine = 'MariaDB') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 10) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 10) AND (CAST(engine_logic.minor AS integer) > 4)) THEN 'Eligible' WHEN (((CAST(engine_logic.major AS integer) = 10) AND (CAST(engine_logic.minor AS integer) = 4)) AND (CAST(engine_logic.fix AS integer) >= 13)) THEN 'Eligible' ELSE 'Requires Update' END) ELSE 'Ineligible' END) WHEN (cur_data.rds_type = 'Aurora') THEN (CASE WHEN (cur_data.db_engine = 'MySQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 2) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 2) AND (CAST(engine_logic.minor AS integer) > 9)) THEN 'Eligible' WHEN (((CAST(engine_logic.major AS integer) = 2) AND (CAST(engine_logic.minor AS integer) = 9)) AND (CAST(engine_logic.fix AS integer) >= 2)) THEN 'Eligible' ELSE 'Ineligible' END) WHEN (cur_data.db_engine = 'PostgreSQL') THEN (CASE WHEN (CAST(engine_logic.major AS integer) > 12) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 12) AND (CAST(engine_logic.minor AS integer) >= 3)) THEN 'Eligible' WHEN ((CAST(engine_logic.major AS integer) = 11) AND (CAST(engine_logic.minor AS integer) >= 9)) THEN 'Eligible' ELSE 'Ineligible' END) ELSE 'Ineligible' END) END) END) graviton_eligible
+      , (CASE WHEN (cur_data.product_instance_type LIKE '%g.%') THEN 'Already Graviton' WHEN (cur_data.product_instance_type LIKE '%gd.%') THEN 'Already Graviton' WHEN (cur_data.product_instance_type LIKE '%serverless%') THEN 'Ineligible' WHEN (cur_data.graviton_instance_type = '') THEN 'No equivalent graviton instance' ELSE (CASE WHEN (cur_data.rds_type = 'AmazonRDS') THEN (CASE WHEN (cur_data.db_engine = 'MySQL') THEN (CASE WHEN (TRY_CAST(engine_logic.major AS integer) > 8) THEN 'Eligible' WHEN ((TRY_CAST(engine_logic.major AS integer) = 8) AND (TRY_CAST(engine_logic.minor AS integer) > 0)) THEN 'Eligible' WHEN (((TRY_CAST(engine_logic.major AS integer) = 8) AND (TRY_CAST(engine_logic.minor AS integer) = 0)) AND (TRY_CAST(engine_logic.fix AS integer) >= 17)) THEN 'Eligible' ELSE 'Requires Update' END) WHEN (cur_data.db_engine = 'PostgreSQL') THEN (CASE WHEN (TRY_CAST(engine_logic.major AS integer) > 12) THEN 'Eligible' WHEN ((TRY_CAST(engine_logic.major AS integer) = 12) AND (TRY_CAST(engine_logic.minor AS integer) >= 3)) THEN 'Eligible' ELSE 'Requires Update' END) WHEN (cur_data.db_engine = 'MariaDB') THEN (CASE WHEN (TRY_CAST(engine_logic.major AS integer) > 10) THEN 'Eligible' WHEN ((TRY_CAST(engine_logic.major AS integer) = 10) AND (TRY_CAST(engine_logic.minor AS integer) > 4)) THEN 'Eligible' WHEN (((TRY_CAST(engine_logic.major AS integer) = 10) AND (TRY_CAST(engine_logic.minor AS integer) = 4)) AND (TRY_CAST(engine_logic.fix AS integer) >= 13)) THEN 'Eligible' ELSE 'Requires Update' END) ELSE 'Ineligible' END) WHEN (cur_data.rds_type = 'Aurora') THEN (CASE WHEN (cur_data.db_engine = 'MySQL') THEN (CASE WHEN (TRY_CAST(engine_logic.major AS integer) > 2) THEN 'Eligible' WHEN ((TRY_CAST(engine_logic.major AS integer) = 2) AND (TRY_CAST(engine_logic.minor AS integer) > 9)) THEN 'Eligible' WHEN (((TRY_CAST(engine_logic.major AS integer) = 2) AND (TRY_CAST(engine_logic.minor AS integer) = 9)) AND (TRY_CAST(engine_logic.fix AS integer) >= 2)) THEN 'Eligible' ELSE 'Ineligible' END) WHEN (cur_data.db_engine = 'PostgreSQL') THEN (CASE WHEN (TRY_CAST(engine_logic.major AS integer) > 12) THEN 'Eligible' WHEN ((TRY_CAST(engine_logic.major AS integer) = 12) AND (TRY_CAST(engine_logic.minor AS integer) >= 3)) THEN 'Eligible' WHEN ((TRY_CAST(engine_logic.major AS integer) = 11) AND (TRY_CAST(engine_logic.minor AS integer) >= 9)) THEN 'Eligible' ELSE 'Ineligible' END) ELSE 'Ineligible' END) END) END) graviton_eligible
       , PL1.storage storage
       , PL2.storage new_intel_storage
       , PL1.storage_type storage_type
