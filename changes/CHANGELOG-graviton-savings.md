@@ -1,5 +1,13 @@
 # What's new in the Graviton Savings Dashboard
 
+## Graviton Savings Dashboard v3.0.7:
+```
+cid-cmd update --dashboard-id graviton-savings --force --recursive
+```
+* RDS: Fix `INVALID_CAST_ARGUMENT: Cannot cast '46-rds' to INT` in `graviton_rds_view` for engine versions with an RDS revision suffix such as `8.0.46-rds.20260624`. The version is now cut at `-` before it is split into major, minor and patch ([#1589](https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/issues/1589))
+* RDS: Use `TRY_CAST` in `graviton_eligible`, so an unexpected version string falls back to "Requires Update" instead of failing the whole view
+* RDS: Take the engine version from the latest inventory snapshot (`max_by(..., collection_date)`) instead of the text maximum, which picked older versions such as `14.7` over `14.22` and could mark upgraded databases as "Requires Update"
+
 ## Graviton Savings Dashboard v3.0.6:
 ```
 cid-cmd update --dashboard-id graviton-savings --force --recursive
