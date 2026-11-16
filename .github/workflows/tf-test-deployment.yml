@@ -12,9 +12,12 @@ permissions:
 # All PRs deploy the same stack names into one test account with one shared state key
 # (terraform/cid-test/terraform.tfstate). Overlapping runs delete each other's stacks
 # and state, leaving stacks that terraform no longer tracks. Queue runs instead.
+# queue: max lets up to 100 runs wait; the default (single) keeps only one pending
+# run and cancels the others.
 concurrency:
   group: cid-terraform-test-account
   cancel-in-progress: false
+  queue: max
 
 jobs:
   test-deployment:
