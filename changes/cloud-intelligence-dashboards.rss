@@ -5,8 +5,30 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Mon, 09 Nov 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 16 Nov 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] Graviton Savings Dashboard v3.0.7</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-graviton-savings.md
+      </link>
+      <pubDate>Mon, 16 Nov 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">9608db91-fd6b-40e3-99f3-d7a299ddfe15</guid>
+      <description>Graviton Savings Dashboard v3.0.7 - RDS engine version fixes</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    <strong>Important:</strong> Update with <code>cid-cmd update --dashboard-id graviton-savings --force --recursive</code> to get the <code>graviton_rds_view</code> fix.
+  </p>
+  <ul>
+    <li><strong>RDS:</strong> The RDS view no longer fails with "Cannot cast '46-rds' to INT" for engine versions with an RDS revision suffix, such as <code>8.0.46-rds.20260624</code> (#1589).</li>
+    <li><strong>RDS:</strong> An unexpected engine version string now shows as "Requires Update" instead of failing the whole view.</li>
+    <li><strong>RDS:</strong> The engine version now comes from the latest inventory snapshot, so upgraded databases show their current version and eligibility.</li>
+  </ul>
+</div>
+      ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] DROID - Database Resilience, Operations &amp; Insights Dashboard v1.0.1</title>
       <link>
