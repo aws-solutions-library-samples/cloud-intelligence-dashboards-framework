@@ -7,7 +7,7 @@ dashboards:
     dashboardId: service-quotas
     category: Advanced
     theme: MIDNIGHT
-    version: v1.0.0
+    version: v1.0.1
     file: ./service_quotas_dashboard-definition.yaml
 datasets:
   service_quotas_data:
@@ -62,8 +62,7 @@ datasets:
               Type: STRING
             - Name: utilization
               Id: service_q-utilizati-87e691
-              Type: DECIMAL
-              SubType: FLOAT
+              Type: STRING
             - Name: namespace
               Id: service_q-namespace-72554a
               Type: STRING
