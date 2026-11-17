@@ -501,6 +501,10 @@ views:
 
   summary_view:
     File: queries/cid/summary_view.sql
+    parameters:
+      retention_months:
+        default: '7'
+        description: "Months of billing data to keep"
     dependsOn:
       views:
         - cur2_view
