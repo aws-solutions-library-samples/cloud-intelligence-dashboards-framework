@@ -26,3 +26,4 @@ Resources:
   - Url: kiro-user-activity/kiro-user-activity.yaml
   - Url: amazon-bedrock-invocation-logs/bedrock-unified-insights-lens-dashboard.yaml
   - Url: pca/pca.yaml
+  - Url: droid/droid.yaml

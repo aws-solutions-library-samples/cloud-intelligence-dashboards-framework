@@ -346,6 +346,151 @@ cid-cmd create-cur-proxy --cur-version 1 --cur-table-name mycur2 \
 | `--cur-database TEXT` | Athena database of CUR |
 | `--athena-database TEXT` | Athena database to create proxy in |
 
+### create-agent
+
+Create a Quick Agent (an AI advisor) and its knowledge Space over CID dashboards that are **already deployed**. An agent's knowledge layer is a **Space** — a Quick container that holds references to your already-deployed dashboards (and, optionally, datasets and pre-existing knowledge bases). This command never deploys dashboards and never provisions the data layer (CUR, Data Exports, Data Collection); when dashboards are missing it points to the CID deployment guidance. When the agent is already deployed, the command shows what differs from the catalog and asks whether to update instead — pass `--update yes` to skip the prompt, or use [update-agent](#update-agent).
+
+```bash
+# Interactive — shows a picker of catalog agents
+cid-cmd create-agent
+
+# Non-interactive with a bring-your-own Space
+cid-cmd create-agent --agent-id finops --space 'My Team Space' -y
+```
+
+| Option | Description |
+|---|---|
+| `--agent-id TEXT` | Agent id from the catalog (a picker is shown when omitted) |
+| `--space TEXT` | Name of a Space to use instead of the per-agent default Space (bring-your-own Space) |
+| `--on-drift (show\|override)` | `show` (default): only add what the catalog lists and keep everything added outside it. `override`: detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list — see [Matching the catalog exactly](#matching-the-catalog-exactly---on-drift-override) |
+| `--update (yes\|no)` | When the agent is already deployed, update it without prompting ('no' exits with guidance) |
+| `--confirm-create (yes\|no)` | For a new agent, answer the confirmation shown after the dependency summary (default `yes`; `-y` also confirms) |
+
+#### Agent Prerequisites
+
+- An active **QuickSight Enterprise** subscription. The check is read-only — `create-agent` never activates or modifies a subscription. Missing subscription stops the command with instructions to enable Enterprise.
+- An owner for the Space and the agent, resolved the same way as for dashboards: `--quicksight-user`, `--quicksight-group`, or the caller's QuickSight user (with an interactive choice, including the `cid-owners` group, when the caller is not registered). A user owner must have the **Author Pro** (or Admin Pro) role, since creating Quick Agents requires the Author Pro entitlement.
+- The Amazon Quick generative-AI operations must be available in your Region and partition, with an AWS SDK new enough to carry them (`boto3 >= 1.43.10`, installed automatically with `cid-cmd`).
+
+#### The prerequisite-only model
+
+`create-agent` **never deploys dashboards** and **never provisions the data layer** (CUR, Data Exports, or Data Collection). It works only with prerequisites that already exist: it builds a Space over dashboards that are **already deployed** in your account and publishes an Agent on top of that Space.
+
+This means:
+
+- If a dashboard an agent needs is missing, `create-agent` will not install it. It points you to the existing deployment guidance instead (see below).
+- Your CUR, Data Exports, and Data Collection setup is never touched, read-only checks aside.
+- Re-running `create-agent` is safe: when the agent is already deployed, it shows what differs from the catalog and asks before updating anything; Space resources are added additively and de-duplicated (`--on-drift override` makes them match the catalog exactly).
+
+#### Dashboard dependencies
+
+An agent's knowledge is defined by its **Space** (`agentic/spaces/<space-id>.yaml`), which the agent references with `dependsOn.spaces`. The Space lists the dashboards it uses under `dependsOn.dashboards`, by dashboard id — the same id you pass to `cid-cmd deploy --dashboard-id` (for example `cudos-v5`, `cora`, `graviton-savings`).
+
+At run time, `create-agent` pre-flights which of those dashboards are actually deployed (a read-only check) and then:
+
+- **None deployed** — the command stops with an error and creates nothing. Deploy the dashboards first, following the [Cloud Intelligence Dashboards (CID/CUDOS) deployment guidance](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html).
+- **Some missing** — one warning lists the missing dashboards and points to the [CID/CUDOS deployment guidance](https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/dashboards.html); the command proceeds with the dashboards that are present. Re-run the command after deploying them to add them to the Space.
+
+The Space may also declare dataset knowledge (`dependsOn.datasets`). Present datasets are attached to the Space; missing datasets produce a warning and are skipped — datasets are never created or deployed by this command.
+
+#### Bring-your-own Space (`--space`)
+
+By default each agent uses the Space declared in its catalog definition (see the table below). Pass `--space NAME` to use a Space you name instead:
+
+```bash
+cid-cmd create-agent --agent-id finops --space 'My Team Space'
+```
+
+- **The name matches one existing Space** — that Space is reused **additively**: only the dashboards and datasets of the agent's catalog Space are added. Pre-existing Space resources, name, description, tags, and permissions are left untouched. This applies even to Spaces that were not created by CID.
+- **The name matches multiple Spaces** — the command stops with an error listing the matching space ids. Rename Spaces so the name is unique, then re-run.
+- **The name matches no Space** — a new Space is created with an id derived deterministically from the name.
+
+Multiple agents can share one Space: resources are added additively and de-duplicated by ARN, so agents never clobber each other's dashboards.
+
+#### Matching the catalog exactly (`--on-drift override`)
+
+By default (`--on-drift show`) agent commands are **additive**: missing catalog Spaces, action connectors and Space dashboards/datasets are attached, and anything added outside the catalog is kept and never reported as drift. Pass `--on-drift override` to make everything match the catalog exactly:
+
+```bash
+cid-cmd update-agent --agent-id finops --on-drift override
+```
+
+- **Spaces** linked to the agent other than its catalog Space are detached.
+- **Action connectors** the catalog does not list are detached.
+- **Space dashboards, datasets and knowledge bases** that the Space definition does not list are removed. Agents sharing a Space share exactly that definition, so the result is the same whichever agent you run it for. Topics, action connectors linked to the Space, and uploaded documents are never touched, and Spaces that are not CID-managed (for example a bring-your-own `--space`) are never synced.
+
+Before anything changes, the command lists every item it would detach or remove and asks for confirmation (`-y` confirms). Nothing is deleted: detached Spaces and connectors, and removed dashboards and datasets, still exist. `--on-drift` is never stored as a default, so each override run is explicit.
+
+#### The launch library
+
+Six agents ship with the core catalog (run `cid-cmd list-agents` to see them):
+
+| Agent id | Name | Space | Dashboards |
+|---|---|---|---|
+| `finops` | CID FinOps Advisor | `cid-finops-space` | CUDOS, CORA, Graviton Savings, Extended Support Cost Projection, Pricing Change Analysis |
+| `operations` | CID Operations Advisor (all-in-one) | `cid-operations-space` | CUDOS, KPI, CORA, Graviton Savings, Extended Support Cost Projection, Pricing Change Analysis, Trusted Advisor Organizational View, AWS Config Resource Compliance Dashboard (`cid-crcd`), AWS News Feeds, ResilienceVue, Health Events, Support Cases Radar |
+| `security` | CID Security Advisor | `cid-security-space` | Trusted Advisor Organizational View, AWS Config Resource Compliance Dashboard (`cid-crcd`, deployed from [its own project](https://github.com/aws-samples/config-resource-compliance-dashboard)), CUDOS Security tab, Health Events, AWS News Feeds (Security Bulletins) |
+| `resilience` | CID Resilience Advisor | `cid-resilience-space` | ResilienceVue, Trusted Advisor Organizational View (Fault Tolerance, Service Limits), CUDOS (single-AZ RDS and VPC endpoints, AWS Backup, Capacity Reservations), Health Events, AWS Config Resource Compliance Dashboard (`cid-crcd`) |
+| `support` | CID Support Cases Analyst | `cid-support-space` | AWS Support Cases Radar |
+| `health` | CID Health Events Analyst | `cid-health-space` | Health Events Dashboard |
+
+An agent can be created as soon as one of its dashboards is deployed; each additional deployed dashboard adds knowledge on the next `create-agent` or `update-agent` run.
+
+Want to add your own agent? See the [zero-Python contribution guide](agents-contributing.md).
+
+### update-agent
+
+Update a deployed CID-managed Quick Agent to match the catalog — for example after a persona or starter-prompt change. The command shows which catalog-managed fields drifted (persona fields, starter prompts, welcome message, name, action connectors) and asks for confirmation before overriding them, since the update also overrides any customizations made in the Quick console to those fields. With `-y` or in unattended mode the update applies without a prompt. If nothing drifted, the agent is reported up to date and no agent-mutating call is made (missing Space resources are still added). The agent must exist — run [create-agent](#create-agent) first.
+
+```bash
+cid-cmd update-agent --agent-id finops
+```
+
+| Option | Description |
+|---|---|
+| `--agent-id TEXT` | Agent id from the catalog (a picker is shown when omitted) |
+| `--space TEXT` | Name of a Space to use instead of the per-agent default Space (bring-your-own Space) |
+| `--on-drift (show\|override)` | `show` (default): only add what the catalog lists and keep everything added outside it. `override`: detach Spaces and action connectors and remove Space dashboards/datasets the catalog does not list — see [Matching the catalog exactly](#matching-the-catalog-exactly---on-drift-override) |
+| `--repair` | Detach and re-attach the agent Spaces to rewrite the links (recovers an agent whose Space shows as unavailable although it describes as healthy) |
+
+#### Repairing Space links (`--repair`)
+
+An agent can show its Space as unavailable (and fail chat) even though it describes as healthy — the stored link is broken in a way no read API surfaces. The opt-in flag rewrites the links:
+
+```bash
+cid-cmd update-agent --agent-id finops --repair
+```
+
+The repair detaches every attached Space, waits for the agent to settle, then re-attaches the same Spaces. Two separate calls, because the API rejects the same ARN in both the add and remove lists of one call, and an add alone can leave the broken link in place.
+
+### list-agents
+
+List catalog agents with their summary, Space and live deployment status. Deployed agents are marked with a check indicator. Each entry also lists the dashboards of the agent's Space with their deployment state (✓/✗). Deployment status is read live from the account (no local state file).
+
+```bash
+cid-cmd list-agents
+```
+
+### delete-agent
+
+Delete a CID-managed Quick Agent. This command never deletes any dashboard.
+
+```bash
+cid-cmd delete-agent --agent-id finops
+```
+
+| Option | Description |
+|---|---|
+| `--agent-id TEXT` | Agent id to delete |
+| `--delete-space` | Also delete the Agent's Space when no other CID-managed agent depends on it. Also works after the agent was already deleted (asks for confirmation; `-y` or `--confirm-delete-space yes` confirms) |
+
+- Deletion asks for confirmation (default `no`; pass `-y` to confirm non-interactively).
+- A missing target is treated as success.
+- Deleting an agent never changes the contents of a Space; Space contents are defined by the Space itself.
+- Agents that were not created by CID are refused — `cid-cmd` never deletes resources it does not manage.
+- **No dashboard is ever deleted** as part of deleting an agent.
+- `--delete-space` also deletes the agent's Space, but only when no other CID-managed agent depends on it; otherwise the Space is retained and the dependency reported.
+
 ### cleanup
 
 Delete unused QuickSight datasets and Athena views that are no longer referenced by any dashboard.

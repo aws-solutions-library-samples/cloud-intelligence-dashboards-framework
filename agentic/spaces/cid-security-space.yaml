@@ -1,0 +1,37 @@
+# Space for the CID Security Advisor. Loaded via agentic/catalog.yaml.
+# A Space owns the knowledge (dashboards, datasets, knowledge bases); agents reference it.
+spaces:
+  cid-security-space:
+    name: CID Security Space
+    description: >-
+      Security posture knowledge from the Cloud Intelligence Dashboards: Trusted
+      Advisor and Security Hub findings, AWS Config compliance and inventory,
+      security-service spend and coverage, AWS Health security notifications and
+      AWS Security Bulletins.
+    dependsOn:
+      dashboards:
+        - ta-organizational-view   # Trusted Advisor Organizational View (TAO)
+        - cid-crcd                 # AWS Config Resource Compliance Dashboard (deployed from its own
+                                   # resources file: github.com/aws-samples/config-resource-compliance-dashboard)
+        - cudos-v5                 # CUDOS Security tab
+        - health-events-dashboard  # AWS Health security notifications
+        - aws-feeds                # AWS Security Bulletins
+      datasets:
+        # ta-organizational-view
+        - ta-organizational-view
+        - ta_priority_org_view
+        # cid-crcd
+        - config_compliance_actual
+        - config_compliance
+        - config_compliance_conformance_pack
+        - config_compliance_resource
+        - config_inventory
+        - config_event
+        # cudos-v5 (Security tab)
+        - summary_view
+        - resource_view
+        # health-events-dashboard
+        - health_events_view
+        # aws-feeds (security bulletins only)
+        - aws_feeds_security_bulletin
+      knowledgeBases: []

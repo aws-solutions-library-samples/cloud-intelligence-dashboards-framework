@@ -1,0 +1,25 @@
+# Support cases analyst agent (launch library). Loaded via agentic/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  support:
+    name: CID Support Cases Analyst
+    agentId: cid-support-cases-analyst
+    summary: "Support case summaries, patterns and recurring issues"   # one line shown in the agent picker and list-agents
+    description: >-
+      Support cases analyst over the AWS Support Cases Radar. Summarizes cases
+      from their full communications and finds patterns across services,
+      accounts, severities and recurring issues.
+    dependsOn:
+      spaces: [cid-support-space]
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "Which services and topics do we open the most support cases for?"
+      - "Summarize our open high-severity cases and their next steps"
+      - "Which issues keep recurring across accounts?"
+    welcomeMessage: >-
+      Hi, I'm the CID Support Cases Analyst. Ask me to summarize a support case,
+      review open cases, or find patterns and recurring issues across services,
+      accounts and teams.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }

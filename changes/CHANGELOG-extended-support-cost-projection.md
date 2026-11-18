@@ -1,5 +1,23 @@
 # What's new in Extended Support Cost Projection
 
+## Extended Support Cost Projection - v5.3.0
+
+**Important:** This update requires cid-cmd v4.4.12 or later. The Quick Sight datasets of this dashboard will be migrated to the new data preparation experience, which deletes and recreates them with the same IDs. If you have custom dataset modifications, make a copy before updating. You must run the update with `--recursive`: without it, only the dashboard is updated and the datasets stay on the previous data preparation experience.
+
+If you have modified the Extended Support Cost Projection dashboard visuals, these changes will be overridden when the dashboard is updated. Consider backing-up the existing dashboard by creating an analysis from it if you want to keep a reference to customised visuals so you can re-apply them after the update takes place.
+
+To update run these commands in your CloudShell (recommended) or other terminal:
+
+```
+python3 -m ensurepip --upgrade
+pip3 install --upgrade cid-cmd
+cid-cmd update --dashboard-id extended-support-cost-projection --recursive
+```
+
+- Migrated the RDS, EKS, OpenSearch, ElastiCache and tagging datasets to the new Quick Sight data preparation experience. No changes to visuals or calculations.
+- RDS view now includes usage covered by Savings Plans (`SavingsPlanCoveredUsage`), so RDS and Aurora resources in Extended Support that are covered by Database Savings Plans are no longer missing. The view update is shown as a diff during the recursive update; choose to override it to apply the change.
+- RDS view no longer fails when a line item has a non-numeric vCPU value. Such rows are kept, with no vCPU-based cost.
+
 ## Extended Support Cost Projection - v5.2.3
 
 If you have modified the Extended Support Cost Projection dashboard visuals, these changes will be overridden when the dashboard is updated. Consider backing-up the existing dashboard by creating an analysis from it if you want to keep a reference to customised visuals so you can re-apply them after the update takes place.

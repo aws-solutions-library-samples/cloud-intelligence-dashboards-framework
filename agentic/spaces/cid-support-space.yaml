@@ -1,0 +1,15 @@
+# Space for the CID Support Cases Analyst. Loaded via agentic/catalog.yaml.
+# A Space owns the knowledge (dashboards, datasets, knowledge bases); agents reference it.
+spaces:
+  cid-support-space:
+    name: CID Support Cases Space
+    description: >-
+      AWS Support case knowledge from the Cloud Intelligence Dashboards: support
+      cases with their full communications across the organization's accounts.
+    dependsOn:
+      dashboards:
+        - support-cases-radar      # AWS Support Cases Radar
+      datasets:
+        - support_cases_communications_view
+        - support_cases_status_view
+      knowledgeBases: []

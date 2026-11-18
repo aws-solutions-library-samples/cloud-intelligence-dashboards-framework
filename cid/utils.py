@@ -207,6 +207,19 @@ def get_parameters():
     global params
     return dict(params)
 
+
+# Parameters that hold credentials (e.g. injected by plugins after federation). Never print or log them.
+SENSITIVE_PARAMETERS = frozenset({'aws-access-key-id', 'aws-secret-access-key', 'aws-session-token'})
+
+
+def is_sensitive_parameter(name: str) -> bool:
+    return str(name).replace('_', '-').lower() in SENSITIVE_PARAMETERS
+
+
+def get_loggable_parameters() -> dict:
+    """ parameters safe to log: credential values masked """
+    return {k: ('***' if is_sensitive_parameter(k) else v) for k, v in get_parameters().items()}
+
 def get_yesno_parameter(param_name: str, message: str, default: str=None, break_on_ctrl_c=True):
     logger.debug(f'getting param {param_name}')
     param_name = param_name.replace('_', '-')
@@ -335,11 +348,16 @@ def get_parameter(param_name, message, choices=None, default=None, none_as_disab
             default=default.format(**template_variables)
         print()
         if not isatty():
-            raise Exception(f'Please set parameter {param_name}. Unable to request user in environment={exec_env()}')
-        result = inquirer.text(
-            message=f'[{param_name}] {message}:' ,
-            default=default or '',
-        ).execute()
+            if not (_all_yes and default):
+                raise Exception(f'Please set parameter {param_name}. Unable to request user in environment={exec_env()}')
+            # unattended mode (-y): take the default instead of asking user
+            logger.warning(f'Parameter {param_name} is not set. Using default: {default}')
+            result = default
+        else:
+            result = inquirer.text(
+                message=f'[{param_name}] {message}:' ,
+                default=default or '',
+            ).execute()
         if isinstance(result, str) and template_variables:
             result = result.format(**template_variables)
     if (break_on_ctrl_c and result is None):

@@ -1,0 +1,26 @@
+# Security agent (launch library). Loaded via agentic/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  security:
+    name: CID Security Advisor
+    agentId: cid-security-advisor
+    summary: "Security findings, Config compliance and detection coverage"   # one line shown in the agent picker and list-agents
+    description: >-
+      Security posture advisor over Trusted Advisor Organizational View, the AWS
+      Config Resource Compliance Dashboard, the CUDOS Security tab, AWS Health
+      security notifications and AWS Security Bulletins. Prioritizes findings and
+      non-compliant resources and checks security-service coverage.
+    dependsOn:
+      spaces: [cid-security-space]
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "Show me the most critical security risks and where to start"
+      - "Which accounts have the most non-compliant resources?"
+      - "Where is GuardDuty not enabled across my accounts and Regions?"
+    welcomeMessage: >-
+      Hi, I'm the CID Security Advisor. Ask me to prioritize security findings,
+      review AWS Config compliance and conformance packs, find coverage gaps such
+      as GuardDuty, or explain what changed in your resources.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }

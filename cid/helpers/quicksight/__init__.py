@@ -14,6 +14,7 @@ from cid.base import CidBase
 from cid.helpers import diff, timezone, randtime
 from cid.helpers.quicksight.dashboard import Dashboard
 from cid.helpers.quicksight.dataset import Dataset
+from cid.helpers.quicksight.version import CidVersion
 from cid.helpers.quicksight.dashboard_patching import add_filter_to_dashboard_definition, patch_currency, patch_group_by, patch_spaces
 from cid.helpers.quicksight.datasource import Datasource
 from cid.helpers.quicksight.template import Template as CidQsTemplate
@@ -1291,7 +1292,8 @@ class QuickSight(CidBase):
         logger.debug(f"describe_dashboard { definition.get('dashboardId')}")
         dashboard = self.describe_dashboard(poll=True, **describe_parameters)
         logger.debug('dashboard={dashboard}')
-        self.set_tags(dashboard.arn, cid_version_tag=dashboard.cid_version) # try to update version tag
+        # Tag with the catalog version (same source as update_dashboard); the About-text version is only a fallback
+        self.set_tags(dashboard.arn, cid_version_tag=CidVersion(definition['version']) if definition.get('version') else dashboard.cid_version)
 
         self.discover_dashboard(dashboard.id)
         if not dashboard.health:
@@ -1417,6 +1419,15 @@ class QuickSight(CidBase):
                     order=True,
                     default=taxonomy_default,
                 )
+                # a field from parameters can be missing in datasets (ex: new resource-tags without a recursive update)
+                common_column_names = {c['Name'] for c in common_columns}
+                missing_taxonomy = [field for field in taxonomy or [] if field not in common_column_names]
+                if missing_taxonomy:
+                    logger.warning(
+                        f'Taxonomy fields {missing_taxonomy} are not found in datasets and will not be added to the dashboard.'
+                        ' Run cid-cmd update --recursive in a terminal to add them to views and datasets.'
+                    )
+                    taxonomy = [field for field in taxonomy if field in common_column_names]
                 if taxonomy:
                     create_parameters['Definition'] = add_filter_to_dashboard_definition(create_parameters['Definition'], taxonomy, taxonomy_dataset=definition.get('taxonomyDataset'))
                     create_parameters['Definition'] = patch_group_by(create_parameters['Definition'], taxonomy)
@@ -1538,6 +1549,11 @@ class QuickSight(CidBase):
     def get_dashboard_permissions(self, dashboard_id):
         """ get_dashboard_permissions """
         return self.client.describe_dashboard_permissions(AwsAccountId=self.account_id, DashboardId=dashboard_id)['Permissions']
+
+    def get_dashboard_link_permissions(self, dashboard_id):
+        """ get dashboard permissions granted via link sharing """
+        res = self.client.describe_dashboard_permissions(AwsAccountId=self.account_id, DashboardId=dashboard_id)
+        return res.get('LinkSharingConfiguration', {}).get('Permissions', [])
 
     def dataset_diff(self, raw1, raw2):
         """ get dataset diff """

@@ -534,8 +534,12 @@ class Athena(CidBase):
 
         return all_views
 
-    def create_or_update_view(self, view_name, view_query):
+    def create_or_update_view(self, view_name, view_query, replace_if_no_tty=False):
         """ update view while asking user
+
+        Without a terminal an existing view is kept, unless replace_if_no_tty is set
+        (for CID-managed views like the CUR proxy, where replacing only adds columns)
+        or the caller explicitly passed --on-drift override.
         """
         update_view = None
         # first understand if view exists
@@ -544,6 +548,10 @@ class Athena(CidBase):
         if view_name not in self._metadata:
             update_view = True
         else: # view exists
+            if replace_if_no_tty and not isatty():
+                update_view = True # no terminal to ask, and the caller allows replacing
+            if get_parameters().get('on-drift', 'show').lower() == 'override':
+                update_view = True # explicit --on-drift override: replace without a diff, with or without a terminal
             while get_parameters().get('on-drift', 'show').lower() != 'override' and isatty():
                 cid_print(f'Analyzing view {view_name}')
                 diff = self.get_view_diff(view_name, view_query)
@@ -617,7 +625,8 @@ class Athena(CidBase):
         )
         # We cannot rely on search to find directly columns as there might be Nulls. So iterating old fashion.
         for table in iterator.search('TableMetadataList'):
-            column_names = [c['Name'] for c in table.get('Columns', [])]
-            if all([(col in column_names) for col in columns]):
+            # partition keys count as columns (e.g. GCP FOCUS export is partitioned by billingaccountid)
+            column_names = [c['Name'].lower() for c in table.get('Columns', []) + table.get('PartitionKeys', [])]
+            if all([(col.lower() in column_names) for col in columns]):
                 yield table
 

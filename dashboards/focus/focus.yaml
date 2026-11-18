@@ -525,14 +525,10 @@ views:
         type: tags_json
         query: |
           SELECT DISTINCT concat('Tags[''',key,''']')
-          FROM (
-              SELECT key
-              FROM "focus_consolidation_view"
-              CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
-              WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
-              AND cardinality(tags) > 0
-              LIMIT 100000
-          )
+          FROM "focus_consolidation_view"
+          CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
+          WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
+          AND cardinality(tags) > 0
         default: []
         description: Enter Tags
         global: true
@@ -603,14 +599,10 @@ views:
         type: tags_json
         query: |
           SELECT DISTINCT concat('Tags[''',key,''']')
-          FROM (
-              SELECT key
-              FROM "focus_consolidation_view"
-              CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
-              WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
-              AND cardinality(tags) > 0
-              LIMIT 100000
-          )
+          FROM "focus_consolidation_view"
+          CROSS JOIN UNNEST(map_keys(tags)) AS t(key)
+          WHERE billing_period >= DATE_FORMAT(DATE_ADD('day', -60, CURRENT_DATE), '%Y-%m')
+          AND cardinality(tags) > 0
         default: []
         description: Enter Tags
         global: true

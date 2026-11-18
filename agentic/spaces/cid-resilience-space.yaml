@@ -1,0 +1,41 @@
+# Space for the CID Resilience Advisor. Loaded via agentic/catalog.yaml.
+# A Space owns the knowledge (dashboards, datasets, knowledge bases); agents reference it.
+spaces:
+  cid-resilience-space:
+    name: CID Resilience Space
+    description: >-
+      Resilience knowledge from the Cloud Intelligence Dashboards: Resilience Hub
+      assessments, Trusted Advisor fault tolerance and service limits, single-AZ
+      resources and backup coverage, AWS Health maintenance and issue events, and
+      resource distribution across Availability Zones.
+    dependsOn:
+      dashboards:
+        - resiliencevue            # ResilienceVue (AWS Resilience Hub)
+        - ta-organizational-view   # TAO: Fault Tolerance, Service Limits, Well-Architected, TA Priority
+        - cudos-v5                 # CUDOS: single-AZ RDS and VPC endpoints, AWS Backup, Capacity Reservations
+        - health-events-dashboard  # AWS Health: scheduled changes, issues, lifecycle events
+        - cid-crcd                 # AWS Config Resource Compliance Dashboard (deployed from its own
+                                   # resources file: github.com/aws-samples/config-resource-compliance-dashboard)
+      datasets:
+        # resiliencevue
+        - resiliencehub_applications
+        - resiliencehub_daily_assessments
+        - resiliencehub_resiliency_policy_view
+        - resiliencehub_app_recommendations
+        - resiliencehub_alarm_recommendations
+        - resiliencehub_sop_recommendations
+        - resiliencehub_fis_test_recommendations
+        # ta-organizational-view
+        - ta-organizational-view
+        - ta_priority_org_view
+        # cudos-v5
+        - summary_view
+        - resource_view
+        # health-events-dashboard
+        - health_events_view
+        # cid-crcd (inventory by Availability Zone, resilience-related Config rules)
+        - config_inventory
+        - config_inventory_ec2
+        - config_inventory_rds
+        - config_compliance_actual
+      knowledgeBases: []

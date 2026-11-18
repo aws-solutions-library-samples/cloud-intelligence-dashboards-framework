@@ -1,0 +1,15 @@
+# Space for the CID Health Events Analyst. Loaded via agentic/catalog.yaml.
+# A Space owns the knowledge (dashboards, datasets, knowledge bases); agents reference it.
+spaces:
+  cid-health-space:
+    name: CID Health Events Space
+    description: >-
+      AWS Health knowledge from the Cloud Intelligence Dashboards: issues,
+      scheduled changes, account notifications and lifecycle (end of support)
+      events across the organization's accounts, with the affected resources.
+    dependsOn:
+      dashboards:
+        - health-events-dashboard  # Health Events Dashboard
+      datasets:
+        - health_events_view
+      knowledgeBases: []

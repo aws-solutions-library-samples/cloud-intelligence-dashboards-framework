@@ -1,0 +1,35 @@
+# Space for the CID FinOps Advisor. Loaded via agentic/catalog.yaml.
+# A Space owns the knowledge (dashboards, datasets, knowledge bases); agents reference it.
+spaces:
+  cid-finops-space:
+    name: CID FinOps Space
+    description: >-
+      Cost and optimization knowledge from the Cloud Intelligence Dashboards:
+      CUDOS, CORA, Graviton savings, Extended Support and pricing changes.
+    dependsOn:
+      dashboards:
+        - cudos-v5
+        - cora
+        - graviton-savings
+        - extended-support-cost-projection
+        - pricing-change-analysis
+      datasets:
+        # cudos-v5
+        - summary_view
+        - hourly_view
+        - resource_view
+        # cora
+        - cora_view
+        # graviton-savings
+        - graviton_ec2_view
+        - graviton_elasticache_view
+        - graviton_opensearch_view
+        - graviton_rds_view
+        # extended-support-cost-projection
+        - eks_extended_support_view
+        - rds_extended_support_view
+        - opensearch_extended_support_view
+        - elasticache_extended_support_view
+        # pricing-change-analysis
+        - pricing_changes
+      knowledgeBases: []

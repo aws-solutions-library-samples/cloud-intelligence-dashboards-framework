@@ -21,76 +21,13 @@ dashboards:
     - line_item_product_code
     - tags_json
     file: ./extended-support-cost-projection-definition.yaml
-    version: v5.2.3
+    version: v5.3.0
 datasets:
   elasticache_extended_support_view:
     data:
       DataSetId: f38e6e0e-2130-4d0e-96b9-133a9945a91f
       Name: elasticache_extended_support_view
       PhysicalTableMap:
-        a201689c-b688-4037-a5ad-6282c4056d01:
-          RelationalTable:
-            DataSourceArn: ${athena_datasource_arn}
-            Catalog: AwsDataCatalog
-            Schema: ${athena_database_name}
-            Name: elasticache_extended_support_view
-            InputColumns:
-            - Name: billing_period
-              Type: DATETIME
-            - Name: usage_date
-              Type: DATETIME
-            - Name: payer_account_id
-              Type: STRING
-            - Name: linked_account_id
-              Type: STRING
-            - Name: account_name
-              Type: STRING
-            - Name: engine
-              Type: STRING
-            - Name: region_code
-              Type: STRING
-            - Name: engineversion
-              Type: STRING
-            - Name: instance_type
-              Type: STRING
-            - Name: item_description
-              Type: STRING
-            - Name: cacheclusterid
-              Type: STRING
-            - Name: resource_id
-              Type: STRING
-            - Name: original_usage_type
-              Type: STRING
-            - Name: on_demand_rate_per_unit
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: usage_amount
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: year_1_start
-              Type: DATETIME
-            - Name: is_year_1_2
-              Type: STRING
-            - Name: year_3_start
-              Type: DATETIME
-            - Name: is_year_3
-              Type: STRING
-            - Name: end_of_extended_support
-              Type: DATETIME
-            - Name: is_unsupported
-              Type: STRING
-            - Name: year_1_2_cost
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: ext_sup_year_1_2_price
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: year_3_cost
-              Type: DECIMAL
-              SubType: FLOAT
-            - Name: ext_sup_year_3_price
-              Type: DECIMAL
-              SubType: FLOAT
         19e7f4ff-203f-478e-a12e-754ee6a312cb:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
@@ -99,14 +36,117 @@ datasets:
             Name: account_map
             InputColumns:
             - Name: account_id
+              Id: 658a81e9-b100-4a7d-992f-5d7bd5e98b60.account_id
               Type: STRING
             - Name: account_name
+              Id: 658a81e9-b100-4a7d-992f-5d7bd5e98b60.account_name
               Type: STRING
-      LogicalTableMap:
-        6470784a-be08-4645-a95d-16902c3923ae:
-          Alias: Intermediate Table
-          DataTransforms:
-          - ProjectOperation:
+        a201689c-b688-4037-a5ad-6282c4056d01:
+          RelationalTable:
+            DataSourceArn: ${athena_datasource_arn}
+            Catalog: AwsDataCatalog
+            Schema: ${athena_database_name}
+            Name: elasticache_extended_support_view
+            InputColumns:
+            - Name: billing_period
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.billing_period
+              Type: DATETIME
+            - Name: usage_date
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.usage_date
+              Type: DATETIME
+            - Name: payer_account_id
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.payer_account_id
+              Type: STRING
+            - Name: linked_account_id
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.linked_account_id
+              Type: STRING
+            - Name: engine
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.engine
+              Type: STRING
+            - Name: region_code
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.region_code
+              Type: STRING
+            - Name: engineversion
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.engineversion
+              Type: STRING
+            - Name: instance_type
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.instance_type
+              Type: STRING
+            - Name: item_description
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.item_description
+              Type: STRING
+            - Name: cacheclusterid
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.cacheclusterid
+              Type: STRING
+            - Name: resource_id
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.resource_id
+              Type: STRING
+            - Name: original_usage_type
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.original_usage_type
+              Type: STRING
+            - Name: on_demand_rate_per_unit
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.on_demand_rate_per_unit
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: usage_amount
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.usage_amount
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: year_1_start
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.year_1_start
+              Type: DATETIME
+            - Name: is_year_1_2
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.is_year_1_2
+              Type: STRING
+            - Name: year_3_start
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.year_3_start
+              Type: DATETIME
+            - Name: is_year_3
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.is_year_3
+              Type: STRING
+            - Name: end_of_extended_support
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.end_of_extended_support
+              Type: DATETIME
+            - Name: is_unsupported
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.is_unsupported
+              Type: STRING
+            - Name: year_1_2_cost
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.year_1_2_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: ext_sup_year_1_2_price
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.ext_sup_year_1_2_price
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: year_3_cost
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.year_3_cost
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: ext_sup_year_3_price
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.ext_sup_year_3_price
+              Type: DECIMAL
+              SubType: FLOAT
+            - Name: tags_json
+              Id: c0037c45-1148-426d-9e1c-7f99c291c297.tags_json
+              Type: STRING
+      ImportMode: SPICE
+      DataPrepConfiguration:
+        SourceTableMap:
+          qs-generated-id-14277b18-8919-31a1-b4f8-b1b2170870a7:
+            PhysicalTableId: 19e7f4ff-203f-478e-a12e-754ee6a312cb
+          qs-generated-id-961c066b-feac-301f-a6fa-b8b44cce0888:
+            PhysicalTableId: a201689c-b688-4037-a5ad-6282c4056d01
+        TransformStepMap:
+          qs-generated-id-b7fd630d-74e0-32a3-89f7-8088eb24b365:
+            ImportTableStep:
+              Alias: elasticache_extended_support_view
+              Source:
+                SourceTableId: qs-generated-id-961c066b-feac-301f-a6fa-b8b44cce0888
+          qs-generated-id-b872fd5d-bd01-336c-9ad8-99d92b423cbb:
+            ProjectStep:
+              Alias: Select columns 1
+              Source:
+                TransformOperationId: qs-generated-id-ea6aff3a-bdea-3093-99ed-e46b8e6cb0f6
               ProjectedColumns:
               - billing_period
               - usage_date
@@ -134,21 +174,31 @@ datasets:
               - ext_sup_year_3_price
               - account_id
               - account_name
-          Source:
-            JoinInstruction:
-              LeftOperand: c0037c45-1148-426d-9e1c-7f99c291c297
-              RightOperand: 658a81e9-b100-4a7d-992f-5d7bd5e98b60
+              - tags_json
+          qs-generated-id-ea6aff3a-bdea-3093-99ed-e46b8e6cb0f6:
+            JoinStep:
+              Alias: Join 1
+              LeftOperand:
+                TransformOperationId: qs-generated-id-b7fd630d-74e0-32a3-89f7-8088eb24b365
+              RightOperand:
+                TransformOperationId: qs-generated-id-eb3b8090-8e53-346f-91a9-7d76c45a8e51
               Type: LEFT
               OnClause: '{linked_account_id} = {account_id}'
-        658a81e9-b100-4a7d-992f-5d7bd5e98b60:
-          Alias: account_map
-          Source:
-            PhysicalTableId: 19e7f4ff-203f-478e-a12e-754ee6a312cb
-        c0037c45-1148-426d-9e1c-7f99c291c297:
-          Alias: elasticache_extended_support_view
-          Source:
-            PhysicalTableId: a201689c-b688-4037-a5ad-6282c4056d01
-      ImportMode: SPICE
+          qs-generated-id-eb3b8090-8e53-346f-91a9-7d76c45a8e51:
+            ImportTableStep:
+              Alias: account_map
+              Source:
+                SourceTableId: qs-generated-id-14277b18-8919-31a1-b4f8-b1b2170870a7
+        DestinationTableMap:
+          DefaultDestinationTableId:
+            Alias: Destination Table 1
+            Source:
+              TransformOperationId: qs-generated-id-b872fd5d-bd01-336c-9ad8-99d92b423cbb
+      SemanticModelConfiguration:
+        TableMap:
+          DefaultSemanticTableId:
+            Alias: Table1
+            DestinationTableId: DefaultDestinationTableId
     dependsOn:
       views:
       - account_map
@@ -177,40 +227,57 @@ datasets:
             Name: eks_extended_support_view
             InputColumns:
             - Name: billing_period
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.billing_period
               Type: DATETIME
             - Name: usage_date
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_date
               Type: DATETIME
             - Name: payer_account_id
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.payer_account_id
               Type: STRING
             - Name: linked_account_id
-              Type: STRING
-            - Name: account_name
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.linked_account_id
               Type: STRING
             - Name: region_code
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.region_code
               Type: STRING
             - Name: original_usage_type
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.original_usage_type
               Type: STRING
             - Name: k8s_version
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.k8s_version
               Type: STRING
             - Name: item_description
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.item_description
               Type: STRING
             - Name: cluster_name
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.cluster_name
               Type: STRING
             - Name: resource_id
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.resource_id
               Type: STRING
             - Name: usage_amount
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.usage_amount
               Type: DECIMAL
               SubType: FLOAT
             - Name: start_of_extended_support
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.start_of_extended_support
               Type: DATETIME
             - Name: is_extended_support
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.is_extended_support
               Type: STRING
             - Name: extended_support_cost
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.extended_support_cost
               Type: DECIMAL
               SubType: FLOAT
             - Name: end_of_extended_support
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.end_of_extended_support
               Type: DATETIME
             - Name: is_out_of_extended_support
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.is_out_of_extended_support
+              Type: STRING
+            - Name: tags_json
+              Id: 2cbef0f5-bd73-4791-840e-7221b6fb58e0.tags_json
               Type: STRING
         effd7cff-853e-45ff-b71d-b08cd0117824:
           RelationalTable:
@@ -220,18 +287,43 @@ datasets:
             Name: account_map
             InputColumns:
             - Name: account_id
+              Id: adfdbf7d-6b22-44f9-995e-576b7c3489ed.account_id
               Type: STRING
             - Name: account_name
+              Id: adfdbf7d-6b22-44f9-995e-576b7c3489ed.account_name
               Type: STRING
-      LogicalTableMap:
-        2cbef0f5-bd73-4791-840e-7221b6fb58e0:
-          Alias: eks_extended_support_view
-          Source:
+      ImportMode: SPICE
+      DataPrepConfiguration:
+        SourceTableMap:
+          qs-generated-id-438e1436-ad0b-336f-bdfb-ac553aba849f:
+            PhysicalTableId: effd7cff-853e-45ff-b71d-b08cd0117824
+          qs-generated-id-755a1eef-4277-3e30-a010-6793f2e3649f:
             PhysicalTableId: 2ae1dbc5-c18b-4751-8473-5864f5e91d44
-        42ee4bbc-a6c6-4df1-ab20-09546ec05fd4:
-          Alias: Intermediate Table
-          DataTransforms:
-          - ProjectOperation:
+        TransformStepMap:
+          qs-generated-id-0e567530-f42c-3193-8c70-125f7d66f138:
+            ImportTableStep:
+              Alias: account_map
+              Source:
+                SourceTableId: qs-generated-id-438e1436-ad0b-336f-bdfb-ac553aba849f
+          qs-generated-id-d10285f6-04f0-3390-ba1d-9cca7b49ca61:
+            ImportTableStep:
+              Alias: eks_extended_support_view
+              Source:
+                SourceTableId: qs-generated-id-755a1eef-4277-3e30-a010-6793f2e3649f
+          qs-generated-id-d45d761d-8510-3f63-979f-49d960e8b936:
+            JoinStep:
+              Alias: Join 1
+              LeftOperand:
+                TransformOperationId: qs-generated-id-d10285f6-04f0-3390-ba1d-9cca7b49ca61
+              RightOperand:
+                TransformOperationId: qs-generated-id-0e567530-f42c-3193-8c70-125f7d66f138
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+          qs-generated-id-f5f73938-a88c-3d3a-a156-ac981fcabd48:
+            ProjectStep:
+              Alias: Select columns 1
+              Source:
+                TransformOperationId: qs-generated-id-d45d761d-8510-3f63-979f-49d960e8b936
               ProjectedColumns:
               - billing_period
               - usage_date
@@ -251,17 +343,17 @@ datasets:
               - is_out_of_extended_support
               - account_id
               - account_name
-          Source:
-            JoinInstruction:
-              LeftOperand: 2cbef0f5-bd73-4791-840e-7221b6fb58e0
-              RightOperand: adfdbf7d-6b22-44f9-995e-576b7c3489ed
-              Type: LEFT
-              OnClause: '{linked_account_id} = {account_id}'
-        adfdbf7d-6b22-44f9-995e-576b7c3489ed:
-          Alias: account_map
-          Source:
-            PhysicalTableId: effd7cff-853e-45ff-b71d-b08cd0117824
-      ImportMode: SPICE
+              - tags_json
+        DestinationTableMap:
+          DefaultDestinationTableId:
+            Alias: Destination Table 1
+            Source:
+              TransformOperationId: qs-generated-id-f5f73938-a88c-3d3a-a156-ac981fcabd48
+      SemanticModelConfiguration:
+        TableMap:
+          DefaultSemanticTableId:
+            Alias: Table1
+            DestinationTableId: DefaultDestinationTableId
     dependsOn:
       views:
       - eks_extended_support_view
@@ -290,8 +382,10 @@ datasets:
             Name: account_map
             InputColumns:
             - Name: account_id
+              Id: 064649d2-642b-4928-84bd-7861d224298a.account_id
               Type: STRING
             - Name: account_name
+              Id: 064649d2-642b-4928-84bd-7861d224298a.account_name
               Type: STRING
         76a6ad9d-caf0-447f-8609-1c4d8fb89673:
           RelationalTable:
@@ -301,82 +395,117 @@ datasets:
             Name: rds_extended_support_view
             InputColumns:
             - Name: billing_period
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.billing_period
               Type: DATETIME
             - Name: usage_date
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.usage_date
               Type: DATETIME
             - Name: payer_account_id
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.payer_account_id
               Type: STRING
             - Name: linked_account_id
-              Type: STRING
-            - Name: account_name
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.linked_account_id
               Type: STRING
             - Name: region_code
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.region_code
               Type: STRING
             - Name: rds_type
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.rds_type
               Type: STRING
             - Name: deployment_option
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.deployment_option
               Type: STRING
             - Name: original_deployment_option
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.original_deployment_option
               Type: STRING
             - Name: original_usage_type
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.original_usage_type
               Type: STRING
             - Name: engine
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.engine
               Type: STRING
             - Name: engineversion
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.engineversion
               Type: STRING
             - Name: instance_type_family
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.instance_type_family
               Type: STRING
             - Name: instance_type
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.instance_type
               Type: STRING
             - Name: item_description
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.item_description
               Type: STRING
             - Name: dbresourceidentifier
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.dbresourceidentifier
               Type: STRING
             - Name: resource_id
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.resource_id
               Type: STRING
             - Name: vcpus
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpus
               Type: INTEGER
             - Name: usage_unit
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.usage_unit
               Type: STRING
             - Name: usage_amount
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.usage_amount
               Type: DECIMAL
               SubType: FLOAT
             - Name: vcpu_acu_hours
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.vcpu_acu_hours
               Type: DECIMAL
               SubType: FLOAT
             - Name: year_1_start
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.year_1_start
               Type: DATETIME
             - Name: is_year_1_2
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.is_year_1_2
               Type: STRING
             - Name: year_3_start
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.year_3_start
               Type: DATETIME
             - Name: is_year_3
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.is_year_3
               Type: STRING
             - Name: end_of_extended_support
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.end_of_extended_support
               Type: DATETIME
             - Name: is_unsupported
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.is_unsupported
               Type: STRING
             - Name: year_1_2_pricing
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.year_1_2_pricing
               Type: DECIMAL
               SubType: FLOAT
             - Name: year_1_2_cost
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.year_1_2_cost
               Type: DECIMAL
               SubType: FLOAT
             - Name: year_3_pricing
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.year_3_pricing
               Type: DECIMAL
               SubType: FLOAT
             - Name: year_3_cost
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.year_3_cost
               Type: DECIMAL
               SubType: FLOAT
-      LogicalTableMap:
-        064649d2-642b-4928-84bd-7861d224298a:
-          Alias: account_map
-          Source:
+            - Name: tags_json
+              Id: ba51b0b7-2118-49f3-85f2-399ae50255b4.tags_json
+              Type: STRING
+      ImportMode: SPICE
+      DataPrepConfiguration:
+        SourceTableMap:
+          qs-generated-id-06febedd-9dab-3bdc-b046-4a414588466f:
+            PhysicalTableId: 76a6ad9d-caf0-447f-8609-1c4d8fb89673
+          qs-generated-id-0dc6ad0d-de05-3880-9352-0a2e0816226b:
             PhysicalTableId: 0d4de22c-5e16-47c0-bf31-c248baf48499
-        18c4c51f-5008-444e-ae9f-2874e670d8f1:
-          Alias: Intermediate Table
-          DataTransforms:
-          - ProjectOperation:
+        TransformStepMap:
+          qs-generated-id-2b7829b6-3178-3717-bb60-0d46c7e180ab:
+            ProjectStep:
+              Alias: Select columns 1
+              Source:
+                TransformOperationId: qs-generated-id-5588b19d-f1b8-377e-95a8-8f46fe7a5402
               ProjectedColumns:
               - billing_period
               - usage_date
@@ -410,17 +539,36 @@ datasets:
               - year_3_cost
               - account_id
               - account_name
-          Source:
-            JoinInstruction:
-              LeftOperand: ba51b0b7-2118-49f3-85f2-399ae50255b4
-              RightOperand: 064649d2-642b-4928-84bd-7861d224298a
+              - tags_json
+          qs-generated-id-5588b19d-f1b8-377e-95a8-8f46fe7a5402:
+            JoinStep:
+              Alias: Join 1
+              LeftOperand:
+                TransformOperationId: qs-generated-id-b2a425b6-e914-367c-9018-b7e1c33c732a
+              RightOperand:
+                TransformOperationId: qs-generated-id-e7af25da-1d1f-3f5f-aff1-151c124a0c54
               Type: LEFT
               OnClause: '{linked_account_id} = {account_id}'
-        ba51b0b7-2118-49f3-85f2-399ae50255b4:
-          Alias: rds_extended_support_view
-          Source:
-            PhysicalTableId: 76a6ad9d-caf0-447f-8609-1c4d8fb89673
-      ImportMode: SPICE
+          qs-generated-id-b2a425b6-e914-367c-9018-b7e1c33c732a:
+            ImportTableStep:
+              Alias: rds_extended_support_view
+              Source:
+                SourceTableId: qs-generated-id-06febedd-9dab-3bdc-b046-4a414588466f
+          qs-generated-id-e7af25da-1d1f-3f5f-aff1-151c124a0c54:
+            ImportTableStep:
+              Alias: account_map
+              Source:
+                SourceTableId: qs-generated-id-0dc6ad0d-de05-3880-9352-0a2e0816226b
+        DestinationTableMap:
+          DefaultDestinationTableId:
+            Alias: Destination Table 1
+            Source:
+              TransformOperationId: qs-generated-id-2b7829b6-3178-3717-bb60-0d46c7e180ab
+      SemanticModelConfiguration:
+        TableMap:
+          DefaultSemanticTableId:
+            Alias: Table1
+            DestinationTableId: DefaultDestinationTableId
     dependsOn:
       views:
       - account_map
@@ -449,54 +597,76 @@ datasets:
             Name: opensearch_extended_support_view
             InputColumns:
             - Name: billing_period
+              Id: opensearch.billing_period
               Type: DATETIME
             - Name: usage_date
+              Id: opensearch.usage_date
               Type: DATETIME
             - Name: payer_account_id
+              Id: opensearch.payer_account_id
               Type: STRING
             - Name: linked_account_id
-              Type: STRING
-            - Name: account_name
+              Id: opensearch.linked_account_id
               Type: STRING
             - Name: region_code
+              Id: opensearch.region_code
               Type: STRING
             - Name: domainname
+              Id: opensearch.domainname
               Type: STRING
             - Name: domainidentifier
+              Id: opensearch.domainidentifier
               Type: STRING
             - Name: resourceid
+              Id: opensearch.resourceid
               Type: STRING
             - Name: engineversion
+              Id: opensearch.engineversion
               Type: STRING
             - Name: instance_type
+              Id: opensearch.instance_type
               Type: STRING
             - Name: instance_size
+              Id: opensearch.instance_size
               Type: STRING
             - Name: norm_factor
+              Id: opensearch.norm_factor
               Type: DECIMAL
               SubType: FLOAT
             - Name: item_description
+              Id: opensearch.item_description
               Type: STRING
             - Name: usage_unit
+              Id: opensearch.usage_unit
               Type: STRING
             - Name: original_usage_type
+              Id: opensearch.original_usage_type
               Type: STRING
             - Name: usage_amount
+              Id: opensearch.usage_amount
               Type: DECIMAL
               SubType: FLOAT
             - Name: nihs
+              Id: opensearch.nihs
               Type: DECIMAL
               SubType: FLOAT
             - Name: start_of_extended_support
+              Id: opensearch.start_of_extended_support
               Type: DATETIME
             - Name: end_of_extended_support
+              Id: opensearch.end_of_extended_support
               Type: DATETIME
             - Name: nih_pricing
+              Id: opensearch.nih_pricing
               Type: DECIMAL
               SubType: FLOAT
             - Name: projected_extended_support_cost
+              Id: opensearch.projected_extended_support_cost
               Type: DECIMAL
               SubType: FLOAT
+            - Name: tags_json
+              Id: opensearch.tags_json
+              Type: STRING
         cbd42501-c0e4-4cb5-a85f-50cbaa20776e:
           RelationalTable:
             DataSourceArn: ${athena_datasource_arn}
@@ -505,18 +675,43 @@ datasets:
             Name: account_map
             InputColumns:
             - Name: account_id
+              Id: f7798214-7469-4dc4-a6c4-90b2dfbd1839.account_id
               Type: STRING
             - Name: account_name
+              Id: f7798214-7469-4dc4-a6c4-90b2dfbd1839.account_name
               Type: STRING
-      LogicalTableMap:
-        6f0bc2eb-2e93-42f6-a747-b4facc207d58:
-          Alias: opensearch_extended_support_view
-          Source:
+      ImportMode: SPICE
+      DataPrepConfiguration:
+        SourceTableMap:
+          src-opensearch-extended-support-view:
             PhysicalTableId: b51ef4eb-f8bd-41d1-8ed4-bce50612fb1b
-        bcdd7260-ea8b-41ab-a0bd-4c300b110bd3:
-          Alias: Intermediate Table
-          DataTransforms:
-          - ProjectOperation:
+          src-account-map:
+            PhysicalTableId: cbd42501-c0e4-4cb5-a85f-50cbaa20776e
+        TransformStepMap:
+          import-opensearch-extended-support-view:
+            ImportTableStep:
+              Alias: opensearch_extended_support_view
+              Source:
+                SourceTableId: src-opensearch-extended-support-view
+          import-account-map:
+            ImportTableStep:
+              Alias: account_map
+              Source:
+                SourceTableId: src-account-map
+          join-account-map:
+            JoinStep:
+              Alias: Join 1
+              LeftOperand:
+                TransformOperationId: import-opensearch-extended-support-view
+              RightOperand:
+                TransformOperationId: import-account-map
+              Type: LEFT
+              OnClause: '{linked_account_id} = {account_id}'
+          project-columns:
+            ProjectStep:
+              Alias: Select columns 1
+              Source:
+                TransformOperationId: join-account-map
               ProjectedColumns:
               - billing_period
               - usage_date
@@ -541,17 +736,17 @@ datasets:
               - projected_extended_support_cost
               - account_id
               - account_name
-          Source:
-            JoinInstruction:
-              LeftOperand: 6f0bc2eb-2e93-42f6-a747-b4facc207d58
-              RightOperand: f7798214-7469-4dc4-a6c4-90b2dfbd1839
-              Type: LEFT
-              OnClause: '{linked_account_id} = {account_id}'
-        f7798214-7469-4dc4-a6c4-90b2dfbd1839:
-          Alias: account_map
-          Source:
-            PhysicalTableId: cbd42501-c0e4-4cb5-a85f-50cbaa20776e
-      ImportMode: SPICE
+              - tags_json
+        DestinationTableMap:
+          DefaultDestinationTableId:
+            Alias: Destination Table 1
+            Source:
+              TransformOperationId: project-columns
+      SemanticModelConfiguration:
+        TableMap:
+          DefaultSemanticTableId:
+            Alias: Table1
+            DestinationTableId: DefaultDestinationTableId
     dependsOn:
       views:
       - opensearch_extended_support_view
@@ -580,12 +775,16 @@ datasets:
             Name: extended_support_tagging_view
             InputColumns:
             - Name: line_item_usage_account_id
+              Id: 30248d27-4a3a-4350-bf1d-dd382f040c95.line_item_usage_account_id
               Type: STRING
             - Name: line_item_product_code
+              Id: 30248d27-4a3a-4350-bf1d-dd382f040c95.line_item_product_code
               Type: STRING
             - Name: tags_json
+              Id: 30248d27-4a3a-4350-bf1d-dd382f040c95.tags_json
               Type: STRING
             - Name: rows
+              Id: 30248d27-4a3a-4350-bf1d-dd382f040c95.rows
               Type: INTEGER
         90e1376c-d426-4481-9af2-e30d8e9a10c1:
           RelationalTable:
@@ -595,22 +794,43 @@ datasets:
             Name: account_map
             InputColumns:
             - Name: account_id
+              Id: 56854c6e-a164-4519-9bc0-35fe9d016a25.account_id
               Type: STRING
             - Name: account_name
+              Id: 56854c6e-a164-4519-9bc0-35fe9d016a25.account_name
               Type: STRING
-      LogicalTableMap:
-        30248d27-4a3a-4350-bf1d-dd382f040c95:
-          Alias: extended_support_tagging_view
-          Source:
-            PhysicalTableId: 5a574f8c-5e74-4da8-97cc-4f6802a7d360
-        56854c6e-a164-4519-9bc0-35fe9d016a25:
-          Alias: account_map
-          Source:
+      ImportMode: SPICE
+      DataPrepConfiguration:
+        SourceTableMap:
+          qs-generated-id-2c7b9356-1c1f-3bb2-a931-a17ce00a7b67:
             PhysicalTableId: 90e1376c-d426-4481-9af2-e30d8e9a10c1
-        dc16d610-7393-42bf-8735-29e2a1165178:
-          Alias: Intermediate Table
-          DataTransforms:
-          - ProjectOperation:
+          qs-generated-id-32d9b43c-7ed7-3f57-8dc7-4af2084e71f1:
+            PhysicalTableId: 5a574f8c-5e74-4da8-97cc-4f6802a7d360
+        TransformStepMap:
+          qs-generated-id-620d9d31-b713-31c7-8f0d-188ee6e78b1e:
+            ImportTableStep:
+              Alias: extended_support_tagging_view
+              Source:
+                SourceTableId: qs-generated-id-32d9b43c-7ed7-3f57-8dc7-4af2084e71f1
+          qs-generated-id-7fc0b480-2859-3571-bb2d-3994fda614ac:
+            JoinStep:
+              Alias: Join 1
+              LeftOperand:
+                TransformOperationId: qs-generated-id-620d9d31-b713-31c7-8f0d-188ee6e78b1e
+              RightOperand:
+                TransformOperationId: qs-generated-id-81f04be0-785a-33cd-a463-a491f9f521a0
+              Type: LEFT
+              OnClause: '{line_item_usage_account_id} = {account_id}'
+          qs-generated-id-81f04be0-785a-33cd-a463-a491f9f521a0:
+            ImportTableStep:
+              Alias: account_map
+              Source:
+                SourceTableId: qs-generated-id-2c7b9356-1c1f-3bb2-a931-a17ce00a7b67
+          qs-generated-id-9549c18a-47d0-3791-8177-2f2baa28928f:
+            ProjectStep:
+              Alias: Select columns 1
+              Source:
+                TransformOperationId: qs-generated-id-7fc0b480-2859-3571-bb2d-3994fda614ac
               ProjectedColumns:
               - line_item_usage_account_id
               - line_item_product_code
@@ -618,13 +838,16 @@ datasets:
               - rows
               - account_id
               - account_name
-          Source:
-            JoinInstruction:
-              LeftOperand: 30248d27-4a3a-4350-bf1d-dd382f040c95
-              RightOperand: 56854c6e-a164-4519-9bc0-35fe9d016a25
-              Type: LEFT
-              OnClause: '{line_item_usage_account_id} = {account_id}'
-      ImportMode: SPICE
+        DestinationTableMap:
+          DefaultDestinationTableId:
+            Alias: Destination Table 1
+            Source:
+              TransformOperationId: qs-generated-id-9549c18a-47d0-3791-8177-2f2baa28928f
+      SemanticModelConfiguration:
+        TableMap:
+          DefaultSemanticTableId:
+            Alias: Table1
+            DestinationTableId: DefaultDestinationTableId
     dependsOn:
       views:
       - account_map
@@ -1064,7 +1287,7 @@ views:
          , c.product['instance_type_family'] instance_type_family
          , c.product['instance_type'] instance_type
          , c.line_item_line_item_description item_description
-         , (CASE WHEN ((c.product_product_family like 'Serverless%') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage')) THEN 0 ELSE CAST(c.product['vcpu'] AS int) END) vcpus
+         , (CASE WHEN ((c.product_product_family like 'Serverless%') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage')) THEN 0 ELSE TRY_CAST(c.product['vcpu'] AS int) END) vcpus
          , (CASE WHEN ((c.product_product_family = 'ServerlessV2') AND (c.line_item_usage_type like '%Aurora:ServerlessV2%Usage')) THEN 'acu-hour' ELSE 'vcpu-hour' END) usage_unit
          , split_part(c.line_item_resource_id, ':', 7) dbresourceidentifier
          , c.line_item_resource_id resource_id
@@ -1072,11 +1295,11 @@ views:
          , c.line_item_usage_type original_usage_type
          , ${cur_tags_json} tags_json
          , sum(c.line_item_usage_amount) usage_amount
-         , sum((CASE WHEN (c.pricing_unit = 'ACU-Hr') THEN c.line_item_usage_amount WHEN (c.line_item_usage_type LIKE '%Multi-AZUsage%') THEN (CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount * 2) ELSE (CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount) END)) vcpu_acu_hours
+         , sum((CASE WHEN (c.pricing_unit = 'ACU-Hr') THEN c.line_item_usage_amount WHEN (c.line_item_usage_type LIKE '%Multi-AZUsage%') THEN (TRY_CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount * 2) ELSE (TRY_CAST(c.product['vcpu'] AS int) * c.line_item_usage_amount) END)) vcpu_acu_hours
          FROM
            (("${cur2_database}"."${cur2_table_name}" c
          INNER JOIN all_sanitised_rds_resources rdsu ON ((c.bill_payer_account_id = rdsu.payer_id) AND (c.line_item_usage_account_id = rdsu.accountid) AND (c.product['region'] = rdsu.region) AND (split_part(c.line_item_resource_id, ':', 7) = rdsu.dbresourceidentifier))))
-         WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND (c.product_servicecode = 'AmazonRDS') AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage')) AND ((c.product_product_family = 'Database Instance') OR ((c.product_product_family like 'Serverless%') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage'))))
+         WHERE (((c.bill_billing_period_start_date >= (date_trunc('month', current_timestamp) - INTERVAL  '4' MONTH)) AND (CAST(concat(c.billing_period, '-01') AS date) >= (date_trunc('month', current_date) - INTERVAL  '4' MONTH))) AND (c.product_servicecode = 'AmazonRDS') AND (c.line_item_line_item_type IN ('DiscountedUsage', 'Usage', 'SavingsPlanCoveredUsage')) AND ((c.product_product_family = 'Database Instance') OR ((c.product_product_family like 'Serverless%') AND (c.line_item_usage_type like '%Aurora:Serverless%Usage'))))
          GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
       )
       SELECT

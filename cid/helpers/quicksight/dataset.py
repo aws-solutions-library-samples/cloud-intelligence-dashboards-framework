@@ -245,6 +245,15 @@ class Dataset(CidQsResource):
     def _patch_new_experience(dataset, custom_fields, athena, _get_athena_columns, _athena_to_qs_type):
         '''Patch new experience dataset (DataPrepConfiguration-based)'''
 
+        # Column names must be unique across joined tables, so collect the names
+        # already defined in the template to avoid adding a 2nd column with the
+        # same name from another table (ex: a 'region' column in account_map)
+        all_columns = {
+            col['Name'].lower()
+            for pt in dataset['PhysicalTableMap'].values()
+            for col in pt['RelationalTable']['InputColumns']
+        }
+
         # Update each PhysicalTableMap with all columns from athena views
         # For new experience, InputColumns need an Id field
         for pt_id, pt in dataset['PhysicalTableMap'].items():
@@ -275,6 +284,11 @@ class Dataset(CidQsResource):
                 col for col in athena_columns
                 if col['Name'].lower() not in dataset_columns_names
             ]
+            duplicates = [col['Name'] for col in new_columns if col['Name'].lower() in all_columns]
+            if duplicates:
+                logger.info(f"Skipping columns of {table_name} already present in another table of the dataset: {', '.join(duplicates)}")
+            new_columns = [col for col in new_columns if col['Name'].lower() not in all_columns]
+            all_columns.update(col['Name'].lower() for col in new_columns)
 
             logger.trace(f'dataset_columns_to_keep = {dataset_columns_to_keep}')
             if new_columns:

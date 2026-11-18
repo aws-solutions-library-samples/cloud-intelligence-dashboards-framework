@@ -21,11 +21,16 @@ Parameters:
     Description:  'Is DataCollectionRequired'
     AllowedValues: ["yes", "no"]
     Default: 'no'
+  Parameters:
+    Type: String
+    Description:  'Optional. Additional cid-cmd parameters as a JSON object (ex: {"rls-dataset-id": "my-rls", "share-with-account": "no"}). Keep it empty if not sure.'
+    Default: ''
 
 Conditions:
   ResourcesUrlIsEmpty: !Equals [!Ref ResourcesUrl, '']
   RequiresDataCollection: !Equals [!Ref RequiresDataCollection, 'yes']
   RequiresDataExports: !Equals [!Ref RequiresDataExports, 'yes']
+  ParametersIsEmpty: !Equals [!Ref Parameters, '']
 
 Resources:
   Dashboard:
@@ -39,6 +44,7 @@ Resources:
         resources: !If [ResourcesUrlIsEmpty, !Ref 'AWS::NoValue', !Ref ResourcesUrl]
         data_exports_database_name: !If [RequiresDataExports, {'Fn::ImportValue':  "cid-DataExports-Database"}, !Ref 'AWS::NoValue']
         data_collection_database_name: !If [RequiresDataCollection, {'Fn::ImportValue':  "cid-DataCollection-Database"}, !Ref 'AWS::NoValue']
+        parameters: !If [ParametersIsEmpty, !Ref 'AWS::NoValue', !Ref Parameters]
 
 Outputs:
   DashboardURL:

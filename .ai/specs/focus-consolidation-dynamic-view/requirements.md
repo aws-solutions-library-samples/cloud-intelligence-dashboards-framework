@@ -21,7 +21,7 @@ This creates maintenance burden for customers who need to manually update the vi
 
 **Acceptance Criteria:**
 1.1. cid-cmd discovers FOCUS tables across all Athena databases during deployment
-1.2. Discovery uses FOCUS 1.0 minimum required columns (21 columns) to identify valid FOCUS tables
+1.2. Discovery uses FOCUS 1.0 minimum required columns (17 columns) to identify valid FOCUS tables
 1.3. Discovery works regardless of database naming conventions
 1.4. Discovery excludes non-FOCUS tables even if they have similar column names
 1.5. Discovery excludes non-table objects (views, etc.) by checking `TableType == 'EXTERNAL_TABLE'`
@@ -74,7 +74,7 @@ This creates maintenance burden for customers who need to manually update the vi
 
 **Acceptance Criteria:**
 6.1. FOCUS 1.2 column schema is defined in `focus.yaml` under `focus_consolidation_view.columns` as the single source of truth
-6.2. FOCUS 1.0 minimum columns for discovery are defined in code (21 columns)
+6.2. FOCUS 1.0 minimum columns for discovery are defined in code (17 columns)
 6.3. Column type mappings use a normalization system that handles `string`/`varchar`, `map<string,string>`/`map<varchar,varchar>`, etc.
 6.4. Special column handling (like `billing_period`) is well-documented
 6.5. Python code reads columns from YAML config (required parameter, no fallback)
@@ -105,7 +105,7 @@ This creates maintenance burden for customers who need to manually update the vi
 - Must handle tables at any version between 1.0 and 1.2
 
 ### FOCUS 1.0 Minimum Columns (for discovery)
-Required columns to identify a table as FOCUS-compliant (21 columns, common across all providers):
+Required columns to identify a table as FOCUS-compliant (17 columns, common across all providers). GCP FOCUS export has no `ServiceCategory` and `CommitmentDiscount*` columns, so they are not required:
 - `billedcost`
 - `billingaccountid`
 - `billingcurrency`
@@ -113,16 +113,12 @@ Required columns to identify a table as FOCUS-compliant (21 columns, common acro
 - `chargecategory`
 - `chargedescription`
 - `chargeperiodstart`
-- `commitmentdiscountcategory`
-- `commitmentdiscountid`
-- `commitmentdiscountname`
 - `effectivecost`
 - `listcost`
 - `listunitprice`
 - `pricingcategory`
 - `pricingquantity`
 - `pricingunit`
-- `servicecategory`
 - `servicename`
 - `skuid`
 - `skupriceid`
@@ -182,9 +178,9 @@ Some providers (e.g. OCI) use non-canonical column names in their FOCUS exports 
 
 ### Tag Discovery Query Fix
 The tag discovery query in downstream views (`focus_resource_view`, `focus_summary_view`) is updated:
-- UNNEST is moved inside the subquery (before LIMIT) to ensure deterministic tag discovery
-- LIMIT raised from 10,000 to 100,000 to cover large datasets
-- Original query applied LIMIT to raw rows before UNNEST, causing non-deterministic results
+- `SELECT DISTINCT` over `UNNEST(map_keys(tags))` for the last 60 days, with no `LIMIT`
+- An earlier version applied `LIMIT 100000` to (row, tag key) pairs before `DISTINCT`. On large multi-cloud data (millions of pairs), this sampled an arbitrary subset, so keys of one provider could be missing from the selection list and results changed between runs
+- Without the `LIMIT`, the query returns all keys every time. Measured on ~3.4M pairs: 885 MB scanned, ~5 s, run only during `cid-cmd deploy`/`update`
 
 ### `tags_json` Parameter Caching Fix
 The `tags_json` parameter type (used by `focus_resource_view` and `focus_summary_view`) requires a caching mechanism:
