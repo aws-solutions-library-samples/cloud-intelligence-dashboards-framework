@@ -14,6 +14,15 @@ dashboards:
       - sus_storage_athena
     name: Sustainability Proxy and Carbon emissions data
     dashboardId: sustainability-proxy-metrics
+    taxonomyDataset: sus_network
+    nonTaxonomyDatasets:
+    - sus_carbon_emissions
+    - sus_geo_region_athena
+    nonTaxonomyColumns:
+    - account_id
+    - account_name
+    - bill_payer_account_id
+    - tags_json
     theme: MIDNIGHT
     data: |-
       AnalysisDefaults:
@@ -59,7 +68,8 @@ dashboards:
         Expression: |-
           ifelse(${GroupByPara} = 'Linked Account',
               ifelse({account_name} = '', {line_item_usage_account_id}, {account_name}),
-              {resource_tags_user_application}
+              // Add ${GroupByPara}
+              NULL
           )
         Name: GroupBy
       - DataSetIdentifier: sus_compute_ec2
@@ -76,23 +86,22 @@ dashboards:
         Expression: |-
           ifelse(${IncludeKPI} = 'No', {vcpu_hours} ,
           ${GroupByPara} = 'Linked Account', {vcpu_hours} / {account_business_metric} ,
-          ${GroupByPara} = 'Environment Tag', {vcpu_hours} / {tag_business_metric} ,
-          0
+          {vcpu_hours} / {tag_business_metric}
           )
         Name: ScaledValue
       - DataSetIdentifier: sus_compute_split
         Expression: |-
           ifelse(${GroupByPara} = 'Linked Account',
               ifelse({account_name} = '', {line_item_usage_account_id}, {account_name}),
-              {resource_tags_user_application}
+              // Add ${GroupByPara}
+              NULL
           )
         Name: GroupBy
       - DataSetIdentifier: sus_compute_split
         Expression: |-
           ifelse(${IncludeKPI} = 'No', {vcpu_hours} ,
           ${GroupByPara} = 'Linked Account', {vcpu_hours} / {account_business_metric} ,
-          ${GroupByPara} = 'Environment Tag', {vcpu_hours} / {tag_business_metric} ,
-          0
+          {vcpu_hours} / {tag_business_metric}
           )
         Name: ScaledValue
       - DataSetIdentifier: sus_geo_region_athena
@@ -102,15 +111,15 @@ dashboards:
         Expression: |-
           ifelse(${GroupByPara} = 'Linked Account',
               ifelse({account_name} = '', {line_item_usage_account_id}, {account_name}),
-              {resource_tags_user_application}
+              // Add ${GroupByPara}
+              NULL
           )
         Name: GroupByCalcF
       - DataSetIdentifier: sus_idle_elb
         Expression: |-
           ifelse(${IncludeKPI} = 'No', {sum_line_item_usage_amount} ,
           ${GroupByPara} = 'Linked Account', {sum_line_item_usage_amount} / accbuskpi ,
-          ${GroupByPara} = 'Environment Tag',{sum_line_item_usage_amount} / tagbuskpi ,
-          0
+          {sum_line_item_usage_amount} / tagbuskpi
           )
         Name: ScaledValue
       - DataSetIdentifier: sus_idle_elb
@@ -123,15 +132,15 @@ dashboards:
         Expression: |-
           ifelse(${GroupByPara} = 'Linked Account',
               ifelse({account_name} = '', {line_item_usage_account_id}, {account_name}),
-              {resource_tags_user_application}
+              // Add ${GroupByPara}
+              NULL
           )
         Name: GroupByCalcF
       - DataSetIdentifier: sus_idle_natgw
         Expression: |-
           ifelse(${IncludeKPI} = 'No', {sum_line_item_usage_amount} ,
           ${GroupByPara} = 'Linked Account', {sum_line_item_usage_amount} / accbuskpi ,
-          ${GroupByPara} = 'Environment Tag',{sum_line_item_usage_amount} / tagbuskpi ,
-          0
+          {sum_line_item_usage_amount} / tagbuskpi
           )
         Name: ScaledValue
       - DataSetIdentifier: sus_idle_natgw
@@ -142,15 +151,15 @@ dashboards:
           ifelse(${GroupByPara} = 'Linked Account',
           ifelse({account_name} = '', {line_item_usage_account_id}, {account_name}
           ),
-          {resource_tags_user_application}
+          // Add ${GroupByPara}
+          NULL
           )
         Name: GroupByCalcF
       - DataSetIdentifier: sus_network
         Expression: |-
           ifelse(${IncludeKPI} = 'No', {usage_amount_in_tb} ,
           ${GroupByPara} = 'Linked Account', {usage_amount_in_tb} / accbuskpi ,
-          ${GroupByPara} = 'Environment Tag', {usage_amount_in_tb} / tagbuskpi ,
-          0
+          {usage_amount_in_tb} / tagbuskpi
           )
         Name: ScaledValue
       - DataSetIdentifier: sus_network
@@ -178,24 +187,19 @@ dashboards:
           )
         Name: TransferType
       - DataSetIdentifier: sus_s3_storage_all
-        Expression: ifelse(${GroupByPara} = 'Linked Account', {linked_account_id}, {resource_tags_user_application})
-        Name: CalcFWorkload
-      - DataSetIdentifier: sus_s3_storage_all
         Expression: |-
           ifelse(
               ${GroupByPara} = 'Linked Account', ifelse({account_name} = '', {linked_account_id}, {account_name}),
-              {resource_tags_user_application}
+              // Add ${GroupByPara}
+              NULL
           )
         Name: GroupBy
-      - DataSetIdentifier: sus_s3_storage_all
-        Expression: ifelse(${GroupByPara} = 'Linked Account', {linked_account_id}, {resource_tags_user_application})
-        Name: KPiAdjustedUsage
       - DataSetIdentifier: sus_s3_storage_all
         Expression: |-
           ifelse(${IncludeKPI} = 'No', {usage_quantity} ,
           ifelse(${GroupByPara} = 'Linked Account', {usage_quantity} / accbuskpi ,
-          ifelse(${GroupByPara} = 'Environment Tag', {usage_quantity} / tagbuskpi , 0
-          )))
+          {usage_quantity} / tagbuskpi
+          ))
         Name: ScaledValue
       - DataSetIdentifier: sus_s3_storage_all
         Expression: '{usage_date}'
@@ -204,7 +208,8 @@ dashboards:
         Expression: |-
           ifelse(
               ${GroupByPara} = 'Linked Account', ifelse({account_name} = '', {line_item_usage_account_id}, {account_name}),
-              {resource_tags_user_application}
+              // Add ${GroupByPara}
+              NULL
           )
         Name: GroupByCalcF
       - DataSetIdentifier: sus_storage_athena
@@ -212,8 +217,7 @@ dashboards:
           ifelse(
               ${IncludeKPI} = 'No',               {3bf588fa-4b55-4746-b422-1799d4cb51ff.usage},
               ${GroupByPara} = 'Linked Account',  {3bf588fa-4b55-4746-b422-1799d4cb51ff.usage} / accbuskpi ,
-              ${GroupByPara} = 'Environment Tag', {3bf588fa-4b55-4746-b422-1799d4cb51ff.usage} / tagbuskpi ,
-              0
+              {3bf588fa-4b55-4746-b422-1799d4cb51ff.usage} / tagbuskpi
           )
         Name: ScaledValue
       ColumnConfigurations:
@@ -1343,7 +1347,6 @@ dashboards:
             ParameterControlId: 2e786626-8983-4cba-81f6-b378adcdb89d
             SelectableValues:
               Values:
-              - Environment Tag
               - Linked Account
             SourceParameterName: GroupByPara
             Title: Group By
@@ -2004,7 +2007,6 @@ dashboards:
             ParameterControlId: 51a16e42-465d-44a9-8821-53c2859a9fa5
             SelectableValues:
               Values:
-              - Environment Tag
               - Linked Account
             SourceParameterName: GroupByPara
             Title: Group By
@@ -2599,7 +2601,6 @@ dashboards:
             ParameterControlId: f0ea9132-ca93-4fe4-bc76-e88c2111b6d5
             SelectableValues:
               Values:
-              - Environment Tag
               - Linked Account
             SourceParameterName: GroupByPara
             Title: Group By
@@ -4022,7 +4023,7 @@ dashboards:
                 Narrative: "<narrative>\n  <block align=\"center\">\n    <inline font-size=\"\
                   68.8px\">Sustainability Proxy\_</inline>\n    <inline color=\"#f6f9f9\"\
                   \ font-size=\"68.8px\">Dashboard</inline>\n  </block>\n  <br/>\n  <block\
-                  \ align=\"center\">\n    <inline font-size=\"68.8px\">\n      <b>v6.0.0</b>\n\
+                  \ align=\"center\">\n    <inline font-size=\"68.8px\">\n      <b>v6.1.0</b>\n\
                   \    </inline>\n  </block>\n  <br/>\n  <block align=\"center\">\n    <inline\
                   \ font-size=\"22.4px\">\n      <b>Sustainability Dashboard Metrics Optimization\
                   \ Solution</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"\
@@ -4049,7 +4050,7 @@ dashboards:
             Title:
               Visibility: VISIBLE
             VisualId: 0d89259f-86e0-48f6-a41b-4ca335f8ab8b
-    version: v6.0.1
+    version: v6.1.0
 datasets:
   sus_s3_storage_all:
     data:
@@ -4089,7 +4090,7 @@ datasets:
               Type: STRING
             - Name: pricing_unit
               Type: STRING
-            - Name: resource_tags_user_application
+            - Name: tags_json
               Type: STRING
             - Name: busskpitag
               Type: STRING
@@ -4146,7 +4147,7 @@ datasets:
               - region
               - charge_type
               - pricing_unit
-              - resource_tags_user_application
+              - tags_json
               - busskpitag
               - busskpiacc
               - tagbuskpi
@@ -4321,7 +4322,7 @@ datasets:
               Type: STRING
             - Name: line_item_usage_start_date
               Type: DATETIME
-            - Name: resource_tags_user_application
+            - Name: tags_json
               Type: STRING
             - Name: line_item_product_code
               Type: STRING
@@ -4356,7 +4357,7 @@ datasets:
               - bill_payer_account_id
               - line_item_usage_account_id
               - line_item_usage_start_date
-              - resource_tags_user_application
+              - tags_json
               - line_item_product_code
               - product_instance_type_family
               - product_physical_processor
@@ -4421,7 +4422,7 @@ datasets:
               Type: STRING
             - Name: pricing_unit
               Type: STRING
-            - Name: resource_tags_user_application
+            - Name: tags_json
               Type: STRING
             - Name: tagbuskpi
               Type: INTEGER
@@ -4458,7 +4459,7 @@ datasets:
               - product_region
               - pricing_unit
               - sum_line_item_usage_amount
-              - resource_tags_user_application
+              - tags_json
               - tagbuskpi
               - accbuskpi
               - sum_line_item_unblended_cost
@@ -4491,7 +4492,7 @@ datasets:
             InputColumns:
             - Name: bill_payer_account_id
               Type: STRING
-            - Name: resource_tags_user_application
+            - Name: tags_json
               Type: STRING
             - Name: line_item_usage_account_id
               Type: STRING
@@ -4532,7 +4533,7 @@ datasets:
           - ProjectOperation:
               ProjectedColumns:
               - bill_payer_account_id
-              - resource_tags_user_application
+              - tags_json
               - line_item_usage_account_id
               - line_item_operation
               - line_item_usage_start_date
@@ -4667,7 +4668,7 @@ datasets:
               Type: STRING
             - Name: product_to_location
               Type: STRING
-            - Name: resource_tags_user_application
+            - Name: tags_json
               Type: STRING
             - Name: line_item_line_item_description
               Type: STRING
@@ -4706,7 +4707,7 @@ datasets:
               - product_region
               - product_from_location
               - product_to_location
-              - resource_tags_user_application
+              - tags_json
               - line_item_line_item_description
               - usage_amount_in_tb
               - cost
@@ -4749,7 +4750,7 @@ datasets:
               Type: STRING
             - Name: line_item_usage_start_date
               Type: DATETIME
-            - Name: resource_tags_user_application
+            - Name: tags_json
               Type: STRING
             - Name: line_item_product_code
               Type: STRING
@@ -4780,7 +4781,7 @@ datasets:
               - bill_payer_account_id
               - line_item_usage_account_id
               - line_item_usage_start_date
-              - resource_tags_user_application
+              - tags_json
               - line_item_product_code
               - vcpu_hours
               - tag_business_metric
@@ -4843,7 +4844,7 @@ datasets:
               Type: STRING
             - Name: pricing_unit
               Type: STRING
-            - Name: resource_tags_user_application
+            - Name: tags_json
               Type: STRING
             - Name: sum_line_item_unblended_cost
               Type: DECIMAL
@@ -4876,7 +4877,7 @@ datasets:
               - product_region
               - pricing_unit
               - sum_line_item_usage_amount
-              - resource_tags_user_application
+              - tags_json
               - sum_line_item_unblended_cost
               - tagbuskpi
               - accbuskpi
@@ -4903,6 +4904,7 @@ crawlers: {}
 views:
   sus_s3_storage_all:
     dependsOn:
+      tags: json
       views:
       - sus_buss_kpi
       cur2:
@@ -4913,11 +4915,11 @@ views:
         TAG_KPI_PER_DAY AS (
          SELECT
            line_item_usage_start_date line_item_usage_start_date
-         , tagvalue
+         , tags_json
          , "sum"(buss) busKpi
          FROM
            "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, tagvalue
+         GROUP BY line_item_usage_start_date, tags_json
       )
       , ACC_KPI_PER_DAY AS (
          SELECT
@@ -4942,8 +4944,8 @@ views:
       , product['region'] "region"
       , "line_item_line_item_type" "charge_type"
       , "pricing_unit" "pricing_unit"
-      , ${tag} resource_tags_user_application
-      , susTag.tagvalue bussKpiTag
+      , ${cur_tags_json} tags_json
+      , susTag.tags_json bussKpiTag
       , susAcc.linkedaccountvalue bussKpiAcc
       , "sum"(susTag.busKpi) TagBusKpi
       , "sum"(susAcc.busKpi) AccBusKpi
@@ -4952,30 +4954,10 @@ views:
       , "sum"("pricing_public_on_demand_cost") "public_cost"
       FROM
         (("${cur2_database}"."${cur2_table_name}" cur
-      LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
+      LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${cur_tags_json} = susTag.tags_json)))
       LEFT JOIN ACC_KPI_PER_DAY susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
       WHERE ((("line_item_operation" LIKE '%Storage%') AND (("line_item_product_code" LIKE '%AmazonGlacier%') OR ("line_item_product_code" LIKE '%AmazonS3%'))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
       GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
-    parameters:
-      tag:
-        type: 'cur.tag_and_cost_category_fields'
-        default: "none"
-        description: "Enter tag name that is used to categorize workloads"
-        global: True
-  sus_buss_kpi:
-    dependsOn:
-      cur2:
-        - pricing_unit
-    data: |-
-      CREATE OR REPLACE VIEW "${athena_database_name}".sus_buss_kpi AS
-      SELECT
-        'none' tagValue
-      , line_item_usage_account_id linkedAccountValue
-      , line_item_usage_start_date
-      , CAST(("random"() * 1000) AS int) buss
-      FROM
-         "${cur2_database}"."${cur2_table_name}" cur
-      GROUP BY line_item_usage_start_date, line_item_usage_account_id, 1
   account_map:
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".account_map AS
@@ -4989,6 +4971,7 @@ views:
       GROUP BY line_item_usage_account_id
   sus_compute_ec2:
     dependsOn:
+      tags: json
       views:
       - sus_buss_kpi
       cur2:
@@ -5000,11 +4983,11 @@ views:
         tag_business_metrics AS (
          SELECT
            line_item_usage_start_date
-         , tagvalue
+         , tags_json
          , SUM(buss) business_metric
          FROM
            "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, tagvalue
+         GROUP BY line_item_usage_start_date, tags_json
       )
       , acc_business_metrics AS (
          SELECT
@@ -5019,7 +5002,7 @@ views:
         cur.bill_payer_account_id
       , cur.line_item_usage_account_id
       , cur.line_item_usage_start_date
-      , ${tag} resource_tags_user_application
+      , ${cur_tags_json} tags_json
       , cur.line_item_product_code
       , (CASE WHEN ((product['instance_type_family'] IS NULL) OR (product['instance_type_family'] = '')) THEN split(product['instance_type'], '.')[1] ELSE product['instance_type_family'] END) product_instance_type_family
       , cur.product['physical_processor'] product_physical_processor
@@ -5028,39 +5011,28 @@ views:
       , SUM(susAcc.business_metric) account_business_metric
       FROM
         (("${cur2_database}"."${cur2_table_name}" cur
-      LEFT JOIN tag_business_metrics susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
+      LEFT JOIN tag_business_metrics susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${cur_tags_json} = susTag.tags_json)))
       LEFT JOIN acc_business_metrics susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
       WHERE ((((cur.product_product_family = 'Compute Instance') OR (cur.product_product_family = 'Dedicated Host')) AND (cur.line_item_product_code = 'AmazonEC2') AND (cur.line_item_operation LIKE 'RunInstances%') AND (cur.line_item_line_item_type IN ('Usage', 'SavingsPlanCoveredUsage', 'DiscountedUsage'))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
       GROUP BY 1, 2, 3, 4, 5, 6, 7
-    parameters:
-      tag:
-        type: 'cur.tag_and_cost_category_fields'
-        default: "none"
-        description: "Enter tag name that is used to categorize workloads"
-        global: True
   sus_idle_elb:
     dependsOn:
+      tags: json
       views:
       - sus_buss_kpi
       cur2:
         - pricing_unit
-    parameters:
-      tag:
-        type: 'cur.tag_and_cost_category_fields'
-        default: "none"
-        description: "Enter tag name that is used to categorize workloads"
-        global: True
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".sus_idle_elb AS
       WITH
         TAG_KPI_PER_DAY AS (
          SELECT
            line_item_usage_start_date line_item_usage_start_date
-         , tagvalue
+         , tags_json
          , "sum"(buss) busKpi
          FROM
            "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, tagvalue
+         GROUP BY line_item_usage_start_date, tags_json
       )
       , ACC_KPI_PER_DAY AS (
          SELECT
@@ -5079,7 +5051,7 @@ views:
       , product_region product_region
       , pricing_unit
       , sum_line_item_usage_amount
-      , resource_tags_user_application
+      , tags_json
       , TagBusKpi
       , AccBusKpi
       , CAST(cost_per_resource AS decimal(16, 8)) sum_line_item_unblended_cost
@@ -5092,7 +5064,7 @@ views:
          , pricing_unit
          , line_item_usage_account_id
          , bill_payer_account_id
-         , ${tag} resource_tags_user_application
+         , ${cur_tags_json} tags_json
          , "sum"(line_item_usage_amount) sum_line_item_usage_amount
          , "sum"("sum"(line_item_unblended_cost)) OVER (PARTITION BY line_item_resource_id) cost_per_resource
          , "sum"("sum"(line_item_usage_amount)) OVER (PARTITION BY line_item_resource_id, pricing_unit) usage_per_resource_and_pricing_unit
@@ -5101,7 +5073,7 @@ views:
          , "count"(pricing_unit) OVER (PARTITION BY line_item_resource_id, bill_billing_period_start_date) pricing_unit_per_resource
          FROM
            (("${cur2_database}"."${cur2_table_name}" cur
-         LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
+         LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${cur_tags_json} = susTag.tags_json)))
          LEFT JOIN ACC_KPI_PER_DAY susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
          WHERE (((line_item_product_code = 'AWSELB') AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST("concat"(billing_period, '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH)))) AND (line_item_line_item_type = 'Usage'))
          GROUP BY line_item_resource_id, bill_billing_period_start_date, product['region'], pricing_unit, line_item_usage_account_id, bill_payer_account_id, 7
@@ -5109,27 +5081,22 @@ views:
       WHERE ((usage_per_resource_and_pricing_unit > 336) AND (pricing_unit_per_resource = 1))
   sus_storage_athena:
     dependsOn:
+      tags: json
       views:
       - sus_buss_kpi
       cur2:
         - pricing_unit
-    parameters:
-      tag:
-        type: 'cur.tag_and_cost_category_fields'
-        default: "none"
-        description: "Enter tag name that is used to categorize workloads"
-        global: True
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".sus_storage_athena AS
       WITH
         TAG_KPI_PER_DAY AS (
          SELECT
            line_item_usage_start_date line_item_usage_start_date
-         , tagvalue
+         , tags_json
          , "sum"(buss) busKpi
          FROM
            "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, tagvalue
+         GROUP BY line_item_usage_start_date, tags_json
       )
       , ACC_KPI_PER_DAY AS (
          SELECT
@@ -5142,7 +5109,7 @@ views:
       )
       SELECT
         cur.bill_payer_account_id
-      , ${tag} resource_tags_user_application
+      , ${cur_tags_json} tags_json
       , line_item_usage_account_id
       , line_item_operation
       , cur.line_item_usage_start_date
@@ -5151,7 +5118,7 @@ views:
       , "sum"(susAcc.busKpi) AccBusKpi
       FROM
         (("${cur2_database}"."${cur2_table_name}" cur
-      LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
+      LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${cur_tags_json} = susTag.tags_json)))
       LEFT JOIN ACC_KPI_PER_DAY susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
       WHERE ((line_item_operation LIKE 'CreateVolume%') AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST("concat"(billing_period, '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH))))
       GROUP BY 1, 2, 3, 4, 5
@@ -5259,27 +5226,22 @@ views:
       "${data_exports_database_name}".carbon
   sus_network:
     dependsOn:
+      tags: json
       views:
       - sus_buss_kpi
       cur2:
         - pricing_unit
-    parameters:
-      tag:
-        type: 'cur.tag_and_cost_category_fields'
-        default: "none"
-        description: "Enter tag name that is used to categorize workloads"
-        global: True
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".sus_network AS
       WITH
         TAG_KPI_PER_DAY AS (
          SELECT
            line_item_usage_start_date line_item_usage_start_date
-         , tagvalue
+         , tags_json
          , "sum"(buss) busKpi
          FROM
            "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, tagvalue
+         GROUP BY line_item_usage_start_date, tags_json
       )
       , ACC_KPI_PER_DAY AS (
          SELECT
@@ -5302,7 +5264,7 @@ views:
       , product['region'] product_region
       , product_from_location
       , product_to_location
-      , ${tag} resource_tags_user_application
+      , ${cur_tags_json} tags_json
       , line_item_line_item_description
       , "sum"((line_item_usage_amount / 1024)) usage_amount_in_tb
       , "sum"(line_item_unblended_cost) cost
@@ -5310,33 +5272,28 @@ views:
       , "sum"(susAcc.busKpi) AccBusKpi
       FROM
         (("${cur2_database}"."${cur2_table_name}" cur
-      LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
+      LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${cur_tags_json} = susTag.tags_json)))
       LEFT JOIN ACC_KPI_PER_DAY susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
       WHERE ((((line_item_line_item_type = 'Usage') AND (NOT (line_item_usage_amount = 0))) AND (((line_item_usage_type LIKE '%Bytes') AND ((((line_item_usage_type LIKE '%In%') OR (line_item_usage_type LIKE '%Out%')) OR (line_item_usage_type LIKE 'Nat%')) OR (line_item_usage_type LIKE '%Regional%'))) AND ((product_from_location = '') OR (product_from_location LIKE '%(%')))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
       GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
   sus_idle_natgw:
     dependsOn:
+      tags: json
       views:
       - sus_buss_kpi
       cur2:
         - pricing_unit
-    parameters:
-      tag:
-        type: 'cur.tag_and_cost_category_fields'
-        default: "none"
-        description: "Enter tag name that is used to categorize workloads"
-        global: True
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".sus_idle_natgw AS
       WITH
         TAG_KPI_PER_DAY AS (
          SELECT
            line_item_usage_start_date line_item_usage_start_date
-         , tagvalue
+         , tags_json
          , "sum"(buss) busKpi
          FROM
            "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, tagvalue
+         GROUP BY line_item_usage_start_date, tags_json
       )
       , ACC_KPI_PER_DAY AS (
          SELECT
@@ -5355,7 +5312,7 @@ views:
       , product_region product_region
       , pricing_unit
       , sum_line_item_usage_amount
-      , resource_tags_user_application
+      , tags_json
       , CAST(cost_per_resource AS decimal(16, 8)) sum_line_item_unblended_cost
       , TagBusKpi
       , AccBusKpi
@@ -5368,7 +5325,7 @@ views:
          , pricing_unit
          , line_item_usage_account_id
          , bill_payer_account_id
-         , ${tag} resource_tags_user_application
+         , ${cur_tags_json} tags_json
          , "sum"(susTag.busKpi) TagBusKpi
          , "sum"(susAcc.busKpi) AccBusKpi
          , "sum"(line_item_usage_amount) sum_line_item_usage_amount
@@ -5377,7 +5334,7 @@ views:
          , "count"(pricing_unit) OVER (PARTITION BY line_item_resource_id, bill_billing_period_start_date) pricing_unit_per_resource
          FROM
            (("${cur2_database}"."${cur2_table_name}" cur
-         LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
+         LEFT JOIN TAG_KPI_PER_DAY susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${cur_tags_json} = susTag.tags_json)))
          LEFT JOIN ACC_KPI_PER_DAY susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
          WHERE ((((line_item_product_code = 'AmazonEC2') AND (line_item_usage_type LIKE '%Nat%')) AND (("bill_billing_period_start_date" >= ("date_trunc"('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST("concat"(billing_period, '-01') AS date) >= ("date_trunc"('month', current_date) - INTERVAL  '7' MONTH)))) AND (line_item_line_item_type = 'Usage'))
          GROUP BY 1, 2, 3, 4, 5, 6, 7
@@ -5385,6 +5342,7 @@ views:
       WHERE ((usage_per_resource_and_pricing_unit > 336) AND (pricing_unit_per_resource = 1))
   sus_compute_split:
     dependsOn:
+      tags: json
       views:
       - sus_buss_kpi
       - sus_compute_ec2
@@ -5396,11 +5354,11 @@ views:
         tag_business_metrics AS (
          SELECT
            line_item_usage_start_date
-         , tagvalue
+         , tags_json
          , SUM(buss) business_metric
          FROM
            "${athena_database_name}".sus_buss_kpi
-         GROUP BY line_item_usage_start_date, tagvalue
+         GROUP BY line_item_usage_start_date, tags_json
       )
       , acc_business_metrics AS (
          SELECT
@@ -5415,14 +5373,14 @@ views:
         cur.bill_payer_account_id
       , cur.line_item_usage_account_id
       , cur.line_item_usage_start_date
-      , ${tag} resource_tags_user_application
+      , ${cur_tags_json} tags_json
       , cur.line_item_product_code
       , SUM(cur.line_item_usage_amount) vcpu_hours
       , SUM(susTag.business_metric) tag_business_metric
       , SUM(susAcc.business_metric) account_business_metric
       FROM
         (("${cur2_database}"."${cur2_table_name}" cur
-      LEFT JOIN tag_business_metrics susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
+      LEFT JOIN tag_business_metrics susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${cur_tags_json} = susTag.tags_json)))
       LEFT JOIN acc_business_metrics susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
       WHERE (((cur.line_item_usage_type LIKE '%Fargate-vCPU-Hours:perCPU') AND (cur.line_item_product_code IN ('AmazonEKS', 'AmazonECS')) AND (cur.line_item_line_item_type IN ('Usage', 'SavingsPlanCoveredUsage'))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
       GROUP BY 1, 2, 3, 4, 5
@@ -5430,14 +5388,14 @@ views:
         cur.bill_payer_account_id
       , cur.line_item_usage_account_id
       , cur.line_item_usage_start_date
-      , ${tag} resource_tags_user_application
+      , ${cur_tags_json} tags_json
       , cur.line_item_product_code
       , SUM(((cur.line_item_usage_amount / 1769) / 3600)) vcpu_hours
       , SUM(susTag.buss) tag_business_metric
       , SUM(susAcc.buss) account_business_metric
       FROM
         (("${cur2_database}"."${cur2_table_name}" cur
-      LEFT JOIN "${athena_database_name}".sus_buss_kpi susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${tag} = susTag.tagValue)))
+      LEFT JOIN "${athena_database_name}".sus_buss_kpi susTag ON ((cur.line_item_usage_start_date = susTag.line_item_usage_start_date) AND (${cur_tags_json} = susTag.tags_json)))
       LEFT JOIN "${athena_database_name}".sus_buss_kpi susAcc ON ((cur.line_item_usage_start_date = susAcc.line_item_usage_start_date) AND (cur.line_item_usage_account_id = susAcc.linkedaccountvalue)))
       WHERE (((cur.line_item_product_code = 'AWSLambda') AND (cur.line_item_usage_type LIKE '%Lambda-GB-Second') AND (cur.line_item_line_item_type IN ('Usage', 'SavingsPlanCoveredUsage'))) AND ((cur.bill_billing_period_start_date >= (DATE_TRUNC('month', current_timestamp) - INTERVAL  '7' MONTH)) AND (CAST(CONCAT(cur.billing_period, '-01') AS date) >= (DATE_TRUNC('month', current_date) - INTERVAL  '7' MONTH))))
       GROUP BY 1, 2, 3, 4, 5
@@ -5445,36 +5403,25 @@ views:
         ec2.bill_payer_account_id
       , ec2.line_item_usage_account_id
       , ec2.line_item_usage_start_date
-      , ec2.resource_tags_user_application
+      , ec2.tags_json
       , ec2.line_item_product_code
       , ec2.vcpu_hours
       , ec2.tag_business_metric
       , ec2.account_business_metric
       FROM
         "${athena_database_name}".sus_compute_ec2 ec2
-    parameters:
-      tag:
-        type: 'cur.tag_and_cost_category_fields'
-        default: "none"
-        description: "Enter tag name that is used to categorize workloads"
-        global: True
   sus_buss_kpi:
     dependsOn:
+      tags: json
       cur2:
         - pricing_unit
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".sus_buss_kpi AS
       SELECT
-        ${tag} tagValue
+        ${cur_tags_json} tags_json
       , line_item_usage_account_id linkedAccountValue
       , line_item_usage_start_date
       , CAST(("random"() * 1000) AS int) buss
       FROM
         "${cur2_database}"."${cur2_table_name}" cur
       GROUP BY line_item_usage_start_date, line_item_usage_account_id, 1
-    parameters:
-      tag:
-        type: 'cur.tag_and_cost_category_fields'
-        default: "none"
-        description: "Enter tag name that is used to categorize workloads"
-        global: True

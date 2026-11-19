@@ -5,8 +5,31 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Mon, 16 Nov 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 19 Nov 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] Sustainability Proxy and Carbon emissions data Dashboard v6.1.0</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-sustainability-proxy-metrics.md#sustainability-proxy-and-carbon-emissions-data-dashboard---v610
+      </link>
+      <pubDate>Thu, 19 Nov 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">94b770c6-2953-414d-be92-1e8dd9c96f97</guid>
+      <description>Sustainability Proxy and Carbon emissions data Dashboard v6.1.0 - Group By any tag or cost category, CloudFormation deployment fix</description>
+      <content:encoded><![CDATA[
+<div>
+  <p>
+    <strong>Important:</strong> Update with <code>cid-cmd update --dashboard-id sustainability-proxy-metrics --force --recursive</code>, then select the tags and cost categories to add. Choose <strong>proceed and override</strong> for each <code>sus_*</code> view (without a terminal, add <code>--on-drift override</code>). The workload tag selected in earlier versions is not carried over, so select it again. If you replaced the <code>sus_buss_kpi</code> view with your own business metrics, rename its <code>tagValue</code> column to <code>tags_json</code>.
+  </p>
+  <ul>
+    <li><strong>Compute Proxies, Storage Proxies, Data Transfer / Networking Proxies:</strong> Group By now lists each tag and cost category you select during deployment, instead of a single 'Environment Tag' option. With no tags selected, Group By shows Linked Account only.</li>
+    <li><strong>Compute Proxies, Storage Proxies, Data Transfer / Networking Proxies:</strong> The tags and cost categories you select are also added as dashboard filters.</li>
+    <li><strong>Compute Proxies, Storage Proxies, Data Transfer / Networking Proxies:</strong> With Include Business KPI set to Yes, grouping by a tag or cost category scales usage by the business KPI of the matching workload.</li>
+    <li><strong>Deployment:</strong> Deploying with CloudFormation no longer fails with 'Please set parameter tag' (#1428).</li>
+  </ul>
+</div>
+      ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] Graviton Savings Dashboard v3.0.7</title>
       <link>
