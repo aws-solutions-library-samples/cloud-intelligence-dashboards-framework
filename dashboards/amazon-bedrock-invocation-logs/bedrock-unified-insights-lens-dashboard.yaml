@@ -1003,18 +1003,23 @@ views:
       \ timestamp\n, region\n, requestid\n, operation\n, modelid\n, identity_arn\n\
       , IF((identity_arn LIKE '%:assumed-role/%'), element_at(split(identity_arn,\
       \ '/'), -1), identity_arn) identity\n, JSON_FORMAT(CAST(requestmetadata AS JSON))\
-      \ requestmetadata\n, year\n, month\n, day\n, input.inputtokencount input_token_count\n\
-      , input.inputcontenttype input_content_type\n, output.outputtokencount output_token_count\n\
-      , output.outputcontenttype output_content_type\n, input.inputtokencount usage_input_tokens\n\
-      , output.outputtokencount usage_output_tokens\n, (input.inputtokencount + output.outputtokencount)\
-      \ usage_total_tokens\n, CAST(COALESCE(json_extract_scalar(output.outputbodyjson,\
+      \ requestmetadata\n, year\n, month\n, day\n, input.inputtokencount input_tokens\n\
+      , input.inputcontenttype input_content_type\n, output.outputtokencount output_tokens\n\
+      , output.outputcontenttype output_content_type\n, CAST(COALESCE(json_extract_scalar(output.outputbodyjson,\
       \ '$.usage.cacheReadInputTokens'), json_extract_scalar(output.outputbodyjson,\
       \ '$.usage.cacheReadInputTokenCount'), json_extract_scalar(output.outputbodyjson,\
-      \ '$.usage.cache_read_input_tokens')) AS INTEGER) usage_cache_read_tokens\n\
-      , CAST(COALESCE(json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokens'),\
-      \ json_extract_scalar(output.outputbodyjson, '$.usage.cacheWriteInputTokenCount'),\
-      \ json_extract_scalar(output.outputbodyjson, '$.usage.cache_creation_input_tokens'))\
-      \ AS INTEGER) usage_cache_write_tokens\n, COALESCE(json_extract_scalar(output.outputbodyjson,\
+      \ '$.usage.cache_read_input_tokens')) AS INTEGER) cache_read_tokens\n, CAST(COALESCE(json_extract_scalar(output.outputbodyjson,\
+      \ '$.usage.cacheWriteInputTokens'), json_extract_scalar(output.outputbodyjson,\
+      \ '$.usage.cacheWriteInputTokenCount'), json_extract_scalar(output.outputbodyjson,\
+      \ '$.usage.cache_creation_input_tokens')) AS INTEGER) cache_write_tokens\n,\
+      \ (COALESCE(input.inputtokencount, 0) + COALESCE(output.outputtokencount, 0)\
+      \ + COALESCE(CAST(COALESCE(json_extract_scalar(output.outputbodyjson, '$.usage.cacheReadInputTokens'),\
+      \ json_extract_scalar(output.outputbodyjson, '$.usage.cacheReadInputTokenCount'),\
+      \ json_extract_scalar(output.outputbodyjson, '$.usage.cache_read_input_tokens'))\
+      \ AS INTEGER), 0) + COALESCE(CAST(COALESCE(json_extract_scalar(output.outputbodyjson,\
+      \ '$.usage.cacheWriteInputTokens'), json_extract_scalar(output.outputbodyjson,\
+      \ '$.usage.cacheWriteInputTokenCount'), json_extract_scalar(output.outputbodyjson,\
+      \ '$.usage.cache_creation_input_tokens')) AS INTEGER), 0)) total_tokens\n, COALESCE(json_extract_scalar(output.outputbodyjson,\
       \ '$.stopReason'), json_extract_scalar(output.outputbodyjson, '$.stop_reason'))\
       \ stop_reason\n, substr(COALESCE(json_extract_scalar(output.outputbodyjson,\
       \ '$.output.message.content[0].text'), json_extract_scalar(output.outputbodyjson,\
@@ -1022,6 +1027,7 @@ views:
       \ json_extract_scalar(output.outputbodyjson, '$.outputText')), 1, 1000) response_preview\n\
       , substr(COALESCE(json_extract_scalar(input.inputbodyjson, '$.messages[0].content[0].text'),\
       \ json_extract_scalar(input.inputbodyjson, '$.messages[0].content'), json_extract_scalar(input.inputbodyjson,\
-      \ '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText')), 1,\
-      \ 1000) prompt_preview\nFROM\n  \"${athena_database_name}\".bedrock_logs\nWHERE\
-      \ (from_iso8601_timestamp(timestamp) >= date_add('month', -6, current_timestamp))"
+      \ '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText'), json_extract_scalar(input.inputbodyjson,\
+      \ '$.textToImageParams.text'), json_extract_scalar(input.inputbodyjson, '$.text_prompts[0].text')),\
+      \ 1, 1000) prompt_preview\nFROM\n  \"${athena_database_name}\".bedrock_logs\n\
+      WHERE (from_iso8601_timestamp(timestamp) >= date_add('month', -6, current_timestamp))"
