@@ -1023,13 +1023,26 @@ views:
       , errorcode
       , inferenceregion
       , CAST(json_extract_scalar(output.outputbodyjson, '$.metrics.latencyMs') AS INTEGER) latency_ms
-      , CAST(COALESCE(json_extract_scalar(input.inputbodyjson, '$.inferenceConfig.maxTokens'), json_extract_scalar(input.inputbodyjson, '$.max_tokens'), json_extract_scalar(input.inputbodyjson, '$.inferenceConfig.max_new_tokens')) AS INTEGER) max_tokens_requested
+      , CAST(COALESCE(json_extract_scalar(input.inputbodyjson, '$.inferenceConfig.maxTokens'), json_extract_scalar(input.inputbodyjson, '$.max_tokens'), json_extract_scalar(input.inputbodyjson, '$.max_completion_tokens'), json_extract_scalar(input.inputbodyjson, '$.max_output_tokens'), json_extract_scalar(input.inputbodyjson, '$.inferenceConfig.max_new_tokens')) AS INTEGER) max_tokens_requested
       , CAST(COALESCE(json_extract_scalar(input.inputbodyjson, '$.inferenceConfig.temperature'), json_extract_scalar(input.inputbodyjson, '$.temperature')) AS DOUBLE) temperature
       , IF(json_extract(input.inputbodyjson, '$.system') IS NOT NULL, 'Yes', 'No') system_prompt
       , COALESCE(json_extract_scalar(output.outputbodyjson, '$.service_tier'), json_extract_scalar(output.outputbodyjson, '$.usage.service_tier')) service_tier
-      , COALESCE(json_extract_scalar(output.outputbodyjson, '$.stopReason'), json_extract_scalar(output.outputbodyjson, '$.stop_reason'), CASE json_extract_scalar(output.outputbodyjson, '$.choices[0].finish_reason') WHEN 'stop' THEN 'end_turn' WHEN 'length' THEN 'max_tokens' ELSE json_extract_scalar(output.outputbodyjson, '$.choices[0].finish_reason') END) stop_reason
-      , substr(COALESCE(json_extract_scalar(output.outputbodyjson, '$.output.message.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.output.message.content[1].text'), json_extract_scalar(output.outputbodyjson, '$.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.completion'), json_extract_scalar(output.outputbodyjson, '$.outputText'), json_extract_scalar(output.outputbodyjson, '$.choices[0].message.content')), 1, 1000) response_preview
-      , substr(COALESCE(json_extract_scalar(input.inputbodyjson, '$.messages[0].content[0].text'), json_extract_scalar(input.inputbodyjson, '$.messages[0].content'), json_extract_scalar(input.inputbodyjson, '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText'), json_extract_scalar(input.inputbodyjson, '$.textToImageParams.text'), json_extract_scalar(input.inputbodyjson, '$.text_prompts[0].text')), 1, 1000) prompt_preview
+      , CASE stop_raw WHEN 'stop' THEN 'end_turn' WHEN 'length' THEN 'max_tokens' WHEN 'max_output_tokens' THEN 'max_tokens' ELSE stop_raw END stop_reason
+      , substr(COALESCE(json_extract_scalar(output.outputbodyjson, '$.output.message.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.output.message.content[1].text'), json_extract_scalar(output.outputbodyjson, '$.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.completion'), json_extract_scalar(output.outputbodyjson, '$.outputText'), json_extract_scalar(output.outputbodyjson, '$.choices[0].message.content'), json_extract_scalar(output.outputbodyjson, '$.output[0].content[0].text'), json_extract_scalar(output.outputbodyjson, '$.output[1].content[0].text'), stream_text), 1, 1000) response_preview
+      , substr(COALESCE(json_extract_scalar(input.inputbodyjson, '$.messages[0].content[0].text'), json_extract_scalar(input.inputbodyjson, '$.messages[0].content'), json_extract_scalar(input.inputbodyjson, '$.input'), json_extract_scalar(input.inputbodyjson, '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText'), json_extract_scalar(input.inputbodyjson, '$.textToImageParams.text'), json_extract_scalar(input.inputbodyjson, '$.text_prompts[0].text')), 1, 1000) prompt_preview
       FROM
-        "${athena_database_name}".bedrock_logs
-      WHERE (from_iso8601_timestamp(timestamp) >= date_add('month', -6, current_timestamp))
+        (
+         SELECT
+           *
+         , COALESCE(json_extract_scalar(output.outputbodyjson, '$.stopReason'), json_extract_scalar(output.outputbodyjson, '$.stop_reason'), json_extract_scalar(output.outputbodyjson, '$.choices[0].finish_reason'), json_extract_scalar(output.outputbodyjson, '$.incomplete_details.reason'), IF(json_extract_scalar(output.outputbodyjson, '$.status') = 'completed', 'stop'), element_at(filter(transform(chunks, c -> COALESCE(json_extract_scalar(c, '$.delta.stop_reason'), json_extract_scalar(c, '$.messageStop.stopReason'), json_extract_scalar(c, '$.choices[0].finish_reason'))), s -> s IS NOT NULL), 1)) stop_raw
+         , NULLIF(array_join(transform(chunks, c -> COALESCE(json_extract_scalar(c, '$.delta.text'), json_extract_scalar(c, '$.contentBlockDelta.delta.text'), json_extract_scalar(c, '$.choices[0].delta.content'))), ''), '') stream_text
+         FROM
+           (
+            SELECT
+              *
+            , TRY(CAST(json_parse(output.outputbodyjson) AS array(json))) chunks
+            FROM
+              "${athena_database_name}".bedrock_logs
+            WHERE (from_iso8601_timestamp(timestamp) >= date_add('month', -6, current_timestamp))
+         )
+      )
