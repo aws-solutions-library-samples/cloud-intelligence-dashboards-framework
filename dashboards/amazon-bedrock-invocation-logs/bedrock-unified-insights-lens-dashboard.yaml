@@ -1008,7 +1008,6 @@ views:
       , operation
       , modelid
       , identity_arn
-      , IF((identity_arn LIKE '%:assumed-role/%'), element_at(split(identity_arn, '/'), -1), identity_arn) identity
       , JSON_FORMAT(CAST(requestmetadata AS JSON)) requestmetadata
       , year
       , month
