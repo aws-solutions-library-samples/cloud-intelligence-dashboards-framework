@@ -17,6 +17,14 @@ The DROID Dashboard provides comprehensive RDS instance analysis across multi-ac
 - **Efficient Storage**: Partitioned S3 data (account/region/date) with Glue crawlers for automatic schema updates
 - **CID Framework Integration**: Seamless deployment via cid-cmd with standard CID patterns and naming conventions
 
+## DROID Dashboard - v1.0.2
+**Important:** Update with `cid-cmd update --dashboard-id droid --force --recursive` to refresh the dashboard visuals (no data-collection changes in this release).
+* **RDS Inventory**: Instances with no cluster now display as `Standalone Instance` instead of a blank Cluster ID; larger visual titles and click-to-filter actions on charts; consistent Cluster ID and Region column widths
+* **RDS Version and Maintenance**: Added an `Engine Version` column alongside Major Version in both end-of-support tables; added a maintenance legend explaining Mandatory (✔) vs Optional (―) actions
+* **RDS Snapshot Backup**: Renamed the "Average Backup %" KPI to "Instances Backed Up %"; "Snapshot Backup % by DB Engine" now shows data labels; removed the redundant Autobackup pie chart and the "Daily Snapshot Backup % per Account" pivot
+* **RDS Cost and Usage**: "Monthly Extended Support Cost" changed from a table to a bar chart; "Monthly Amortized Cost per Region" and "Monthly Backup Storage Cost per Region" now plot month on the X axis with region as the series; the current-month-to-date Aurora I/O Optimized recommendation now excludes the "Review" category
+* Default sorts across tables surface at-risk rows first (Extended Support, Unencrypted, Expired, Backup Not Enabled)
+
 ## DROID Dashboard - v1.0.1
 **Important:** Update with `cid-cmd update --dashboard-id droid --force --recursive` to get the `rds_aurora_io_optimized_view` fix.
 * **RDS Cost and Usage**: Aurora I/O-Optimized recommendations now also work on CUR Legacy through the CUR 2.0 proxy view (the region is read from `product['region']` instead of `product_region_code`)
