@@ -13324,7 +13324,7 @@ Sheets:
   - Content: "<text-box>\n  <block align=\"center\">\n    <inline color=\"#61d1d6\"\
       \ font-size=\"40px\">\n      <b>DROID \u2013 Data Resilience, Operations, and\
       \ Insights Dashboard</b>\n    </inline>\n  </block>\n  <br/>\n  <block align=\"\
-      center\">\n    <inline font-size=\"40px\">\n      <b>v1.0.1</b>\n    </inline>\n\
+      center\">\n    <inline font-size=\"40px\">\n      <b>v1.0.2</b>\n    </inline>\n\
       \  </block>\n  <br/>\n  <br/>\n  <br/>\n  <br/>\n  <block align=\"right\">Built\
       \ by: Anish Kumar Gopal, Yuriy Prykhodko, Eric Christensen, Prashob Krishnan</block>\n\
       \  <br/>\n  <block align=\"right\">\n    Learn more about AWS Cloud Intelligence\
