@@ -4206,7 +4206,7 @@ Sheets:
         Visibility: VISIBLE
       Title:
         FormatText:
-          RichText: <visual-title>Monthly Extended Support Cost</visual-title>
+          RichText: <visual-title><inline font-size="18px">Monthly Extended Support Cost</inline></visual-title>
         Visibility: VISIBLE
       VisualId: a8ff894a-dab1-4e73-9753-18db913dca9c
   - KPIVisual:
@@ -8716,7 +8716,7 @@ Sheets:
         FormatText:
           RichText: |-
             <visual-title>
-              <inline color="#f0f6f6">Average Snapshot Backup % for past 30 days</inline>
+              <inline color="#f0f6f6" font-size="18px">Average Snapshot Backup % for past 30 days</inline>
             </visual-title>
         Visibility: VISIBLE
       VisualId: f8e3247c-9d4f-4a76-b63c-156c49b1093e
