@@ -588,7 +588,7 @@ FilterGroups:
       MinimumGranularity: DAY
       NullOption: NON_NULLS_ONLY
       RelativeDateType: LAST
-      RelativeDateValue: 9
+      RelativeDateValue: 3
       TimeGranularity: MONTH
   ScopeConfiguration:
     SelectedSheets:
@@ -1912,11 +1912,6 @@ Sheets:
       Title: ' '
       Type: SINGLE_SELECT
   - List:
-      ControlTitleFormatText:
-        RichText: |-
-          <control-title>
-            <inline font-size="16px">Collection Date Mode</inline>
-          </control-title>
       DisplayOptions:
         InfoIconLabelOptions:
           Visibility: HIDDEN
@@ -1932,7 +1927,7 @@ Sheets:
         - Latest
         - Selected
       SourceParameterName: pDateMode
-      Title: ''
+      Title: Collection Date Mode
       Type: SINGLE_SELECT
   - Dropdown:
       DisplayOptions:
@@ -3692,11 +3687,6 @@ Sheets:
   Name: RDS Version and Maintenance
   ParameterControls:
   - List:
-      ControlTitleFormatText:
-        RichText: |-
-          <control-title>
-            <inline font-size="18px">Selected Major Version</inline>
-          </control-title>
       DisplayOptions:
         InfoIconLabelOptions:
           InfoIconText: Select the RDS Major Version to compare with current DB Major
@@ -3715,14 +3705,9 @@ Sheets:
         - Latest_Major_Version_N-1
         - Latest_Major_Version_N-2
       SourceParameterName: pMajorVersionCompare
-      Title: ''
+      Title: Selected Major Version
       Type: SINGLE_SELECT
   - List:
-      ControlTitleFormatText:
-        RichText: |-
-          <control-title>
-            <inline font-size="18px">Selected Minor Version</inline>
-          </control-title>
       DisplayOptions:
         InfoIconLabelOptions:
           InfoIconText: Select the RDS Major Version to compare with current DB Major
@@ -3741,14 +3726,9 @@ Sheets:
         - Latest_Minor_Version_N-1
         - Latest_Minor_Version_N-2
       SourceParameterName: pMinorVersionCompare
-      Title: ''
+      Title: Selected Minor Version
       Type: SINGLE_SELECT
   - List:
-      ControlTitleFormatText:
-        RichText: |-
-          <control-title>
-            <inline font-size="16px">Collection Date Mode</inline>
-          </control-title>
       DisplayOptions:
         InfoIconLabelOptions:
           Visibility: HIDDEN
@@ -3764,7 +3744,7 @@ Sheets:
         - Latest
         - Selected
       SourceParameterName: pDateMode
-      Title: ''
+      Title: Collection Date Mode
       Type: SINGLE_SELECT
   - Dropdown:
       DisplayOptions:
@@ -5860,11 +5840,6 @@ Sheets:
   Name: RDS Security and Resiliency
   ParameterControls:
   - List:
-      ControlTitleFormatText:
-        RichText: |-
-          <control-title>
-            <inline font-size="16px">Collection Date Mode</inline>
-          </control-title>
       DisplayOptions:
         InfoIconLabelOptions:
           Visibility: HIDDEN
@@ -5880,7 +5855,7 @@ Sheets:
         - Latest
         - Selected
       SourceParameterName: pDateMode
-      Title: ''
+      Title: Collection Date Mode
       Type: SINGLE_SELECT
   - Dropdown:
       DisplayOptions:
@@ -7602,11 +7577,6 @@ Sheets:
   Name: RDS Snapshot Backup
   ParameterControls:
   - List:
-      ControlTitleFormatText:
-        RichText: |-
-          <control-title>
-            <inline font-size="16px">Collect Date Mode</inline>
-          </control-title>
       DisplayOptions:
         InfoIconLabelOptions:
           Visibility: HIDDEN
@@ -7622,7 +7592,7 @@ Sheets:
         - Latest
         - Selected
       SourceParameterName: pDateMode
-      Title: ''
+      Title: Collect Date Mode
       Type: SINGLE_SELECT
   - Dropdown:
       DisplayOptions:
