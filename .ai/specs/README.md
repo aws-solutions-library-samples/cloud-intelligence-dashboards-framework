@@ -9,6 +9,7 @@ Before you create or change anything, read the files below that apply to your ta
 | File | Read when |
 |---|---|
 | [dashboard-standards.md](dashboard-standards.md) | Creating or reviewing dashboard resource files (`dashboards/**/*.yaml`): views, datasets, `dependsOn`, placeholders, account names (`account_map`), prerequisite checks, metadata |
+| [dashboard-design.md](dashboard-design.md) | Designing or changing dashboard visuals: tab and visual layout, flat views vs calculated fields, click filters, filter controls, Group By and metric parameters, colours and formats, QuickSight definition pitfalls |
 | [agent-standards.md](agent-standards.md) | Creating or reviewing Quick agents, Spaces or personas (`agentic/**`): layout, dependencies, manifest fields, persona structure, Space limits |
 | [release-readiness.md](release-readiness.md) | Preparing or reviewing a dashboard release: account-specific or hardcoded content, spelling, duplicate fields, version consistency, changelog and RSS |
 | [usage-type-groups.md](usage-type-groups.md) | Creating, reviewing or updating `* Usage Type Group` / `Sub Group` calculated fields: checking coverage against the AWS Price List bulk files, pricing-page naming, match order, dependents |
