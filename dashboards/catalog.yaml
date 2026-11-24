@@ -24,5 +24,6 @@ Resources:
   - Url: media-services-insights/msih.yaml
   - Url: rls/rls.yaml
   - Url: kiro-user-activity/kiro-user-activity.yaml
+  - Url: amazon-bedrock-invocation-logs/bedrock-unified-insights-lens-dashboard.yaml
   - Url: pca/pca.yaml
   - Url: droid/droid.yaml
