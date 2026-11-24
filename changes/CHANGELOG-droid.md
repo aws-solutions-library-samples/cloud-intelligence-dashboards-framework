@@ -18,7 +18,6 @@ The DROID Dashboard provides comprehensive RDS instance analysis across multi-ac
 - **CID Framework Integration**: Seamless deployment via cid-cmd with standard CID patterns and naming conventions
 
 ## DROID Dashboard - v1.0.2
-**Important:** Update with `cid-cmd update --dashboard-id droid --force --recursive` to refresh the dashboard visuals (no data-collection changes in this release).
 * **RDS Inventory**: Instances with no cluster now display as `Standalone Instance` instead of a blank Cluster ID; larger visual titles and click-to-filter actions on charts; consistent Cluster ID and Region column widths
 * **RDS Version and Maintenance**: Added an `Engine Version` column alongside Major Version in both end-of-support tables; added a maintenance legend explaining Mandatory (✔) vs Optional (―) actions
 * **RDS Snapshot Backup**: Renamed the "Average Backup %" KPI to "Instances Backed Up %"; "Snapshot Backup % by DB Engine" now shows data labels; removed the redundant Autobackup pie chart and the "Daily Snapshot Backup % per Account" pivot
