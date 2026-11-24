@@ -5,7 +5,7 @@ dashboards:
       - bedrock_invocations_view
     name: Bedrock Unified Insights Lens Dashboard
     dashboardId: bedrock-unified-insights-lens-dashboard
-    category: Custom
+    category: Advanced
     theme: MIDNIGHT
     version: v1.0.0
     data: "AnalysisDefaults:\n  DefaultNewSheetConfiguration:\n    InteractiveLayoutConfiguration:\n\
@@ -2686,6 +2686,14 @@ crawlers: {}
 views:
   bedrock_invocations_view:
     dependsOn: {}
+    parameters:
+      data_collection_database_name:
+        type: athena
+        query: SELECT DISTINCT table_schema FROM information_schema.columns WHERE table_name = 'bedrock_logs'
+        error: "This means that prerequisites for the dashboard are not found. Please make sure you have the needed table: Data Collection installed, needed module is configured and Step Function runs correctly."
+        default: optimization_data
+        description: "Enter the name of the data collection database"
+        global: True
     data: |-
       CREATE OR REPLACE VIEW "${athena_database_name}".bedrock_invocations_view AS
       SELECT
@@ -2718,5 +2726,5 @@ views:
       , substr(COALESCE(json_extract_scalar(output.outputbodyjson, '$.output.message.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.output.message.content[1].text'), json_extract_scalar(output.outputbodyjson, '$.content[0].text'), json_extract_scalar(output.outputbodyjson, '$.completion'), json_extract_scalar(output.outputbodyjson, '$.outputText'), json_extract_scalar(output.outputbodyjson, '$.choices[0].message.content'), json_extract_scalar(output.outputbodyjson, '$.output[0].content[0].text'), json_extract_scalar(output.outputbodyjson, '$.output[1].content[0].text')), 1, 1000) response_preview
       , substr(COALESCE(json_extract_scalar(input.inputbodyjson, '$.messages[0].content[0].text'), json_extract_scalar(input.inputbodyjson, '$.messages[0].content'), json_extract_scalar(input.inputbodyjson, '$.input'), json_extract_scalar(input.inputbodyjson, '$.prompt'), json_extract_scalar(input.inputbodyjson, '$.inputText'), json_extract_scalar(input.inputbodyjson, '$.textToImageParams.text'), json_extract_scalar(input.inputbodyjson, '$.text_prompts[0].text')), 1, 1000) prompt_preview
       FROM
-        "${athena_database_name}".bedrock_logs
+        "${data_collection_database_name}".bedrock_logs
       WHERE (from_iso8601_timestamp(timestamp) >= date_add('month', -6, current_timestamp))
