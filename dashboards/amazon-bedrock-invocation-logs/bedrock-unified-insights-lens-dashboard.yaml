@@ -276,16 +276,16 @@ dashboards:
       \ 178px\n          Width: 392px\n          Height: 170px\n          Visibility:\
       \ VISIBLE\n        - ElementId: 3d419a32-309f-461c-af6d-5c6748e68169\n     \
       \     ElementType: PARAMETER_CONTROL\n          XAxisLocation: 0px\n       \
-      \   YAxisLocation: 356px\n          Width: 150px\n          Height: 896px\n\
+      \   YAxisLocation: 356px\n          Width: 220px\n          Height: 896px\n\
       \          Visibility: VISIBLE\n        - ElementId: 39a6324e-e985-4b84-a7f5-3e85239a2200\n\
-      \          ElementType: VISUAL\n          XAxisLocation: 158px\n          YAxisLocation:\
-      \ 356px\n          Width: 1442px\n          Height: 444px\n          Visibility:\
+      \          ElementType: VISUAL\n          XAxisLocation: 228px\n          YAxisLocation:\
+      \ 356px\n          Width: 1372px\n          Height: 444px\n          Visibility:\
       \ VISIBLE\n        - ElementId: 307befd3-2733-49ae-ba6b-28e0dabdfad9\n     \
-      \     ElementType: VISUAL\n          XAxisLocation: 158px\n          YAxisLocation:\
-      \ 808px\n          Width: 717px\n          Height: 444px\n          Visibility:\
+      \     ElementType: VISUAL\n          XAxisLocation: 228px\n          YAxisLocation:\
+      \ 808px\n          Width: 682px\n          Height: 444px\n          Visibility:\
       \ VISIBLE\n        - ElementId: d89df6a3-cde6-491b-9d3c-798025c55879\n     \
-      \     ElementType: VISUAL\n          XAxisLocation: 883px\n          YAxisLocation:\
-      \ 808px\n          Width: 717px\n          Height: 444px\n          Visibility:\
+      \     ElementType: VISUAL\n          XAxisLocation: 918px\n          YAxisLocation:\
+      \ 808px\n          Width: 682px\n          Height: 444px\n          Visibility:\
       \ VISIBLE\n        - ElementId: 1fb80142-629a-424a-b294-ee8906b4959d\n     \
       \     ElementType: VISUAL\n          XAxisLocation: 0px\n          YAxisLocation:\
       \ 1260px\n          Width: 792px\n          Height: 444px\n          Visibility:\
@@ -468,14 +468,18 @@ dashboards:
       \       - NumericalMeasureField:\n                FieldId: 39a6324e-e985-4b84-a7f5-3e85239a2200.tokens.sum\n\
       \                Column:\n                  DataSetIdentifier: bedrock_invocations_view\n\
       \                  ColumnName: total_tokens\n                AggregationFunction:\n\
-      \                  SimpleNumericalAggregation: SUM\n        SortConfiguration:\n\
-      \          CategorySort:\n          - FieldSort:\n              FieldId: 39a6324e-e985-4b84-a7f5-3e85239a2200.timestamp.day\n\
+      \                  SimpleNumericalAggregation: SUM\n                FormatConfiguration:\n\
+      \                  FormatConfiguration:\n                    NumberDisplayFormatConfiguration:\n\
+      \                      NumberScale: AUTO\n                      DecimalPlacesConfiguration:\n\
+      \                        DecimalPlaces: 1\n        SortConfiguration:\n    \
+      \      CategorySort:\n          - FieldSort:\n              FieldId: 39a6324e-e985-4b84-a7f5-3e85239a2200.timestamp.day\n\
       \              Direction: ASC\n          CategoryItemsLimit:\n            ItemsLimit:\
       \ 1000\n            OtherCategories: INCLUDE\n          ColorItemsLimit:\n \
       \           ItemsLimit: 10\n            OtherCategories: INCLUDE\n        Orientation:\
       \ VERTICAL\n        BarsArrangement: STACKED\n        Legend:\n          Position:\
       \ AUTO\n          Title:\n            CustomLabel: <<$BedrockGroupBy>>\n   \
-      \       Width: 237px\n        DataLabels:\n          Visibility: HIDDEN\n  \
+      \       Width: 237px\n        DataLabels:\n          Visibility: VISIBLE\n \
+      \         Overlap: DISABLE_OVERLAP\n          TotalsVisibility: VISIBLE\n  \
       \      ValueAxis:\n          AxisLineVisibility: VISIBLE\n  - PieChartVisual:\n\
       \      Actions:\n      - ActionOperations:\n        - FilterOperation:\n   \
       \         SelectedFieldsConfiguration:\n              SelectedFields:\n    \
