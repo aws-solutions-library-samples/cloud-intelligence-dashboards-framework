@@ -371,13 +371,15 @@ dashboards:
       \                ColumnName: Error Rate\n              FormatConfiguration:\n\
       \                FormatConfiguration:\n                  PercentageDisplayFormatConfiguration:\n\
       \                    DecimalPlacesConfiguration:\n                      DecimalPlaces:\
-      \ 2\n        SortConfiguration: {}\n        KPIOptions:\n          PrimaryValueFontConfiguration:\n\
-      \            FontColor: '#E5446D'\n      ColumnHierarchies: []\n      Subtitle:\n\
+      \ 2\n        SortConfiguration: {}\n      ColumnHierarchies: []\n      Subtitle:\n\
       \        Visibility: VISIBLE\n        FormatText:\n          RichText: <visual-subtitle>Failed\
       \ requests as a share of all requests</visual-subtitle>\n      Title:\n    \
       \    Visibility: VISIBLE\n        FormatText:\n          RichText: \"<visual-title>\\\
       n  <b>Error Rate %</b>\\n</visual-title>\"\n      VisualContentAltText: KPI\
       \ of the percentage of failed requests\n      VisualId: bf70aeff-6ee5-4c30-a403-1688c94216ed\n\
+      \      ConditionalFormatting:\n        ConditionalFormattingOptions:\n     \
+      \   - PrimaryValue:\n            TextColor:\n              Solid:\n        \
+      \        Expression: '{Error Rate} > 0'\n                Color: '#E5446D'\n\
       \  - KPIVisual:\n      Actions: []\n      ChartConfiguration:\n        FieldWells:\n\
       \          TargetValues: []\n          TrendGroups: []\n          Values:\n\
       \          - NumericalMeasureField:\n              AggregationFunction:\n  \
@@ -1502,60 +1504,72 @@ dashboards:
       \ Error Rate\n              FormatConfiguration:\n                FormatConfiguration:\n\
       \                  PercentageDisplayFormatConfiguration:\n                 \
       \   DecimalPlacesConfiguration:\n                      DecimalPlaces: 2\n  \
-      \      SortConfiguration: {}\n        KPIOptions:\n          PrimaryValueFontConfiguration:\n\
-      \            FontColor: '#E5446D'\n      ColumnHierarchies: []\n      Subtitle:\n\
+      \      SortConfiguration: {}\n      ColumnHierarchies: []\n      Subtitle:\n\
       \        Visibility: VISIBLE\n        FormatText:\n          RichText: <visual-subtitle>Failed\
       \ requests as a share of all requests</visual-subtitle>\n      Title:\n    \
       \    Visibility: VISIBLE\n        FormatText:\n          RichText: \"<visual-title>\\\
       n  <b>Error Rate %</b>\\n</visual-title>\"\n      VisualContentAltText: KPI\
       \ of the percentage of failed requests\n      VisualId: 0709503a-37b4-4f21-bbe8-655377b8148d\n\
+      \      ConditionalFormatting:\n        ConditionalFormattingOptions:\n     \
+      \   - PrimaryValue:\n            TextColor:\n              Solid:\n        \
+      \        Expression: '{Error Rate} > 0'\n                Color: '#E5446D'\n\
       \  - KPIVisual:\n      Actions: []\n      ChartConfiguration:\n        FieldWells:\n\
       \          TargetValues: []\n          TrendGroups: []\n          Values:\n\
       \          - NumericalMeasureField:\n              FieldId: 17a1ba7a-2dd1-4c9c-97c2-168a46d2a307.v\n\
       \              Column:\n                DataSetIdentifier: bedrock_invocations_view\n\
       \                ColumnName: Failed Requests\n              FormatConfiguration:\n\
       \                FormatConfiguration:\n                  NumberDisplayFormatConfiguration:\n\
-      \                    NumberScale: AUTO\n                    DecimalPlacesConfiguration:\n\
-      \                      DecimalPlaces: 1\n        SortConfiguration: {}\n   \
-      \     KPIOptions:\n          PrimaryValueFontConfiguration:\n            FontColor:\
-      \ '#E5446D'\n      ColumnHierarchies: []\n      Subtitle:\n        Visibility:\
-      \ VISIBLE\n        FormatText:\n          RichText: <visual-subtitle>Requests\
-      \ that returned an error</visual-subtitle>\n      Title:\n        Visibility:\
-      \ VISIBLE\n        FormatText:\n          RichText: \"<visual-title>\\n  <b>Failed\
-      \ Requests</b>\\n</visual-title>\"\n      VisualContentAltText: 'KPI: Failed\
-      \ Requests'\n      VisualId: 17a1ba7a-2dd1-4c9c-97c2-168a46d2a307\n  - KPIVisual:\n\
-      \      Actions: []\n      ChartConfiguration:\n        FieldWells:\n       \
-      \   TargetValues: []\n          TrendGroups: []\n          Values:\n       \
-      \   - NumericalMeasureField:\n              FieldId: f21a472a-b6d6-472a-bb33-86887eb95663.v\n\
+      \                    NumberScale: NONE\n                    DecimalPlacesConfiguration:\n\
+      \                      DecimalPlaces: 0\n                    SeparatorConfiguration:\n\
+      \                      DecimalSeparator: DOT\n                      ThousandsSeparator:\n\
+      \                        Symbol: COMMA\n                        Visibility:\
+      \ VISIBLE\n        SortConfiguration: {}\n      ColumnHierarchies: []\n    \
+      \  Subtitle:\n        Visibility: VISIBLE\n        FormatText:\n          RichText:\
+      \ <visual-subtitle>Requests that returned an error</visual-subtitle>\n     \
+      \ Title:\n        Visibility: VISIBLE\n        FormatText:\n          RichText:\
+      \ \"<visual-title>\\n  <b>Failed Requests</b>\\n</visual-title>\"\n      VisualContentAltText:\
+      \ 'KPI: Failed Requests'\n      VisualId: 17a1ba7a-2dd1-4c9c-97c2-168a46d2a307\n\
+      \      ConditionalFormatting:\n        ConditionalFormattingOptions:\n     \
+      \   - PrimaryValue:\n            TextColor:\n              Solid:\n        \
+      \        Expression: '{Failed Requests} > 0'\n                Color: '#E5446D'\n\
+      \  - KPIVisual:\n      Actions: []\n      ChartConfiguration:\n        FieldWells:\n\
+      \          TargetValues: []\n          TrendGroups: []\n          Values:\n\
+      \          - NumericalMeasureField:\n              FieldId: f21a472a-b6d6-472a-bb33-86887eb95663.v\n\
       \              Column:\n                DataSetIdentifier: bedrock_invocations_view\n\
       \                ColumnName: Throttled Requests\n              FormatConfiguration:\n\
       \                FormatConfiguration:\n                  NumberDisplayFormatConfiguration:\n\
-      \                    NumberScale: AUTO\n                    DecimalPlacesConfiguration:\n\
-      \                      DecimalPlaces: 1\n        SortConfiguration: {}\n   \
-      \   ColumnHierarchies: []\n      Subtitle:\n        Visibility: VISIBLE\n  \
-      \      FormatText:\n          RichText: <visual-subtitle>ThrottlingException</visual-subtitle>\n\
-      \      Title:\n        Visibility: VISIBLE\n        FormatText:\n          RichText:\
-      \ \"<visual-title>\\n  <b>Throttled Requests</b>\\n</visual-title>\"\n     \
-      \ VisualContentAltText: 'KPI: Throttled Requests'\n      VisualId: f21a472a-b6d6-472a-bb33-86887eb95663\n\
+      \                    NumberScale: NONE\n                    DecimalPlacesConfiguration:\n\
+      \                      DecimalPlaces: 0\n                    SeparatorConfiguration:\n\
+      \                      DecimalSeparator: DOT\n                      ThousandsSeparator:\n\
+      \                        Symbol: COMMA\n                        Visibility:\
+      \ VISIBLE\n        SortConfiguration: {}\n      ColumnHierarchies: []\n    \
+      \  Subtitle:\n        Visibility: VISIBLE\n        FormatText:\n          RichText:\
+      \ <visual-subtitle>ThrottlingException</visual-subtitle>\n      Title:\n   \
+      \     Visibility: VISIBLE\n        FormatText:\n          RichText: \"<visual-title>\\\
+      n  <b>Throttled Requests</b>\\n</visual-title>\"\n      VisualContentAltText:\
+      \ 'KPI: Throttled Requests'\n      VisualId: f21a472a-b6d6-472a-bb33-86887eb95663\n\
       \  - KPIVisual:\n      Actions: []\n      ChartConfiguration:\n        FieldWells:\n\
       \          TargetValues: []\n          TrendGroups: []\n          Values:\n\
       \          - NumericalMeasureField:\n              FieldId: 0fe87b74-0e2b-471e-9975-325f1c4509ed.v\n\
       \              Column:\n                DataSetIdentifier: bedrock_invocations_view\n\
       \                ColumnName: Max Token Cutoffs\n              FormatConfiguration:\n\
       \                FormatConfiguration:\n                  NumberDisplayFormatConfiguration:\n\
-      \                    NumberScale: AUTO\n                    DecimalPlacesConfiguration:\n\
-      \                      DecimalPlaces: 1\n        SortConfiguration: {}\n   \
-      \   ColumnHierarchies: []\n      Subtitle:\n        Visibility: VISIBLE\n  \
-      \      FormatText:\n          RichText: <visual-subtitle>Responses stopped by\
-      \ max_tokens</visual-subtitle>\n      Title:\n        Visibility: VISIBLE\n\
-      \        FormatText:\n          RichText: \"<visual-title>\\n  <b>Max Token\
-      \ Cutoffs</b>\\n</visual-title>\"\n      VisualContentAltText: 'KPI: Max Token\
-      \ Cutoffs'\n      VisualId: 0fe87b74-0e2b-471e-9975-325f1c4509ed\n  - BarChartVisual:\n\
-      \      VisualId: 17d29028-9934-4b97-a598-89c8161fd751\n      Actions:\n    \
-      \  - ActionOperations:\n        - FilterOperation:\n            SelectedFieldsConfiguration:\n\
-      \              SelectedFields:\n              - 17d29028-9934-4b97-a598-89c8161fd751.color\n\
-      \            TargetVisualsConfiguration:\n              SameSheetTargetVisualConfiguration:\n\
-      \                TargetVisualOptions: ALL_VISUALS\n        CustomActionId: b5c3e8bb-47fb-4e72-855b-89468c04e2f6\n\
+      \                    NumberScale: NONE\n                    DecimalPlacesConfiguration:\n\
+      \                      DecimalPlaces: 0\n                    SeparatorConfiguration:\n\
+      \                      DecimalSeparator: DOT\n                      ThousandsSeparator:\n\
+      \                        Symbol: COMMA\n                        Visibility:\
+      \ VISIBLE\n        SortConfiguration: {}\n      ColumnHierarchies: []\n    \
+      \  Subtitle:\n        Visibility: VISIBLE\n        FormatText:\n          RichText:\
+      \ <visual-subtitle>Responses stopped by max_tokens</visual-subtitle>\n     \
+      \ Title:\n        Visibility: VISIBLE\n        FormatText:\n          RichText:\
+      \ \"<visual-title>\\n  <b>Max Token Cutoffs</b>\\n</visual-title>\"\n      VisualContentAltText:\
+      \ 'KPI: Max Token Cutoffs'\n      VisualId: 0fe87b74-0e2b-471e-9975-325f1c4509ed\n\
+      \  - BarChartVisual:\n      VisualId: 17d29028-9934-4b97-a598-89c8161fd751\n\
+      \      Actions:\n      - ActionOperations:\n        - FilterOperation:\n   \
+      \         SelectedFieldsConfiguration:\n              SelectedFields:\n    \
+      \          - 17d29028-9934-4b97-a598-89c8161fd751.color\n            TargetVisualsConfiguration:\n\
+      \              SameSheetTargetVisualConfiguration:\n                TargetVisualOptions:\
+      \ ALL_VISUALS\n        CustomActionId: b5c3e8bb-47fb-4e72-855b-89468c04e2f6\n\
       \        Name: Filter this tab\n        Status: ENABLED\n        Trigger: DATA_POINT_CLICK\n\
       \      Title:\n        Visibility: VISIBLE\n        FormatText:\n          RichText:\
       \ \"<visual-title>\\n  <b>Success vs Failed Requests (daily)</b>\\n\\\n    \
