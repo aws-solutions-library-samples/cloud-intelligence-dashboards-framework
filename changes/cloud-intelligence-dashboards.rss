@@ -5,8 +5,30 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Wed, 18 Nov 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 24 Nov 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] CID Data Exports v0.14.0 - Standardized Cost and Rate Columns</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/blob/main/data-exports/CHANGELOG.md#v0140
+      </link>
+      <pubDate>Tue, 24 Nov 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Infrastructure Update]]></category>
+      <guid isPermaLink="false">e775b8c7-fcf4-4ee2-b91e-6007ceea778f</guid>
+      <description>CID Data Exports v0.14.0 — Added support for INCLUDE_STANDARDIZED_COST_AND_RATE parameter and cost_analytics_* columns in CUR 2.0</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>Standardized cost and rate:</strong> New <code>EnableStandardizedCostAndRate</code> parameter (default <code>yes</code>) turns on the <code>INCLUDE_STANDARDIZED_COST_AND_RATE</code> setting of the CUR 2.0 export. It adds 14 <code>cost_analytics_*</code> columns with the cost and rate for billed, list, contracted, effective, public equivalent billed, public equivalent effective and public On-Demand charges, so you can compare costs consistently across pricing models.</li>
+    <li><strong>CUR 2.0 table:</strong> The <code>cur2</code> table now includes the <code>cost_analytics_*</code> columns.</li>
+    <li><strong>Upgrade:</strong> Update the Data Exports stack in the source accounts and in the destination account. The existing export is updated in place. Set <code>EnableStandardizedCostAndRate</code> to <code>no</code> to keep the previous set of columns.</li>
+  </ul>
+  <p>
+    For details, refer to the <a href="https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/data-exports.html">Data Exports Guide</a>.
+  </p>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[New Dashboard] Bedrock Unified Insights Lens Dashboard v1.0.0</title>
       <link>
