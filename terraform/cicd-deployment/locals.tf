@@ -208,6 +208,20 @@ locals {
       dashboard_id = "cora"
       dataset_name = "cora_view"
     }
+    extended_support = {
+      enabled      = var.dashboards.extended_support == "yes"
+      stack_name   = "Extended-Support-Cost-Projection-Dashboard"
+      template_url = local.template_urls.cid_plugin
+      capabilities = local.common_capabilities
+      parameters   = { DashboardId = "extended-support-cost-projection" }
+      timeouts     = local.default_timeouts
+      tags = merge(local.common_tags, {
+        DashboardType = "Additional"
+        DashboardId   = "extended-support-cost-projection"
+      })
+      dashboard_id = "extended-support-cost-projection"
+      dataset_name = "rds_extended_support_view"
+    }
   }
 
   enabled_additional_dashboards = {
