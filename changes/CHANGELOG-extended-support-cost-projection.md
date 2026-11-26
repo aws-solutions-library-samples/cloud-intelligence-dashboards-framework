@@ -12,7 +12,7 @@ pip3 install --upgrade cid-cmd
 cid-cmd update --dashboard-id extended-support-cost-projection --recursive --force
 ```
 
-- Custom `account_map` columns (for example the ones created with `cid-cmd map`: business unit, team, environment, OU tags) can now be selected as taxonomy fields. Previously the tagging dataset only kept `account_id` and `account_name` from `account_map`, so other columns were reported as "not found in datasets" and were not added to the dashboard.
+- Custom `account_map` columns (for example the ones created with `cid-cmd map`: business unit, team, environment, OU tags) can now be selected as taxonomy fields, and their controls filter the RDS, EKS, OpenSearch and ElastiCache sheets. Previously the datasets only kept `account_id` and `account_name` from `account_map`, so other columns were reported as "not found in datasets" and were not added to the dashboard.
 
 ## Extended Support Cost Projection - v5.3.0
 

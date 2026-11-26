@@ -19,7 +19,7 @@
       <content:encoded><![CDATA[
 <div>
   <ul>
-    <li>Custom <code>account_map</code> columns (for example the ones created with <code>cid-cmd map</code>: business unit, team, environment, OU tags) can now be selected as taxonomy fields. Run the update with <code>--recursive --force</code> to apply it to the datasets.</li>
+    <li>Custom <code>account_map</code> columns (for example the ones created with <code>cid-cmd map</code>: business unit, team, environment, OU tags) can now be selected as taxonomy fields, and their controls filter the RDS, EKS, OpenSearch and ElastiCache sheets. Run the update with <code>--recursive --force</code> to apply it to the datasets.</li>
   </ul>
 </div>
     ]]></content:encoded>
