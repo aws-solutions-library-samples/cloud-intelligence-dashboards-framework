@@ -21,7 +21,7 @@ dashboards:
     - line_item_product_code
     - tags_json
     file: ./extended-support-cost-projection-definition.yaml
-    version: v5.3.0
+    version: v5.3.1
 datasets:
   elasticache_extended_support_view:
     data:
@@ -826,23 +826,11 @@ datasets:
               Alias: account_map
               Source:
                 SourceTableId: qs-generated-id-2c7b9356-1c1f-3bb2-a931-a17ce00a7b67
-          qs-generated-id-9549c18a-47d0-3791-8177-2f2baa28928f:
-            ProjectStep:
-              Alias: Select columns 1
-              Source:
-                TransformOperationId: qs-generated-id-7fc0b480-2859-3571-bb2d-3994fda614ac
-              ProjectedColumns:
-              - line_item_usage_account_id
-              - line_item_product_code
-              - tags_json
-              - rows
-              - account_id
-              - account_name
         DestinationTableMap:
           DefaultDestinationTableId:
             Alias: Destination Table 1
             Source:
-              TransformOperationId: qs-generated-id-9549c18a-47d0-3791-8177-2f2baa28928f
+              TransformOperationId: qs-generated-id-7fc0b480-2859-3571-bb2d-3994fda614ac
       SemanticModelConfiguration:
         TableMap:
           DefaultSemanticTableId:

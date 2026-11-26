@@ -5,8 +5,25 @@
     <link>https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/</link>
     <atom:link href="https://cid.workshops.aws.dev/feed/cloud-intelligence-dashboards.rss" rel="self" type="application/rss+xml"/>
     <description>The Cloud Intelligence Dashboards is an open-source framework, lovingly cultivated and maintained by a group of customer-obsessed AWSers, that gives customers the power to get high-level and granular insight into their cost and usage data. Supported by the Well-Architected framework, the dashboards can be deployed by any customer using a CloudFormation template or a command-line tool in their environment in under 30 minutes. These dashboards help you to drive financial accountability, optimize cost, track usage goals, implement best-practices for governance, and achieve operational excellence across all your organization.</description>
-    <lastBuildDate>Tue, 24 Nov 2026 12:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 26 Nov 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
+    <item>
+      <title>[Update] Extended Support Cost Projection v5.3.1</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-extended-support-cost-projection.md#extended-support-cost-projection---v531
+      </link>
+      <pubDate>Thu, 26 Nov 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">dda78d41-5942-4d33-92d8-787000f5aaa6</guid>
+      <description>Extended Support Cost Projection v5.3.1</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li>Custom <code>account_map</code> columns (for example the ones created with <code>cid-cmd map</code>: business unit, team, environment, OU tags) can now be selected as taxonomy fields. Run the update with <code>--recursive --force</code> to apply it to the datasets.</li>
+  </ul>
+</div>
+    ]]></content:encoded>
+    </item>
     <item>
       <title>[Update] CID Data Exports v0.14.0 - Standardized Cost and Rate Columns</title>
       <link>
