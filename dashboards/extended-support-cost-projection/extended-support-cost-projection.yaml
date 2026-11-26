@@ -142,39 +142,6 @@ datasets:
               Alias: elasticache_extended_support_view
               Source:
                 SourceTableId: qs-generated-id-961c066b-feac-301f-a6fa-b8b44cce0888
-          qs-generated-id-b872fd5d-bd01-336c-9ad8-99d92b423cbb:
-            ProjectStep:
-              Alias: Select columns 1
-              Source:
-                TransformOperationId: qs-generated-id-ea6aff3a-bdea-3093-99ed-e46b8e6cb0f6
-              ProjectedColumns:
-              - billing_period
-              - usage_date
-              - payer_account_id
-              - linked_account_id
-              - engine
-              - region_code
-              - engineversion
-              - instance_type
-              - item_description
-              - cacheclusterid
-              - resource_id
-              - original_usage_type
-              - on_demand_rate_per_unit
-              - usage_amount
-              - year_1_start
-              - is_year_1_2
-              - year_3_start
-              - is_year_3
-              - end_of_extended_support
-              - is_unsupported
-              - year_1_2_cost
-              - ext_sup_year_1_2_price
-              - year_3_cost
-              - ext_sup_year_3_price
-              - account_id
-              - account_name
-              - tags_json
           qs-generated-id-ea6aff3a-bdea-3093-99ed-e46b8e6cb0f6:
             JoinStep:
               Alias: Join 1
@@ -193,7 +160,7 @@ datasets:
           DefaultDestinationTableId:
             Alias: Destination Table 1
             Source:
-              TransformOperationId: qs-generated-id-b872fd5d-bd01-336c-9ad8-99d92b423cbb
+              TransformOperationId: qs-generated-id-ea6aff3a-bdea-3093-99ed-e46b8e6cb0f6
       SemanticModelConfiguration:
         TableMap:
           DefaultSemanticTableId:
@@ -319,36 +286,11 @@ datasets:
                 TransformOperationId: qs-generated-id-0e567530-f42c-3193-8c70-125f7d66f138
               Type: LEFT
               OnClause: '{linked_account_id} = {account_id}'
-          qs-generated-id-f5f73938-a88c-3d3a-a156-ac981fcabd48:
-            ProjectStep:
-              Alias: Select columns 1
-              Source:
-                TransformOperationId: qs-generated-id-d45d761d-8510-3f63-979f-49d960e8b936
-              ProjectedColumns:
-              - billing_period
-              - usage_date
-              - payer_account_id
-              - linked_account_id
-              - region_code
-              - original_usage_type
-              - k8s_version
-              - item_description
-              - cluster_name
-              - resource_id
-              - usage_amount
-              - start_of_extended_support
-              - is_extended_support
-              - extended_support_cost
-              - end_of_extended_support
-              - is_out_of_extended_support
-              - account_id
-              - account_name
-              - tags_json
         DestinationTableMap:
           DefaultDestinationTableId:
             Alias: Destination Table 1
             Source:
-              TransformOperationId: qs-generated-id-f5f73938-a88c-3d3a-a156-ac981fcabd48
+              TransformOperationId: qs-generated-id-d45d761d-8510-3f63-979f-49d960e8b936
       SemanticModelConfiguration:
         TableMap:
           DefaultSemanticTableId:
@@ -501,45 +443,6 @@ datasets:
           qs-generated-id-0dc6ad0d-de05-3880-9352-0a2e0816226b:
             PhysicalTableId: 0d4de22c-5e16-47c0-bf31-c248baf48499
         TransformStepMap:
-          qs-generated-id-2b7829b6-3178-3717-bb60-0d46c7e180ab:
-            ProjectStep:
-              Alias: Select columns 1
-              Source:
-                TransformOperationId: qs-generated-id-5588b19d-f1b8-377e-95a8-8f46fe7a5402
-              ProjectedColumns:
-              - billing_period
-              - usage_date
-              - payer_account_id
-              - linked_account_id
-              - region_code
-              - rds_type
-              - deployment_option
-              - original_deployment_option
-              - original_usage_type
-              - engine
-              - engineversion
-              - instance_type_family
-              - instance_type
-              - item_description
-              - dbresourceidentifier
-              - resource_id
-              - vcpus
-              - usage_unit
-              - usage_amount
-              - vcpu_acu_hours
-              - year_1_start
-              - is_year_1_2
-              - year_3_start
-              - is_year_3
-              - end_of_extended_support
-              - is_unsupported
-              - year_1_2_pricing
-              - year_1_2_cost
-              - year_3_pricing
-              - year_3_cost
-              - account_id
-              - account_name
-              - tags_json
           qs-generated-id-5588b19d-f1b8-377e-95a8-8f46fe7a5402:
             JoinStep:
               Alias: Join 1
@@ -563,7 +466,7 @@ datasets:
           DefaultDestinationTableId:
             Alias: Destination Table 1
             Source:
-              TransformOperationId: qs-generated-id-2b7829b6-3178-3717-bb60-0d46c7e180ab
+              TransformOperationId: qs-generated-id-5588b19d-f1b8-377e-95a8-8f46fe7a5402
       SemanticModelConfiguration:
         TableMap:
           DefaultSemanticTableId:
@@ -707,41 +610,11 @@ datasets:
                 TransformOperationId: import-account-map
               Type: LEFT
               OnClause: '{linked_account_id} = {account_id}'
-          project-columns:
-            ProjectStep:
-              Alias: Select columns 1
-              Source:
-                TransformOperationId: join-account-map
-              ProjectedColumns:
-              - billing_period
-              - usage_date
-              - payer_account_id
-              - linked_account_id
-              - region_code
-              - domainname
-              - domainidentifier
-              - resourceid
-              - engineversion
-              - instance_type
-              - instance_size
-              - norm_factor
-              - item_description
-              - usage_unit
-              - original_usage_type
-              - usage_amount
-              - nihs
-              - start_of_extended_support
-              - end_of_extended_support
-              - nih_pricing
-              - projected_extended_support_cost
-              - account_id
-              - account_name
-              - tags_json
         DestinationTableMap:
           DefaultDestinationTableId:
             Alias: Destination Table 1
             Source:
-              TransformOperationId: project-columns
+              TransformOperationId: join-account-map
       SemanticModelConfiguration:
         TableMap:
           DefaultSemanticTableId:
@@ -826,23 +699,11 @@ datasets:
               Alias: account_map
               Source:
                 SourceTableId: qs-generated-id-2c7b9356-1c1f-3bb2-a931-a17ce00a7b67
-          qs-generated-id-9549c18a-47d0-3791-8177-2f2baa28928f:
-            ProjectStep:
-              Alias: Select columns 1
-              Source:
-                TransformOperationId: qs-generated-id-7fc0b480-2859-3571-bb2d-3994fda614ac
-              ProjectedColumns:
-              - line_item_usage_account_id
-              - line_item_product_code
-              - tags_json
-              - rows
-              - account_id
-              - account_name
         DestinationTableMap:
           DefaultDestinationTableId:
             Alias: Destination Table 1
             Source:
-              TransformOperationId: qs-generated-id-9549c18a-47d0-3791-8177-2f2baa28928f
+              TransformOperationId: qs-generated-id-7fc0b480-2859-3571-bb2d-3994fda614ac
       SemanticModelConfiguration:
         TableMap:
           DefaultSemanticTableId:
