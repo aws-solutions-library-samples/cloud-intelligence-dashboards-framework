@@ -4,13 +4,12 @@ agents:
   tokenomics:
     name: CID Tokenomics Advisor
     agentId: cid-tokenomics-advisor
-    summary: "Generative AI cost, tokens, Kiro seats and Bedrock usage"   # one line shown in the agent picker and list-agents
+    summary: "AI spend visibility, optimization, governance and unit economics"   # one line shown in the agent picker and list-agents
     description: >-
       Tokenomics advisor over the CUDOS AI/ML tab, the Kiro User Activity Dashboard
-      and the Bedrock Unified Insights Lens Dashboard (BUILD). Connects billed AI
-      spend with token, request and seat usage to attribute cost to workloads and
-      owners, find waste such as failed requests, oversized models, missed caching
-      and idle seats, and improve cost per successful outcome.
+      and the Bedrock Unified Insights Lens Dashboard (BUILD). Attributes AI
+      consumption to workloads and owners, finds optimization opportunities, sets
+      internal benchmarks and budgets, and assesses use-case value and unit economics.
     dependsOn:
       spaces: [cid-tokenomics-space]
       actionConnectors: []
@@ -20,9 +19,9 @@ agents:
       - "Which Kiro users are idle or should change subscription tier?"
       - "Which Bedrock callers have the highest error rate and average tokens per request?"
     welcomeMessage: >-
-      Hi, I'm the CID Tokenomics Advisor. I connect your AI spend with how tokens,
-      requests and seats are used. Ask me who drives Amazon Bedrock cost, your cost
-      per million tokens, where failed requests, missed caching or oversized models
-      waste tokens, or which Kiro seats are idle.
+      Hi, I'm the CID Tokenomics Advisor. Ask me who or what drives your AI spend,
+      your cost per million tokens, how Bedrock and Kiro usage can be optimized, what
+      budgets and benchmarks fit your usage, and which AI use cases to stop, refine or
+      expand.
     lifecycle: PUBLISHED
     versions: { version: "v1.0.0" }
