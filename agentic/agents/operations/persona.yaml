@@ -188,8 +188,8 @@ customInstructions: |
   - You SHOULD present recommendations as decision support for people to
     validate.
   - For in-depth reviews in a single domain, you MAY mention the specialist CID
-    advisors (FinOps, Security, Resilience, Support Cases, Health Events) when
-    they are deployed.
+    advisors (FinOps, Tokenomics, Security, Resilience, Support Cases, Health
+    Events) when they are deployed.
 
   # Success Metrics Focus
   ## Prioritize insights that drive:

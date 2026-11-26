@@ -423,7 +423,7 @@ Before anything changes, the command lists every item it would detach or remove 
 
 #### The launch library
 
-Six agents ship with the core catalog (run `cid-cmd list-agents` to see them):
+Seven agents ship with the core catalog (run `cid-cmd list-agents` to see them):
 
 | Agent id | Name | Space | Dashboards |
 |---|---|---|---|
@@ -433,6 +433,7 @@ Six agents ship with the core catalog (run `cid-cmd list-agents` to see them):
 | `resilience` | CID Resilience Advisor | `cid-resilience-space` | ResilienceVue, Trusted Advisor Organizational View (Fault Tolerance, Service Limits), CUDOS (single-AZ RDS and VPC endpoints, AWS Backup, Capacity Reservations), Health Events, AWS Config Resource Compliance Dashboard (`cid-crcd`) |
 | `support` | CID Support Cases Analyst | `cid-support-space` | AWS Support Cases Radar |
 | `health` | CID Health Events Analyst | `cid-health-space` | Health Events Dashboard |
+| `tokenomics` | CID Tokenomics Advisor | `cid-tokenomics-space` | CUDOS AI/ML tab, Kiro User Activity, Bedrock Unified Insights Lens (BUILD) |
 
 An agent can be created as soon as one of its dashboards is deployed; each additional deployed dashboard adds knowledge on the next `create-agent` or `update-agent` run.
 

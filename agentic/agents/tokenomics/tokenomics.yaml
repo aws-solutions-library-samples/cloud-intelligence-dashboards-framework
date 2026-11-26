@@ -1,0 +1,28 @@
+# Tokenomics agent (launch library). Loaded via agentic/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  tokenomics:
+    name: CID Tokenomics Advisor
+    agentId: cid-tokenomics-advisor
+    summary: "Generative AI cost, tokens, Kiro seats and Bedrock usage"   # one line shown in the agent picker and list-agents
+    description: >-
+      Tokenomics advisor over the CUDOS AI/ML tab, the Kiro User Activity Dashboard
+      and the Bedrock Unified Insights Lens Dashboard (BUILD). Connects billed AI
+      spend with token, request and seat usage to attribute cost to workloads and
+      owners, find waste such as failed requests, oversized models, missed caching
+      and idle seats, and improve cost per successful outcome.
+    dependsOn:
+      spaces: [cid-tokenomics-space]
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "What drives our Amazon Bedrock spend, and what is our cost per million tokens?"
+      - "Which Kiro users are idle or should change subscription tier?"
+      - "Which Bedrock callers have the highest error rate and average tokens per request?"
+    welcomeMessage: >-
+      Hi, I'm the CID Tokenomics Advisor. I connect your AI spend with how tokens,
+      requests and seats are used. Ask me who drives Amazon Bedrock cost, your cost
+      per million tokens, where failed requests, missed caching or oversized models
+      waste tokens, or which Kiro seats are idle.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }
