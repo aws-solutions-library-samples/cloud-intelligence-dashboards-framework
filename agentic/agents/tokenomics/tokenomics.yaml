@@ -1,0 +1,27 @@
+# Tokenomics agent (launch library). Loaded via agentic/catalog.yaml;
+# personaFile is resolved relative to this file.
+agents:
+  tokenomics:
+    name: CID Tokenomics Advisor
+    agentId: cid-tokenomics-advisor
+    summary: "AI spend visibility, optimization, governance and unit economics"   # one line shown in the agent picker and list-agents
+    description: >-
+      Tokenomics advisor over the CUDOS AI/ML tab, the Kiro User Activity Dashboard
+      and the Bedrock Unified Insights Lens Dashboard (BUILD). Attributes AI
+      consumption to workloads and owners, finds optimization opportunities, sets
+      internal benchmarks and budgets, and assesses use-case value and unit economics.
+    dependsOn:
+      spaces: [cid-tokenomics-space]
+      actionConnectors: []
+    personaFile: persona.yaml
+    starterPrompts:
+      - "What drives our Amazon Bedrock spend, and what is our cost per million tokens?"
+      - "Which Kiro users are idle or should change subscription tier?"
+      - "Which Bedrock callers have the highest error rate and average tokens per request?"
+    welcomeMessage: >-
+      Hi, I'm the CID Tokenomics Advisor. Ask me who or what drives your AI spend,
+      your cost per million tokens, how Bedrock and Kiro usage can be optimized, what
+      budgets and benchmarks fit your usage, and which AI use cases to stop, refine or
+      expand.
+    lifecycle: PUBLISHED
+    versions: { version: "v1.0.0" }

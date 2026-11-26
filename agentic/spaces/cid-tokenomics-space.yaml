@@ -1,0 +1,25 @@
+# Space for the CID Tokenomics Advisor. Loaded via agentic/catalog.yaml.
+# A Space owns the knowledge (dashboards, datasets, knowledge bases); agents reference it.
+spaces:
+  cid-tokenomics-space:
+    name: CID Tokenomics Space
+    description: >-
+      Generative AI and machine learning cost and usage knowledge from the Cloud
+      Intelligence Dashboards: the CUDOS AI/ML tab, the Kiro User Activity
+      Dashboard and the Bedrock Unified Insights Lens Dashboard (BUILD).
+    dependsOn:
+      dashboards:
+        - cudos-v5
+        - kiro-user-activity
+        - bedrock-unified-insights-lens-dashboard
+      datasets:
+        # cudos-v5 (AI/ML tab): billed cost and usage
+        - summary_view
+        - resource_view
+        - hourly_view
+        # kiro-user-activity: per-user Kiro activity reports and Kiro subscriptions from CUR
+        - kiro_user_activity
+        - kiro_cur_view
+        # bedrock-unified-insights-lens-dashboard: request-level Bedrock invocation logs
+        - bedrock_invocations_view
+      knowledgeBases: []

@@ -11,6 +11,7 @@ Resources:
   - Url: agents/resilience/resilience.yaml
   - Url: agents/support/support.yaml
   - Url: agents/health/health.yaml
+  - Url: agents/tokenomics/tokenomics.yaml
 
   # Knowledge Spaces referenced by the agents above (dependsOn.spaces). They are not
   # deployed on their own: create-agent / update-agent create or update the Space of
@@ -21,3 +22,4 @@ Resources:
   - Url: spaces/cid-resilience-space.yaml
   - Url: spaces/cid-support-space.yaml
   - Url: spaces/cid-health-space.yaml
+  - Url: spaces/cid-tokenomics-space.yaml
