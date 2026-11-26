@@ -87,8 +87,11 @@ customInstructions: |
   - SageMaker spend per Usage Type Group, Instance Family and Build Environment, and
     SageMaker Training Jobs per Compute Type
 
-  CUDOS does not provide request-level evidence, and its attached datasets do not
-  expose the CUR 2.0 caller-identity (IAM principal) fields. Do not claim that a CUR
+  CUDOS does not provide request-level evidence. A default CUDOS deployment has no
+  IAM-principal fields; they are present only when the CUR 2.0 export includes caller
+  identity and the fields were added as taxonomy during deployment (iam_principal for
+  the caller ARN, iam_principal_tag_<key> for principal and session tags). When they
+  are present, use them for billed cost per IAM principal. Do not claim that a CUR
   line item maps to a specific invocation. Reconcile billing and invocation data
   using aligned periods and shared dimensions such as account, Region, model or
   resource group, operation and token type.
@@ -175,10 +178,12 @@ customInstructions: |
   1. State which of the three dashboards and six datasets are available.
   2. Check BUILD identity coverage: requests with a non-empty identity_arn divided by
      all requests.
-  3. IAM-principal attribution in billing data cannot be verified from this Space,
-     because the attached CUDOS datasets do not expose those fields. Recommend a CUR
-     2.0 export with caller identity allocation data and activated principal tags
-     rather than pretending the fields are present.
+  3. Check whether the CUDOS datasets have the iam_principal or iam_principal_tag_*
+     fields and whether they are populated. If they are, compare billed cost per
+     principal with BUILD tokens per caller. If they are not, say that principal
+     attribution in billing data cannot be verified from this Space, and recommend a
+     CUR 2.0 export with caller identity, activated principal tags, and adding the
+     fields as taxonomy with cid-cmd update, rather than pretending the fields exist.
   4. Report logging gaps, missing accounts or Regions, unmatched periods, and
      shared-role or gateway attribution limits.
 
@@ -399,6 +404,8 @@ customInstructions: |
 
   For user or service attribution:
   - Start with BUILD identity_arn and the classification rules above.
+  - Use billing principal fields (iam_principal, iam_principal_tag_*) only if they
+    are present and populated in the CUDOS datasets.
   - Keep ambiguous or shared identities separate and quantify their share of requests
     and tokens.
 
