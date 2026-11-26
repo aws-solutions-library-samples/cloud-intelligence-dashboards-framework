@@ -12,7 +12,7 @@ dashboards:
     dashboardId: droid
     category: Advanced
     theme: MIDNIGHT
-    version: v1.0.1
+    version: v1.0.2
     file: ./droid-definition.yaml
 datasets:
   rds_backup_view:

@@ -8,6 +8,27 @@
     <lastBuildDate>Tue, 24 Nov 2026 12:00:00 GMT</lastBuildDate>
     <language>en-us</language>
     <item>
+      <title>[Update] DROID - Database Resilience, Operations &amp; Insights Dashboard v1.0.2</title>
+      <link>
+        https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-framework/blob/main/changes/CHANGELOG-droid.md#droid-dashboard---v102
+      </link>
+      <pubDate>Tue, 24 Nov 2026 12:00:00 GMT</pubDate>
+      <category><![CDATA[Dashboard Update]]></category>
+      <guid isPermaLink="false">899ee85d-47ac-45bd-94b6-0f632999f370</guid>
+      <description>DROID - Database Resilience, Operations &amp; Insights Dashboard v1.0.2 - UI refinements and chart improvements</description>
+      <content:encoded><![CDATA[
+<div>
+  <ul>
+    <li><strong>RDS Inventory:</strong> Instances with no cluster now show as "Standalone Instance" instead of a blank Cluster ID; larger chart titles, click-to-filter actions, and consistent Cluster ID / Region column widths.</li>
+    <li><strong>RDS Version and Maintenance:</strong> Added an Engine Version column alongside Major Version in both end-of-support tables, and a legend explaining Mandatory vs Optional maintenance actions.</li>
+    <li><strong>RDS Snapshot Backup:</strong> Renamed the "Average Backup %" KPI to "Instances Backed Up %"; "Snapshot Backup % by DB Engine" now shows data labels; removed the redundant Autobackup pie chart and the per-account daily pivot.</li>
+    <li><strong>RDS Cost and Usage:</strong> "Monthly Extended Support Cost" is now a bar chart; monthly amortized and backup storage cost now plot month on the X axis with Region as the series; the month-to-date Aurora I/O Optimized recommendation now excludes the "Review" category.</li>
+    <li>Default sorts across tables surface at-risk rows first (Extended Support, Unencrypted, Expired, Backup Not Enabled).</li>
+  </ul>
+</div>
+      ]]></content:encoded>
+    </item>
+    <item>
       <title>[Update] CID Data Exports v0.14.0 - Standardized Cost and Rate Columns</title>
       <link>
         https://github.com/aws-solutions-library-samples/cloud-intelligence-dashboards-data-collection/blob/main/data-exports/CHANGELOG.md#v0140
